@@ -3,10 +3,15 @@
 #include <maya/MFnPlugin.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFloatPointArray.h>
+#include <maya/MFloatVectorArray.h>
+#include <maya/MFloatVector.h>
 #include <maya/MFloatPoint.h>
+#include <maya/MFloatArray.h>
+#include <maya/MVectorArray.h>
 #include <maya/MFnMeshData.h>
 #include <maya/MDataBlock.h>
 #include <maya/MDataHandle.h>
+#include <maya/MTypes.h>
 
 #include "asset.h"
 
@@ -70,7 +75,7 @@ Asset::initialize()
 Asset::Asset()
 {
     // houdini
-    char* filename = "/home/jhuang/mayaPlugin/SideFX__spaceship.otl";
+    char* filename = "/home/jhuang/dev_projects/HAPI/Maya/assets/plugin/SideFX__spaceship.otl";
 
     // load otl
     assetInfo = new HAPI_AssetInfo();
@@ -90,6 +95,37 @@ void printIntArray(int* arr, int size)
        cerr << arr[i] << " ";
     }
     cerr << endl;
+}
+
+MFloatArray* getAttributeFloatData(int assetId, int objectId, int owner, char* name)
+{
+    HAPI_AttributeInfo* attr_info = new HAPI_AttributeInfo();
+    strcpy(attr_info->name, name);
+    attr_info->exists = false;
+    attr_info->owner = owner;
+    HAPI_GetAttributeInfo(assetId, objectId, owner, attr_info);
+
+    int size = attr_info->count * attr_info->tupleSize;
+    float data[size];
+    // zero the array
+    for (int j=0; j<size; j++){
+        data[j] = 0;
+    }
+    int status = HAPI_GetAttributeFloatData(assetId, objectId, attr_info, data, 0, attr_info->count);
+
+    // print out
+    cerr << name << endl;
+    cerr << "count: " << attr_info->count << endl;
+    cerr << "tupleSize: " << attr_info->tupleSize << endl;
+    for(int j=0; j<size; j++)
+    {
+        cerr << data[j] << " ";
+    }
+    cerr << endl;
+    cerr << endl;
+
+    MFloatArray* ret = new MFloatArray(data, size);
+    return ret;
 }
 
 MObject
@@ -116,7 +152,7 @@ Asset::createMesh(MObject& outData)
 
     // get vertex list
     int myVertexList[numVertexCount];
-    HAPI_GetVertexList(assetInfo->id, myObjInfo.id, myVertexList, 0, numVertexCount);
+    HAPI_GetVertexList(assetInfo->id, myObjInfo.id, myVertexList, 0, numVertexCount, HAPI_WINDINGORDER_CCW);
     cerr << "myVertexList" << endl;
     printIntArray(myVertexList, numVertexCount);
 
@@ -140,58 +176,39 @@ Asset::createMesh(MObject& outData)
     }
 
     int numPointCount;
-    int size;
-    // get vertex position attribute
-    HAPI_AttributeInfo* pos_attr_info = new HAPI_AttributeInfo();
-    strcpy(pos_attr_info->name, "P");
-    pos_attr_info->exists = false;
-    pos_attr_info->owner = HAPI_ATTROWNER_POINT;
-    HAPI_GetAttributeInfo(assetInfo->id, myObjInfo.id, HAPI_ATTROWNER_POINT, pos_attr_info);
-
-    numPointCount = pos_attr_info->count;
-
-    size = numPointCount * pos_attr_info->tupleSize;
-    float myPoints[size];
-    for (int j=0; j<size; j++){
-        myPoints[j] = 0;
-    }
-    int status = HAPI_GetAttributeFloatData(assetInfo->id, myObjInfo.id, pos_attr_info, myPoints, 0, numPointCount);
-    cerr << "status: " << status << endl;
-    cerr << "tuple: " << pos_attr_info->tupleSize << endl;
-    cerr << "count: " << numPointCount << endl;
-    for(int j=0; j<size; j++)
-    {
-        cerr << myPoints[j] << " ";
-    }
-    cerr << endl;
+    MFloatArray* myPoints = getAttributeFloatData(assetInfo->id, myObjInfo.id, HAPI_ATTROWNER_POINT, "P");
     // make a maya point array, assume 3 tuple
-    MFnMesh meshFS;
     MFloatPointArray points;
     int i = 0;
-    while (i < size)
+    int len = myPoints->length();
+    while (i < len)
     {
-        MFloatPoint v(myPoints[i], myPoints[i+1], myPoints[i+2]);
+        MFloatPoint v((*myPoints)[i], (*myPoints)[i+1], (*myPoints)[i+2]);
         points.append(v);
         i = i+3;
     }
+    numPointCount = points.length();
 
     // get normals
-    HAPI_AttributeInfo* norm_attr_info = new HAPI_AttributeInfo();
-    strcpy(norm_attr_info->name, "N");
-    norm_attr_info->exists = false;
-    norm_attr_info->owner = HAPI_ATTROWNER_POINT;
-    HAPI_GetAttributeInfo(assetInfo->id, myObjInfo.id, HAPI_ATTROWNER_POINT, norm_attr_info);
-
-    numPointCount = norm_attr_info->count;
-
-    size = numPointCount * pos_attr_info->tupleSize;
-    float myNormals[size];
-    for (int j=0; j<size; j++){
-        myNormals[j] = 0;
+    int numNormals;
+    MFloatArray* myNormals = getAttributeFloatData(assetInfo->id, myObjInfo.id, HAPI_ATTROWNER_POINT, "N");
+    // make a maya vector array, assume 3 tuple
+    MVectorArray normals;
+    i = 0;
+    len = myNormals->length();
+    while (i < len)
+    {
+        MFloatVector v((*myNormals)[i], (*myNormals)[i+1], (*myNormals)[i+2]);
+        normals.append(v);
+        i = i+3;
     }
-    HAPI_GetAttributeFloatData(assetInfo->id, myObjInfo.id, pos_attr_info, myNormals, 0, numPointCount);
+    numNormals = normals.length();
+    cerr << "normals lols" << endl;
+    cerr << normals << endl;
+
 
     // get UVS
+    MFloatArray* myUVs = getAttributeFloatData(assetInfo->id, myObjInfo.id, HAPI_ATTROWNER_VERTEX, "uv");
 
 
     std::cerr << "check1" << points[0][1] << std::endl;
@@ -205,7 +222,37 @@ Asset::createMesh(MObject& outData)
 
     std::cerr << "check2" << std::endl;
 
+    MFnMesh meshFS;
     MObject newMesh = meshFS.create(numPointCount, numFaceCount, points, faceCounts, vertexList, outData);
+    MIntArray vlist;
+    for (int j=0; j<points.length(); j++)
+    {
+        vlist.append(j);
+    }
+    MVectorArray foo;
+    foo.append(MFloatVector(0,100,0));
+    MIntArray bar;
+    bar.append(0);
+    meshFS.setVertexNormals(normals, vlist);
+    //meshFS.setVertexNormals(foo, bar);
+
+    // debug
+    MFloatPointArray tmp1;
+    meshFS.getPoints(tmp1);
+    MFloatVectorArray tmp2;
+    meshFS.getVertexNormals(false, tmp2);
+    MFloatArray Us;
+    MFloatArray Vs;
+    meshFS.getUVs(Us, Vs);
+
+    cerr << "print points" << endl;
+    cerr << tmp1 << endl;
+    cerr << "print uvs" << endl;
+    cerr << Us << endl;
+    cerr << Vs << endl;
+    // end debug
+
+
     std::cerr << "check3" << std::endl;
 
     return newMesh;

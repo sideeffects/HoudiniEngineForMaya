@@ -75,7 +75,7 @@ Asset::initialize()
 Asset::Asset()
 {
     // houdini
-    char* filename = "/home/jhuang/dev_projects/HAPI/Maya/assets/plugin/SideFX__spaceship.otl";
+    char* filename = "/home/jhuang/dev_projects/HAPI/Maya/assets/plugin/box2.otl";
 
     // load otl
     assetInfo = new HAPI_AssetInfo();
@@ -103,7 +103,7 @@ MFloatArray* getAttributeFloatData(int assetId, int objectId, int owner, char* n
     strcpy(attr_info->name, name);
     attr_info->exists = false;
     attr_info->owner = owner;
-    HAPI_GetAttributeInfo(assetId, objectId, owner, attr_info);
+    HAPI_GetAttributeInfo(assetId, objectId, attr_info);
 
     int size = attr_info->count * attr_info->tupleSize;
     float data[size];
@@ -126,6 +126,48 @@ MFloatArray* getAttributeFloatData(int assetId, int objectId, int owner, char* n
 
     MFloatArray* ret = new MFloatArray(data, size);
     return ret;
+}
+
+void reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts)
+{
+    int current_index = 0;
+    int numFaceCount = faceCounts.length();
+    for (int i=0; i<numFaceCount; i++)
+    {
+        int vertex_count = faceCounts[i];
+        int a = current_index;
+        int b = current_index + vertex_count - 1;
+        while (a < b)
+        {
+            int temp = data[a];
+            data[a] = data[b];
+            data[b] = temp;
+            a++;
+            b--;
+        }
+        current_index += vertex_count;
+    }
+}
+
+void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
+{
+    int current_index = 0;
+    int numFaceCount = faceCounts.length();
+    for (int i=0; i<numFaceCount; i++)
+    {
+        int vertex_count = faceCounts[i];
+        int a = current_index;
+        int b = current_index + vertex_count - 1;
+        while (a < b)
+        {
+            float temp = data[a];
+            data[a] = data[b];
+            data[b] = temp;
+            a++;
+            b--;
+        }
+        current_index += vertex_count;
+    }
 }
 
 MObject
@@ -152,7 +194,7 @@ Asset::createMesh(MObject& outData)
 
     // get vertex list
     int myVertexList[numVertexCount];
-    HAPI_GetVertexList(assetInfo->id, myObjInfo.id, myVertexList, 0, numVertexCount, HAPI_WINDINGORDER_CCW);
+    HAPI_GetVertexList(assetInfo->id, myObjInfo.id, myVertexList, 0, numVertexCount);
     cerr << "myVertexList" << endl;
     printIntArray(myVertexList, numVertexCount);
 
@@ -209,6 +251,18 @@ Asset::createMesh(MObject& outData)
 
     // get UVS
     MFloatArray* myUVs = getAttributeFloatData(assetInfo->id, myObjInfo.id, HAPI_ATTROWNER_VERTEX, "uv");
+    // split UVs into two arrays, assume 3 tuple
+    MFloatArray Us;
+    MFloatArray Vs;
+    i = 0;
+    len = myUVs->length();
+    while (i < len)
+    {
+        Us.append((*myUVs)[i]);
+        Vs.append((*myUVs)[i+1]);
+        i = i+3;
+    }
+
 
 
     std::cerr << "check1" << points[0][1] << std::endl;
@@ -216,40 +270,54 @@ Asset::createMesh(MObject& outData)
     MIntArray faceCounts(myFaceCounts, numFaceCount);
     MIntArray vertexList(myVertexList, numVertexCount);
 
+    // reverse the winding orders
+    reverseWindingOrderInt(vertexList, faceCounts);
+    reverseWindingOrderFloat(Us, faceCounts);
+    reverseWindingOrderFloat(Vs, faceCounts);
+    cerr << "uvs lols" << endl;
+    cerr << Us << endl;
+    cerr << Vs << endl;
+
     cerr << "points.length: " << points.length() << endl;
     cerr << "faceCounts.length: " << faceCounts.length() << endl;
     cerr << "vertexList.length: " << vertexList.length() << endl;
+    cerr << "vertexList: " << vertexList << endl;
 
     std::cerr << "check2" << std::endl;
 
     MFnMesh meshFS;
+    // create mesh
     MObject newMesh = meshFS.create(numPointCount, numFaceCount, points, faceCounts, vertexList, outData);
+    // set normals
     MIntArray vlist;
     for (int j=0; j<points.length(); j++)
     {
         vlist.append(j);
     }
-    MVectorArray foo;
-    foo.append(MFloatVector(0,100,0));
-    MIntArray bar;
-    bar.append(0);
     meshFS.setVertexNormals(normals, vlist);
-    //meshFS.setVertexNormals(foo, bar);
+    // set UVs
+    meshFS.setUVs(Us, Vs);
+    MIntArray uvIds;
+    for (int j=0; j<vertexList.length(); j++)
+    {
+        uvIds.append(j);
+    }
+    meshFS.assignUVs(faceCounts, uvIds);
 
     // debug
     MFloatPointArray tmp1;
     meshFS.getPoints(tmp1);
     MFloatVectorArray tmp2;
     meshFS.getVertexNormals(false, tmp2);
-    MFloatArray Us;
-    MFloatArray Vs;
-    meshFS.getUVs(Us, Vs);
+    MFloatArray tmp3;
+    MFloatArray tmp4;
+    meshFS.getUVs(tmp3, tmp4);
 
     cerr << "print points" << endl;
     cerr << tmp1 << endl;
     cerr << "print uvs" << endl;
-    cerr << Us << endl;
-    cerr << Vs << endl;
+    cerr << tmp3 << endl;
+    cerr << tmp4 << endl;
     // end debug
 
 

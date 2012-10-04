@@ -12,8 +12,24 @@
 #include <maya/MDataBlock.h>
 #include <maya/MDataHandle.h>
 #include <maya/MTypes.h>
+#include <maya/MDGModifier.h>
+#include <maya/MGlobal.h>
 
 #include "asset.h"
+
+// MCheckStatus (Debugging tool)
+//
+#   define MCheckStatus(status,message)         \
+        if( MS::kSuccess != status ) {          \
+            MString error("Status failed: ");   \
+            error += status.errorString();      \
+            MGlobal::displayError(error);       \
+            MGlobal::displayError(message);       \
+        } else {                                \
+            MString str("Success: ");           \
+            str += message;                     \
+            MGlobal::displayInfo(str);          \
+        }
 
 MTypeId Asset::id(0x80000);
 MObject Asset::input1;
@@ -23,13 +39,14 @@ MObject Asset::output;
 void*
 Asset::creator()
 {
-    return new Asset();
+    Asset* ret = new Asset();
+    return ret;
 }
 
 void printAssetInfo(HAPI_AssetInfo* assetInfo)
 {
     cerr << "id: " << assetInfo->id << endl;
-    cerr << "parmExtraValueCount: " << assetInfo->parmExtraValueCount << endl;
+    cerr << "parmCount: " << assetInfo->parmCount << endl;
     cerr << "parmChoiceCount: " << assetInfo->parmChoiceCount << endl;
     cerr << "handleCount: " << assetInfo->handleCount << endl;
     cerr << "objectCount: " << assetInfo->objectCount << endl;
@@ -75,6 +92,7 @@ Asset::initialize()
 Asset::Asset()
 {
     // houdini
+    //char* filename = "/home/jhuang/dev_projects/HAPI/Maya/assets/plugin/SideFX__spaceship.otl";
     char* filename = "/home/jhuang/dev_projects/HAPI/Maya/assets/plugin/box2.otl";
 
     // load otl
@@ -84,6 +102,8 @@ Asset::Asset()
     HAPI_LoadOTLFile(filename, assetInfo);
 
     printAssetInfo(assetInfo);
+    builtParms = false;
+
 }
 
 Asset::~Asset() {}
@@ -170,6 +190,60 @@ void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
     }
 }
 
+void
+Asset::addParm(HAPI_ParmInfo& parm)
+{
+    MStatus status;
+    MDGModifier mod;
+    MFnNumericAttribute nAttr;
+
+    // label
+    int handle = parm.labelSH;
+    int bufLen;
+    HAPI_GetStringLength(handle, &bufLen);
+    char label[bufLen];
+    HAPI_GetString(handle, label, bufLen+1);
+    //cerr << "parm label: " << label << endl;
+
+    // name
+    handle = parm.nameSH;
+    HAPI_GetStringLength(handle, &bufLen);
+    char name[bufLen];
+    HAPI_GetString(handle, name, bufLen+1);
+    cerr << "parm name: " << name << endl;
+
+    char shortName[50];
+    sprintf(shortName, "parm%d", parm.id);
+    char longName[50];
+    sprintf(longName, "H_parm%d", parm.id);
+    MObject attrib = nAttr.create(longName, shortName, MFnNumericData::kFloat, 1.0, &status);
+    MString niceName(label);
+    nAttr.setNiceNameOverride(label);
+    status = nAttr.setStorable(true);
+    status = mod.addAttribute(thisMObject(), attrib);
+    MCheckStatus(status, name);
+    mod.doIt();
+    // TODO: affect output
+}
+
+void
+Asset::buildParms()
+{
+
+    // PARMS
+    int parmCount = assetInfo->parmCount;
+    HAPI_ParmInfo myParmInfos[parmCount];
+    HAPI_GetParameters(assetInfo->id, myParmInfos, 0, parmCount);
+    // print out the parm names
+    for (int i=0; i<parmCount; i++)
+    {
+        addParm(myParmInfos[i]);
+    }
+
+
+
+}
+
 MObject
 Asset::createMesh(MObject& outData)
 {
@@ -189,14 +263,10 @@ Asset::createMesh(MObject& outData)
     // get face counts
     int myFaceCounts[numFaceCount];
     HAPI_GetFaceCounts(assetInfo->id, myObjInfo.id, myFaceCounts, 0, numFaceCount);
-    cerr << "myFaceCounts" << endl;
-    printIntArray(myFaceCounts, numFaceCount);
 
     // get vertex list
     int myVertexList[numVertexCount];
     HAPI_GetVertexList(assetInfo->id, myObjInfo.id, myVertexList, 0, numVertexCount);
-    cerr << "myVertexList" << endl;
-    printIntArray(myVertexList, numVertexCount);
 
     // print out attributes
     for ( int owner = 0; owner < HAPI_ATTROWNER_MAX; ++owner )
@@ -232,7 +302,6 @@ Asset::createMesh(MObject& outData)
     numPointCount = points.length();
 
     // get normals
-    int numNormals;
     MFloatArray* myNormals = getAttributeFloatData(assetInfo->id, myObjInfo.id, HAPI_ATTROWNER_POINT, "N");
     // make a maya vector array, assume 3 tuple
     MVectorArray normals;
@@ -244,9 +313,8 @@ Asset::createMesh(MObject& outData)
         normals.append(v);
         i = i+3;
     }
-    numNormals = normals.length();
-    cerr << "normals lols" << endl;
-    cerr << normals << endl;
+    //cerr << "normals lols" << endl;
+    //cerr << normals << endl;
 
 
     // get UVS
@@ -321,6 +389,8 @@ Asset::createMesh(MObject& outData)
     // end debug
 
 
+
+
     std::cerr << "check3" << std::endl;
 
     return newMesh;
@@ -330,6 +400,12 @@ Asset::createMesh(MObject& outData)
 MStatus
 Asset::compute(const MPlug& plug, MDataBlock& data)
 {
+    if (!builtParms)
+    {
+        buildParms();
+        builtParms = true;
+    }
+
     MStatus returnStatus;
     if (plug == output)
     {

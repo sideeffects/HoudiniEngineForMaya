@@ -15,6 +15,8 @@ class Asset: public MPxNode
         virtual ~Asset(); 
 
         virtual MStatus compute( const MPlug& plug, MDataBlock& data );
+        void buildParms();
+        void addParm(HAPI_ParmInfo& parm);
 
         static void* creator();
         static MStatus initialize();
@@ -28,5 +30,6 @@ class Asset: public MPxNode
     private:
         MObject createMesh(MObject& outData);
         HAPI_AssetInfo* assetInfo;
+        bool builtParms;
 
 };

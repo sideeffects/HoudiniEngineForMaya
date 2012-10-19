@@ -10,11 +10,14 @@ LIBS=-L$(MAYA_DIR)/lib -lOpenMaya -lFoundation -L$(HDSO) `python2.6 $(SHM)/list_
 
 all: asset.so
 
-asset.so: asset.o
-	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so asset.o $(LIBS)
+asset.so: asset.o object.o
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so asset.o object.o $(LIBS)
 
 asset.o: asset.C
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) asset.C
+
+object.o: object.C
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) object.C
 
 clean:
 	rm -f *.o

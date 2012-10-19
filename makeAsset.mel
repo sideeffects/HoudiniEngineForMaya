@@ -1,0 +1,48 @@
+source createAndAssignShader;
+
+proc string getTransform( string $shape )
+{
+    string $transform = "";
+
+    if ( "transform" != `nodeType $shape` )
+        // If given node is already a transform, just pass on through
+    {
+        string $parents[] = `listRelatives -fullPath -parent $shape`;
+        $transform = $parents[0];
+    }
+
+    return $transform;
+}
+
+global proc makeAsset() {
+    string $asset = `createNode Asset`;
+
+    // TODO: this is a hack, getting the attribute once sometimes returns
+    // wrong result, getting it again seem to return correct result.
+    int $numObjects = `getAttr ($asset + ".numberOfObjects")`;
+    $numObjects = `getAttr ($asset + ".numberOfObjects")`;
+
+    string $transforms[] = {};
+    print $numObjects;
+
+    //pause -sec 2;
+    for ($i=0; $i<$numObjects; $i++) {
+        string $mesh = "assetMesh" + $i;
+        createNode mesh -n $mesh;
+        connectAttr ($asset + ".meshes[" + $i + "]") ($mesh + ".inMesh");
+
+        string $transform = `getTransform $mesh`;
+        $transforms[size($transforms)] = $transform;
+        connectAttr ($asset + ".transforms[" + $i + "].translate") ($transform + ".translate");
+        connectAttr ($asset + ".transforms[" + $i + "].rotate") ($transform + ".rotate");
+        connectAttr ($asset + ".transforms[" + $i + "].scale") ($transform + ".scale");
+
+        string $tmp = "assignCreatedShader %type \"" + $mesh + "\" %node \"" + $mesh + "\"";
+        createRenderNodeCB -asShader "surfaceShader" lambert $tmp;
+
+    }
+
+    //group $transforms;
+
+}
+

@@ -1,0 +1,61 @@
+proc buildAttrTree(string $nodeName, string $attr)
+{
+    string $fullAttrName = $nodeName + "." + $attr;
+    string $type = `getAttr -type $fullAttrName`;
+    string $children[] = `attributeQuery -n $nodeName -lc $attr`;
+    string $niceName = `attributeQuery -n $nodeName -nn $attr`;
+
+    if ("TdataCompound" != $type)
+    {
+        if ("Separator" == $niceName)
+        {
+            editorTemplate -addSeparator;
+        } else
+        {
+            editorTemplate -addDynamicControl $attr;
+        }
+        return;
+    }
+
+    editorTemplate -beginLayout $niceName -collapse true;
+    for ($i=0; $i<size($children); $i++)
+    {
+        string $child = $children[$i];
+        buildAttrTree($nodeName, $child);
+    }
+    editorTemplate -endLayout;
+}
+
+global proc AEAssetTemplate( string $nodeName )
+{
+    editorTemplate -addControl "input";
+    //Put our attributes into a scrolled layout field
+    editorTemplate -beginScrollLayout;
+
+    // get list of attributes
+    string $attrs[] = `listAttr -ud $nodeName`;
+
+    for ($i=0; $i<size($attrs); $i++)
+    {
+        string $attr = $attrs[$i];
+        string $parents[] = `attributeQuery -n $nodeName -lp $attr`;
+        if (0 == size($parents))
+        {
+            buildAttrTree($nodeName, $attr);
+        }
+        editorTemplate -suppress $attr;
+    }
+
+    editorTemplate -endLayout;
+
+    editorTemplate -suppress "caching";
+    editorTemplate -suppress "nodeState";
+    editorTemplate -suppress "input1";
+    editorTemplate -suppress "input2";
+
+
+    //editorTemplate -endScrollLayout;
+
+
+}
+

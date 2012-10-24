@@ -1,8 +1,12 @@
 #include <maya/MFnMesh.h>
+#include <maya/MFnMeshData.h>
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 
 #include "object.h"
+
+Object::Object() {}
+
 
 Object::Object(HAPI_ObjectInfo objInfo, int assetId)
     :objectInfo(objInfo), assetId(assetId)
@@ -122,10 +126,9 @@ Object::getAttributeFloatData(HAPI_AttributeOwner owner, char* name)
     int objectId = objectInfo.id;
 
     HAPI_AttributeInfo attr_info;
-    strcpy(attr_info.name, name);
     attr_info.exists = false;
     attr_info.owner = owner;
-    HAPI_GetAttributeInfo(assetId, objectId, &attr_info);
+    HAPI_GetAttributeInfo(assetId, objectId, name, &attr_info);
 
     MFloatArray ret;
     if (!attr_info.exists)
@@ -137,7 +140,7 @@ Object::getAttributeFloatData(HAPI_AttributeOwner owner, char* name)
     for (int j=0; j<size; j++){
         data[j] = 0;
     }
-    int status = HAPI_GetAttributeFloatData(assetId, objectId, &attr_info, data, 0, attr_info.count);
+    int status = HAPI_GetAttributeFloatData(assetId, objectId, name, &attr_info, data, 0, attr_info.count);
 
     ret = MFloatArray(data, size);
     return ret;
@@ -190,11 +193,15 @@ Object::reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
 }
 
 
-void
-Object::createMesh(MObject& outData)
+MObject
+Object::createMesh()
 {
     cerr << "Creating mesh..." << endl;
     updateGeometry();
+
+        // Mesh data
+    MFnMeshData dataCreator;
+    MObject outData = dataCreator.create();
 
     // create mesh
     MFnMesh meshFS;
@@ -219,6 +226,8 @@ Object::createMesh(MObject& outData)
             uvIds.append(j);
         meshFS.assignUVs(faceCounts, uvIds);
     }
+
+    return outData;
 
     // debug
     //MFloatPointArray tmp1;

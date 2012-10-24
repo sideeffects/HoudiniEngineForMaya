@@ -5,6 +5,8 @@ proc buildAttrTree(string $nodeName, string $attr)
     string $children[] = `attributeQuery -n $nodeName -lc $attr`;
     string $niceName = `attributeQuery -n $nodeName -nn $attr`;
 
+    print $niceName;
+
     if ("TdataCompound" != $type)
     {
         if ("Separator" == $niceName)
@@ -26,9 +28,9 @@ proc buildAttrTree(string $nodeName, string $attr)
     editorTemplate -endLayout;
 }
 
-global proc AEAssetTemplate( string $nodeName )
+global proc AEhAssetTemplate( string $nodeName )
 {
-    editorTemplate -addControl "input";
+    editorTemplate -addControl "fileName";
     //Put our attributes into a scrolled layout field
     editorTemplate -beginScrollLayout;
 

@@ -12,8 +12,9 @@
 
 class Object {
     public:
+        Object();
         Object(HAPI_ObjectInfo objInfo, int assetId);
-        void createMesh(MObject& outData);
+        MObject createMesh();
         void updateTransform(MPlug& plug, MDataBlock& data);
 
     private:
@@ -24,7 +25,7 @@ class Object {
         void updateUVs();
         void updateGeometry();
 
-
+        // Utility
         MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, char* name);
         void reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts);
         void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts);

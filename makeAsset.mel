@@ -11,11 +11,15 @@ proc string getTransform( string $shape )
         $transform = $parents[0];
     }
 
-    return $transform;
+    if ($transform == "")
+        return $transform;
+    return `substring $transform 2 (size($transform))`;
 }
 
-global proc makeAsset() {
-    string $asset = `createNode Asset`;
+global proc makeAsset(string $fileName) {
+    string $asset = `createNode hAsset`;
+    setAttr -type "string" ($asset + ".fileName") $fileName;
+    setAttr -lock on ($asset + ".fileName");
 
     // TODO: this is a hack, getting the attribute once sometimes returns
     // wrong result, getting it again seem to return correct result.
@@ -25,9 +29,8 @@ global proc makeAsset() {
     string $transforms[] = {};
     print $numObjects;
 
-    //pause -sec 2;
     for ($i=0; $i<$numObjects; $i++) {
-        string $mesh = "assetMesh" + $i;
+        string $mesh = $asset + "Mesh" + $i;
         createNode mesh -n $mesh;
         connectAttr ($asset + ".meshes[" + $i + "]") ($mesh + ".inMesh");
 
@@ -42,7 +45,18 @@ global proc makeAsset() {
 
     }
 
-    //group $transforms;
+    if ($numObjects <= 0)
+        return;
+
+    // group the objects to be under one transform
+    string $cmd = "group -n " + $asset + "Transform";
+    for ($i=0; $i<size($transforms); $i++) {
+        $cmd += " ";
+        $cmd += $transforms[$i];
+    }
+    eval $cmd;
+
+    refreshEditorTemplates;
 
 }
 

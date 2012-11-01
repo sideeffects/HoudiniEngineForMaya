@@ -11,6 +11,7 @@ class Asset {
         Asset(MString otlFilePath);
         MObjectArray getParmAttributes();
         Object* getObjects();
+        Object* getVisibleObjects();
 
         MIntArray getParmIntValues(HAPI_ParmInfo& parm);
         MFloatArray getParmFloatValues(HAPI_ParmInfo& parm);
@@ -18,6 +19,10 @@ class Asset {
 
     public:
         HAPI_AssetInfo info;
+        int numVisibleObjects;
+
+        // test
+        bool materialEnabled;
 
     private:
         void addAttrTo(MObject& child, MObject* parent);
@@ -30,6 +35,7 @@ class Asset {
 
     private:
         Object* objects;
+        Object* visibleObjects;
         MObjectArray parmAttributes;
 
 };

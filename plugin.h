@@ -28,23 +28,6 @@ class Plugin: public MPxNode
         static MStatus initialize();
 
     public:
-        static MObject fileNameAttr;
-        static MObject output;
-        static MObject meshes;
-        static MObject transforms;
-        static MObject translateAttr;
-        static MObject translateAttrX;
-        static MObject translateAttrY;
-        static MObject translateAttrZ;
-        static MObject rotateAttr;
-        static MObject rotateAttrX;
-        static MObject rotateAttrY;
-        static MObject rotateAttrZ;
-        static MObject scaleAttr;
-        static MObject scaleAttrX;
-        static MObject scaleAttrY;
-        static MObject scaleAttrZ;
-        static MObject numObjects;
         static MTypeId id;
 
     private:
@@ -63,5 +46,6 @@ class Plugin: public MPxNode
         Asset* asset;
         bool builtParms;
         bool assetChanged;
+        MObject dirtyParmAttribute;
 
 };

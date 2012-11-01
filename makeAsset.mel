@@ -1,6 +1,6 @@
 source createAndAssignShader;
 
-proc string getTransform( string $shape )
+proc string getTransformNode( string $shape )
 {
     string $transform = "";
 
@@ -16,6 +16,20 @@ proc string getTransform( string $shape )
     return `substring $transform 2 (size($transform))`;
 }
 
+
+proc string getMaterialNode(string $shape)
+{
+    string $SGs[] = `listConnections -type shadingEngine $shape`;
+    string $surfaceShader[] = `listConnections ($SGs[0] + ".surfaceShader")`;
+    return $surfaceShader[0];
+}
+
+
+proc renderNodeCallback(string $mesh)
+{
+}
+
+
 global proc makeAsset(string $fileName) {
     string $asset = `createNode hAsset`;
     setAttr -type "string" ($asset + ".fileName") $fileName;
@@ -26,22 +40,41 @@ global proc makeAsset(string $fileName) {
     int $numObjects = `getAttr ($asset + ".numberOfObjects")`;
     $numObjects = `getAttr ($asset + ".numberOfObjects")`;
 
-    string $transforms[] = {};
     print $numObjects;
 
+    string $transforms[] = {};
     for ($i=0; $i<$numObjects; $i++) {
         string $mesh = $asset + "Mesh" + $i;
         createNode mesh -n $mesh;
-        connectAttr ($asset + ".meshes[" + $i + "]") ($mesh + ".inMesh");
+        connectAttr ($asset + ".output[" + $i + "].mesh") ($mesh + ".inMesh");
 
-        string $transform = `getTransform $mesh`;
+        string $transform = getTransformNode($mesh);
         $transforms[size($transforms)] = $transform;
-        connectAttr ($asset + ".transforms[" + $i + "].translate") ($transform + ".translate");
-        connectAttr ($asset + ".transforms[" + $i + "].rotate") ($transform + ".rotate");
-        connectAttr ($asset + ".transforms[" + $i + "].scale") ($transform + ".scale");
+        connectAttr ($asset + ".output[" + $i + "].transform.translate") ($transform + ".translate");
+        connectAttr ($asset + ".output[" + $i + "].transform.rotate") ($transform + ".rotate");
+        connectAttr ($asset + ".output[" + $i + "].transform.scale") ($transform + ".scale");
 
         string $tmp = "assignCreatedShader %type \"" + $mesh + "\" %node \"" + $mesh + "\"";
-        createRenderNodeCB -asShader "surfaceShader" lambert $tmp;
+        createRenderNodeCB -asShader "surfaceShader" phong $tmp;
+
+        int $matExists = `getAttr ($asset + ".output[" + $i + "].materialExists")`;
+        if ($matExists)
+        {
+            string $material = getMaterialNode($mesh);
+            connectAttr ($asset + ".output[" + $i + "].material.specularColor") ($material + ".specularColor");
+
+            string $texturePath= `getAttr ($asset + ".output[" + $i + "].texturePath")`;
+            if ($texturePath == "")
+            {
+                connectAttr ($asset + ".output[" + $i + "].material.ambientColor") ($material + ".ambientColor");
+                connectAttr ($asset + ".output[" + $i + "].material.diffuseColor") ($material + ".color");
+            } else
+            {
+                string $fileNode = `createRenderNodeCB -as2DTexture "" "file" ""`;
+                connectAttr ($asset + ".output[" + $i + "].material.texturePath")($fileNode + ".fileTextureName");
+                connectAttr ($fileNode + ".outColor") ($material + ".color");
+            }
+        }
 
     }
 

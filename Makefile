@@ -10,20 +10,23 @@ LIBS=-L$(MAYA_DIR)/lib -lOpenMaya -lFoundation -L$(HDSO) `python2.6 $(SHM)/list_
 
 all: asset.so
 
-asset.so: plugin.o asset.o object.o util.o
+asset.so: plugin.o asset.o object.o util.o common.o
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so plugin.o asset.o object.o util.o $(LIBS)
 
 plugin.o: plugin.C plugin.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) plugin.C
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) plugin.C plugin.h
 
 asset.o: asset.C asset.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) asset.C
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) asset.C asset.h
 
 object.o: object.C object.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) object.C
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) object.C object.h
 
 util.o: util.C util.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) util.C
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) util.C util.h
+
+common.o: common.C common.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) common.C common.h
 
 
 clean:

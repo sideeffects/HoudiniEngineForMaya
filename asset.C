@@ -3,27 +3,78 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnEnumAttribute.h>
+#include <maya/MGlobal.h>
 
 #include "asset.h"
 #include "util.h"
 
 Asset::Asset(MString otlFilePath)
 {
+    // test
+    materialEnabled = true;
+
     const char* filename = otlFilePath.asChar();
     info.minVerticesPerPrimitive = 3;
     info.maxVerticesPerPrimitive = 20;
-    char* texturePath = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/textures/";
-    HAPI_LoadOTLFile(filename, texturePath, &info);
+
+    if (materialEnabled)
+    {
+        MString texturePath;
+        MGlobal::executeCommand("workspace -q -rd;", texturePath);
+        texturePath += "sourceimages";
+        HAPI_LoadOTLFile(filename, texturePath.asChar(), &info);
+    } else
+        HAPI_LoadOTLFile(filename, NULL, &info);
+
 
     // meshes
     int objCount = info.objectCount;
-    HAPI_ObjectInfo myObjects[objCount];
-    HAPI_GetObjects(info.id, myObjects, 0, objCount);
+    //HAPI_ObjectInfo myObjects[objCount];
+    //HAPI_GetObjects(info.id, myObjects, 0, objCount);
+
+    // materials
+    //int matCount = info.materialCount;
+    //cerr << "matCount: " << matCount << endl;
+    //HAPI_MaterialInfo myMaterials[matCount];
+    //HAPI_GetMaterials(info.id, myMaterials, 0, matCount);
+
+    //// debug print
+    //HAPI_MaterialInfo mat = myMaterials[0];
+    //cerr << "ambient:";
+    //for (int i=0; i<4; i++)
+        //cerr << " " << mat.ambient[i];
+    //cerr << endl;
+
+    //cerr << "diffuse:";
+    //for (int i=0; i<4; i++)
+        //cerr << " " << mat.diffuse[i];
+    //cerr << endl;
+
+    //cerr << "specular:";
+    //for (int i=0; i<4; i++)
+        //cerr << " " << mat.specular[i];
+    //cerr << endl;
+    
 
     objects = new Object[objCount];
+    numVisibleObjects = 0;
     for (int i=0; i<objCount; i++)
     {
-        objects[i] = Object(myObjects[i], info.id);
+        //cerr << "matID: " << myObjects[i].materialId;
+        objects[i] = Object(i, info.id);
+        if (objects[i].isVisible())
+            numVisibleObjects++;
+    }
+
+    visibleObjects = new Object[numVisibleObjects];
+    int index = 0;
+    for (int i=0; i<objCount; i++)
+    {
+        if (objects[i].isVisible())
+        {
+            visibleObjects[index] = objects[i];
+            index++;
+        }
     }
 
     // build parms
@@ -42,6 +93,13 @@ Object*
 Asset::getObjects()
 {
     return objects;
+}
+
+
+Object*
+Asset::getVisibleObjects()
+{
+    return visibleObjects;
 }
 
 

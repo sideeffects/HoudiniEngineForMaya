@@ -15,11 +15,13 @@
 #include <maya/MDataHandle.h>
 #include <maya/MTypes.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MFnArrayAttrsData.h>
 #include <maya/MGlobal.h>
 
 #include <sys/time.h>
 
 #include "plugin.h"
+#include "common.h"
 
 // MCheckStatus (Debugging tool)
 //
@@ -36,23 +38,35 @@
         }
 
 MTypeId Plugin::id(0x80000);
-MObject Plugin::fileNameAttr;
-MObject Plugin::output;
-MObject Plugin::meshes;
-MObject Plugin::transforms;
-MObject Plugin::translateAttr;
-MObject Plugin::translateAttrX;
-MObject Plugin::translateAttrY;
-MObject Plugin::translateAttrZ;
-MObject Plugin::rotateAttr;
-MObject Plugin::rotateAttrX;
-MObject Plugin::rotateAttrY;
-MObject Plugin::rotateAttrZ;
-MObject Plugin::scaleAttr;
-MObject Plugin::scaleAttrX;
-MObject Plugin::scaleAttrY;
-MObject Plugin::scaleAttrZ;
-MObject Plugin::numObjects;
+MObject AssetNodeAttributes::fileNameAttr;
+MObject AssetNodeAttributes::output;
+
+MObject AssetNodeAttributes::mesh;
+
+MObject AssetNodeAttributes::transform;
+MObject AssetNodeAttributes::translateAttr;
+MObject AssetNodeAttributes::translateAttrX;
+MObject AssetNodeAttributes::translateAttrY;
+MObject AssetNodeAttributes::translateAttrZ;
+MObject AssetNodeAttributes::rotateAttr;
+MObject AssetNodeAttributes::rotateAttrX;
+MObject AssetNodeAttributes::rotateAttrY;
+MObject AssetNodeAttributes::rotateAttrZ;
+MObject AssetNodeAttributes::scaleAttr;
+MObject AssetNodeAttributes::scaleAttrX;
+MObject AssetNodeAttributes::scaleAttrY;
+MObject AssetNodeAttributes::scaleAttrZ;
+
+MObject AssetNodeAttributes::material;
+MObject AssetNodeAttributes::materialExists;
+MObject AssetNodeAttributes::texturePath;
+MObject AssetNodeAttributes::ambientAttr;
+MObject AssetNodeAttributes::diffuseAttr;
+MObject AssetNodeAttributes::specularAttr;
+
+MObject AssetNodeAttributes::numObjects;
+
+MObject AssetNodeAttributes::instancerData;
 
 void*
 Plugin::creator()
@@ -82,88 +96,131 @@ Plugin::initialize()
     MFnCompoundAttribute cAttr;
     MFnUnitAttribute uAttr;
 
-    fileNameAttr = tAttr.create("fileName", "fn", MFnData::kString);
+    AssetNodeAttributes::fileNameAttr = tAttr.create("fileName", "fn", MFnData::kString);
     tAttr.setStorable(true);
 
     // numObjects
-    numObjects = nAttr.create("numberOfObjects", "no", MFnNumericData::kInt);
+    AssetNodeAttributes::numObjects = nAttr.create("numberOfObjects", "no", MFnNumericData::kInt);
     nAttr.setWritable(false);
     nAttr.setStorable(false);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
 
-    // meshes
-    meshes = tAttr.create("meshes", "ms", MFnData::kMesh);
+    // mesh
+    AssetNodeAttributes::mesh = tAttr.create("mesh", "ms", MFnData::kMesh);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    tAttr.setArray(true);
-    tAttr.setIndexMatters(true);
 
     // translate
-    translateAttrX = uAttr.create("translateX", "tx", MFnUnitAttribute::kDistance);
+    AssetNodeAttributes::translateAttrX = uAttr.create("translateX", "tx", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    translateAttrY = uAttr.create("translateY", "ty", MFnUnitAttribute::kDistance);
+    AssetNodeAttributes::translateAttrY = uAttr.create("translateY", "ty", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    translateAttrZ = uAttr.create("translateZ", "tz", MFnUnitAttribute::kDistance);
+    AssetNodeAttributes::translateAttrZ = uAttr.create("translateZ", "tz", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    translateAttr = nAttr.create("translate", "t", translateAttrX, translateAttrY, translateAttrZ);
+    AssetNodeAttributes::translateAttr = nAttr.create("translate", "t", AssetNodeAttributes::translateAttrX,
+            AssetNodeAttributes::translateAttrY, AssetNodeAttributes::translateAttrZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // rotate
-    rotateAttrX = uAttr.create("rotateX", "rx", MFnUnitAttribute::kAngle);
+    AssetNodeAttributes::rotateAttrX = uAttr.create("rotateX", "rx", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    rotateAttrY = uAttr.create("rotateY", "ry", MFnUnitAttribute::kAngle);
+    AssetNodeAttributes::rotateAttrY = uAttr.create("rotateY", "ry", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    rotateAttrZ = uAttr.create("rotateZ", "rz", MFnUnitAttribute::kAngle);
+    AssetNodeAttributes::rotateAttrZ = uAttr.create("rotateZ", "rz", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    rotateAttr = nAttr.create("rotate", "r", rotateAttrX, rotateAttrY, rotateAttrZ);
+    AssetNodeAttributes::rotateAttr = nAttr.create("rotate", "r", AssetNodeAttributes::rotateAttrX,
+            AssetNodeAttributes::rotateAttrY, AssetNodeAttributes::rotateAttrZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // scale
-    scaleAttrX = nAttr.create("scaleX", "sx", MFnNumericData::kDouble, 1.0);
+    AssetNodeAttributes::scaleAttrX = nAttr.create("scaleX", "sx", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    scaleAttrY = nAttr.create("scaleY", "sy", MFnNumericData::kDouble, 1.0);
+    AssetNodeAttributes::scaleAttrY = nAttr.create("scaleY", "sy", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    scaleAttrZ = nAttr.create("scaleZ", "sz", MFnNumericData::kDouble, 1.0);
+    AssetNodeAttributes::scaleAttrZ = nAttr.create("scaleZ", "sz", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    scaleAttr = nAttr.create("scale", "s", scaleAttrX, scaleAttrY, scaleAttrZ);
+    AssetNodeAttributes::scaleAttr = nAttr.create("scale", "s", AssetNodeAttributes::scaleAttrX,
+            AssetNodeAttributes::scaleAttrY, AssetNodeAttributes::scaleAttrZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
-    // transforms
-    transforms = cAttr.create("transforms", "xfs");
-    cAttr.addChild(translateAttr);
-    cAttr.addChild(rotateAttr);
-    cAttr.addChild(scaleAttr);
+    // transform
+    AssetNodeAttributes::transform = cAttr.create("transform", "xfs");
+    cAttr.addChild(AssetNodeAttributes::translateAttr);
+    cAttr.addChild(AssetNodeAttributes::rotateAttr);
+    cAttr.addChild(AssetNodeAttributes::scaleAttr);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+
+    // material exists
+    AssetNodeAttributes::materialExists = nAttr.create("materialExists", "me", MFnNumericData::kBoolean, false);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    nAttr.setConnectable(false);
+    nAttr.setHidden(true);
+    // material ambient
+    AssetNodeAttributes::ambientAttr = nAttr.createColor("ambientColor", "amb");
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // material diffuse
+    AssetNodeAttributes::diffuseAttr = nAttr.createColor("diffuseColor", "dif");
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // material specular
+    AssetNodeAttributes::specularAttr = nAttr.createColor("specularColor", "spe");
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // texture path
+    AssetNodeAttributes::texturePath = tAttr.create("texturePath", "tp", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
+    // material
+    AssetNodeAttributes::material = cAttr.create("material", "mats");
+    cAttr.addChild(AssetNodeAttributes::materialExists);
+    cAttr.addChild(AssetNodeAttributes::ambientAttr);
+    cAttr.addChild(AssetNodeAttributes::diffuseAttr);
+    cAttr.addChild(AssetNodeAttributes::specularAttr);
+    cAttr.addChild(AssetNodeAttributes::texturePath);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+
+    // output
+    AssetNodeAttributes::output = cAttr.create("output", "out");
+    cAttr.addChild(AssetNodeAttributes::mesh);
+    cAttr.addChild(AssetNodeAttributes::transform);
+    cAttr.addChild(AssetNodeAttributes::material);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
     cAttr.setIndexMatters(true);
 
-    // output
-    output = cAttr.create("output", "out");
-    cAttr.setWritable(false);
-    cAttr.setStorable(false);
-    cAttr.addChild(numObjects);
-    cAttr.addChild(meshes);
-    cAttr.addChild(transforms);
+    // instancer data
+    AssetNodeAttributes::instancerData = tAttr.create("instancerData", "idt", MFnData::kDynArrayAttrs);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    tAttr.setArray(true);
 
-    addAttribute(fileNameAttr);
-    addAttribute(output);
+    addAttribute(AssetNodeAttributes::fileNameAttr);
+    addAttribute(AssetNodeAttributes::numObjects);
+    addAttribute(AssetNodeAttributes::output);
+    addAttribute(AssetNodeAttributes::instancerData);
 
-    attributeAffects(fileNameAttr, output);
-    attributeAffects(fileNameAttr, numObjects);
+    attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::numObjects);
+    attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::output);
+    attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::instancerData);
 
     return MS::kSuccess;
 }
@@ -188,22 +245,37 @@ Plugin::~Plugin() {}
 MStatus Plugin::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlugArray& affectedPlugs)
 {
-    if (plugBeingDirtied == fileNameAttr)
+    if (plugBeingDirtied == AssetNodeAttributes::fileNameAttr)
         return MS::kSuccess;
 
-    MPlug meshesPlug(thisMObject(), meshes);
-    MPlug transformsPlug(thisMObject(), transforms);
+    dirtyParmAttribute = plugBeingDirtied.attribute();
+    //cerr << "plugBeingDirtied: " << plugBeingDirtied.name();
+    //cerr << "name: " << dirtyParmPlug->name();
+
+    //MPlug meshesPlug(thisMObject(), meshes);
+    //MPlug transformsPlug(thisMObject(), transforms);
+    MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
     for (int i=0; i < asset->info.objectCount; i++)
     {
-        MPlug meshElemPlug = meshesPlug.elementByLogicalIndex(i);
-        MPlug transformElemPlug = transformsPlug.elementByLogicalIndex(i);
-        affectedPlugs.append(meshElemPlug);
-        affectedPlugs.append(transformElemPlug);
-        for (int j=0; j<3; j++)
-        {
-            MPlug componentPlug = transformElemPlug.child(j);
-            affectedPlugs.append(componentPlug);
-        }
+        MPlug elemPlug = outputPlug.elementByLogicalIndex(i);
+
+        MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
+        MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
+        MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
+
+        affectedPlugs.append(meshPlug);
+        affectedPlugs.append(transformPlug);
+
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::translateAttr));
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::rotateAttr));
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::scaleAttr));
+
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::materialExists));
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::texturePath));
+        cerr << "set dirty: tex------------------" << endl;
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::ambientAttr));
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::diffuseAttr));
+        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::specularAttr));
     }
     return MS::kSuccess;
 }
@@ -326,6 +398,12 @@ Plugin::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     MObject attr = getAttrFromParm(parm);
     MPlug plug(thisMObject(), attr);
+    MPlug dirtyParmPlug(thisMObject(), dirtyParmAttribute);
+    //cerr << "plug: " << plug.name() << endl;
+    //cerr << "dirtyParmPlug: " << dirtyParmPlug.name() << endl;
+    if (plug != dirtyParmPlug)
+        return;
+
     int size = parm.size;
 
     if (parm.isInt())
@@ -347,7 +425,7 @@ Plugin::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         double before = getTime();
         HAPI_SetParmIntValues(asset->info.id, values, parm.intValuesIndex, size);
         double after = getTime();
-        cerr << "type: " << parm.type << " time: " << (after - before) << " int" << endl;
+        //cerr << "type: " << parm.type << " time: " << (after - before) << " int" << endl;
     }
 
     if (parm.isFloat())
@@ -369,7 +447,7 @@ Plugin::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         double before = getTime();
         HAPI_SetParmFloatValues(asset->info.id, values, parm.floatValuesIndex, size);
         double after = getTime();
-        cerr << "type: " << parm.type << " id: " << parm.id << " time: " << (after - before) << " float" << endl;
+        //cerr << "type: " << parm.type << " id: " << parm.id << " time: " << (after - before) << " float" << endl;
     }
 
     if (parm.isString())
@@ -389,11 +467,12 @@ Plugin::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 double before = getTime();
                 HAPI_SetParmStringValue(asset->info.id, val, parm.id, i);
                 double after = getTime();
-                cerr << "type: " << parm.type << " time: " << (after - before) << " string" << endl;
+                //cerr << "type: " << parm.type << " time: " << (after - before) << " string" << endl;
             }
         }
     }
 
+    dirtyParmAttribute = MObject();
 
 }
 
@@ -424,10 +503,9 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
 {
     // load otl
     // TODO: manage assets properly
-    cerr << "assetChanged: " << assetChanged << endl;
     if (assetChanged)
     {
-        MPlug p(thisMObject(), fileNameAttr);
+        MPlug p(thisMObject(), AssetNodeAttributes::fileNameAttr);
         MDataHandle h = data.inputValue(p);
         MString filePath = h.asString();
 
@@ -464,48 +542,42 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
     // TODO: this might not be good later on
 
     // number of objects
-    int objCount = asset->info.objectCount;
-    cerr << "objcount: " << objCount << endl;
-    MPlug numObjectsPlug(thisMObject(), numObjects);
+    int numVisibleObjects = asset->numVisibleObjects;
+    //int objCount = asset->info.objectCount;
+    //cerr << "objcount: " << objCount << endl;
+    MPlug numObjectsPlug(thisMObject(), AssetNodeAttributes::numObjects);
     MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
-    numObjectsHandle.set(objCount);
+    numObjectsHandle.set(numVisibleObjects);
     data.setClean(numObjectsPlug);
 
     // objects and transforms
-    MPlug outputPlug(thisMObject(), output);
-    MPlug meshesPlug(thisMObject(), meshes);
-    MPlug transformsPlug(thisMObject(), transforms);
+    MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
+    MPlug instancersPlug(thisMObject(), AssetNodeAttributes::instancerData);
+    //MPlug meshesPlug(thisMObject(), meshes);
+    //MPlug transformsPlug(thisMObject(), transforms);
 
-    Object* objects = asset->getObjects();
-    for (int i=0; i<objCount; i++)
+    Object* objects = asset->getVisibleObjects();
+    for (int i=0; i<numVisibleObjects; i++)
     {
-        MPlug elemPlug = meshesPlug.elementByLogicalIndex(i);
-        cerr << "elemPlug: " << elemPlug.name() << endl;
-        MDataHandle outHandle = data.outputValue(elemPlug);
-
 
         Object& obj = objects[i];
-        MObject newMeshData = obj.createMesh();
-
-        outHandle.set(newMeshData);
-
-        MPlug xformPlug = transformsPlug.elementByLogicalIndex(i);
-        obj.updateTransform(xformPlug, data);
+        obj.compute(i, outputPlug, data);
 
     }
 
     // set everything clean
     data.setClean(numObjectsPlug);
-    for (int i=0; i<objCount; i++)
+    for (int i=0; i<numVisibleObjects; i++)
     {
-        MPlug elemPlug = meshesPlug.elementByLogicalIndex(i);
-        MPlug xformPlug = transformsPlug.elementByLogicalIndex(i);
+        MPlug elemPlug = outputPlug.elementByLogicalIndex(i);
+        MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
+        MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
+        MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
         data.setClean(elemPlug);
-        data.setClean(xformPlug);
+        data.setClean(meshPlug);
+        data.setClean(transformPlug);
     }
 
-    data.setClean(meshesPlug);
-    data.setClean(transformsPlug);
     data.setClean(outputPlug);
 
     return MS::kSuccess;

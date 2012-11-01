@@ -52,8 +52,6 @@ global proc AEhAssetTemplate( string $nodeName )
 
     editorTemplate -suppress "caching";
     editorTemplate -suppress "nodeState";
-    editorTemplate -suppress "input1";
-    editorTemplate -suppress "input2";
 
 
     //editorTemplate -endScrollLayout;

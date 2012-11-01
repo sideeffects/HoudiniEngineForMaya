@@ -4,39 +4,48 @@
 #include <maya/MQuaternion.h>
 
 #include "object.h"
+#include "util.h"
+#include "common.h"
 
 Object::Object() {}
 
 
-Object::Object(HAPI_ObjectInfo objInfo, int assetId)
-    :objectInfo(objInfo), assetId(assetId)
+Object::Object(int objIndex, int assetId)
+    :objectIndex(objIndex), assetId(assetId)
 {
-    HAPI_GetDetailInfo(assetId, objectInfo.id, &detailInfo);
+    update();
 }
 
 
 void
 Object::updateFaceCounts()
 {
-    int numFaceCount = detailInfo.faceCount;
-    int myFaceCounts[numFaceCount];
-    HAPI_GetFaceCounts(assetId, objectInfo.id, myFaceCounts, 0, numFaceCount);
-    MIntArray result(myFaceCounts, numFaceCount);
+    int numFaceCount = geoInfo.faceCount;
+    if (numFaceCount > 0)
+    {
+        int myFaceCounts[numFaceCount];
+        HAPI_GetFaceCounts(assetId, objectInfo.id, 0, myFaceCounts, 0, numFaceCount);
+        MIntArray result(myFaceCounts, numFaceCount);
 
-    faceCounts = result;
+        faceCounts = result;
+    }
+
 }
 
 
 void
 Object::updateVertexList()
 {
-    int numVertexCount = detailInfo.vertexCount;
-    int myVertexList[numVertexCount];
-    HAPI_GetVertexList(assetId, objectInfo.id, myVertexList, 0, numVertexCount);
-    MIntArray result(myVertexList, numVertexCount);
-    reverseWindingOrderInt(result, faceCounts);
+    int numVertexCount = geoInfo.vertexCount;
+    if (numVertexCount > 0)
+    {
+        int myVertexList[numVertexCount];
+        HAPI_GetVertexList(assetId, objectInfo.id, 0, myVertexList, 0, numVertexCount);
+        MIntArray result(myVertexList, numVertexCount);
+        reverseWindingOrderInt(result, faceCounts);
 
-    vertexList = result;
+        vertexList = result;
+    }
 }
 
 
@@ -110,13 +119,33 @@ Object::updateUVs()
 
 
 void
-Object::updateGeometry()
+Object::update()
 {
+    // update object
+    cerr << "objectIndex: " << objectIndex << endl;
+    HAPI_ObjectInfo myObjects[1];
+    HAPI_GetObjects(assetId, myObjects, objectIndex, 1);
+    objectInfo = myObjects[0];
+    if (objectInfo.isVisible)
+        cerr << "object name: " << Util::getString(objectInfo.nameSH) << endl;
+
+    //cerr << "visible: " << objectInfo.isVisible << endl;
+    //cerr << "hasGeoChanged: " << objectInfo.hasGeoChanged << endl;
+    //cerr << "hasTransformChanged: " << objectInfo.hasTransformChanged << endl;
+    //cerr << "hasMaterialChanged: " << objectInfo.hasMaterialChanged << endl;
+
+    // update geometry
+    HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
+    cerr << "geo id: " << geoInfo.id << endl;
+    
+
     updateFaceCounts();
     updateVertexList();
     updatePoints();
     updateNormals();
     updateUVs();
+
+
 }
 
 
@@ -128,7 +157,7 @@ Object::getAttributeFloatData(HAPI_AttributeOwner owner, char* name)
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
     attr_info.owner = owner;
-    HAPI_GetAttributeInfo(assetId, objectId, name, &attr_info);
+    HAPI_GetAttributeInfo(assetId, objectId, 0, name, &attr_info);
 
     MFloatArray ret;
     if (!attr_info.exists)
@@ -140,7 +169,7 @@ Object::getAttributeFloatData(HAPI_AttributeOwner owner, char* name)
     for (int j=0; j<size; j++){
         data[j] = 0;
     }
-    int status = HAPI_GetAttributeFloatData(assetId, objectId, name, &attr_info, data, 0, attr_info.count);
+    int status = HAPI_GetAttributeFloatData(assetId, objectId, 0, name, &attr_info, data, 0, attr_info.count);
 
     ret = MFloatArray(data, size);
     return ret;
@@ -193,13 +222,64 @@ Object::reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
 }
 
 
+// test function
+bool
+Object::isVisible()
+{
+    return objectInfo.isVisible;
+}
+
+
+MStatus
+Object::compute(int index, const MPlug& plug, MDataBlock& data)
+{
+    //MPlug outputPlug = plug.child(AssetNodeAttributes::output);
+    //MPlug instancersPlug = plug.child(AssetNodeAttributes::instancerData);
+
+    MPlug elemPlug = plug.elementByLogicalIndex(index);
+    MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
+    MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
+    MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
+
+    // instancer
+    //MPlug instPlug = instancersPlug.elementByLogicalIndex(objectIndex);
+    //MDataHandle instHandle = data.outputValue(instPlug);
+    //MFnArrayAttrsData fnAAD(instHandle.data());
+    //cerr << "list fnAAD names: " << fnAAD.list() << endl;
+    //cerr << "instancer attr num children: " << instPlug.numChildren() << endl;
+
+    cerr << "outputPlug: " << plug.name() << endl;
+    cerr << "elemPlug: " << elemPlug.name() << endl;
+    cerr << "meshplug: " << meshPlug.name() << endl;
+    MDataHandle outHandle = data.outputValue(meshPlug);
+
+    MObject newMeshData = createMesh();
+    if (!newMeshData.isNull())
+        outHandle.set(newMeshData);
+
+    updateTransform(transformPlug, data);
+    //if (asset->materialEnabled)
+    updateMaterial(materialPlug, data);
+    return MS::kSuccess;
+}
+
+
 MObject
 Object::createMesh()
 {
-    cerr << "Creating mesh..." << endl;
-    updateGeometry();
+    //if (!objectInfo.isVisible)
+        //return MObject();
+    //if (!objectInfo.hasGeoChanged)
+        //return MObject();
 
-        // Mesh data
+    update();
+
+    if (!objectInfo.isVisible)
+        return MObject();
+
+
+    cerr << "Creating mesh... " << Util::getString(objectInfo.nameSH) << endl;
+    // Mesh data
     MFnMeshData dataCreator;
     MObject outData = dataCreator.create();
 
@@ -229,67 +309,52 @@ Object::createMesh()
 
     return outData;
 
-    // debug
-    //MFloatPointArray tmp1;
-    //meshFS.getPoints(tmp1);
-    //MFloatVectorArray tmp2;
-    //meshFS.getVertexNormals(false, tmp2);
-    //MFloatArray tmp3;
-    //MFloatArray tmp4;
-    //meshFS.getUVs(tmp3, tmp4);
-
-    //cerr << "print points" << endl;
-    //cerr << tmp1 << endl;
-    //cerr << "print uvs" << endl;
-    //cerr << tmp3 << endl;
-    //cerr << tmp4 << endl;
-    // end debug;
-
 }
 
 
 void Object::updateTransform(MPlug& plug, MDataBlock& data)
 {
-    cerr << "Updating transform..." << endl;
-
-    int index = plug.logicalIndex();
-    HAPI_Transform transforms[1];
-    HAPI_GetObjectTransforms(assetId, 0, transforms, index, 1);
-
-    HAPI_Transform transform = transforms[0];
-
-    // convert to euler angle
-    MEulerRotation r = MQuaternion(transform.rotationQuaternion[0],
-            transform.rotationQuaternion[1], transform.rotationQuaternion[2],
-            transform.rotationQuaternion[3]).asEulerRotation();
-
-    // set the data
     MPlug translatePlug = plug.child(0);
     MPlug rotatePlug = plug.child(1);
     MPlug scalePlug = plug.child(2);
 
-    // translate
-    for (int i=0; i<3; i++)
+    if (objectInfo.isVisible)
     {
-        MDataHandle handle = data.outputValue(translatePlug.child(i));
-        double value = transform.position[i];
-        handle.set(value);
-    }
+        cerr << "Updating transform..." << endl;
+        // update transform
+        HAPI_Transform transforms[1];
+        HAPI_GetObjectTransforms(assetId, 5, transforms, objectIndex, 1);
+        transformInfo = transforms[0];
 
-    // rotate
-    for (int i=0; i<3; i++)
-    {
-        MDataHandle handle = data.outputValue(rotatePlug.child(i));
-        double value = r[i];
-        handle.set(value);
-    }
+        // convert to euler angle
+        MEulerRotation r = MQuaternion(transformInfo.rotationQuaternion[0],
+                transformInfo.rotationQuaternion[1], transformInfo.rotationQuaternion[2],
+                transformInfo.rotationQuaternion[3]).asEulerRotation();
 
-    // scale
-    for (int i=0; i<3; i++)
-    {
-        MDataHandle handle = data.outputValue(scalePlug.child(i));
-        double value = transform.scale[i];
-        handle.set(value);
+
+        // translate
+        for (int i=0; i<HAPI_POSITION_VECTOR_SIZE; i++)
+        {
+            MDataHandle handle = data.outputValue(translatePlug.child(i));
+            double value = transformInfo.position[i];
+            handle.set(value);
+        }
+
+        // rotate
+        for (int i=0; i<HAPI_EULER_VECTOR_SIZE; i++)
+        {
+            MDataHandle handle = data.outputValue(rotatePlug.child(i));
+            double value = r[i];
+            handle.set(value);
+        }
+
+        // scale
+        for (int i=0; i<HAPI_SCALE_VECTOR_SIZE; i++)
+        {
+            MDataHandle handle = data.outputValue(scalePlug.child(i));
+            double value = transformInfo.scale[i];
+            handle.set(value);
+        }
     }
 
 
@@ -297,4 +362,68 @@ void Object::updateTransform(MPlug& plug, MDataBlock& data)
     data.setClean(rotatePlug);
     data.setClean(scalePlug);
 
+}
+
+
+void
+Object::updateMaterial(MPlug& plug, MDataBlock& data)
+{
+    MPlug matExistsPlug = plug.child(0);
+    MPlug ambientPlug = plug.child(1);
+    MPlug diffusePlug = plug.child(2);
+    MPlug specularPlug = plug.child(3);
+    MPlug texturePathPlug = plug.child(4);
+
+    if (objectInfo.isVisible)
+    {
+        if (geoInfo.materialId < 0)
+        {
+            MDataHandle handle = data.outputValue(matExistsPlug);
+            handle.set(false);
+        } else
+        {
+            int matId = geoInfo.materialId;
+            HAPI_MaterialInfo myMaterials[1];
+            HAPI_GetMaterials(assetId, myMaterials, matId, 1);
+            materialInfo = myMaterials[0];
+            // get material info
+
+            MDataHandle handle = data.outputValue(matExistsPlug);
+            handle.set(true);
+
+            // ambient
+            for (int i=0; i<3; i++)
+            {
+                MDataHandle handle = data.outputValue(ambientPlug.child(i));
+                float value = materialInfo.ambient[i];
+                handle.set(value);
+            }
+
+            // rotate
+            for (int i=0; i<3; i++)
+            {
+                MDataHandle handle = data.outputValue(diffusePlug.child(i));
+                float value = materialInfo.diffuse[i];
+                handle.set(value);
+            }
+
+            // scale
+            for (int i=0; i<3; i++)
+            {
+                MDataHandle handle = data.outputValue(specularPlug.child(i));
+                float value = materialInfo.specular[i];
+                handle.set(value);
+            }
+
+            handle = data.outputValue(texturePathPlug);
+            MString texturePath = Util::getString(materialInfo.textureFilePathSH);
+            handle.set(texturePath);
+        }
+    }
+
+    data.setClean(matExistsPlug);
+    data.setClean(ambientPlug);
+    data.setClean(diffusePlug);
+    data.setClean(specularPlug);
+    data.setClean(texturePathPlug);
 }

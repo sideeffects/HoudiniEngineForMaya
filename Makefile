@@ -14,19 +14,19 @@ asset.so: plugin.o asset.o object.o util.o common.o
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so plugin.o asset.o object.o util.o $(LIBS)
 
 plugin.o: plugin.C plugin.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) plugin.C plugin.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) plugin.C
 
 asset.o: asset.C asset.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) asset.C asset.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) asset.C
 
 object.o: object.C object.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) object.C object.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) object.C
 
 util.o: util.C util.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) util.C util.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) util.C
 
 common.o: common.C common.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) common.C common.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) common.C
 
 
 clean:

@@ -17,7 +17,7 @@ class Object {
         MObject createMesh();
         void updateTransform(MPlug& plug, MDataBlock& data);
         void updateMaterial(MPlug& plug, MDataBlock& data);
-        MStatus compute(int index, const MPlug& plug, MDataBlock& data);
+        MStatus compute(int index, const MPlug& plug, const MPlug& instancersPlug, MDataBlock& data);
 
         // test
         bool isVisible();
@@ -34,6 +34,7 @@ class Object {
         MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, char* name);
         void reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts);
         void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts);
+        void printAttributes(HAPI_AttributeOwner owner);
 
 
     private:

@@ -525,7 +525,6 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
         for (int i=0; i<size; i++)
         {
             MFnAttribute attr(parmAttributes[i]);
-            cerr << "attr: " << attr.name();
             fnDN.addAttribute(parmAttributes[i]);
         }
 
@@ -561,7 +560,7 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
     {
 
         Object& obj = objects[i];
-        obj.compute(i, outputPlug, data);
+        obj.compute(i, outputPlug, instancersPlug, data);
 
     }
 

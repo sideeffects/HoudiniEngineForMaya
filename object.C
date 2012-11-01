@@ -2,6 +2,7 @@
 #include <maya/MFnMeshData.h>
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
+#include <maya/MFnArrayAttrsData.h>
 
 #include "object.h"
 #include "util.h"
@@ -222,7 +223,7 @@ Object::reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
 }
 
 
-// test function
+// test functions
 bool
 Object::isVisible()
 {
@@ -230,11 +231,57 @@ Object::isVisible()
 }
 
 
-MStatus
-Object::compute(int index, const MPlug& plug, MDataBlock& data)
+void 
+Object::printAttributes(HAPI_AttributeOwner owner)
 {
-    //MPlug outputPlug = plug.child(AssetNodeAttributes::output);
-    //MPlug instancersPlug = plug.child(AssetNodeAttributes::instancerData);
+    int size = 0;
+    switch(owner)
+    {
+        case HAPI_ATTROWNER_VERTEX: size = geoInfo.vertexAttributeCount; break;
+        case HAPI_ATTROWNER_POINT: size = geoInfo.pointAttributeCount; break;
+        case HAPI_ATTROWNER_PRIM: size = geoInfo.faceAttributeCount; break;
+        case HAPI_ATTROWNER_DETAIL: size = geoInfo.detailAttributeCount; break;
+    }
+    cerr << "---------------" << endl;
+    cerr << "owner: " << owner << endl;
+    int data[size];
+    HAPI_GetAttributeNames(assetId, objectInfo.id, 0, owner, data, size);
+    for (int i=0; i<size; i++)
+    {
+        cerr << Util::getString(data[i]) << endl;
+    }
+    cerr << "---------------" << endl;
+}
+// end test functions
+
+
+MStatus
+Object::compute(int index, const MPlug& plug, const MPlug& instancersPlug, MDataBlock& data)
+{
+    update();
+
+    printAttributes(HAPI_ATTROWNER_VERTEX);
+    printAttributes(HAPI_ATTROWNER_POINT);
+    printAttributes(HAPI_ATTROWNER_PRIM);
+    printAttributes(HAPI_ATTROWNER_DETAIL);
+
+    if (objectInfo.isInstancer)
+    //if (true)
+    {
+        MPlug instPlug = instancersPlug.elementByLogicalIndex(index);
+        MDataHandle instHandle = data.outputValue(instPlug);
+        MFnArrayAttrsData fnAAD;
+        MObject instOutput = fnAAD.create();
+        MVectorArray positions= fnAAD.vectorArray("position");
+        positions.append(MVector(0, 0, 0));
+        positions.append(MVector(1, 0, 0));
+        positions.append(MVector(2, 0, 5));
+        positions.append(MVector(3, 0, 2));
+        instHandle.set(instOutput);
+        cerr << "list fnAAD names: " << fnAAD.list() << endl;
+        cerr << "instancer attr num children: " << instPlug.numChildren() << endl;
+        return MS::kSuccess;
+    }
 
     MPlug elemPlug = plug.elementByLogicalIndex(index);
     MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
@@ -242,15 +289,7 @@ Object::compute(int index, const MPlug& plug, MDataBlock& data)
     MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
 
     // instancer
-    //MPlug instPlug = instancersPlug.elementByLogicalIndex(objectIndex);
-    //MDataHandle instHandle = data.outputValue(instPlug);
-    //MFnArrayAttrsData fnAAD(instHandle.data());
-    //cerr << "list fnAAD names: " << fnAAD.list() << endl;
-    //cerr << "instancer attr num children: " << instPlug.numChildren() << endl;
 
-    cerr << "outputPlug: " << plug.name() << endl;
-    cerr << "elemPlug: " << elemPlug.name() << endl;
-    cerr << "meshplug: " << meshPlug.name() << endl;
     MDataHandle outHandle = data.outputValue(meshPlug);
 
     MObject newMeshData = createMesh();
@@ -272,7 +311,6 @@ Object::createMesh()
     //if (!objectInfo.hasGeoChanged)
         //return MObject();
 
-    update();
 
     if (!objectInfo.isVisible)
         return MObject();

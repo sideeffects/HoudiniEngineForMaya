@@ -1,3 +1,6 @@
+#ifndef COMMON_H
+#define COMMON_H
+
 #include <maya/MObject.h>
 
 class AssetNodeAttributes
@@ -5,6 +8,8 @@ class AssetNodeAttributes
     public:
         static MObject fileNameAttr;
         static MObject output;
+        static MObject objects;
+        static MObject objectName;
         static MObject mesh;
         static MObject transform;
         static MObject translateAttr;
@@ -26,5 +31,9 @@ class AssetNodeAttributes
         static MObject diffuseAttr;
         static MObject specularAttr;
         static MObject numObjects;
+        static MObject instancers;
         static MObject instancerData;
+        static MObject instancedObjectNames;
 };
+
+#endif

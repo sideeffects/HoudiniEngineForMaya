@@ -7,78 +7,147 @@
 
 #include "asset.h"
 #include "util.h"
+#include "common.h"
+#include "instancerObject.h"
 
 Asset::Asset(MString otlFilePath)
 {
     // test
     materialEnabled = true;
 
+    // load the otl
     const char* filename = otlFilePath.asChar();
     info.minVerticesPerPrimitive = 3;
     info.maxVerticesPerPrimitive = 20;
 
     if (materialEnabled)
     {
+        cerr << "loadasset" << endl;
         MString texturePath;
         MGlobal::executeCommand("workspace -q -rd;", texturePath);
         texturePath += "sourceimages";
         HAPI_LoadOTLFile(filename, texturePath.asChar(), &info);
     } else
+    {
         HAPI_LoadOTLFile(filename, NULL, &info);
+        cerr << "loadasset" << endl;
+    }
 
 
     // meshes
     int objCount = info.objectCount;
-    //HAPI_ObjectInfo myObjects[objCount];
-    //HAPI_GetObjects(info.id, myObjects, 0, objCount);
-
-    // materials
-    //int matCount = info.materialCount;
-    //cerr << "matCount: " << matCount << endl;
-    //HAPI_MaterialInfo myMaterials[matCount];
-    //HAPI_GetMaterials(info.id, myMaterials, 0, matCount);
-
-    //// debug print
-    //HAPI_MaterialInfo mat = myMaterials[0];
-    //cerr << "ambient:";
-    //for (int i=0; i<4; i++)
-        //cerr << " " << mat.ambient[i];
-    //cerr << endl;
-
-    //cerr << "diffuse:";
-    //for (int i=0; i<4; i++)
-        //cerr << " " << mat.diffuse[i];
-    //cerr << endl;
-
-    //cerr << "specular:";
-    //for (int i=0; i<4; i++)
-        //cerr << " " << mat.specular[i];
-    //cerr << endl;
-    
-
-    objects = new Object[objCount];
+    objects = new Object*[objCount];
     numVisibleObjects = 0;
+    numObjects = objCount;
     for (int i=0; i<objCount; i++)
     {
         //cerr << "matID: " << myObjects[i].materialId;
-        objects[i] = Object(i, info.id);
-        if (objects[i].isVisible())
+        objects[i] = Object::createObject(info.id, i);
+        objects[i]->objectControl = this;
+        if (objects[i]->isVisible())
             numVisibleObjects++;
     }
 
-    visibleObjects = new Object[numVisibleObjects];
-    int index = 0;
-    for (int i=0; i<objCount; i++)
-    {
-        if (objects[i].isVisible())
-        {
-            visibleObjects[index] = objects[i];
-            index++;
-        }
-    }
 
     // build parms
     buildParms();
+}
+
+
+Object*
+Asset::findObjectByName(MString name)
+{
+    for (int i=0; i<info.objectCount; i++)
+    {
+        if (objects[i]->getName() == name)
+            return objects[i];
+    }
+
+    return NULL;
+}
+
+
+Object*
+Asset::findObjectById(int id)
+{
+    return objects[id];
+}
+
+
+MStatus
+Asset::compute(const MPlug& plug, MDataBlock& data)
+{
+
+    // number of objects
+    cerr << "numVisibleObjects: " << numVisibleObjects << endl;
+    //int objCount = asset->info.objectCount;
+    //cerr << "objcount: " << objCount << endl;
+    MPlug numObjectsPlug = plug.child(AssetNodeAttributes::numObjects);
+    MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
+    numObjectsHandle.set(numVisibleObjects);
+
+    MPlug objectsPlug = plug.child(AssetNodeAttributes::objects);
+    MPlug instancersPlug = plug.child(AssetNodeAttributes::instancers);
+
+    // first pass - instancers
+    int instancerIndex = 0;
+    MIntArray instancedObjIds;
+    for (int i=0; i<numObjects; i++)
+    {
+        Object* obj = objects[i];
+        MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
+
+        if (obj->type() == Object::OBJECT_TYPE_INSTANCER)
+        {
+            MStatus stat = obj->compute(instancerElemPlug, data);
+            if (MS::kSuccess == stat)
+            {
+                instancerIndex++;
+
+                MIntArray instIds = ((InstancerObject*)obj)->getInstancedObjIds();
+                MStringArray instNames = ((InstancerObject*)obj)->getUniqueInstObjNames();
+                cerr << "instNames: ----------------------" << endl;
+                cerr << instNames << endl;
+                for (int j=0; j<instNames.length(); j++)
+                {
+                    Object* o = findObjectByName(instNames[j]);
+                    if (o != NULL)
+                        instancedObjIds.append(o->getId());
+                }
+                for (int j=0; j<instIds.length(); j++)
+                {
+                    instancedObjIds.append(instIds[j]);
+                }
+            }
+        }
+    }
+
+    // mark instanced objects
+    for (int i=0; i<instancedObjIds.length(); i++)
+    {
+        Object* obj = objects[instancedObjIds[i]];
+        obj->isInstanced = true;
+    }
+
+
+    // second pass - geometry objects
+    int objectIndex = 0;
+    for (int i=0; i<numObjects; i++)
+    {
+        Object* obj = objects[i];
+        MPlug objectElemPlug = objectsPlug.elementByLogicalIndex(objectIndex);
+
+        if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
+        {
+            MStatus stat = obj->compute(objectElemPlug, data);
+            if (MS::kSuccess == stat)
+            {
+                objectIndex++;
+            }
+        }
+    }
+
+    data.setClean(numObjectsPlug);
 }
 
 
@@ -89,18 +158,18 @@ Asset::getParmAttributes()
 }
 
 
-Object*
+Object**
 Asset::getObjects()
 {
     return objects;
 }
 
 
-Object*
-Asset::getVisibleObjects()
-{
-    return visibleObjects;
-}
+//Object*
+//Asset::getVisibleObjects()
+//{
+    //return visibleObjects;
+//}
 
 
 void
@@ -226,7 +295,6 @@ Asset::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortN
     // Choice list
     if (choiceCount > 0)
     {
-        cerr << "create enum: " << niceName << "type: " << parm.type << endl;
         result = eAttr.create(longName, shortName);
         eAttr.setStorable(true);
         eAttr.setNiceNameOverride(niceName);

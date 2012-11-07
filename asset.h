@@ -1,3 +1,6 @@
+#ifndef ASSET_H
+#define ASSET_H
+
 #include <maya/MObjectArray.h>
 #include <maya/MObject.h>
 #include <maya/MString.h>
@@ -10,8 +13,11 @@ class Asset {
     public:
         Asset(MString otlFilePath);
         MObjectArray getParmAttributes();
-        Object* getObjects();
-        Object* getVisibleObjects();
+        Object** getObjects();
+        Object* findObjectByName(MString name);
+        Object* findObjectById(int id);
+
+        MStatus compute(const MPlug& plug, MDataBlock& data);
 
         MIntArray getParmIntValues(HAPI_ParmInfo& parm);
         MFloatArray getParmFloatValues(HAPI_ParmInfo& parm);
@@ -20,6 +26,7 @@ class Asset {
     public:
         HAPI_AssetInfo info;
         int numVisibleObjects;
+        int numObjects;
 
         // test
         bool materialEnabled;
@@ -34,8 +41,10 @@ class Asset {
         MObject createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
 
     private:
-        Object* objects;
-        Object* visibleObjects;
+        Object** objects;
+        //Object* visibleObjects;
         MObjectArray parmAttributes;
 
 };
+
+#endif

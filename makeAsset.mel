@@ -25,11 +25,6 @@ proc string getMaterialNode(string $shape)
 }
 
 
-proc renderNodeCallback(string $mesh)
-{
-}
-
-
 global proc makeAsset(string $fileName) {
     string $asset = `createNode hAsset`;
     setAttr -type "string" ($asset + ".fileName") $fileName;
@@ -38,44 +33,57 @@ global proc makeAsset(string $fileName) {
     // TODO: this is a hack, getting the attribute once sometimes returns
     // wrong result, getting it again seem to return correct result.
     int $numObjects = `getAttr ($asset + ".numberOfObjects")`;
-    $numObjects = `getAttr ($asset + ".numberOfObjects")`;
+    $numObjects = `getAttr -size ($asset + ".objects")`;
 
     print $numObjects;
 
     string $transforms[] = {};
     for ($i=0; $i<$numObjects; $i++) {
-        string $mesh = $asset + "Mesh" + $i;
+        string $mesh = `getAttr ($asset + ".objects[" + $i + "].objectName")` + "Shape";
         createNode mesh -n $mesh;
-        connectAttr ($asset + ".output[" + $i + "].mesh") ($mesh + ".inMesh");
+        connectAttr ($asset + ".objects[" + $i + "].mesh") ($mesh + ".inMesh");
 
         string $transform = getTransformNode($mesh);
         $transforms[size($transforms)] = $transform;
-        connectAttr ($asset + ".output[" + $i + "].transform.translate") ($transform + ".translate");
-        connectAttr ($asset + ".output[" + $i + "].transform.rotate") ($transform + ".rotate");
-        connectAttr ($asset + ".output[" + $i + "].transform.scale") ($transform + ".scale");
+        connectAttr ($asset + ".objects[" + $i + "].transform.translate") ($transform + ".translate");
+        connectAttr ($asset + ".objects[" + $i + "].transform.rotate") ($transform + ".rotate");
+        connectAttr ($asset + ".objects[" + $i + "].transform.scale") ($transform + ".scale");
 
         string $tmp = "assignCreatedShader %type \"" + $mesh + "\" %node \"" + $mesh + "\"";
         createRenderNodeCB -asShader "surfaceShader" phong $tmp;
 
-        int $matExists = `getAttr ($asset + ".output[" + $i + "].materialExists")`;
+        int $matExists = `getAttr ($asset + ".objects[" + $i + "].materialExists")`;
         if ($matExists)
         {
             string $material = getMaterialNode($mesh);
-            connectAttr ($asset + ".output[" + $i + "].material.specularColor") ($material + ".specularColor");
+            connectAttr ($asset + ".objects[" + $i + "].material.specularColor") ($material + ".specularColor");
 
-            string $texturePath= `getAttr ($asset + ".output[" + $i + "].texturePath")`;
+            string $texturePath= `getAttr ($asset + ".objects[" + $i + "].texturePath")`;
             if ($texturePath == "")
             {
-                connectAttr ($asset + ".output[" + $i + "].material.ambientColor") ($material + ".ambientColor");
-                connectAttr ($asset + ".output[" + $i + "].material.diffuseColor") ($material + ".color");
+                connectAttr ($asset + ".objects[" + $i + "].material.ambientColor") ($material + ".ambientColor");
+                connectAttr ($asset + ".objects[" + $i + "].material.diffuseColor") ($material + ".color");
             } else
             {
                 string $fileNode = `createRenderNodeCB -as2DTexture "" "file" ""`;
-                connectAttr ($asset + ".output[" + $i + "].material.texturePath")($fileNode + ".fileTextureName");
+                connectAttr ($asset + ".objects[" + $i + "].material.texturePath")($fileNode + ".fileTextureName");
                 connectAttr ($fileNode + ".outColor") ($material + ".color");
             }
         }
 
+    }
+
+    int $numInstancers = `getAttr -size ($asset + ".instancers")`;
+    for ($i=0; $i<$numInstancers; $i++) {
+        string $instancer = `createNode instancer`;
+        setAttr ($instancer + ".rotationAngleUnits") 1;
+        connectAttr ($asset + ".instancers[" + $i + "].instancerData") ($instancer + ".inputPoints");
+
+        int $numInstObjNames = `getAttr -size ($asset + ".instancers[" + $i + "].ion")`;
+        for ($j=0; $j<$numInstObjNames; $j++) {
+            string $obj = `getAttr ($asset + ".instancers[" + $i + "].ion[" + $j + "]")`;
+            connectAttr ($obj + ".matrix") ($instancer + ".inputHierarchy[" + $j + "]");
+        }
     }
 
     if ($numObjects <= 0)

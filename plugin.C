@@ -40,6 +40,9 @@
 MTypeId Plugin::id(0x80000);
 MObject AssetNodeAttributes::fileNameAttr;
 MObject AssetNodeAttributes::output;
+MObject AssetNodeAttributes::objects;
+
+MObject AssetNodeAttributes::objectName;
 
 MObject AssetNodeAttributes::mesh;
 
@@ -66,7 +69,9 @@ MObject AssetNodeAttributes::specularAttr;
 
 MObject AssetNodeAttributes::numObjects;
 
+MObject AssetNodeAttributes::instancers;
 MObject AssetNodeAttributes::instancerData;
+MObject AssetNodeAttributes::instancedObjectNames;
 
 void*
 Plugin::creator()
@@ -105,6 +110,11 @@ Plugin::initialize()
     nAttr.setStorable(false);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
+
+    // object name
+    AssetNodeAttributes::objectName = tAttr.create("objectName", "on", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
 
     // mesh
     AssetNodeAttributes::mesh = tAttr.create("mesh", "ms", MFnData::kMesh);
@@ -197,8 +207,29 @@ Plugin::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
-    // output
-    AssetNodeAttributes::output = cAttr.create("output", "out");
+    // instancer data
+    AssetNodeAttributes::instancerData = tAttr.create("instancerData", "idt", MFnData::kDynArrayAttrs);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
+    // instanced object names
+    AssetNodeAttributes::instancedObjectNames = tAttr.create("instancedObjectNames", "ion", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    tAttr.setArray(true);
+    tAttr.setIndexMatters(true);
+
+    // instancers
+    AssetNodeAttributes::instancers = cAttr.create("instancers", "inst");
+    cAttr.addChild(AssetNodeAttributes::instancerData);
+    cAttr.addChild(AssetNodeAttributes::instancedObjectNames);
+    cAttr.setStorable(false);
+    cAttr.setWritable(false);
+    cAttr.setArray(true);
+
+    // objects
+    AssetNodeAttributes::objects = cAttr.create("objects", "objs");
+    cAttr.addChild(AssetNodeAttributes::objectName);
     cAttr.addChild(AssetNodeAttributes::mesh);
     cAttr.addChild(AssetNodeAttributes::transform);
     cAttr.addChild(AssetNodeAttributes::material);
@@ -207,20 +238,20 @@ Plugin::initialize()
     cAttr.setArray(true);
     cAttr.setIndexMatters(true);
 
-    // instancer data
-    AssetNodeAttributes::instancerData = tAttr.create("instancerData", "idt", MFnData::kDynArrayAttrs);
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
-    tAttr.setArray(true);
+    // output
+    AssetNodeAttributes::output = cAttr.create("output", "out");
+    cAttr.addChild(AssetNodeAttributes::numObjects);
+    cAttr.addChild(AssetNodeAttributes::objects);
+    cAttr.addChild(AssetNodeAttributes::instancers);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
 
     addAttribute(AssetNodeAttributes::fileNameAttr);
-    addAttribute(AssetNodeAttributes::numObjects);
     addAttribute(AssetNodeAttributes::output);
-    addAttribute(AssetNodeAttributes::instancerData);
 
     attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::numObjects);
     attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::output);
-    attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::instancerData);
+    //attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::instancerData);
 
     return MS::kSuccess;
 }
@@ -254,15 +285,20 @@ MStatus Plugin::setDependentsDirty(const MPlug& plugBeingDirtied,
 
     //MPlug meshesPlug(thisMObject(), meshes);
     //MPlug transformsPlug(thisMObject(), transforms);
-    MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
+    MPlug objectsPlug(thisMObject(), AssetNodeAttributes::objects);
+    MPlug instancersPlug(thisMObject(), AssetNodeAttributes::instancers);
+
     for (int i=0; i < asset->info.objectCount; i++)
     {
-        MPlug elemPlug = outputPlug.elementByLogicalIndex(i);
+        MPlug elemPlug = objectsPlug.elementByLogicalIndex(i);
 
+        MPlug objectNamePlug = elemPlug.child(AssetNodeAttributes::objectName);
         MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
         MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
         MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
 
+
+        affectedPlugs.append(objectNamePlug);
         affectedPlugs.append(meshPlug);
         affectedPlugs.append(transformPlug);
 
@@ -272,10 +308,24 @@ MStatus Plugin::setDependentsDirty(const MPlug& plugBeingDirtied,
 
         affectedPlugs.append(transformPlug.child(AssetNodeAttributes::materialExists));
         affectedPlugs.append(transformPlug.child(AssetNodeAttributes::texturePath));
-        cerr << "set dirty: tex------------------" << endl;
         affectedPlugs.append(transformPlug.child(AssetNodeAttributes::ambientAttr));
         affectedPlugs.append(transformPlug.child(AssetNodeAttributes::diffuseAttr));
         affectedPlugs.append(transformPlug.child(AssetNodeAttributes::specularAttr));
+    }
+
+    for (int i=0; i<instancersPlug.numElements(); i++)
+    {
+        MPlug elemPlug = instancersPlug[i];
+        MPlug instancerDataPlug = elemPlug.child(AssetNodeAttributes::instancerData);
+        MPlug instancedObjectNamesPlug = elemPlug.child(AssetNodeAttributes::instancedObjectNames);
+
+        affectedPlugs.append(instancerDataPlug);
+
+        for (int j=0; j<instancedObjectNamesPlug.numElements(); j++)
+        {
+            affectedPlugs.append(instancedObjectNamesPlug[j]);
+        }
+
     }
     return MS::kSuccess;
 }
@@ -534,50 +584,54 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
         setParmValues(data);
     }
 
-    cerr << "compute" << endl;
+    cerr << "compute ******************" << endl;
     updateAttrValues(data);
 
-    // don't care what the plug is, recompute everything
-    // TODO: this might not be good later on
-
-    // number of objects
-    int numVisibleObjects = asset->numVisibleObjects;
-    //int objCount = asset->info.objectCount;
-    //cerr << "objcount: " << objCount << endl;
-    MPlug numObjectsPlug(thisMObject(), AssetNodeAttributes::numObjects);
-    MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
-    numObjectsHandle.set(numVisibleObjects);
-    data.setClean(numObjectsPlug);
-
-    // objects and transforms
     MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
-    MPlug instancersPlug(thisMObject(), AssetNodeAttributes::instancerData);
-    //MPlug meshesPlug(thisMObject(), meshes);
-    //MPlug transformsPlug(thisMObject(), transforms);
+    asset->compute(outputPlug, data);
 
-    Object* objects = asset->getVisibleObjects();
-    for (int i=0; i<numVisibleObjects; i++)
-    {
+    //// don't care what the plug is, recompute everything
+    //// TODO: this might not be good later on
 
-        Object& obj = objects[i];
-        obj.compute(i, outputPlug, instancersPlug, data);
+    //// number of objects
+    //int numVisibleObjects = asset->numVisibleObjects;
+    //cerr << "numVisibleObjects: " << numVisibleObjects << endl;
+    ////int objCount = asset->info.objectCount;
+    ////cerr << "objcount: " << objCount << endl;
+    //MPlug numObjectsPlug(thisMObject(), AssetNodeAttributes::numObjects);
+    //MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
+    //numObjectsHandle.set(numVisibleObjects);
+    //data.setClean(numObjectsPlug);
 
-    }
+    //// objects and transforms
+    //MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
+    //MPlug instancersPlug(thisMObject(), AssetNodeAttributes::instancerData);
+    ////MPlug meshesPlug(thisMObject(), meshes);
+    ////MPlug transformsPlug(thisMObject(), transforms);
 
-    // set everything clean
-    data.setClean(numObjectsPlug);
-    for (int i=0; i<numVisibleObjects; i++)
-    {
-        MPlug elemPlug = outputPlug.elementByLogicalIndex(i);
-        MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
-        MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
-        MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
-        data.setClean(elemPlug);
-        data.setClean(meshPlug);
-        data.setClean(transformPlug);
-    }
+    //Object* objects = asset->getVisibleObjects();
+    //for (int i=0; i<numVisibleObjects; i++)
+    //{
 
-    data.setClean(outputPlug);
+        //Object& obj = objects[i];
+        //obj.compute(i, outputPlug, instancersPlug, data);
+
+    //}
+
+    //// set everything clean
+    //data.setClean(numObjectsPlug);
+    //for (int i=0; i<numVisibleObjects; i++)
+    //{
+        //MPlug elemPlug = outputPlug.elementByLogicalIndex(i);
+        //MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
+        //MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
+        //MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
+        //data.setClean(elemPlug);
+        //data.setClean(meshPlug);
+        //data.setClean(transformPlug);
+    //}
+
+    //data.setClean(outputPlug);
 
     return MS::kSuccess;
 }

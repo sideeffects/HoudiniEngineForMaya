@@ -11,9 +11,10 @@ proc string getTransformNode( string $shape )
         $transform = $parents[0];
     }
 
-    if ($transform == "")
-        return $transform;
-    return `substring $transform 2 (size($transform))`;
+    return $transform;
+    //if ($transform == "")
+        //return $transform;
+    //return `substring $transform 2 (size($transform))`;
 }
 
 
@@ -26,7 +27,11 @@ proc string getMaterialNode(string $shape)
 
 
 global proc makeAsset(string $fileName) {
-    string $asset = `createNode hAsset`;
+    string $tmpArray[] = stringToStringArray($fileName, "/");
+    string $tmpStr = $tmpArray[size($tmpArray)-1];
+    $tmpArray = stringToStringArray($tmpStr, ".");
+    string $asset = $tmpArray[0];
+    $asset = `createNode hAsset -n $asset`;
     setAttr -type "string" ($asset + ".fileName") $fileName;
     setAttr -lock on ($asset + ".fileName");
 
@@ -40,7 +45,7 @@ global proc makeAsset(string $fileName) {
     string $objects[] = {};
     for ($i=0; $i<$numObjects; $i++) {
         string $mesh = `getAttr ($asset + ".objects[" + $i + "].objectName")` + "Shape";
-        createNode mesh -n $mesh;
+        $mesh = `createNode mesh -n $mesh`;
         connectAttr ($asset + ".objects[" + $i + "].mesh") ($mesh + ".inMesh");
 
         string $transform = getTransformNode($mesh);

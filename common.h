@@ -7,6 +7,7 @@ class AssetNodeAttributes
 {
     public:
         static MObject fileNameAttr;
+        static MObject parmsModified;
         static MObject output;
         static MObject objects;
         static MObject objectName;

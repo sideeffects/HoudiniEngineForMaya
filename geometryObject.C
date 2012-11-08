@@ -50,6 +50,8 @@ GeometryObject::updateVertexList()
         int myVertexList[numVertexCount];
         HAPI_GetVertexList(assetId, objectInfo.id, 0, myVertexList, 0, numVertexCount);
         MIntArray result(myVertexList, numVertexCount);
+        //cerr << "vertextList: " << endl;
+        //cerr << result << endl;
         reverseWindingOrderInt(result, faceCounts);
 
         vertexList = result;
@@ -140,18 +142,6 @@ GeometryObject::update()
 }
 
 
-
-// test functions
-bool
-GeometryObject::isVisible()
-{
-    return objectInfo.isVisible;
-}
-
-
-// end test functions
-
-
 MStatus
 GeometryObject::compute(const MPlug& plug, MDataBlock& data)
 {
@@ -162,14 +152,9 @@ GeometryObject::compute(const MPlug& plug, MDataBlock& data)
     //printAttributes(HAPI_ATTROWNER_PRIM);
     //printAttributes(HAPI_ATTROWNER_DETAIL);
 
-    cerr << "isVisible: " << objectInfo.isVisible << " isInstanced: " << isInstanced << endl;
+    //cerr << "isVisible: " << objectInfo.isVisible << " isInstanced: " << isInstanced << endl;
     if (!objectInfo.isVisible && !isInstanced)
         return MS::kFailure;
-
-    if (getName() == "Hospital_Clean_model_0_texmap_0_interior_0"){
-        cerr << "Hospital_Clean_model_0_texmap_0_interior_0 ---------" << endl;
-        cerr << geoInfo.pointCount << " " << geoInfo.faceCount << " " << geoInfo.vertexCount<< endl;
-    }
 
     if (geoInfo.pointCount == 0 || geoInfo.faceCount == 0|| geoInfo.vertexCount == 0)
         return MS::kFailure;
@@ -202,7 +187,7 @@ MObject
 GeometryObject::createMesh()
 {
 
-    cerr << "Creating mesh... " << Util::getString(objectInfo.nameSH) << endl;
+    //cerr << "Creating mesh... " << Util::getString(objectInfo.nameSH) << endl;
     // Mesh data
     MFnMeshData dataCreator;
     MObject outData = dataCreator.create();
@@ -244,7 +229,7 @@ void GeometryObject::updateTransform(MPlug& plug, MDataBlock& data)
 
     //if (objectInfo.isVisible)
     //{
-        cerr << "Updating transform..." << endl;
+        //cerr << "Updating transform..." << endl;
         // update transform
         HAPI_Transform transforms[1];
         HAPI_GetObjectTransforms(assetId, 5, transforms, objectId, 1);
@@ -299,7 +284,7 @@ GeometryObject::updateMaterial(MPlug& plug, MDataBlock& data)
     MPlug specularPlug = plug.child(3);
     MPlug texturePathPlug = plug.child(4);
 
-    cerr << "Updating materials .................." << endl;
+    //cerr << "Updating materials .................." << endl;
 
     //if (objectInfo.isVisible)
     //{

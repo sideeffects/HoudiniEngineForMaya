@@ -36,9 +36,6 @@ class Object {
         virtual MStatus compute(const MPlug& plug, MDataBlock& data);
         virtual ObjectType type() = 0;
 
-        // test
-        bool isVisible();
-
     public:
         Asset* objectControl;
         bool isInstanced;

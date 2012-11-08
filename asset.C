@@ -22,7 +22,7 @@ Asset::Asset(MString otlFilePath)
 
     if (materialEnabled)
     {
-        cerr << "loadasset" << endl;
+        //cerr << "loadasset" << endl;
         MString texturePath;
         MGlobal::executeCommand("workspace -q -rd;", texturePath);
         texturePath += "sourceimages";
@@ -30,8 +30,10 @@ Asset::Asset(MString otlFilePath)
     } else
     {
         HAPI_LoadOTLFile(filename, NULL, &info);
-        cerr << "loadasset" << endl;
+        //cerr << "loadasset" << endl;
     }
+
+    cerr << "Loaded asset: " << otlFilePath << " " << info.id << endl;
 
 
     // meshes
@@ -44,8 +46,8 @@ Asset::Asset(MString otlFilePath)
         //cerr << "matID: " << myObjects[i].materialId;
         objects[i] = Object::createObject(info.id, i);
         objects[i]->objectControl = this;
-        if (objects[i]->isVisible())
-            numVisibleObjects++;
+        //if (objects[i]->isVisible())
+            //numVisibleObjects++;
     }
 
 
@@ -79,12 +81,12 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
 {
 
     // number of objects
-    cerr << "numVisibleObjects: " << numVisibleObjects << endl;
+    //cerr << "numVisibleObjects: " << numVisibleObjects << endl;
     //int objCount = asset->info.objectCount;
     //cerr << "objcount: " << objCount << endl;
-    MPlug numObjectsPlug = plug.child(AssetNodeAttributes::numObjects);
-    MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
-    numObjectsHandle.set(numVisibleObjects);
+    //MPlug numObjectsPlug = plug.child(AssetNodeAttributes::numObjects);
+    //MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
+    //numObjectsHandle.set(numVisibleObjects);
 
     MPlug objectsPlug = plug.child(AssetNodeAttributes::objects);
     MPlug instancersPlug = plug.child(AssetNodeAttributes::instancers);
@@ -106,8 +108,8 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
 
                 MIntArray instIds = ((InstancerObject*)obj)->getInstancedObjIds();
                 MStringArray instNames = ((InstancerObject*)obj)->getUniqueInstObjNames();
-                cerr << "instNames: ----------------------" << endl;
-                cerr << instNames << endl;
+                //cerr << "instNames: ----------------------" << endl;
+                //cerr << instNames << endl;
                 for (int j=0; j<instNames.length(); j++)
                 {
                     Object* o = findObjectByName(instNames[j]);
@@ -147,7 +149,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
         }
     }
 
-    data.setClean(numObjectsPlug);
+    //data.setClean(numObjectsPlug);
 }
 
 

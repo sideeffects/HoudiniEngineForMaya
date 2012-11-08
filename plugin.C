@@ -39,6 +39,8 @@
 
 MTypeId Plugin::id(0x80000);
 MObject AssetNodeAttributes::fileNameAttr;
+MObject AssetNodeAttributes::parmsModified;
+
 MObject AssetNodeAttributes::output;
 MObject AssetNodeAttributes::objects;
 
@@ -101,8 +103,16 @@ Plugin::initialize()
     MFnCompoundAttribute cAttr;
     MFnUnitAttribute uAttr;
 
+    // file name
     AssetNodeAttributes::fileNameAttr = tAttr.create("fileName", "fn", MFnData::kString);
     tAttr.setStorable(true);
+
+    // parms modified
+    AssetNodeAttributes::parmsModified = nAttr.create("parmsModified", "pm", MFnNumericData::kBoolean, false);
+    nAttr.setStorable(true);
+    //nAttr.setWritable(false);
+    nAttr.setConnectable(false);
+    nAttr.setHidden(true);
 
     // numObjects
     AssetNodeAttributes::numObjects = nAttr.create("numberOfObjects", "no", MFnNumericData::kInt);
@@ -246,7 +256,9 @@ Plugin::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
+    // add the static attributes to the node
     addAttribute(AssetNodeAttributes::fileNameAttr);
+    addAttribute(AssetNodeAttributes::parmsModified);
     addAttribute(AssetNodeAttributes::output);
 
     attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::numObjects);
@@ -429,6 +441,12 @@ Plugin::updateAttrValues(MDataBlock& data)
         HAPI_ParmInfo& parm = myParmInfos[i];
         updateAttrValue(parm, data);
     }
+
+    // mark parms as modified, so that if scene is saved we know to
+    // use the maya attributes to set parm values in Houdini
+    MPlug p(thisMObject(), AssetNodeAttributes::parmsModified);
+    MDataHandle h = data.outputValue(p);
+    h.set(true);
 }
 
 
@@ -451,8 +469,9 @@ Plugin::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
     MPlug dirtyParmPlug(thisMObject(), dirtyParmAttribute);
     //cerr << "plug: " << plug.name() << endl;
     //cerr << "dirtyParmPlug: " << dirtyParmPlug.name() << endl;
-    if (plug != dirtyParmPlug)
-        return;
+    if (!dirtyParmPlug.isNull())
+        if (plug != dirtyParmPlug)
+            return;
 
     int size = parm.size;
 
@@ -522,7 +541,7 @@ Plugin::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         }
     }
 
-    dirtyParmAttribute = MObject();
+    //dirtyParmAttribute = MObject();
 
 }
 
@@ -544,7 +563,7 @@ Plugin::setParmValues(MDataBlock& data)
         setParmValue(parm, data);
     }
     double end = getTime();
-    cerr << "time: " << (end - before) << endl;
+    //cerr << "time: " << (end - before) << endl;
 }
 
 
@@ -569,6 +588,7 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
     if (!builtParms)
     {
         // add ALL the parms
+        cerr << "add parms ...." << endl;
         MObjectArray parmAttributes = asset->getParmAttributes();
         MFnDependencyNode fnDN(thisMObject());
         int size = parmAttributes.length();
@@ -579,12 +599,16 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
         }
 
         builtParms = true;
-    } else
-    {
-        setParmValues(data);
     }
+    //{
+        //setParmValues(data);
+    //}
 
     cerr << "compute ******************" << endl;
+    MPlug parmsModifiedPlug(thisMObject(), AssetNodeAttributes::parmsModified);
+    MDataHandle parmsModifiedHandle = data.inputValue(parmsModifiedPlug);
+    if (parmsModifiedHandle.asBool())
+        setParmValues(data);
     updateAttrValues(data);
 
     MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
@@ -592,46 +616,6 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
 
     //// don't care what the plug is, recompute everything
     //// TODO: this might not be good later on
-
-    //// number of objects
-    //int numVisibleObjects = asset->numVisibleObjects;
-    //cerr << "numVisibleObjects: " << numVisibleObjects << endl;
-    ////int objCount = asset->info.objectCount;
-    ////cerr << "objcount: " << objCount << endl;
-    //MPlug numObjectsPlug(thisMObject(), AssetNodeAttributes::numObjects);
-    //MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
-    //numObjectsHandle.set(numVisibleObjects);
-    //data.setClean(numObjectsPlug);
-
-    //// objects and transforms
-    //MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
-    //MPlug instancersPlug(thisMObject(), AssetNodeAttributes::instancerData);
-    ////MPlug meshesPlug(thisMObject(), meshes);
-    ////MPlug transformsPlug(thisMObject(), transforms);
-
-    //Object* objects = asset->getVisibleObjects();
-    //for (int i=0; i<numVisibleObjects; i++)
-    //{
-
-        //Object& obj = objects[i];
-        //obj.compute(i, outputPlug, instancersPlug, data);
-
-    //}
-
-    //// set everything clean
-    //data.setClean(numObjectsPlug);
-    //for (int i=0; i<numVisibleObjects; i++)
-    //{
-        //MPlug elemPlug = outputPlug.elementByLogicalIndex(i);
-        //MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
-        //MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
-        //MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
-        //data.setClean(elemPlug);
-        //data.setClean(meshPlug);
-        //data.setClean(transformPlug);
-    //}
-
-    //data.setClean(outputPlug);
 
     return MS::kSuccess;
 }

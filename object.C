@@ -54,8 +54,8 @@ Object::update()
 
     // update geometry
     HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
-    cerr << "object name: " << Util::getString(objectInfo.nameSH) << endl;
-    cerr << "object id: " << objectInfo.id << endl;
+    //cerr << "object name: " << Util::getString(objectInfo.nameSH) << endl;
+    //cerr << "object id: " << objectInfo.id << endl;
     
 
 
@@ -168,13 +168,6 @@ Object::reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
 
 
 // test functions
-bool
-Object::isVisible()
-{
-    return objectInfo.isVisible;
-}
-
-
 void 
 Object::printAttributes(HAPI_AttributeOwner owner)
 {

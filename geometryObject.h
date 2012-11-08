@@ -14,8 +14,6 @@ class GeometryObject: public Object
 
         virtual ObjectType type();
 
-        // test
-        bool isVisible();
 
     public:
 

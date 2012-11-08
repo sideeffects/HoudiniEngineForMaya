@@ -19,9 +19,6 @@ class InstancerObject: public Object
 
         virtual ObjectType type();
 
-        // test
-        bool isVisible();
-
     public:
 
     protected:

@@ -71,19 +71,9 @@ InstancerObject::update()
         instancedObjectIndices.append(j);
     }
 
-    cerr << "update instancer: " << endl;
-    cerr << instancedObjectIndices << endl;
+    //cerr << "update instancer: " << endl;
+    //cerr << instancedObjectIndices << endl;
 }
-
-
-
-// test functions
-bool
-InstancerObject::isVisible()
-{
-    return objectInfo.isVisible;
-}
-// end test functions
 
 
 MIntArray
@@ -113,8 +103,8 @@ InstancerObject::compute(const MPlug& plug, MDataBlock& data)
     //printAttributes(HAPI_ATTROWNER_PRIM);
     //printAttributes(HAPI_ATTROWNER_DETAIL);
 
-    cerr << "InstancerObject: plug " << plug.name() << endl;
-    cerr << "objectToInstanceId: " << objectInfo.objectToInstanceId << endl;
+    //cerr << "InstancerObject: plug " << plug.name() << endl;
+    //cerr << "objectToInstanceId: " << objectInfo.objectToInstanceId << endl;
     MPlug instancerDataPlug = plug.child(AssetNodeAttributes::instancerData);
     MPlug instancedObjectNamesPlug = plug.child(AssetNodeAttributes::instancedObjectNames);
 
@@ -133,7 +123,7 @@ InstancerObject::compute(const MPlug& plug, MDataBlock& data)
 
     //cerr << "instancedObjectNames: " << instancedObjectNames << endl;
 
-    cerr << "get instance transforms" << endl;
+    //cerr << "get instance transforms" << endl;
     for (int j=0; j<size; j++)
     {
         HAPI_Transform it = instTransforms[j];

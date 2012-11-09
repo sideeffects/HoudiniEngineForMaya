@@ -24,7 +24,8 @@ class Object {
             OBJECT_TYPE_INSTANCER
         };
 
-        static Object* createObject(int assetId, int objectId);
+        // static creator
+        static Object* createObject(int assetId, int objectId, Asset* objControl);
 
         Object();
         Object(int assetId, int objectId);

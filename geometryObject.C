@@ -4,6 +4,7 @@
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
 
+#include "asset.h"
 #include "geometryObject.h"
 #include "util.h"
 #include "common.h"
@@ -14,7 +15,7 @@ GeometryObject::GeometryObject() {}
 GeometryObject::GeometryObject(int assetId, int objectId)
     :Object(assetId, objectId)
 {
-    update();
+    //update();
 }
 
 
@@ -231,9 +232,9 @@ void GeometryObject::updateTransform(MPlug& plug, MDataBlock& data)
     //{
         //cerr << "Updating transform..." << endl;
         // update transform
-        HAPI_Transform transforms[1];
-        HAPI_GetObjectTransforms(assetId, 5, transforms, objectId, 1);
-        transformInfo = transforms[0];
+        //HAPI_Transform transforms[1];
+        //HAPI_GetObjectTransforms(assetId, 5, transforms, objectId, 1);
+        transformInfo = objectControl->getTransformInfo(objectId);
 
         // convert to euler angle
         MEulerRotation r = MQuaternion(transformInfo.rotationQuaternion[0],
@@ -295,9 +296,9 @@ GeometryObject::updateMaterial(MPlug& plug, MDataBlock& data)
         } else
         {
             int matId = geoInfo.materialId;
-            HAPI_MaterialInfo myMaterials[1];
-            HAPI_GetMaterials(assetId, myMaterials, matId, 1);
-            materialInfo = myMaterials[0];
+            //HAPI_MaterialInfo myMaterials[1];
+            //HAPI_GetMaterials(assetId, myMaterials, matId, 1);
+            materialInfo = objectControl->getMaterialInfo(matId);
             // get material info
 
             MDataHandle handle = data.outputValue(matExistsPlug);

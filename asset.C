@@ -12,6 +12,10 @@
 
 Asset::Asset(MString otlFilePath)
 {
+    objectInfos = NULL;
+    transformInfos = NULL;
+    materialInfos = NULL;
+
     // test
     materialEnabled = true;
 
@@ -35,21 +39,18 @@ Asset::Asset(MString otlFilePath)
 
     cerr << "Loaded asset: " << otlFilePath << " " << info.id << endl;
 
+    // get the infos
+    update();
 
-    // meshes
+    // objects
     int objCount = info.objectCount;
     objects = new Object*[objCount];
     numVisibleObjects = 0;
     numObjects = objCount;
     for (int i=0; i<objCount; i++)
     {
-        //cerr << "matID: " << myObjects[i].materialId;
-        objects[i] = Object::createObject(info.id, i);
-        objects[i]->objectControl = this;
-        //if (objects[i]->isVisible())
-            //numVisibleObjects++;
+        objects[i] = Object::createObject(info.id, i, this);
     }
-
 
     // build parms
     buildParms();
@@ -76,9 +77,39 @@ Asset::findObjectById(int id)
 }
 
 
+// Getters for infos
+HAPI_ObjectInfo
+Asset::getObjectInfo(int id) { return objectInfos[id]; }
+HAPI_Transform
+Asset::getTransformInfo(int id) { return transformInfos[id]; }
+HAPI_MaterialInfo
+Asset::getMaterialInfo(int id) { return materialInfos[id]; }
+
+
+void
+Asset::update()
+{
+    // update object infos
+    delete[] objectInfos;
+    objectInfos = new HAPI_ObjectInfo[info.objectCount];
+    HAPI_GetObjects(info.id, objectInfos, 0, info.objectCount);
+
+    // update transform infos
+    delete[] transformInfos;
+    transformInfos = new HAPI_Transform[info.objectCount];
+    HAPI_GetObjectTransforms(info.id, 5, transformInfos, 0, info.objectCount);
+
+    // update material infos
+    delete[] materialInfos;
+    materialInfos = new HAPI_MaterialInfo[info.materialCount];
+    HAPI_GetMaterials(info.id, materialInfos, 0, info.materialCount);
+}
+
+
 MStatus
 Asset::compute(const MPlug& plug, MDataBlock& data)
 {
+    update();
 
     // number of objects
     //cerr << "numVisibleObjects: " << numVisibleObjects << endl;
@@ -106,10 +137,9 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
             {
                 instancerIndex++;
 
+                // get all the object ids that are instanced
                 MIntArray instIds = ((InstancerObject*)obj)->getInstancedObjIds();
                 MStringArray instNames = ((InstancerObject*)obj)->getUniqueInstObjNames();
-                //cerr << "instNames: ----------------------" << endl;
-                //cerr << instNames << endl;
                 for (int j=0; j<instNames.length(); j++)
                 {
                     Object* o = findObjectByName(instNames[j]);

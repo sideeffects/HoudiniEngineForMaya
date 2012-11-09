@@ -16,7 +16,7 @@ InstancerObject::InstancerObject() {}
 InstancerObject::InstancerObject(int assetId, int objectId)
     :Object(assetId, objectId)
 {
-    update();
+    //update();
 }
 
 

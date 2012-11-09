@@ -4,6 +4,7 @@
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
 
+#include "asset.h"
 #include "object.h"
 #include "instancerObject.h"
 #include "geometryObject.h"
@@ -11,18 +12,18 @@
 #include "common.h"
 
 Object* 
-Object::createObject(int assetId, int objectId)
+Object::createObject(int assetId, int objectId, Asset* objControl)
 {
     Object* obj;
     
-    HAPI_ObjectInfo myObjects[1];
-    HAPI_GetObjects(assetId, myObjects, objectId, 1);
-    HAPI_ObjectInfo objInfo = myObjects[0];
+    HAPI_ObjectInfo objInfo = objControl->getObjectInfo(objectId);
 
     if (objInfo.isInstancer)
         obj = new InstancerObject(assetId, objectId);
     else
         obj = new GeometryObject(assetId, objectId);
+
+    obj->objectControl = objControl;
 
     return obj;
 }
@@ -34,7 +35,7 @@ Object::Object() {}
 Object::Object(int assetId, int objectId)
     :objectId(objectId), assetId(assetId), isInstanced(false)
 {
-    update();
+    //update();
     objectControl = NULL;
 }
 
@@ -48,9 +49,9 @@ void
 Object::update()
 {
     // update object
-    HAPI_ObjectInfo myObjects[1];
-    HAPI_GetObjects(assetId, myObjects, objectId, 1);
-    objectInfo = myObjects[0];
+    //HAPI_ObjectInfo myObjects[1];
+    //HAPI_GetObjects(assetId, myObjects, objectId, 1);
+    objectInfo = objectControl->getObjectInfo(objectId);
 
     // update geometry
     HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);

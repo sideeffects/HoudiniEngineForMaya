@@ -12,10 +12,17 @@
 class Asset {
     public:
         Asset(MString otlFilePath);
+        ~Asset();
+
         MObjectArray getParmAttributes();
         Object** getObjects();
         Object* findObjectByName(MString name);
         Object* findObjectById(int id);
+
+        // Getters for infos
+        HAPI_ObjectInfo getObjectInfo(int id);
+        HAPI_Transform getTransformInfo(int id);
+        HAPI_MaterialInfo getMaterialInfo(int id);
 
         MStatus compute(const MPlug& plug, MDataBlock& data);
 
@@ -28,10 +35,13 @@ class Asset {
         int numVisibleObjects;
         int numObjects;
 
+
         // test
         bool materialEnabled;
 
     private:
+        void update();
+
         void addAttrTo(MObject& child, MObject* parent);
         void buildParms();
         int buildAttrTree(HAPI_ParmInfo* myParmInfos, MObject* parent, int current, int start);
@@ -42,6 +52,13 @@ class Asset {
 
     private:
         Object** objects;
+
+        // Arrays of infos that can be accessed when updating objects,
+        // keeping them here avoids getting them for individual object.
+        HAPI_ObjectInfo* objectInfos;
+        HAPI_Transform* transformInfos;
+        HAPI_MaterialInfo* materialInfos;
+
         //Object* visibleObjects;
         MObjectArray parmAttributes;
 

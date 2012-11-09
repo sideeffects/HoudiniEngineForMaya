@@ -357,6 +357,7 @@ Plugin::getAttrFromParm(HAPI_ParmInfo& parm)
 void
 Plugin::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 {
+    //cerr << "update attr value ================" << endl;
 
     // get attribute
     MObject attr = getAttrFromParm(parm);
@@ -463,6 +464,7 @@ getTime()
 void
 Plugin::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 {
+    //cerr << "set parm value ===========" << endl;
 
     MObject attr = getAttrFromParm(parm);
     MPlug plug(thisMObject(), attr);
@@ -605,6 +607,7 @@ Plugin::compute(const MPlug& plug, MDataBlock& data)
     //}
 
     cerr << "compute ******************" << endl;
+
     MPlug parmsModifiedPlug(thisMObject(), AssetNodeAttributes::parmsModified);
     MDataHandle parmsModifiedHandle = data.inputValue(parmsModifiedPlug);
     if (parmsModifiedHandle.asBool())

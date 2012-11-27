@@ -3,6 +3,8 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnEnumAttribute.h>
+#include <maya/MFnMesh.h>
+#include <maya/MItMeshPolygon.h>
 #include <maya/MGlobal.h>
 
 #include "asset.h"
@@ -10,34 +12,54 @@
 #include "common.h"
 #include "instancerObject.h"
 
-Asset::Asset(MString otlFilePath)
+Asset::Asset(MString otlFilePath, MObject node)
+    :node(node)
 {
+    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+
     objectInfos = NULL;
     transformInfos = NULL;
     materialInfos = NULL;
-
-    // test
-    materialEnabled = true;
 
     // load the otl
     const char* filename = otlFilePath.asChar();
     info.minVerticesPerPrimitive = 3;
     info.maxVerticesPerPrimitive = 20;
 
-    if (materialEnabled)
-    {
-        //cerr << "loadasset" << endl;
-        MString texturePath;
-        MGlobal::executeCommand("workspace -q -rd;", texturePath);
-        texturePath += "sourceimages";
-        HAPI_LoadOTLFile(filename, texturePath.asChar(), &info);
-    } else
-    {
-        HAPI_LoadOTLFile(filename, NULL, &info);
-        //cerr << "loadasset" << endl;
-    }
+    //cerr << "loadasset" << endl;
+    MString texturePath;
+    MGlobal::executeCommand("workspace -q -rd;", texturePath);
+    texturePath += "sourceimages";
+    hstat = HAPI_LoadOTLFile(filename, texturePath.asChar(), &info);
+    Util::checkHAPIStatus(hstat);
+
 
     cerr << "Loaded asset: " << otlFilePath << " " << info.id << endl;
+    cerr << "type: " << info.type << endl;
+    cerr << "objectCount: " << info.objectCount << endl;
+    cerr << "minGeoInputCount: " << info.minGeoInputCount << endl;
+    cerr << "maxGeoInputCount: " << info.maxGeoInputCount << endl;
+
+    // input geos
+    if (info.maxGeoInputCount > 0)
+    {
+        MFnTypedAttribute tAttr;
+        MFnCompoundAttribute cAttr;
+
+        int inputCount = info.maxGeoInputCount;
+
+        AssetNodeAttributes::input = cAttr.create("input", "in");
+
+        for (int i=0; i<inputCount; i++)
+        {
+            MString longName = MString("input") + (i+1);
+            MString shortName = MString("in") + (i+1);
+            MObject input = tAttr.create(longName, shortName, MFnData::kMesh);
+
+            cAttr.addChild(input);
+        }
+        addAttrTo(AssetNodeAttributes::input, NULL);
+    }
 
     // get the infos
     update();
@@ -106,33 +128,128 @@ Asset::update()
 }
 
 
-MStatus
-Asset::compute(const MPlug& plug, MDataBlock& data)
+void
+Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
 {
-    update();
+    // Geo inputs
+    for (int i=0; i<info.maxGeoInputCount; i++)
+    {
 
-    // number of objects
-    //cerr << "numVisibleObjects: " << numVisibleObjects << endl;
-    //int objCount = asset->info.objectCount;
-    //cerr << "objcount: " << objCount << endl;
-    //MPlug numObjectsPlug = plug.child(AssetNodeAttributes::numObjects);
-    //MDataHandle numObjectsHandle = data.outputValue(numObjectsPlug);
-    //numObjectsHandle.set(numVisibleObjects);
+        MPlug inputPlug(node, AssetNodeAttributes::input);
+        MPlug elemInputPlug = inputPlug.child(i);
+        MDataHandle elemInputHandle = data.inputValue(elemInputPlug);
+        cerr << "type: " << elemInputHandle.type() << endl;
+        if (!elemInputPlug.isConnected() || elemInputHandle.type() != MFnData::kMesh)
+        {
+            cerr << "plug name: " << elemInputPlug.name() << endl;
+            cerr << "isConnected: " << elemInputPlug.isConnected() << endl;
+            cerr << "type match kmesh: " << (elemInputHandle.type() == MFnData::kMesh) << endl;
+            // invalid or no input
+            // have to disconnect geo input in Houdini
+            HAPI_DisconnectAssetGeometry(info.id, i);
+        }
+        else
+        {
+            // extract mesh data from Maya
+            MObject inputMesh = elemInputHandle.asMesh();
+            MFnMesh fnMesh(inputMesh);
+            MItMeshPolygon itMeshPoly(inputMesh);
 
-    MPlug objectsPlug = plug.child(AssetNodeAttributes::objects);
+            // get points
+            MFloatPointArray points;
+            fnMesh.getPoints(points);
+
+            // get face data
+            MIntArray faceCounts;
+            MIntArray vertexList;
+            while (!itMeshPoly.isDone())
+            {
+                int vc = itMeshPoly.polygonVertexCount();
+                faceCounts.append(vc);
+                for (int j=0; j<vc; j++)
+                {
+                    vertexList.append(itMeshPoly.vertexIndex(j));
+                }
+                itMeshPoly.next();
+            }
+            Util::reverseWindingOrderInt(vertexList, faceCounts);
+
+
+            int inputObjId = -1;
+            int inputGeoId = -1;
+            HAPI_CreateGeoInput(info.id, i, &inputObjId, &inputGeoId);
+
+            // set up GeoInfo
+            HAPI_GeoInfo* inputGeoInfo = new HAPI_GeoInfo();
+            inputGeoInfo->id           = inputGeoId;
+            inputGeoInfo->materialId   = -1;
+            inputGeoInfo->faceCount    = faceCounts.length();
+            inputGeoInfo->vertexCount  = vertexList.length();
+            inputGeoInfo->pointCount   = points.length();
+
+            inputGeoInfo->pointAttributeCount  = 1;
+            inputGeoInfo->vertexAttributeCount = 0;
+            inputGeoInfo->faceAttributeCount   = 0;
+            inputGeoInfo->detailAttributeCount = 0;
+
+            // copy data to arrays
+            int vl[inputGeoInfo->vertexCount];
+            int fc[inputGeoInfo->faceCount];
+            vertexList.get(vl);
+            faceCounts.get(fc);
+
+            float* pos_attr = new float[ inputGeoInfo->pointCount * 3 ];
+            for ( int i = 0; i < inputGeoInfo->pointCount; ++i )
+                for ( int j = 0; j < 3; ++j )
+                    pos_attr[ i * 3 + j ] = points[ i ][ j ];
+
+            // Set the data
+            HAPI_SetGeoInfo(info.id, inputObjId, inputGeoId, inputGeoInfo);
+            HAPI_SetFaceCounts(info.id, inputObjId, inputGeoId, fc, 0, inputGeoInfo->faceCount);
+            HAPI_SetVertexList(info.id, inputObjId, inputGeoId, vl, 0, inputGeoInfo->vertexCount);
+
+
+
+            // Set position attributes.
+            HAPI_AttributeInfo* pos_attr_info = new HAPI_AttributeInfo();
+            pos_attr_info->exists             = true;
+            pos_attr_info->owner              = HAPI_ATTROWNER_POINT;
+            pos_attr_info->storage            = HAPI_STORAGETYPE_FLOAT;
+            pos_attr_info->count              = inputGeoInfo->pointCount;
+            pos_attr_info->tupleSize          = 3;
+            HAPI_AddAttribute( info.id, inputObjId, inputGeoId, "P", pos_attr_info );
+
+            HAPI_SetAttributeFloatData(info.id, inputObjId, inputGeoId, "P", pos_attr_info,
+                    pos_attr, 0, inputGeoInfo->pointCount);
+
+            // Commit it
+            HAPI_CommitGeo(info.id, inputObjId, inputGeoId);
+        }
+
+    }
+}
+
+
+void
+Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
+{
+    MStatus stat;
+
     MPlug instancersPlug = plug.child(AssetNodeAttributes::instancers);
 
-    // first pass - instancers
     int instancerIndex = 0;
+    MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
+    MArrayDataBuilder instancersBuilder = instancersHandle.builder();
     MIntArray instancedObjIds;
     for (int i=0; i<numObjects; i++)
     {
         Object* obj = objects[i];
-        MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
+        //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
 
         if (obj->type() == Object::OBJECT_TYPE_INSTANCER)
         {
-            MStatus stat = obj->compute(instancerElemPlug, data);
+            MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
+            stat = obj->compute(instancerElemHandle);
             if (MS::kSuccess == stat)
             {
                 instancerIndex++;
@@ -153,6 +270,16 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
             }
         }
     }
+    // clean up extra elements
+    int instBuilderSizeCheck = instancersBuilder.elementCount();
+    if (instBuilderSizeCheck > instancerIndex)
+    {
+        for (int i=instancerIndex; i<instBuilderSizeCheck; i++)
+        {
+            instancersBuilder.removeElement(i);
+        }
+    }
+    instancersHandle.set(instancersBuilder);
 
     // mark instanced objects
     for (int i=0; i<instancedObjIds.length(); i++)
@@ -161,25 +288,81 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
         obj->isInstanced = true;
     }
 
+    data.setClean(instancersPlug);
+}
 
-    // second pass - geometry objects
+
+void
+Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
+{
+    MStatus stat;
+
+    MPlug objectsPlug = plug.child(AssetNodeAttributes::objects);
+
     int objectIndex = 0;
+    cerr << "objectsPlug: " << objectsPlug.name() << endl;
+    MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
+    MArrayDataBuilder objectsBuilder = objectsHandle.builder();
+    cerr << "size +++++: " << objectsBuilder.elementCount() << endl;
     for (int i=0; i<numObjects; i++)
     {
+
+
         Object* obj = objects[i];
-        MPlug objectElemPlug = objectsPlug.elementByLogicalIndex(objectIndex);
+        //MPlug objectElemPlug = objectsPlug.elementByLogicalIndex(objectIndex);
 
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
-            MStatus stat = obj->compute(objectElemPlug, data);
+            MDataHandle h = objectsBuilder.addElement(objectIndex);
+            stat = obj->compute(h);
             if (MS::kSuccess == stat)
             {
                 objectIndex++;
             }
         }
     }
+    // clean up extra elements
+    int objBuilderSizeCheck = objectsBuilder.elementCount();
+    cerr << "objectIndex: " << objectIndex  << " objBuilderSizeCheck: " << objBuilderSizeCheck << endl;
+    if (objBuilderSizeCheck > objectIndex)
+    {
+        for (int i=objectIndex; i<objBuilderSizeCheck; i++)
+        {
+            try
+            {
+                cerr << "    remove item" << endl;
+                stat = objectsBuilder.removeElement(i);
+                Util::checkMayaStatus(stat);
+            } catch (HAPIError e)
+            {
+                cerr << e.what() << endl;
+            }
+        }
+    }
+    cerr << "objBuilderSizeCheck again: " << objectsBuilder.elementCount() << endl;
+    objectsHandle.set(objectsBuilder);
 
-    //data.setClean(numObjectsPlug);
+    objectsHandle.setAllClean();
+
+    data.setClean(objectsPlug);
+}
+
+
+MStatus
+Asset::compute(const MPlug& plug, MDataBlock& data)
+{
+    MStatus stat;
+
+    computeGeoInputs(plug, data);
+
+    update();
+
+    // first pass - instancers
+    computeInstancerObjects(plug, data);
+
+    // second pass - geometry objects
+    computeGeometryObjects(plug, data);
+
 }
 
 
@@ -197,13 +380,7 @@ Asset::getObjects()
 }
 
 
-//Object*
-//Asset::getVisibleObjects()
-//{
-    //return visibleObjects;
-//}
-
-
+// Parms ---------------------------------------------------
 void
 Asset::addAttrTo(MObject& child, MObject* parent)
 {

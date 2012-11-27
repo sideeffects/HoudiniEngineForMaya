@@ -24,12 +24,16 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
         obj = new GeometryObject(assetId, objectId);
 
     obj->objectControl = objControl;
+    obj->objectInfo = objInfo;
 
     return obj;
 }
 
 
 Object::Object() {}
+
+
+Object::~Object() {}
 
 
 Object::Object(int assetId, int objectId)
@@ -45,18 +49,29 @@ Object::Object(int assetId, int objectId)
 int Object::getId() { return objectId; }
 MString Object::getName() { return Util::getString(objectInfo.nameSH); }
 
+
 void
 Object::update()
 {
-    // update object
-    //HAPI_ObjectInfo myObjects[1];
-    //HAPI_GetObjects(assetId, myObjects, objectId, 1);
-    objectInfo = objectControl->getObjectInfo(objectId);
+    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    try
+    {
+        // update object
+        objectInfo = objectControl->getObjectInfo(objectId);
 
-    // update geometry
-    HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
-    //cerr << "object name: " << Util::getString(objectInfo.nameSH) << endl;
-    //cerr << "object id: " << objectInfo.id << endl;
+        // update geometry
+        hstat = HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
+        Util::checkHAPIStatus(hstat);
+        //cerr << "object name: " << Util::getString(objectInfo.nameSH) << endl;
+        //cerr << "object id: " << objectInfo.id << endl;
+
+    }
+    catch (HAPIError& e)
+    {
+        cerr << "obj " << getId() << " " << getName() << endl;
+        //cerr << e.what() << endl;
+        geoInfo.clear();
+    }
     
 
 
@@ -122,52 +137,6 @@ Object::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
 }
 
 
-void
-Object::reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts)
-{
-    int current_index = 0;
-    int numFaceCount = faceCounts.length();
-    for (int i=0; i<numFaceCount; i++)
-    {
-        int vertex_count = faceCounts[i];
-        int a = current_index;
-        int b = current_index + vertex_count - 1;
-        while (a < b)
-        {
-            int temp = data[a];
-            data[a] = data[b];
-            data[b] = temp;
-            a++;
-            b--;
-        }
-        current_index += vertex_count;
-    }
-}
-
-
-void
-Object::reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
-{
-    int current_index = 0;
-    int numFaceCount = faceCounts.length();
-    for (int i=0; i<numFaceCount; i++)
-    {
-        int vertex_count = faceCounts[i];
-        int a = current_index;
-        int b = current_index + vertex_count - 1;
-        while (a < b)
-        {
-            float temp = data[a];
-            data[a] = data[b];
-            data[b] = temp;
-            a++;
-            b--;
-        }
-        current_index += vertex_count;
-    }
-}
-
-
 // test functions
 void 
 Object::printAttributes(HAPI_AttributeOwner owner)
@@ -193,10 +162,11 @@ Object::printAttributes(HAPI_AttributeOwner owner)
 // end test functions
 
 
-MStatus
-Object::compute(const MPlug& plug, MDataBlock& data)
-{
-    return MS::kSuccess;
-}
+//MStatus
+//Object::compute(const MPlug& plug, MDataBlock& data)
+//Object::compute(const MPlug& plug, MDataBlock& data)
+//{
+    //return MS::kSuccess;
+//}
 
 

@@ -11,11 +11,13 @@ class InstancerObject: public Object
     public:
         InstancerObject();
         InstancerObject(int assetId, int objectId);
+        virtual ~InstancerObject();
 
         MIntArray getInstancedObjIds();
         MStringArray getUniqueInstObjNames();
 
-        virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+        virtual MStatus compute(MDataHandle& handle);
+        virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 
         virtual ObjectType type();
 

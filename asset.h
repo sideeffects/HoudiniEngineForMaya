@@ -11,7 +11,7 @@
 
 class Asset {
     public:
-        Asset(MString otlFilePath);
+        Asset(MString otlFilePath, MObject node);
         ~Asset();
 
         MObjectArray getParmAttributes();
@@ -36,9 +36,6 @@ class Asset {
         int numObjects;
 
 
-        // test
-        bool materialEnabled;
-
     private:
         void update();
 
@@ -50,7 +47,13 @@ class Asset {
         MObject createStringAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
         MObject createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
 
+        void computeGeoInputs(const MPlug& plug, MDataBlock& data);
+        void computeInstancerObjects(const MPlug& plug, MDataBlock& data);
+        void computeGeometryObjects(const MPlug& plug, MDataBlock& data);
+
+
     private:
+        MObject node;
         Object** objects;
 
         // Arrays of infos that can be accessed when updating objects,

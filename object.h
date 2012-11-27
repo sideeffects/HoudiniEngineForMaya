@@ -29,12 +29,16 @@ class Object {
 
         Object();
         Object(int assetId, int objectId);
+        virtual ~Object();
+
         MObject createMesh();
 
         virtual int getId();
         virtual MString getName();
 
-        virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+        //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+        virtual MStatus compute(MDataHandle& handle) = 0;
+        virtual MStatus setClean(MPlug& plug, MDataBlock& data) = 0;
         virtual ObjectType type() = 0;
 
     public:
@@ -47,8 +51,6 @@ class Object {
         // Utility
         virtual MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, MString name);
         virtual MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
-        virtual void reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts);
-        virtual void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts);
         virtual void printAttributes(HAPI_AttributeOwner owner);
 
     protected:

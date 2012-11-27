@@ -20,6 +20,9 @@ InstancerObject::InstancerObject(int assetId, int objectId)
 }
 
 
+InstancerObject::~InstancerObject() {}
+
+
 Object::ObjectType
 InstancerObject::type()
 {
@@ -94,7 +97,8 @@ InstancerObject::getUniqueInstObjNames()
 
 
 MStatus
-InstancerObject::compute(const MPlug& plug, MDataBlock& data)
+//InstancerObject::compute(const MPlug& plug, MDataBlock& data)
+InstancerObject::compute(MDataHandle& handle)
 {
     update();
 
@@ -105,10 +109,10 @@ InstancerObject::compute(const MPlug& plug, MDataBlock& data)
 
     //cerr << "InstancerObject: plug " << plug.name() << endl;
     //cerr << "objectToInstanceId: " << objectInfo.objectToInstanceId << endl;
-    MPlug instancerDataPlug = plug.child(AssetNodeAttributes::instancerData);
-    MPlug instancedObjectNamesPlug = plug.child(AssetNodeAttributes::instancedObjectNames);
+    MDataHandle instancerDataHandle = handle.child(AssetNodeAttributes::instancerData);
+    MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNodeAttributes::instancedObjectNames);
 
-    MDataHandle instHandle = data.outputValue(instancerDataPlug);
+    //MDataHandle instHandle = data.outputValue(instancerDataPlug);
     MFnArrayAttrsData fnAAD;
     MObject instOutput = fnAAD.create();
     MVectorArray positions = fnAAD.vectorArray("position");
@@ -141,33 +145,61 @@ InstancerObject::compute(const MPlug& plug, MDataBlock& data)
         objectIndices.append(objIndex);
     }
 
-    instHandle.set(instOutput);
+    instancerDataHandle.set(instOutput);
 
+    MArrayDataBuilder builder = instancedObjectNamesHandle.builder();
     if (objectInfo.objectToInstanceId >= 0)
     {
         // instancing a single object
         Object* objToInstance = objectControl->findObjectById(objectInfo.objectToInstanceId);
         MString name = objToInstance->getName();
 
-        MPlug instObjNamesElemPlug = instancedObjectNamesPlug.elementByLogicalIndex(0);
-        MDataHandle instObjNamesElemHandle = data.outputValue(instObjNamesElemPlug);
-        instObjNamesElemHandle.set(name);
+        MDataHandle h = builder.addElement(0);
+        h.set(name);
+
+        // clean up extra elements
+        //int builderSizeCheck = builder.elementCount();
+        //if (builderSizeCheck > 1)
+        //{
+            //for (int i=1; i<builderSizeCheck; i++)
+            //{
+                //builder.removeElement(i);
+            //}
+        //}
     } else 
     {
         // instancing multiple objects
         for (int i=0; i<uniqueInstObjNames.length(); i++)
         {
-            MPlug instObjNamesElemPlug = instancedObjectNamesPlug.elementByLogicalIndex(i);
-            MDataHandle instObjNamesElemHandle = data.outputValue(instObjNamesElemPlug);
-            instObjNamesElemHandle.set(uniqueInstObjNames[i]);
+            MDataHandle h = builder.addElement(i);
+            h.set(uniqueInstObjNames[i]);
+        }
+
+        // clean up extra elements
+        int builderSizeCheck = builder.elementCount();
+        if (builderSizeCheck > uniqueInstObjNames.length())
+        {
+            for (int i=uniqueInstObjNames.length(); i<builderSizeCheck; i++)
+            {
+                builder.removeElement(i);
+            }
         }
     }
+    instancedObjectNamesHandle.set(builder);
 
 
-    data.setClean(plug);
-    data.setClean(instancerDataPlug);
+    handle.setClean();
+    instancerDataHandle.setClean();
+    //data.setClean(plug);
+    //data.setClean(instancerDataPlug);
 
     return MS::kSuccess;
 
 }
 
+
+MStatus
+InstancerObject::setClean(MPlug& plug, MDataBlock& data)
+{
+    return MS::kSuccess;
+}

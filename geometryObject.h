@@ -8,9 +8,13 @@ class GeometryObject: public Object
     public:
         GeometryObject();
         GeometryObject(int assetId, int objectId);
+        virtual ~GeometryObject();
+
         MObject createMesh();
 
-        virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+        //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+        virtual MStatus compute(MDataHandle& handle);
+        virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 
         virtual ObjectType type();
 
@@ -21,8 +25,8 @@ class GeometryObject: public Object
         virtual void update();
 
     private:
-        void updateTransform(MPlug& plug, MDataBlock& data);
-        void updateMaterial(MPlug& plug, MDataBlock& data);
+        void updateTransform(MDataHandle& handle);
+        void updateMaterial(MDataHandle& handle);
         void updateFaceCounts();
         void updateVertexList();
         void updatePoints();

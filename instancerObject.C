@@ -20,6 +20,13 @@ InstancerObject::InstancerObject(int assetId, int objectId)
 }
 
 
+void
+InstancerObject::init()
+{
+    Object::init();
+}
+
+
 InstancerObject::~InstancerObject() {}
 
 
@@ -30,48 +37,85 @@ InstancerObject::type()
 }
 
 
+MStringArray
+InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
+{
+    HAPI_AttributeInfo attr_info;
+    attr_info.exists = false;
+    attr_info.owner = owner;
+    HAPI_GetAttributeInfo(assetId, objectId, 0, 0, name.asChar(), &attr_info);
+
+    MStringArray ret;
+    if (!attr_info.exists)
+        return ret;
+
+    int size = attr_info.count * attr_info.tupleSize;
+    int data[size];
+    // zero the array
+    for (int j=0; j<size; j++){
+        data[j] = 0;
+    }
+    int status = HAPI_GetAttributeStrData(assetId, objectId, 0, 0, name.asChar(),
+            &attr_info, data, 0, attr_info.count);
+
+    for (int j=0; j<size; j++){
+        ret.append(Util::getString(data[j]));
+    }
+
+    return ret;
+}
+
+
 void
 InstancerObject::update()
 {
     Object::update();
 
-    // clear the arrays
-    instancedObjectNames.clear();
-    instancedObjectIndices.clear();
-    uniqueInstObjNames.clear();
-
-    if (objectInfo.objectToInstanceId >= 0)
+    if (neverBuilt || geoInfo.hasGeoChanged)
     {
-        instancedObjectIndices = MIntArray(geoInfo.pointCount, 0);
-        return;
-    }
+        // TODO: assume only one part for instancers
+        HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+        hstat = HAPI_GetPartInfo(assetId, objectId, 0, 0, &partInfo);
+        Util::checkHAPIStatus(hstat);
 
-    // fill array of size pointCount of instanced names
-    MStringArray fullObjNames = getAttributeStringData(HAPI_ATTROWNER_POINT, "instance");
-    for (int i=0; i<fullObjNames.length(); i++)
-    {
-        MStringArray splitObjName;
-        fullObjNames[i].split('/', splitObjName);
-        instancedObjectNames.append(splitObjName[splitObjName.length()-1]);
-    }
+        // clear the arrays
+        instancedObjectNames.clear();
+        instancedObjectIndices.clear();
+        uniqueInstObjNames.clear();
 
-    // get a list of unique instanced names, and compute the object indices that would
-    // be passed to Maya instancer
-    for (int i=0; i<instancedObjectNames.length(); i++)
-    {
-        bool duplicate = false;
-        int j;
-        for (j=0; j<uniqueInstObjNames.length(); j++)
+        if (objectInfo.objectToInstanceId >= 0)
         {
-            if (uniqueInstObjNames[j] == instancedObjectNames[i])
-            {
-                duplicate = true;
-                break;
-            }
+            instancedObjectIndices = MIntArray(partInfo.pointCount, 0);
+            return;
         }
-        if (!duplicate)
-            uniqueInstObjNames.append(instancedObjectNames[i]);
-        instancedObjectIndices.append(j);
+
+        // fill array of size pointCount of instanced names
+        MStringArray fullObjNames = getAttributeStringData(HAPI_ATTROWNER_POINT, "instance");
+        for (int i=0; i<fullObjNames.length(); i++)
+        {
+            MStringArray splitObjName;
+            fullObjNames[i].split('/', splitObjName);
+            instancedObjectNames.append(splitObjName[splitObjName.length()-1]);
+        }
+
+        // get a list of unique instanced names, and compute the object indices that would
+        // be passed to Maya instancer
+        for (int i=0; i<instancedObjectNames.length(); i++)
+        {
+            bool duplicate = false;
+            int j;
+            for (j=0; j<uniqueInstObjNames.length(); j++)
+            {
+                if (uniqueInstObjNames[j] == instancedObjectNames[i])
+                {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate)
+                uniqueInstObjNames.append(instancedObjectNames[i]);
+            instancedObjectIndices.append(j);
+        }
     }
 
     //cerr << "update instancer: " << endl;
@@ -102,96 +146,86 @@ InstancerObject::compute(MDataHandle& handle)
 {
     update();
 
-    //printAttributes(HAPI_ATTROWNER_VERTEX);
-    //printAttributes(HAPI_ATTROWNER_POINT);
-    //printAttributes(HAPI_ATTROWNER_PRIM);
-    //printAttributes(HAPI_ATTROWNER_DETAIL);
-
-    //cerr << "InstancerObject: plug " << plug.name() << endl;
-    //cerr << "objectToInstanceId: " << objectInfo.objectToInstanceId << endl;
-    MDataHandle instancerDataHandle = handle.child(AssetNodeAttributes::instancerData);
-    MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNodeAttributes::instancedObjectNames);
-
-    //MDataHandle instHandle = data.outputValue(instancerDataPlug);
-    MFnArrayAttrsData fnAAD;
-    MObject instOutput = fnAAD.create();
-    MVectorArray positions = fnAAD.vectorArray("position");
-    MVectorArray rotations = fnAAD.vectorArray("rotation");
-    MVectorArray scales = fnAAD.vectorArray("scale");
-    MIntArray objectIndices = fnAAD.intArray("objectIndex");
-
-    int size = geoInfo.pointCount;
-    HAPI_Transform instTransforms[size];
-    HAPI_GetInstanceTransforms(assetId, objectInfo.id, 0, 5, instTransforms, 0, size);
-
-
-    //cerr << "instancedObjectNames: " << instancedObjectNames << endl;
-
-    //cerr << "get instance transforms" << endl;
-    for (int j=0; j<size; j++)
+    if (neverBuilt || geoInfo.hasGeoChanged)
     {
-        HAPI_Transform it = instTransforms[j];
-        MVector p(it.position[0], it.position[1], it.position[2]);
-        MVector r = MQuaternion(it.rotationQuaternion[0],
-                it.rotationQuaternion[1], it.rotationQuaternion[2],
-                it.rotationQuaternion[3]).asEulerRotation().asVector();
-        MVector s(it.scale[0], it.scale[1], it.scale[2]);
+        MDataHandle instancerDataHandle = handle.child(AssetNodeAttributes::instancerData);
+        MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNodeAttributes::instancedObjectNames);
 
-        int objIndex = instancedObjectIndices[j];
+        //MDataHandle instHandle = data.outputValue(instancerDataPlug);
+        MFnArrayAttrsData fnAAD;
+        MObject instOutput = fnAAD.create();
+        MVectorArray positions = fnAAD.vectorArray("position");
+        MVectorArray rotations = fnAAD.vectorArray("rotation");
+        MVectorArray scales = fnAAD.vectorArray("scale");
+        MIntArray objectIndices = fnAAD.intArray("objectIndex");
 
-        positions.append(p);
-        rotations.append(r);
-        scales.append(s);
-        objectIndices.append(objIndex);
-    }
+        int size = partInfo.pointCount;
+        HAPI_Transform instTransforms[size];
+        HAPI_GetInstanceTransforms(assetId, objectInfo.id, 0, 5, instTransforms, 0, size);
 
-    instancerDataHandle.set(instOutput);
 
-    MArrayDataBuilder builder = instancedObjectNamesHandle.builder();
-    if (objectInfo.objectToInstanceId >= 0)
-    {
-        // instancing a single object
-        Object* objToInstance = objectControl->findObjectById(objectInfo.objectToInstanceId);
-        MString name = objToInstance->getName();
+        //cerr << "instancedObjectNames: " << instancedObjectNames << endl;
 
-        MDataHandle h = builder.addElement(0);
-        h.set(name);
-
-        // clean up extra elements
-        //int builderSizeCheck = builder.elementCount();
-        //if (builderSizeCheck > 1)
-        //{
-            //for (int i=1; i<builderSizeCheck; i++)
-            //{
-                //builder.removeElement(i);
-            //}
-        //}
-    } else 
-    {
-        // instancing multiple objects
-        for (int i=0; i<uniqueInstObjNames.length(); i++)
+        //cerr << "get instance transforms" << endl;
+        for (int j=0; j<size; j++)
         {
-            MDataHandle h = builder.addElement(i);
-            h.set(uniqueInstObjNames[i]);
+            HAPI_Transform it = instTransforms[j];
+            MVector p(it.position[0], it.position[1], it.position[2]);
+            MVector r = MQuaternion(it.rotationQuaternion[0],
+                    it.rotationQuaternion[1], it.rotationQuaternion[2],
+                    it.rotationQuaternion[3]).asEulerRotation().asVector();
+            MVector s(it.scale[0], it.scale[1], it.scale[2]);
+
+            int objIndex = instancedObjectIndices[j];
+
+            positions.append(p);
+            rotations.append(r);
+            scales.append(s);
+            objectIndices.append(objIndex);
         }
 
-        // clean up extra elements
-        int builderSizeCheck = builder.elementCount();
-        if (builderSizeCheck > uniqueInstObjNames.length())
+        instancerDataHandle.set(instOutput);
+
+        MArrayDataBuilder builder = instancedObjectNamesHandle.builder();
+        if (objectInfo.objectToInstanceId >= 0)
         {
-            for (int i=uniqueInstObjNames.length(); i<builderSizeCheck; i++)
+            // instancing a single object
+            Object* objToInstance = objectControl->findObjectById(objectInfo.objectToInstanceId);
+            MString name = objToInstance->getName();
+
+            MDataHandle h = builder.addElement(0);
+            h.set(name);
+     
+        } else 
+        {
+            // instancing multiple objects
+            for (int i=0; i<uniqueInstObjNames.length(); i++)
             {
-                builder.removeElement(i);
+                MDataHandle h = builder.addElement(i);
+                h.set(uniqueInstObjNames[i]);
+            }
+
+            // clean up extra elements
+            int builderSizeCheck = builder.elementCount();
+            if (builderSizeCheck > uniqueInstObjNames.length())
+            {
+                for (int i=uniqueInstObjNames.length(); i<builderSizeCheck; i++)
+                {
+                    builder.removeElement(i);
+                }
             }
         }
+        instancedObjectNamesHandle.set(builder);
+
+
+        handle.setClean();
+        instancerDataHandle.setClean();
+        //data.setClean(plug);
+        //data.setClean(instancerDataPlug);
+
+
+        neverBuilt = false;
     }
-    instancedObjectNamesHandle.set(builder);
-
-
-    handle.setClean();
-    instancerDataHandle.setClean();
-    //data.setClean(plug);
-    //data.setClean(instancerDataPlug);
 
     return MS::kSuccess;
 

@@ -31,7 +31,7 @@ class Object {
         Object(int assetId, int objectId);
         virtual ~Object();
 
-        MObject createMesh();
+        virtual void init();
 
         virtual int getId();
         virtual MString getName();
@@ -41,6 +41,9 @@ class Object {
         virtual MStatus setClean(MPlug& plug, MDataBlock& data) = 0;
         virtual ObjectType type() = 0;
 
+        // Utility
+        virtual void printAttributes(HAPI_AttributeOwner owner);
+
     public:
         Asset* objectControl;
         bool isInstanced;
@@ -48,10 +51,6 @@ class Object {
     protected:
         virtual void update();
 
-        // Utility
-        virtual MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, MString name);
-        virtual MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
-        virtual void printAttributes(HAPI_AttributeOwner owner);
 
     protected:
         HAPI_ObjectInfo objectInfo;
@@ -59,6 +58,7 @@ class Object {
         int assetId;
         int objectId;
 
+        bool neverBuilt;
 };
 
 #endif

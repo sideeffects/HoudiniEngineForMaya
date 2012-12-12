@@ -10,9 +10,9 @@ LIBS=-L$(MAYA_DIR)/lib -lOpenMaya -lFoundation -L$(HDSO) `python2.6 $(SHM)/list_
 
 all: asset.so
 
-asset.so: assetNode.o asset.o object.o util.o common.o geometryObject.o instancerObject.o assetNodeMonitor.o
+asset.so: assetNode.o asset.o object.o util.o common.o geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so assetNode.o asset.o object.o util.o common.o \
-	    geometryObject.o instancerObject.o assetNodeMonitor.o $(LIBS)
+	    geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o $(LIBS)
 
 assetNode.o: assetNode.C assetNode.h
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetNode.C
@@ -37,6 +37,9 @@ instancerObject.o: instancerObject.C instancerObject.h
 
 assetNodeMonitor.o: assetNodeMonitor.C assetNodeMonitor.h
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetNodeMonitor.C
+
+geometryPart.o: geometryPart.C geometryPart.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) geometryPart.C
 
 
 clean:

@@ -6,6 +6,7 @@
 
 #include "asset.h"
 #include "geometryObject.h"
+#include "geometryPart.h"
 #include "util.h"
 #include "common.h"
 
@@ -15,11 +16,32 @@ GeometryObject::GeometryObject() {}
 GeometryObject::GeometryObject(int assetId, int objectId)
     :Object(assetId, objectId)
 {
-    //update();
 }
 
 
-GeometryObject::~GeometryObject() {}
+void
+GeometryObject::init()
+{
+    // Do a full update
+    Object::init();
+
+    int partCount = geoInfo.partCount;
+    cerr << "obj init: " << partCount << endl;
+    parts = new GeometryPart[partCount];
+
+    for (int i=0; i<partCount; i++)
+    {
+        MString partName = getName() + "_partShape" + (i+1);
+        cerr << "&&&&&&&&&&&& partName: " << partName << endl;
+        parts[i] = GeometryPart(assetId, objectId, 0, i, partName, geoInfo, objectControl);
+    }
+}
+
+
+GeometryObject::~GeometryObject()
+{
+    delete[] parts;
+}
 
 
 Object::ObjectType
@@ -29,158 +51,225 @@ GeometryObject::type()
 }
 
 
-void
-GeometryObject::updateFaceCounts()
-{
-    int numFaceCount = geoInfo.faceCount;
-    if (numFaceCount > 0)
-    {
-        int myFaceCounts[numFaceCount];
-        HAPI_GetFaceCounts(assetId, objectInfo.id, 0, myFaceCounts, 0, numFaceCount);
-        MIntArray result(myFaceCounts, numFaceCount);
+//void
+//GeometryObject::updateFaceCounts()
+//{
+    //int numFaceCount = geoInfo.faceCount;
+    //if (numFaceCount > 0)
+    //{
+        //int myFaceCounts[numFaceCount];
+        //HAPI_GetFaceCounts(assetId, objectInfo.id, 0, myFaceCounts, 0, numFaceCount);
+        //MIntArray result(myFaceCounts, numFaceCount);
 
-        faceCounts = result;
-    }
-    //cerr << "facecounts: " << faceCounts << endl;
-}
-
-
-void
-GeometryObject::updateVertexList()
-{
-    int numVertexCount = geoInfo.vertexCount;
-    if (numVertexCount > 0)
-    {
-        int myVertexList[numVertexCount];
-        HAPI_GetVertexList(assetId, objectInfo.id, 0, myVertexList, 0, numVertexCount);
-        MIntArray result(myVertexList, numVertexCount);
-        //cerr << "vertextList: " << endl;
-        //cerr << result << endl;
-        Util::reverseWindingOrderInt(result, faceCounts);
-
-        vertexList = result;
-    }
-}
+        //faceCounts = result;
+    //}
+    ////cerr << "facecounts: " << faceCounts << endl;
+//}
 
 
-void
-GeometryObject::updatePoints()
-{
-    MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_POINT, "P");
-    // make a maya point array, assume 3 tuple
-    MFloatPointArray result;
-    int i = 0;
-    int len = data.length();
-    while (i < len)
-    {
-        MFloatPoint v(data[i], data[i+1], data[i+2]);
-        result.append(v);
-        i = i+3;
-    }
+//void
+//GeometryObject::updateVertexList()
+//{
+    //int numVertexCount = geoInfo.vertexCount;
+    //if (numVertexCount > 0)
+    //{
+        //int myVertexList[numVertexCount];
+        //HAPI_GetVertexList(assetId, objectInfo.id, 0, myVertexList, 0, numVertexCount);
+        //MIntArray result(myVertexList, numVertexCount);
+        ////cerr << "vertextList: " << endl;
+        ////cerr << result << endl;
+        //Util::reverseWindingOrderInt(result, faceCounts);
 
-    points = result;
-}
-
-
-void
-GeometryObject::updateNormals()
-{
-    MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_POINT, "N");
-    // make a maya vector array, assume 3 tuple
-    MVectorArray result;
-
-    if (data.length() > 0)
-    {
-        int i = 0;
-        int len = data.length();
-        while (i < len)
-        {
-            MFloatVector v(data[i], data[i+1], data[i+2]);
-            result.append(v);
-            i = i+3;
-        }
-    }
-
-    normals = result;
-}
+        //vertexList = result;
+    //}
+//}
 
 
-void
-GeometryObject::updateUVs()
-{
-    MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_VERTEX, "uv");
-    // split UVs into two arrays, assume 3 tuple
-    MFloatArray Us;
-    MFloatArray Vs;
+//void
+//GeometryObject::updatePoints()
+//{
+    //MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_POINT, "P");
+    //// make a maya point array, assume 3 tuple
+    //MFloatPointArray result;
+    //int i = 0;
+    //int len = data.length();
+    //while (i < len)
+    //{
+        //MFloatPoint v(data[i], data[i+1], data[i+2]);
+        //result.append(v);
+        //i = i+3;
+    //}
 
-    if (data.length() > 0)
-    {
-        int i = 0;
-        int len = data.length();
-        while (i < len)
-        {
-            Us.append(data[i]);
-            Vs.append(data[i+1]);
-            i = i+3;
-        }
-        Util::reverseWindingOrderFloat(Us, faceCounts);
-        Util::reverseWindingOrderFloat(Vs, faceCounts);
-    }
+    //points = result;
+//}
 
-    us = Us;
-    vs = Vs;
-}
+
+//void
+//GeometryObject::updateNormals()
+//{
+    //MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_POINT, "N");
+    //// make a maya vector array, assume 3 tuple
+    //MVectorArray result;
+
+    //if (data.length() > 0)
+    //{
+        //int i = 0;
+        //int len = data.length();
+        //while (i < len)
+        //{
+            //MFloatVector v(data[i], data[i+1], data[i+2]);
+            //result.append(v);
+            //i = i+3;
+        //}
+    //}
+
+    //normals = result;
+//}
+
+
+//void
+//GeometryObject::updateUVs()
+//{
+    //MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_VERTEX, "uv");
+    //// split UVs into two arrays, assume 3 tuple
+    //MFloatArray Us;
+    //MFloatArray Vs;
+
+    //if (data.length() > 0)
+    //{
+        //int i = 0;
+        //int len = data.length();
+        //while (i < len)
+        //{
+            //Us.append(data[i]);
+            //Vs.append(data[i+1]);
+            //i = i+3;
+        //}
+        //Util::reverseWindingOrderFloat(Us, faceCounts);
+        //Util::reverseWindingOrderFloat(Vs, faceCounts);
+    //}
+
+    //us = Us;
+    //vs = Vs;
+//}
 
 
 void
 GeometryObject::update()
 {
+    int oldPartCount = geoInfo.partCount;
     Object::update();
+    int partCount = geoInfo.partCount;
 
-    updateFaceCounts();
-    updateVertexList();
-    updatePoints();
-    updateNormals();
-    updateUVs();
+    // if partCount changed, we clear out the array and make a new one.
+    if (oldPartCount != partCount)
+    {
+        delete[] parts;
+        parts = new GeometryPart[partCount];
+        for (int i=0; i<partCount; i++)
+        {
+            MString partName = getName() + "_partShape" + (i+1);
+            cerr << "&&&&&&&&&&&& partName: " << partName << endl;
+            parts[i] = GeometryPart(assetId, objectId, 0, i, partName, geoInfo, objectControl);
+        }
+    }
+    else
+    {
+        for (int i=0; i<partCount; i++)
+        {
+            parts[i].setGeoInfo(geoInfo);
+        }
+    }
+
+    //updateFaceCounts();
+    //updateVertexList();
+    //updatePoints();
+    //updateNormals();
+    //updateUVs();
 
 }
 
 
 MStatus
-//GeometryObject::compute(const MPlug& plug, MDataBlock& data)
 GeometryObject::compute(MDataHandle& handle)
+{
+    //update();
+
+    //// Don't output mesh for invisible geos
+    //if (!objectInfo.isVisible && !isInstanced)
+        //return MS::kFailure;
+
+    //// Don't output mesh for degenerate geos
+    //if (geoInfo.pointCount == 0 || geoInfo.faceCount == 0|| geoInfo.vertexCount == 0)
+        //return MS::kFailure;
+
+    //cerr << "compute object: " << getName() << endl;
+    //// Get plugs
+    //MDataHandle objectNameHandle = handle.child(AssetNodeAttributes::objectName);
+    //MDataHandle meshHandle = handle.child(AssetNodeAttributes::mesh);
+    //MDataHandle transformHandle = handle.child(AssetNodeAttributes::transform);
+    //MDataHandle materialHandle = handle.child(AssetNodeAttributes::material);
+
+    //// Object name
+    //objectNameHandle.set(Util::getString(objectInfo.nameSH));
+
+    //// Mesh
+    //MObject newMeshData = createMesh();
+    //meshHandle.set(newMeshData);
+
+    //// Transform and materials
+    //updateTransform(transformHandle);
+    //updateMaterial(materialHandle);
+
+    //objectNameHandle.setClean();
+    //meshHandle.setClean();
+    //handle.setClean();
+
+    return MS::kSuccess;
+}
+
+
+MStatus
+GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
 {
     update();
 
-    // Don't output mesh for invisible geos
-    if (!objectInfo.isVisible && !isInstanced)
-        return MS::kFailure;
+    // TODO: this may be temporary until HAPI supports actual groups
+    if (neverBuilt || objectInfo.haveGeosChanged)
+    {
+        MStatus stat;
 
-    // Don't output mesh for degenerate geos
-    if (geoInfo.pointCount == 0 || geoInfo.faceCount == 0|| geoInfo.vertexCount == 0)
-        return MS::kFailure;
+        // Don't output mesh for invisible geos
+        if (!objectInfo.isVisible && !isInstanced)
+            return MS::kFailure;
 
-    cerr << "compute object: " << getName() << endl;
-    // Get plugs
-    MDataHandle objectNameHandle = handle.child(AssetNodeAttributes::objectName);
-    MDataHandle meshHandle = handle.child(AssetNodeAttributes::mesh);
-    MDataHandle transformHandle = handle.child(AssetNodeAttributes::transform);
-    MDataHandle materialHandle = handle.child(AssetNodeAttributes::material);
+        // TODO: right now assume one geo
+        for (int i=0; i<geoInfo.partCount; i++)
+        {
+            MDataHandle h = builder->addElement(*index);
+            stat = parts[i].compute(h);
 
-    // Object name
-    objectNameHandle.set(Util::getString(objectInfo.nameSH));
+            if (MS::kSuccess == stat)
+            {
+                if (neverBuilt || objectInfo.hasTransformChanged)
+                {
+                    MDataHandle t = h.child(AssetNodeAttributes::transform);
+                    updateTransform(t);
+                }
+                (*index)++;
+            }
+        }
 
-    // Mesh
-    MObject newMeshData = createMesh();
-    meshHandle.set(newMeshData);
-
-    // Transform and materials
-    updateTransform(transformHandle);
-    updateMaterial(materialHandle);
-
-    objectNameHandle.setClean();
-    meshHandle.setClean();
-    handle.setClean();
+        neverBuilt = false;
+    }
+    else
+    {
+        for (int i=0; i<geoInfo.partCount; i++)
+        {
+            MDataHandle h = builder->addElement(*index);
+            (*index)++;
+        }
+    }
 
     return MS::kSuccess;
 }
@@ -209,51 +298,53 @@ GeometryObject::setClean(MPlug& plug, MDataBlock& data)
 }
 
 
-MObject
-GeometryObject::createMesh()
-{
+//MObject
+//GeometryObject::createMesh()
+//{
 
-    //cerr << "Creating mesh... " << Util::getString(objectInfo.nameSH) << endl;
-    // Mesh data
-    MFnMeshData dataCreator;
-    MObject outData = dataCreator.create();
+    ////cerr << "Creating mesh... " << Util::getString(objectInfo.nameSH) << endl;
+    //// Mesh data
+    //MFnMeshData dataCreator;
+    //MObject outData = dataCreator.create();
 
-    // create mesh
-    MFnMesh meshFS;
-    MObject newMesh = meshFS.create(points.length(), faceCounts.length(),
-            points, faceCounts, vertexList, outData);
+    //// create mesh
+    //MFnMesh meshFS;
+    //MObject newMesh = meshFS.create(points.length(), faceCounts.length(),
+            //points, faceCounts, vertexList, outData);
 
-    // set normals
-    if (normals.length() > 0)
-    {
-        MIntArray vlist;
-        for (int j=0; j<points.length(); j++)
-            vlist.append(j);
-        meshFS.setVertexNormals(normals, vlist);
-    }
+    //// set normals
+    //if (normals.length() > 0)
+    //{
+        //MIntArray vlist;
+        //for (int j=0; j<points.length(); j++)
+            //vlist.append(j);
+        //meshFS.setVertexNormals(normals, vlist);
+    //}
 
-    // set UVs
-    if (us.length() > 0)
-    {
-        meshFS.setUVs(us, vs);
-        MIntArray uvIds;
-        for (int j=0; j<vertexList.length(); j++)
-            uvIds.append(j);
-        meshFS.assignUVs(faceCounts, uvIds);
-    }
+    //// set UVs
+    //if (us.length() > 0)
+    //{
+        //meshFS.setUVs(us, vs);
+        //MIntArray uvIds;
+        //for (int j=0; j<vertexList.length(); j++)
+            //uvIds.append(j);
+        //meshFS.assignUVs(faceCounts, uvIds);
+    //}
 
-    return outData;
+    //return outData;
 
-}
+//}
 
 
 void GeometryObject::updateTransform(MDataHandle& handle)
 {
+    cerr << "Update transform: " << getName() << endl;
     MDataHandle translateHandle = handle.child(AssetNodeAttributes::translateAttr);
     MDataHandle rotateHandle = handle.child(AssetNodeAttributes::rotateAttr);
     MDataHandle scaleHandle = handle.child(AssetNodeAttributes::scaleAttr);
 
-    transformInfo = objectControl->getTransformInfo(objectId);
+    HAPI_GetObjectTransforms(assetId, 5, &transformInfo, objectId, 1);
+    //transformInfo = objectControl->getTransformInfo(objectId);
 
     // convert to euler angle
     MEulerRotation r = MQuaternion(transformInfo.rotationQuaternion[0],
@@ -272,40 +363,40 @@ void GeometryObject::updateTransform(MDataHandle& handle)
 }
 
 
-void
-GeometryObject::updateMaterial(MDataHandle& handle)
-{
-    MDataHandle matExistsHandle = handle.child(AssetNodeAttributes::materialExists);
-    MDataHandle ambientHandle = handle.child(AssetNodeAttributes::ambientAttr);
-    MDataHandle diffuseHandle = handle.child(AssetNodeAttributes::diffuseAttr);
-    MDataHandle specularHandle = handle.child(AssetNodeAttributes::specularAttr);
-    MDataHandle texturePathHandle = handle.child(AssetNodeAttributes::texturePath);
+//void
+//GeometryObject::updateMaterial(MDataHandle& handle)
+//{
+    //MDataHandle matExistsHandle = handle.child(AssetNodeAttributes::materialExists);
+    //MDataHandle ambientHandle = handle.child(AssetNodeAttributes::ambientAttr);
+    //MDataHandle diffuseHandle = handle.child(AssetNodeAttributes::diffuseAttr);
+    //MDataHandle specularHandle = handle.child(AssetNodeAttributes::specularAttr);
+    //MDataHandle texturePathHandle = handle.child(AssetNodeAttributes::texturePath);
 
-    //cerr << "Updating materials .................." << endl;
+    ////cerr << "Updating materials .................." << endl;
 
-    if (geoInfo.materialId < 0)
-    {
-        matExistsHandle.set(false);
-    } else
-    {
-        // get material info
-        int matId = geoInfo.materialId;
-        materialInfo = objectControl->getMaterialInfo(matId);
+    //if (geoInfo.materialId < 0)
+    //{
+        //matExistsHandle.set(false);
+    //} else
+    //{
+        //// get material info
+        //int matId = geoInfo.materialId;
+        //materialInfo = objectControl->getMaterialInfo(matId);
 
-        matExistsHandle.set(true);
+        //matExistsHandle.set(true);
 
-        ambientHandle.set3Float(materialInfo.ambient[0], materialInfo.ambient[1], materialInfo.ambient[2]);
-        diffuseHandle.set3Float(materialInfo.diffuse[0], materialInfo.diffuse[1], materialInfo.diffuse[2]);
-        specularHandle.set3Float(materialInfo.specular[0], materialInfo.specular[1], materialInfo.specular[2]);
-        MString texturePath = Util::getString(materialInfo.textureFilePathSH);
-        texturePathHandle.set(texturePath);
-    }
+        //ambientHandle.set3Float(materialInfo.ambient[0], materialInfo.ambient[1], materialInfo.ambient[2]);
+        //diffuseHandle.set3Float(materialInfo.diffuse[0], materialInfo.diffuse[1], materialInfo.diffuse[2]);
+        //specularHandle.set3Float(materialInfo.specular[0], materialInfo.specular[1], materialInfo.specular[2]);
+        //MString texturePath = Util::getString(materialInfo.textureFilePathSH);
+        //texturePathHandle.set(texturePath);
+    //}
 
     
-    handle.setClean();
-    matExistsHandle.setClean();
-    ambientHandle.setClean();
-    diffuseHandle.setClean();
-    specularHandle.setClean();
-    texturePathHandle.setClean();
-}
+    //handle.setClean();
+    //matExistsHandle.setClean();
+    //ambientHandle.setClean();
+    //diffuseHandle.setClean();
+    //specularHandle.setClean();
+    //texturePathHandle.setClean();
+//}

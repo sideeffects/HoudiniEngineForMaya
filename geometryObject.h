@@ -2,6 +2,7 @@
 #define GEOMETRY_OBJECT_H
 
 #include "object.h"
+#include "geometryPart.h"
 
 class GeometryObject: public Object
 {
@@ -10,10 +11,16 @@ class GeometryObject: public Object
         GeometryObject(int assetId, int objectId);
         virtual ~GeometryObject();
 
-        MObject createMesh();
+        virtual void init();
 
-        //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+        //MObject createMesh();
+
         virtual MStatus compute(MDataHandle& handle);
+
+        //*************** function until groups are fully supported **************
+        MStatus computeParts(MArrayDataBuilder* builder, int* index);
+        //************************************************************************
+
         virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 
         virtual ObjectType type();
@@ -26,23 +33,24 @@ class GeometryObject: public Object
 
     private:
         void updateTransform(MDataHandle& handle);
-        void updateMaterial(MDataHandle& handle);
-        void updateFaceCounts();
-        void updateVertexList();
-        void updatePoints();
-        void updateNormals();
-        void updateUVs();
+        //void updateMaterial(MDataHandle& handle);
+        //void updateFaceCounts();
+        //void updateVertexList();
+        //void updatePoints();
+        //void updateNormals();
+        //void updateUVs();
 
     private:
         HAPI_Transform transformInfo;
-        HAPI_MaterialInfo materialInfo;
+        GeometryPart* parts;
+        //HAPI_MaterialInfo materialInfo;
 
-        MIntArray faceCounts;
-        MIntArray vertexList;
-        MFloatPointArray points;
-        MVectorArray normals;
-        MFloatArray us;
-        MFloatArray vs;
+        //MIntArray faceCounts;
+        //MIntArray vertexList;
+        //MFloatPointArray points;
+        //MVectorArray normals;
+        //MFloatArray us;
+        //MFloatArray vs;
     
 };
 

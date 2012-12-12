@@ -14,6 +14,8 @@ class Asset {
         Asset(MString otlFilePath, MObject node);
         ~Asset();
 
+        void init();
+
         MObjectArray getParmAttributes();
         Object** getObjects();
         Object* findObjectByName(MString name);
@@ -37,6 +39,7 @@ class Asset {
 
 
     private:
+
         void update();
 
         void addAttrTo(MObject& child, MObject* parent);
@@ -54,6 +57,7 @@ class Asset {
 
     private:
         MObject node;
+        MObject inputs;
         Object** objects;
 
         // Arrays of infos that can be accessed when updating objects,

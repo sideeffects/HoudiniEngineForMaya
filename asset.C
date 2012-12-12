@@ -4,6 +4,7 @@
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnEnumAttribute.h>
 #include <maya/MFnMesh.h>
+#include <maya/MFnIntArrayData.h>
 #include <maya/MItMeshPolygon.h>
 #include <maya/MGlobal.h>
 
@@ -11,6 +12,7 @@
 #include "util.h"
 #include "common.h"
 #include "instancerObject.h"
+#include "geometryObject.h"
 
 Asset::Asset(MString otlFilePath, MObject node)
     :node(node)
@@ -40,28 +42,40 @@ Asset::Asset(MString otlFilePath, MObject node)
     cerr << "minGeoInputCount: " << info.minGeoInputCount << endl;
     cerr << "maxGeoInputCount: " << info.maxGeoInputCount << endl;
 
+    init();
+
+}
+
+
+void
+Asset::init()
+{
+
     // input geos
     if (info.maxGeoInputCount > 0)
     {
-        MFnTypedAttribute tAttr;
+        MFnGenericAttribute gAttr;
         MFnCompoundAttribute cAttr;
 
         int inputCount = info.maxGeoInputCount;
 
-        AssetNodeAttributes::input = cAttr.create("input", "in");
+        inputs = cAttr.create("inputs", "ins");
 
         for (int i=0; i<inputCount; i++)
         {
             MString longName = MString("input") + (i+1);
             MString shortName = MString("in") + (i+1);
-            MObject input = tAttr.create(longName, shortName, MFnData::kMesh);
+            MObject input = gAttr.create(longName, shortName);
+            gAttr.addDataAccept(MFnData::kMesh);
+            gAttr.addDataAccept(MFnData::kIntArray);
 
             cAttr.addChild(input);
         }
-        addAttrTo(AssetNodeAttributes::input, NULL);
+        addAttrTo(inputs, NULL);
     }
 
     // get the infos
+    update();
     update();
 
     // objects
@@ -72,10 +86,22 @@ Asset::Asset(MString otlFilePath, MObject node)
     for (int i=0; i<objCount; i++)
     {
         objects[i] = Object::createObject(info.id, i, this);
+        objects[i]->init();
     }
 
     // build parms
     buildParms();
+}
+
+
+Asset::~Asset()
+{
+    for (int i=0; i<numObjects; i++)
+        delete objects[i];
+    delete[] objects;
+    delete[] objectInfos;
+    delete[] transformInfos;
+    delete[] materialInfos;
 }
 
 
@@ -117,14 +143,14 @@ Asset::update()
     HAPI_GetObjects(info.id, objectInfos, 0, info.objectCount);
 
     // update transform infos
-    delete[] transformInfos;
-    transformInfos = new HAPI_Transform[info.objectCount];
-    HAPI_GetObjectTransforms(info.id, 5, transformInfos, 0, info.objectCount);
+    //delete[] transformInfos;
+    //transformInfos = new HAPI_Transform[info.objectCount];
+    //HAPI_GetObjectTransforms(info.id, 5, transformInfos, 0, info.objectCount);
 
     // update material infos
-    delete[] materialInfos;
-    materialInfos = new HAPI_MaterialInfo[info.materialCount];
-    HAPI_GetMaterials(info.id, materialInfos, 0, info.materialCount);
+    //delete[] materialInfos;
+    //materialInfos = new HAPI_MaterialInfo[info.materialCount];
+    //HAPI_GetMaterials(info.id, materialInfos, 0, info.materialCount);
 }
 
 
@@ -134,21 +160,28 @@ Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
     // Geo inputs
     for (int i=0; i<info.maxGeoInputCount; i++)
     {
-
-        MPlug inputPlug(node, AssetNodeAttributes::input);
+        MPlug inputPlug(node, inputs);
         MPlug elemInputPlug = inputPlug.child(i);
-        MDataHandle elemInputHandle = data.inputValue(elemInputPlug);
-        cerr << "type: " << elemInputHandle.type() << endl;
-        if (!elemInputPlug.isConnected() || elemInputHandle.type() != MFnData::kMesh)
+
+        if (!elemInputPlug.isConnected())
         {
-            cerr << "plug name: " << elemInputPlug.name() << endl;
-            cerr << "isConnected: " << elemInputPlug.isConnected() << endl;
-            cerr << "type match kmesh: " << (elemInputHandle.type() == MFnData::kMesh) << endl;
-            // invalid or no input
-            // have to disconnect geo input in Houdini
             HAPI_DisconnectAssetGeometry(info.id, i);
+            return;
         }
-        else
+
+        // input from another asset
+        MDataHandle elemInputHandle = data.inputValue(elemInputPlug);
+        if (elemInputHandle.type() == MFnData::kIntArray)
+        {
+            MFnIntArrayData fnIAD(elemInputHandle.data());
+            MIntArray metaData = fnIAD.array();
+            HAPI_ConnectAssetGeometry(metaData[0], metaData[1], metaData[3], info.id, i);
+            return;
+        }
+
+        // raw mesh input
+        cerr << "type: " << elemInputHandle.type() << endl;
+        if (elemInputHandle.type() == MFnData::kMesh)
         {
             // extract mesh data from Maya
             MObject inputMesh = elemInputHandle.asMesh();
@@ -180,33 +213,37 @@ Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
             HAPI_CreateGeoInput(info.id, i, &inputObjId, &inputGeoId);
 
             // set up GeoInfo
-            HAPI_GeoInfo* inputGeoInfo = new HAPI_GeoInfo();
-            inputGeoInfo->id           = inputGeoId;
-            inputGeoInfo->materialId   = -1;
-            inputGeoInfo->faceCount    = faceCounts.length();
-            inputGeoInfo->vertexCount  = vertexList.length();
-            inputGeoInfo->pointCount   = points.length();
+            //HAPI_GeoInfo* inputGeoInfo = new HAPI_GeoInfo();
+            //inputGeoInfo->id           = inputGeoId;
+            //inputGeoInfo->partCount    = 1;
+            HAPI_PartInfo* partInfo    = new HAPI_PartInfo();
+            partInfo->id               = 0;
+            partInfo->materialId       = -1;
+            partInfo->faceCount        = faceCounts.length();
+            partInfo->vertexCount      = vertexList.length();
+            partInfo->pointCount       = points.length();
 
-            inputGeoInfo->pointAttributeCount  = 1;
-            inputGeoInfo->vertexAttributeCount = 0;
-            inputGeoInfo->faceAttributeCount   = 0;
-            inputGeoInfo->detailAttributeCount = 0;
+            partInfo->pointAttributeCount  = 1;
+            partInfo->vertexAttributeCount = 0;
+            partInfo->faceAttributeCount   = 0;
+            partInfo->detailAttributeCount = 0;
 
             // copy data to arrays
-            int vl[inputGeoInfo->vertexCount];
-            int fc[inputGeoInfo->faceCount];
+            int vl[partInfo->vertexCount];
+            int fc[partInfo->faceCount];
             vertexList.get(vl);
             faceCounts.get(fc);
 
-            float* pos_attr = new float[ inputGeoInfo->pointCount * 3 ];
-            for ( int i = 0; i < inputGeoInfo->pointCount; ++i )
+            float* pos_attr = new float[ partInfo->pointCount * 3 ];
+            for ( int i = 0; i < partInfo->pointCount; ++i )
                 for ( int j = 0; j < 3; ++j )
                     pos_attr[ i * 3 + j ] = points[ i ][ j ];
 
             // Set the data
-            HAPI_SetGeoInfo(info.id, inputObjId, inputGeoId, inputGeoInfo);
-            HAPI_SetFaceCounts(info.id, inputObjId, inputGeoId, fc, 0, inputGeoInfo->faceCount);
-            HAPI_SetVertexList(info.id, inputObjId, inputGeoId, vl, 0, inputGeoInfo->vertexCount);
+            //HAPI_SetGeoInfo(info.id, inputObjId, inputGeoId, inputGeoInfo);
+            HAPI_SetPartInfo(info.id, inputObjId, inputGeoId, partInfo);
+            HAPI_SetFaceCounts(info.id, inputObjId, inputGeoId, fc, 0, partInfo->faceCount);
+            HAPI_SetVertexList(info.id, inputObjId, inputGeoId, vl, 0, partInfo->vertexCount);
 
 
 
@@ -215,15 +252,19 @@ Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
             pos_attr_info->exists             = true;
             pos_attr_info->owner              = HAPI_ATTROWNER_POINT;
             pos_attr_info->storage            = HAPI_STORAGETYPE_FLOAT;
-            pos_attr_info->count              = inputGeoInfo->pointCount;
+            pos_attr_info->count              = partInfo->pointCount;
             pos_attr_info->tupleSize          = 3;
             HAPI_AddAttribute( info.id, inputObjId, inputGeoId, "P", pos_attr_info );
 
             HAPI_SetAttributeFloatData(info.id, inputObjId, inputGeoId, "P", pos_attr_info,
-                    pos_attr, 0, inputGeoInfo->pointCount);
+                    pos_attr, 0, partInfo->pointCount);
 
             // Commit it
             HAPI_CommitGeo(info.id, inputObjId, inputGeoId);
+
+            delete partInfo;
+            delete[] pos_attr;
+            delete pos_attr_info;
         }
 
     }
@@ -286,6 +327,7 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
     {
         Object* obj = objects[instancedObjIds[i]];
         obj->isInstanced = true;
+        cerr << "mark instanced obj: " << obj->getName() << endl;
     }
 
     data.setClean(instancersPlug);
@@ -308,17 +350,16 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     {
 
 
-        Object* obj = objects[i];
+        GeometryObject* obj = (GeometryObject*)(objects[i]);
         //MPlug objectElemPlug = objectsPlug.elementByLogicalIndex(objectIndex);
 
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
-            MDataHandle h = objectsBuilder.addElement(objectIndex);
-            stat = obj->compute(h);
-            if (MS::kSuccess == stat)
-            {
-                objectIndex++;
-            }
+            stat = obj->computeParts(&objectsBuilder, &objectIndex);
+            //if (MS::kSuccess == stat)
+            //{
+                //objectIndex++;
+            //}
         }
     }
     // clean up extra elements
@@ -333,7 +374,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
                 cerr << "    remove item" << endl;
                 stat = objectsBuilder.removeElement(i);
                 Util::checkMayaStatus(stat);
-            } catch (HAPIError e)
+            } catch (MayaError& e)
             {
                 cerr << e.what() << endl;
             }
@@ -352,6 +393,10 @@ MStatus
 Asset::compute(const MPlug& plug, MDataBlock& data)
 {
     MStatus stat;
+
+    MPlug typePlug(node, AssetNodeAttributes::assetType);
+    MDataHandle typeHandle = data.outputValue(typePlug);
+    typeHandle.set(info.type);
 
     computeGeoInputs(plug, data);
 
@@ -572,7 +617,7 @@ Asset::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortN
     if (parm.hasMin)
         nAttr.setMin(parm.min);
     if (parm.hasMax)
-        nAttr.setMin(parm.max);
+        nAttr.setMax(parm.max);
     if (parm.hasUIMin)
         nAttr.setSoftMin(parm.UIMin);
     if (parm.hasUIMax)

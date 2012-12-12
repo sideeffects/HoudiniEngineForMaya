@@ -1,4 +1,3 @@
-//string $inputButtons[];
 
 proc buildAttrTree(string $nodeName, string $attr)
 {
@@ -99,10 +98,32 @@ global proc AEhAssetSetInput(string $textField, string $inputAttr, string $str)
     } else
     {
         // connect new input
-        if (`objExists $str` && `nodeType $str` == "mesh")
+        if (`objExists $str`)
         {
-            connectAttr -force ($str + ".outMesh") $inputAttr;
-            //hide $str;
+            string $histPlug = `connectionInfo -sfd ($str + ".inMesh")`;
+            string $histNode = plugNode($histPlug);
+            string $assetNode = plugNode($inputAttr);
+            if ($histNode != "")
+            {
+                // TODO: Assume that assets with inputs are SOPs, and that
+                // Only one object output from SOP assets
+                if (`nodeType $histNode` == "hAsset")
+                {
+                    // *** A bit of a hack, plugNode just takes a substring of 
+                    // everything before the first '.', even if the substring is
+                    // not a node.
+                    string $obj = plugNode(plugAttr($histPlug));
+                    connectAttr -force ($histNode + "." + $obj + ".md") $inputAttr;
+                    connectAttr -force ($assetNode + ".objects[0].mesh") ($str + ".inMesh");
+                }
+                else
+                {
+                print "setinput\n";
+                    connectAttr -force $histPlug $inputAttr;
+                    connectAttr -force ($assetNode + ".objects[0].mesh") ($str + ".inMesh");
+                    //hide $str;
+                }
+            }
         }
     }
 
@@ -170,7 +191,7 @@ global proc AEhAssetTemplate( string $nodeName )
     editorTemplate -beginScrollLayout;
 
     // special ui for inputs
-    string $inputAttrArray[] = `listAttr -st "input" $nodeName`;
+    string $inputAttrArray[] = `listAttr -st "inputs" $nodeName`;
     string $inputAttr = $inputAttrArray[0];
     if ($inputAttr != "")
     {
@@ -195,7 +216,7 @@ global proc AEhAssetTemplate( string $nodeName )
     {
         string $attr = $attrs[$i];
         string $parents[] = `attributeQuery -n $nodeName -lp $attr`;
-        if (0 == size($parents))
+        if ((0 == size($parents)) && $attr != "inputs")
         {
             buildAttrTree($nodeName, $attr);
         }

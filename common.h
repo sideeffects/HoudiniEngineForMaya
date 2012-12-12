@@ -9,11 +9,13 @@ class AssetNodeAttributes
         static MObject fileNameAttr;
         static MObject parmsModified;
 
-        static MObject input;
+        static MObject assetType;
 
         static MObject output;
+
         static MObject objects;
         static MObject objectName;
+        static MObject metaData;
         static MObject mesh;
         
         static MObject transform;
@@ -36,6 +38,7 @@ class AssetNodeAttributes
         static MObject ambientAttr;
         static MObject diffuseAttr;
         static MObject specularAttr;
+        static MObject alphaAttr;
 
         //static MObject numObjects;
         static MObject instancers;

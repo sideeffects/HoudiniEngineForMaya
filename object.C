@@ -16,15 +16,19 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
 {
     Object* obj;
     
-    HAPI_ObjectInfo objInfo = objControl->getObjectInfo(objectId);
+    HAPI_ObjectInfo objInfo;
+    //HAPI_GetObjects(assetId, &objInfo, objectId, 1);
+    objInfo = objControl->getObjectInfo(objectId);
 
     if (objInfo.isInstancer)
         obj = new InstancerObject(assetId, objectId);
     else
+    {
         obj = new GeometryObject(assetId, objectId);
+    }
 
     obj->objectControl = objControl;
-    obj->objectInfo = objInfo;
+    //obj->objectInfo = objInfo;
 
     return obj;
 }
@@ -37,10 +41,36 @@ Object::~Object() {}
 
 
 Object::Object(int assetId, int objectId)
-    :objectId(objectId), assetId(assetId), isInstanced(false)
+    :objectId(objectId), assetId(assetId), isInstanced(false),
+    neverBuilt(true)
 {
-    //update();
     objectControl = NULL;
+
+}
+
+
+void
+Object::init()
+{
+
+    // Do a full update, ignoring what has changed
+    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    try
+    {
+        // update object
+        //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
+        //Util::checkHAPIStatus(hstat);
+        objectInfo = objectControl->getObjectInfo(objectId);
+        // update geometry
+        hstat = HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
+        Util::checkHAPIStatus(hstat);
+
+    }
+    catch (HAPIError& e)
+    {
+        cerr << "obj " << getId() << " " << getName() << endl;
+        cerr << e.what() << endl;
+    }
 }
 
 
@@ -57,116 +87,53 @@ Object::update()
     try
     {
         // update object
+        //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
+        //Util::checkHAPIStatus(hstat);
         objectInfo = objectControl->getObjectInfo(objectId);
 
         // update geometry
-        hstat = HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
-        Util::checkHAPIStatus(hstat);
-        //cerr << "object name: " << Util::getString(objectInfo.nameSH) << endl;
-        //cerr << "object id: " << objectInfo.id << endl;
+        if (neverBuilt || objectInfo.haveGeosChanged)
+        {
+            hstat = HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
+            Util::checkHAPIStatus(hstat);
+        }
 
     }
     catch (HAPIError& e)
     {
         cerr << "obj " << getId() << " " << getName() << endl;
-        //cerr << e.what() << endl;
+        cerr << e.what() << endl;
         geoInfo.clear();
     }
     
-
-
 }
 
 
-// Utility ---------------------------------------------------------------------
-
-MFloatArray
-Object::getAttributeFloatData(HAPI_AttributeOwner owner, MString name)
-{
-    int objectId = objectInfo.id;
-
-    HAPI_AttributeInfo attr_info;
-    attr_info.exists = false;
-    attr_info.owner = owner;
-    HAPI_GetAttributeInfo(assetId, objectId, 0, name.asChar(), &attr_info);
-
-    MFloatArray ret;
-    if (!attr_info.exists)
-        return ret;
-
-    int size = attr_info.count * attr_info.tupleSize;
-    float data[size];
-    // zero the array
-    for (int j=0; j<size; j++){
-        data[j] = 0;
-    }
-    int status = HAPI_GetAttributeFloatData(assetId, objectId, 0, name.asChar(), &attr_info, data, 0, attr_info.count);
-
-    ret = MFloatArray(data, size);
-    return ret;
-}
-
-
-MStringArray
-Object::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
-{
-    int objectId = objectInfo.id;
-
-    HAPI_AttributeInfo attr_info;
-    attr_info.exists = false;
-    attr_info.owner = owner;
-    HAPI_GetAttributeInfo(assetId, objectId, 0, name.asChar(), &attr_info);
-
-    MStringArray ret;
-    if (!attr_info.exists)
-        return ret;
-
-    int size = attr_info.count * attr_info.tupleSize;
-    int data[size];
-    // zero the array
-    for (int j=0; j<size; j++){
-        data[j] = 0;
-    }
-    int status = HAPI_GetAttributeStrData(assetId, objectId, 0, name.asChar(), &attr_info, data, 0, attr_info.count);
-
-    for (int j=0; j<size; j++){
-        ret.append(Util::getString(data[j]));
-    }
-
-    return ret;
-}
 
 
 // test functions
 void 
 Object::printAttributes(HAPI_AttributeOwner owner)
 {
-    int size = 0;
-    switch(owner)
-    {
-        case HAPI_ATTROWNER_VERTEX: size = geoInfo.vertexAttributeCount; break;
-        case HAPI_ATTROWNER_POINT: size = geoInfo.pointAttributeCount; break;
-        case HAPI_ATTROWNER_PRIM: size = geoInfo.faceAttributeCount; break;
-        case HAPI_ATTROWNER_DETAIL: size = geoInfo.detailAttributeCount; break;
-    }
-    cerr << "---------------" << endl;
-    cerr << "owner: " << owner << endl;
-    int data[size];
-    HAPI_GetAttributeNames(assetId, objectInfo.id, 0, owner, data, size);
-    for (int i=0; i<size; i++)
-    {
-        cerr << Util::getString(data[i]) << endl;
-    }
-    cerr << "---------------" << endl;
+    //int size = 0;
+    //switch(owner)
+    //{
+        //case HAPI_ATTROWNER_VERTEX: size = geoInfo.vertexAttributeCount; break;
+        //case HAPI_ATTROWNER_POINT: size = geoInfo.pointAttributeCount; break;
+        //case HAPI_ATTROWNER_PRIM: size = geoInfo.faceAttributeCount; break;
+        //case HAPI_ATTROWNER_DETAIL: size = geoInfo.detailAttributeCount; break;
+    //}
+    //cerr << "---------------" << endl;
+    //cerr << "owner: " << owner << endl;
+    //int data[size];
+    //HAPI_GetAttributeNames(assetId, objectInfo.id, 0, owner, data, size);
+    //for (int i=0; i<size; i++)
+    //{
+        //cerr << Util::getString(data[i]) << endl;
+    //}
+    //cerr << "---------------" << endl;
 }
 // end test functions
 
-
-//MStatus
-//Object::compute(const MPlug& plug, MDataBlock& data)
-//Object::compute(const MPlug& plug, MDataBlock& data)
-//{
-    //return MS::kSuccess;
-//}
 
 

@@ -26,7 +26,6 @@ GeometryObject::init()
     Object::init();
 
     int partCount = geoInfo.partCount;
-    cerr << "obj init: " << partCount << endl;
     parts = new GeometryPart[partCount];
 
     for (int i=0; i<partCount; i++)

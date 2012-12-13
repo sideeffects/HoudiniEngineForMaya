@@ -74,9 +74,16 @@ InstancerObject::update()
     if (neverBuilt || geoInfo.hasGeoChanged)
     {
         // TODO: assume only one part for instancers
-        HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
-        hstat = HAPI_GetPartInfo(assetId, objectId, 0, 0, &partInfo);
-        Util::checkHAPIStatus(hstat);
+        //try
+        //{
+            HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+            hstat = HAPI_GetPartInfo(assetId, objectId, 0, 0, &partInfo);
+            Util::checkHAPIStatus(hstat);
+        //}
+        //catch (HAPIError& e)
+        //{
+            //cerr << e.what() << endl;
+        //}
 
         // clear the arrays
         instancedObjectNames.clear();

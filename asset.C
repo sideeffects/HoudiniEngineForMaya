@@ -6,6 +6,7 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFnIntArrayData.h>
 #include <maya/MItMeshPolygon.h>
+#include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
 #include "asset.h"
@@ -394,11 +395,23 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
 {
     MStatus stat;
 
+    // Set the type
     MPlug typePlug(node, AssetNodeAttributes::assetType);
     MDataHandle typeHandle = data.outputValue(typePlug);
     typeHandle.set(info.type);
 
+    // Set the time
+    MPlug timePlug(node, AssetNodeAttributes::timeInput);
+    MDataHandle timeHandle = data.inputValue(timePlug);
+    MTime currentTime = timeHandle.asTime();
+    float time = (float)currentTime.as(MTime::kSeconds);
+    cerr << "current time: " << time << endl;
+    HAPI_SetTime(time);
+
     computeGeoInputs(plug, data);
+
+    HAPI_CookAsset(info.id);
+    cerr << "cooked asset" << endl;
 
     update();
 

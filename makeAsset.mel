@@ -92,6 +92,9 @@ global proc string makeAsset(string $fileName) {
     getAttr ($asset + ".output");
     int $numObjects = `getAttr -size ($asset + ".objects")`;
 
+    // connect the time node
+    connectAttr "time1.outTime" ($asset + ".inTime");
+
     string $group = $asset + "_transform";
     group -n $group -em;
 
@@ -120,7 +123,7 @@ global proc updateAsset(string $asset, int $numObjects)
     if ($assetType == 1)
     {
         // SOP asset
-
+        print "SOP Asset\n";
         return;
     }
 

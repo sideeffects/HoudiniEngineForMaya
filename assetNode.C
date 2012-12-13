@@ -16,6 +16,7 @@
 #include <maya/MTypes.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnArrayAttrsData.h>
+#include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
 #include <sys/time.h>
@@ -42,6 +43,7 @@
 MTypeId AssetNode::id(0x80000);
 MObject AssetNodeAttributes::fileNameAttr;
 MObject AssetNodeAttributes::parmsModified;
+MObject AssetNodeAttributes::timeInput;
 
 MObject AssetNodeAttributes::assetType;
 
@@ -120,8 +122,13 @@ AssetNode::initialize()
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
 
+    // time input
+    AssetNodeAttributes::timeInput = uAttr.create("inTime", "it", MTime());
+    uAttr.setStorable(true);
+    uAttr.setHidden(true);
+
     // asset type
-    AssetNodeAttributes::assetType = nAttr.create("assetType", "typ", MFnNumericData::kInt, false);
+    AssetNodeAttributes::assetType = nAttr.create("assetType", "typ", MFnNumericData::kInt);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
@@ -279,6 +286,7 @@ AssetNode::initialize()
     // add the static attributes to the node
     addAttribute(AssetNodeAttributes::fileNameAttr);
     addAttribute(AssetNodeAttributes::parmsModified);
+    addAttribute(AssetNodeAttributes::timeInput);
     addAttribute(AssetNodeAttributes::assetType);
     //addAttribute(AssetNodeAttributes::input);
     addAttribute(AssetNodeAttributes::output);

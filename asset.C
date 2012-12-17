@@ -230,8 +230,8 @@ Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
             partInfo->detailAttributeCount = 0;
 
             // copy data to arrays
-            int vl[partInfo->vertexCount];
-            int fc[partInfo->faceCount];
+            int * vl = new int[partInfo->vertexCount];
+            int * fc = new int[partInfo->faceCount];
             vertexList.get(vl);
             faceCounts.get(fc);
 
@@ -263,6 +263,8 @@ Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
             // Commit it
             HAPI_CommitGeo(info.id, inputObjId, inputGeoId);
 
+	    delete[] vl;
+	    delete[] fc;
             delete partInfo;
             delete[] pos_attr;
             delete pos_attr_info;
@@ -393,7 +395,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 MStatus
 Asset::compute(const MPlug& plug, MDataBlock& data)
 {
-    MStatus stat;
+    MStatus stat(MS::kSuccess);
 
     // Set the type
     MPlug typePlug(node, AssetNodeAttributes::assetType);
@@ -421,6 +423,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     // second pass - geometry objects
     computeGeometryObjects(plug, data);
 
+    return stat;
 }
 
 
@@ -566,7 +569,7 @@ Asset::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortN
         eAttr.setStorable(true);
         eAttr.setNiceNameOverride(niceName);
 
-        HAPI_ParmChoiceInfo choiceInfos[choiceCount];
+        HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[choiceCount];
         HAPI_GetParmChoiceLists(info.id, choiceInfos, parm.choiceIndex, choiceCount);
         for (int i=0; i<choiceCount; i++)
         {
@@ -574,6 +577,7 @@ Asset::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortN
             eAttr.addField(field, i);
         }
 
+	delete[] choiceInfos;
         return result;
     }
 
@@ -648,7 +652,7 @@ Asset::buildParms()
     int parmCount = info.parmCount;
     if (parmCount <= 0)
         return;
-    HAPI_ParmInfo myParmInfos[parmCount];
+    HAPI_ParmInfo * myParmInfos = new HAPI_ParmInfo[parmCount];
     HAPI_GetParameters(info.id, myParmInfos, 0, parmCount);
 
     int index = 0;
@@ -658,6 +662,7 @@ Asset::buildParms()
         index += consumed;
     }
 
+    delete[] myParmInfos;
 
 }
 
@@ -702,10 +707,12 @@ Asset::getParmIntValues(HAPI_ParmInfo& parm)
 {
     int index = parm.intValuesIndex;
     int size = parm.size;
-    int values[size];
+    int * values = new int[size];
     HAPI_GetParmIntValues(info.id, values, index, size);
 
     MIntArray ret(values, size);
+
+    delete[] values;
     return ret;
 }
 
@@ -715,10 +722,11 @@ Asset::getParmFloatValues(HAPI_ParmInfo& parm)
 {
     int index = parm.floatValuesIndex;
     int size = parm.size;
-    float values[size];
+    float * values = new float[size];
     HAPI_GetParmFloatValues(info.id, values, index, size);
 
     MFloatArray ret(values, size);
+    delete[] values;
     return ret;
 }
 
@@ -728,7 +736,7 @@ Asset::getParmStringValues(HAPI_ParmInfo& parm)
 {
     int index = parm.stringValuesIndex;
     int size = parm.size;
-    int handles[size];
+    int * handles = new int[size];
     HAPI_GetParmStringValues(info.id, handles, index, size);
 
     MStringArray ret;
@@ -737,6 +745,8 @@ Asset::getParmStringValues(HAPI_ParmInfo& parm)
         MString str = Util::getString(handles[i]);
         ret.append(str);
     }
+
+    delete[] handles;
     return ret;
 }
 

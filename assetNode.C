@@ -19,7 +19,6 @@
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
-#include <sys/time.h>
 
 #include "assetNode.h"
 #include "assetNodeMonitor.h"
@@ -102,6 +101,10 @@ void printAssetInfo(HAPI_AssetInfo* assetInfo)
 MStatus
 AssetNode::initialize()
 {
+    //char* dir = "C:/cygwin/home/ken/dev_projects/HAPI/Unity/Assets/OTLs/Scanned";
+    //cerr << "hapi initialize" << endl;
+    //HAPI_Initialize("C:/cygwin/home/ken/dev_x86/dev/hfs", dir);
+
     char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
     //cerr << "hapi initialize" << endl;
     HAPI_Initialize("/home/jhuang/dev/hfs/", dir);
@@ -497,7 +500,7 @@ AssetNode::updateAttrValues(MDataBlock& data)
     int parmCount = asset->info.parmCount;
     if (parmCount <= 0)
         return;
-    HAPI_ParmInfo myParmInfos[parmCount];
+    HAPI_ParmInfo * myParmInfos = new HAPI_ParmInfo[parmCount];
     HAPI_GetParameters(asset->info.id, myParmInfos, 0, parmCount);
 
     for (int i=0; i<parmCount; i++)
@@ -511,17 +514,22 @@ AssetNode::updateAttrValues(MDataBlock& data)
     MPlug p(thisMObject(), AssetNodeAttributes::parmsModified);
     MDataHandle h = data.outputValue(p);
     h.set(true);
+    delete[] myParmInfos;
 }
 
 
 double
 getTime()
 {
+    //Todo: this implementation below is platform specific to Linux.  Re-implement it for
+    // a cross platform solution.
+    /*
         timeval  tv;
         gettimeofday(&tv, NULL);
         double time_in_mill =
                      (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
-        return time_in_mill;
+        return time_in_mill;*/
+    return 0.0;
 }
 
 void
@@ -542,7 +550,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     if (parm.isInt())
     {
-        int values[size];
+        int * values = new int[size];
         if (size == 1)
         {
             MDataHandle handle = data.inputValue(plug);
@@ -559,12 +567,14 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         double before = getTime();
         HAPI_SetParmIntValues(asset->info.id, values, parm.intValuesIndex, size);
         double after = getTime();
+
+	delete[] values;
         //cerr << "type: " << parm.type << " time: " << (after - before) << " int" << endl;
     }
 
     if (parm.isFloat())
     {
-        float values[size];
+        float * values = new float[size];
         if (size == 1)
         {
             MDataHandle handle = data.inputValue(plug);
@@ -581,6 +591,8 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         double before = getTime();
         HAPI_SetParmFloatValues(asset->info.id, values, parm.floatValuesIndex, size);
         double after = getTime();
+
+	delete[] values;
         //cerr << "type: " << parm.type << " id: " << parm.id << " time: " << (after - before) << " float" << endl;
     }
 
@@ -617,7 +629,7 @@ AssetNode::setParmValues(MDataBlock& data)
     int parmCount = asset->info.parmCount;
     if (parmCount <= 0)
         return;
-    HAPI_ParmInfo myParmInfos[parmCount];
+    HAPI_ParmInfo * myParmInfos = new HAPI_ParmInfo[parmCount];
     HAPI_GetParameters(asset->info.id, myParmInfos, 0, parmCount);
 
     double before = getTime();
@@ -628,6 +640,8 @@ AssetNode::setParmValues(MDataBlock& data)
         setParmValue(parm, data);
     }
     double end = getTime();
+
+    delete[] myParmInfos;
     //cerr << "time: " << (end - before) << endl;
 }
 

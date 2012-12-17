@@ -50,7 +50,7 @@ InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
         return ret;
 
     int size = attr_info.count * attr_info.tupleSize;
-    int data[size];
+    int * data = new int[size];
     // zero the array
     for (int j=0; j<size; j++){
         data[j] = 0;
@@ -61,6 +61,8 @@ InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
     for (int j=0; j<size; j++){
         ret.append(Util::getString(data[j]));
     }
+
+    delete[] data;
 
     return ret;
 }
@@ -167,7 +169,7 @@ InstancerObject::compute(MDataHandle& handle)
         MIntArray objectIndices = fnAAD.intArray("objectIndex");
 
         int size = partInfo.pointCount;
-        HAPI_Transform instTransforms[size];
+        HAPI_Transform * instTransforms = new HAPI_Transform[size];
         HAPI_GetInstanceTransforms(assetId, objectInfo.id, 0, 5, instTransforms, 0, size);
 
 
@@ -190,6 +192,8 @@ InstancerObject::compute(MDataHandle& handle)
             scales.append(s);
             objectIndices.append(objIndex);
         }
+
+	delete[] instTransforms;
 
         instancerDataHandle.set(instOutput);
 

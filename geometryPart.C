@@ -55,10 +55,11 @@ GeometryPart::updateFaceCounts()
     int numFaceCount = partInfo.faceCount;
     if (numFaceCount > 0)
     {
-        int myFaceCounts[numFaceCount];
+        int * myFaceCounts = new int[numFaceCount];
         HAPI_GetFaceCounts(assetId, objectId, geoId, partId, myFaceCounts, 0, numFaceCount);
         MIntArray result(myFaceCounts, numFaceCount);
 
+	delete[] myFaceCounts;
         faceCounts = result;
     }
     //cerr << "facecounts: " << faceCounts << endl;
@@ -71,7 +72,7 @@ GeometryPart::updateVertexList()
     int numVertexCount = partInfo.vertexCount;
     if (numVertexCount > 0)
     {
-        int myVertexList[numVertexCount];
+        int * myVertexList = new int[numVertexCount];
         HAPI_GetVertexList(assetId, objectId, geoId, partId, myVertexList, 0, numVertexCount);
         MIntArray result(myVertexList, numVertexCount);
         //cerr << "vertextList: " << endl;
@@ -79,6 +80,8 @@ GeometryPart::updateVertexList()
         Util::reverseWindingOrderInt(result, faceCounts);
 
         vertexList = result;
+
+	delete[] myVertexList;
     }
 }
 
@@ -205,7 +208,7 @@ GeometryPart::getAttributeFloatData(HAPI_AttributeOwner owner, MString name)
         return ret;
 
     int size = attr_info.count * attr_info.tupleSize;
-    float data[size];
+    float * data = new float[size];
     // zero the array
     for (int j=0; j<size; j++){
         data[j] = 0;
@@ -214,6 +217,8 @@ GeometryPart::getAttributeFloatData(HAPI_AttributeOwner owner, MString name)
             &attr_info, data, 0, attr_info.count);
 
     ret = MFloatArray(data, size);
+
+    delete[] data;
     return ret;
 }
 

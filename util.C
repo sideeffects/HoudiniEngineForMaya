@@ -68,9 +68,13 @@ Util::getString(int handle)
 {
     int bufLen;
     HAPI_GetStringLength(handle, &bufLen);
-    char buffer[bufLen];
-    HAPI_GetString(handle, buffer, bufLen+1);
-    return MString(buffer);
+    char * buffer = new char[bufLen+1];
+    HAPI_GetString(handle, buffer, bufLen+1);    
+
+    MString ret(buffer);
+    delete[] buffer;
+
+    return ret;
 }
 
 
@@ -134,7 +138,7 @@ Util::checkHAPIStatus(HAPI_StatusCode stat)
     {
         int bufLen;
         HAPI_GetLastErrorStringLength(&bufLen);
-        char buffer[bufLen];
+        char * buffer = new char[bufLen + 1];
         HAPI_GetLastErrorString(buffer);
         throw HAPIError(buffer);
     }

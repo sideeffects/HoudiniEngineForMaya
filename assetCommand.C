@@ -35,4 +35,5 @@ MStatus AssetCommand::doIt(const MArgList& args)
     MString filePath = args.asString(0);
     AssetManager::createManager(filePath);
 
+    return MS::MStatusCode::kSuccess;
 }

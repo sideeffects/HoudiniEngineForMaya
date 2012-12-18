@@ -74,8 +74,6 @@ MObject AssetNodeAttributes::diffuseAttr;
 MObject AssetNodeAttributes::specularAttr;
 MObject AssetNodeAttributes::alphaAttr;
 
-//MObject AssetNodeAttributes::numObjects;
-
 MObject AssetNodeAttributes::instancers;
 MObject AssetNodeAttributes::instancerData;
 MObject AssetNodeAttributes::instancedObjectNames;
@@ -101,12 +99,12 @@ MStatus
 AssetNode::initialize()
 {
     HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
-    //char* dir = "C:/cygwin/home/ken/dev_projects/HAPI/Unity/Assets/OTLs/Scanned";
+    char* dir = "C:/cygwin/home/ken/dev_projects/HAPI/Unity/Assets/OTLs/Scanned";
     //cerr << "hapi initialize" << endl;
-    //HAPI_Initialize("C:/cygwin/home/ken/dev_x86/dev/hfs", dir);
+    hstat = HAPI_Initialize("C:/cygwin/home/ken/dev_x86/dev/hfs", dir, false, -1);
 
-    char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
-    hstat = HAPI_Initialize("/home/jhuang/dev/hfs/", dir, false, -1);
+    //char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
+    //hstat = HAPI_Initialize("/home/jhuang/dev/hfs/", dir, false, -1);
     Util::printHAPIStatus(hstat);
 
     // maya plugin stuff
@@ -116,33 +114,68 @@ AssetNode::initialize()
     MFnUnitAttribute uAttr;
 
     // file name
+    // The name of the otl file we loaded.
     AssetNodeAttributes::fileNameAttr = tAttr.create("fileName", "fn", MFnData::kString);
     tAttr.setStorable(true);
 
     // parms modified
+    // This is initially false, and whenever a user touches a parm, this will get set to true
+    // and because it's a Maya attr, it will get saved.  When we load back the file, 
+    // if this attr is true, we know we are loading a previously modified asset as opposed
+    // to instantiating a new asset.
     AssetNodeAttributes::parmsModified = nAttr.create("parmsModified", "pm", MFnNumericData::kBoolean, false);
     nAttr.setStorable(true);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
 
     // time input
+    // For time dpendence.
     AssetNodeAttributes::timeInput = uAttr.create("inTime", "it", MTime());
     uAttr.setStorable(true);
     uAttr.setHidden(true);
 
     // asset type
+    // This maps to the underlying Houdini asset type: OBJ, SOP, etc. (see HAPI_AssetType)
     AssetNodeAttributes::assetType = nAttr.create("assetType", "typ", MFnNumericData::kInt);
     nAttr.setStorable(false);
-    nAttr.setWritable(false);
+    nAttr.setWritable(false);    
+        
+    //----------------------------------  instancer compound multi----------------------------------------------
+    // instancer data
+    AssetNodeAttributes::instancerData = tAttr.create("instancerData", "idt", MFnData::kDynArrayAttrs);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
+    // instanced object names
+    AssetNodeAttributes::instancedObjectNames = tAttr.create("instancedObjectNames", "ion", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    tAttr.setArray(true);
+    tAttr.setIndexMatters(true);
+    cAttr.setUsesArrayDataBuilder(true);
+
+    // instancers
+    AssetNodeAttributes::instancers = cAttr.create("instancers", "inst");
+    cAttr.addChild(AssetNodeAttributes::instancerData);
+    cAttr.addChild(AssetNodeAttributes::instancedObjectNames);
+    cAttr.setStorable(false);
+    cAttr.setWritable(false);
+    cAttr.setArray(true);
+    cAttr.setUsesArrayDataBuilder(true);
+    //--------------------------------End instancer compound multi----------------------------------------------
+
+    //----------------------------------  objects compound multi------------------------------------------------
 
     // object name
     AssetNodeAttributes::objectName = tAttr.create("objectName", "on", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
+
     // meta data
     AssetNodeAttributes::metaData = tAttr.create("metaData", "md", MFnData::kIntArray);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
+
     // mesh
     AssetNodeAttributes::mesh = tAttr.create("mesh", "ms", MFnData::kMesh);
     tAttr.setWritable(false);
@@ -239,29 +272,6 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
-    // instancer data
-    AssetNodeAttributes::instancerData = tAttr.create("instancerData", "idt", MFnData::kDynArrayAttrs);
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
-
-    // instanced object names
-    AssetNodeAttributes::instancedObjectNames = tAttr.create("instancedObjectNames", "ion", MFnData::kString);
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
-    tAttr.setArray(true);
-    tAttr.setIndexMatters(true);
-    cAttr.setUsesArrayDataBuilder(true);
-
-    // instancers
-    AssetNodeAttributes::instancers = cAttr.create("instancers", "inst");
-    cAttr.addChild(AssetNodeAttributes::instancerData);
-    cAttr.addChild(AssetNodeAttributes::instancedObjectNames);
-    cAttr.setStorable(false);
-    cAttr.setWritable(false);
-    cAttr.setArray(true);
-    cAttr.setUsesArrayDataBuilder(true);
-
-    // objects
     AssetNodeAttributes::objects = cAttr.create("objects", "objs");
     cAttr.addChild(AssetNodeAttributes::objectName);
     cAttr.addChild(AssetNodeAttributes::metaData);
@@ -274,15 +284,15 @@ AssetNode::initialize()
     cAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
 
+    //------------------------------- END  objects compound multi------------------------------------------------
+
     // output
-    AssetNodeAttributes::output = cAttr.create("output", "out");
-    //cAttr.addChild(AssetNodeAttributes::numObjects);
+    AssetNodeAttributes::output = cAttr.create("output", "out");    
     cAttr.addChild(AssetNodeAttributes::objects);
     cAttr.addChild(AssetNodeAttributes::instancers);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-
-    //AssetNodeAttributes::input = cAttr.create("input", "in");
+    
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
@@ -291,22 +301,20 @@ AssetNode::initialize()
     addAttribute(AssetNodeAttributes::parmsModified);
     addAttribute(AssetNodeAttributes::timeInput);
     addAttribute(AssetNodeAttributes::assetType);
-    //addAttribute(AssetNodeAttributes::input);
     addAttribute(AssetNodeAttributes::output);
 
-    //attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::numObjects);
+    
+    //most of the dependencies between attrs are set via the AssetNode::setDependentsDirty() call
+    //this call may not even be necessary.
     attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::output);
-    //attributeAffects(AssetNodeAttributes::input, AssetNodeAttributes::output);
-    //attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::instancerData);
+    
 
     return MS::kSuccess;
 }
 
 
 AssetNode::AssetNode()
-{
-    // houdini
-    //char* filename = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/SideFX__spaceship.otl";
+{    
     asset = NULL;
 
     builtParms = false;

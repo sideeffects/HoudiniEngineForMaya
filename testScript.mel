@@ -1,7 +1,0 @@
-source createAndAssignShader;
-
-createNode Asset-n asset1;
-createNode mesh -n assetMesh1;
-connectAttr asset1.output assetMesh1.inMesh;
-
-createRenderNodeCB -asShader "surfaceShader" lambert "assignCreatedShader %type \"assetMesh1\" %node \"assetMesh1\"";

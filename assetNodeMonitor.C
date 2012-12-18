@@ -144,6 +144,10 @@ AssetNodeMonitor::nodeDirtyPlugCB(MObject& node, MPlug& plug, void* clientData)
 
     // force compute
     MPlug objectsPlug(node, AssetNodeAttributes::objects);
+
+    //Every time the node gets dirtied, the number of objects could have changed,
+    // so we need to run the updateAsset script to make sure new connection that 
+    // need to get made are made.
     int numObjects = objectsPlug.evaluateNumElements();
     MString command = "updateAsset " + fnDN.name() + " " + numObjects + ";";
     MGlobal::executeCommand(command);

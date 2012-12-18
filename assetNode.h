@@ -40,7 +40,7 @@ class AssetNode: public MPxNode
         static MTypeId id;
 
     private:
-        //MObject createMesh(MObject& outData);
+        
         void attachAttrChangedCallback();
         void attachNodeDirtyCallback();
         void detachNodeDirtyCallback();

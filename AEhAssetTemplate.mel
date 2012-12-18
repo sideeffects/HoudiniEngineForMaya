@@ -9,10 +9,13 @@ proc buildAttrTree(string $nodeName, string $attr)
     string $children[] = `attributeQuery -n $nodeName -lc $attr`;
     string $niceName = `attributeQuery -n $nodeName -nn $attr`;
 
-
     if ("TdataCompound" != $type)
     {
-        if ("Separator" == $niceName)
+		if ($type == "" )
+		{
+			editorTemplate -suppress $attr;
+		}
+        else if ("Separator" == $niceName)
         {
             editorTemplate -addSeparator;
         } else
@@ -34,7 +37,6 @@ proc buildAttrTree(string $nodeName, string $attr)
 
 global proc AEhAssetSetInputToSelection(string $textField, string $inputAttr)
 {
-    //print ("arg: " + $arg + "\n");
     string $buf[] = `ls -sl`;
 
     if (size($buf) == 1)
@@ -49,15 +51,14 @@ global proc AEhAssetSetInputToSelection(string $textField, string $inputAttr)
     string $buf2[] = `listRelatives -ad $buf`;
     string $sel[] = `ls -typ mesh $buf2`;
     string $meshes[] = `ls -sl -typ mesh`;
-    //appendStringArray
+ 
     if (size($sel) == 1)
         AEhAssetSetInput($textField, $inputAttr, $sel[0]);
 }
 
 
 global proc AEhAssetSetInputToText(string $textField, string $inputAttr)
-{
-    print "pressed enter\n";
+{    
     string $str = `textField -q -text $textField`;
 
     if (!`objExists $str`)
@@ -117,8 +118,7 @@ global proc AEhAssetSetInput(string $textField, string $inputAttr, string $str)
                     connectAttr -force ($histNode + "." + $obj + ".md") $inputAttr;
                 }
                 else
-                {
-                print "setinput\n";
+                {                
                     connectAttr -force $histPlug $inputAttr;
                     //hide $str;
                 }
@@ -138,7 +138,6 @@ global proc AEhAssetSetInput(string $textField, string $inputAttr, string $str)
 
 global proc AEhAssetInputsNew(string $attrFullName)
 {
-    //$inputButtons = {};
 
     string $buffer[];
     tokenize($attrFullName, ".", $buffer);
@@ -173,8 +172,6 @@ global proc AEhAssetInputsNew(string $attrFullName)
                 + ($nodeName + "." + $child) + "\"");
     }
 
-    //editorTemplate -endLayout;
-
 }
 
 
@@ -200,13 +197,7 @@ global proc AEhAssetTemplate( string $nodeName )
         editorTemplate -beginLayout "Inputs" -collapse false;
         editorTemplate -callCustom "AEhAssetInputsNew" "AEhAssetInputsReplace"
             $inputAttr;
-        //int $size = `getAttr -size ($nodeName + "." + $inputAttr)`;
-        
-        //for ($i=0; $i<$size; $i++)
-        //{
-            //editorTemplate -callCustom "AEhAssetInputsNew" "AEhAssetInputsReplace"
-                //($inputAttr + ($i+1));
-        //}
+       
         editorTemplate -endLayout;
     }
 
@@ -230,8 +221,6 @@ global proc AEhAssetTemplate( string $nodeName )
     editorTemplate -suppress "caching";
     editorTemplate -suppress "nodeState";
 
-
-    //editorTemplate -endScrollLayout;
 
 
 }

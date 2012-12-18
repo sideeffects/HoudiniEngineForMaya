@@ -255,6 +255,7 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
                     MDataHandle t = h.child(AssetNodeAttributes::transform);
                     updateTransform(t);
                 }
+                cerr << *index << " index++: " + parts[i].partName << endl;
                 (*index)++;
             }
         }
@@ -265,8 +266,11 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
     {
         for (int i=0; i<geoInfo.partCount; i++)
         {
-            MDataHandle h = builder->addElement(*index);
-            (*index)++;
+            if (parts[i].hasMesh())
+            {
+                MDataHandle h = builder->addElement(*index);
+                (*index)++;
+            }
         }
     }
 

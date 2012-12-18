@@ -95,8 +95,8 @@ global proc string makeAsset(string $fileName) {
     // connect the time node
     connectAttr "time1.outTime" ($asset + ".inTime");
 
-    string $group = $asset + "_transform";
-    group -n $group -em;
+    //string $group = $asset + "_transform";
+    //group -n $group -em;
 
     updateAsset($asset, $numObjects);
 
@@ -197,7 +197,7 @@ global proc updateAsset(string $asset, int $numObjects)
             continue;
         }
 
-        // If mesh node name exists, user musted have disconnected it, so we don't do anything
+        // If mesh node name exists, user must have disconnected it, so we don't do anything
         if (`objExists $mesh`)
         {
             continue;
@@ -216,8 +216,11 @@ global proc updateAsset(string $asset, int $numObjects)
         connectAttr -f ($obj + ".transform.rotate") ($transform + ".rotate");
         connectAttr -f ($obj + ".transform.scale") ($transform + ".scale");
 
-        string $tmp = "assignCreatedShader %type \"" + $mesh + "\" %node \"" + $mesh + "\"";
-        createRenderNodeCB -asShader "surfaceShader" phong $tmp;
+        //string $tmp = "assignCreatedShader %type \"" + $mesh + "\" %node \"" + $mesh + "\"";
+        //createRenderNodeCB -asShader "surfaceShader" phong $tmp;
+        string $phong = `shadingNode -asShader phong`;
+        select -r $mesh;
+        hyperShade -assign $phong;
 
         int $matExists = `getAttr ($obj + ".materialExists")`;
         if ($matExists)
@@ -233,7 +236,8 @@ global proc updateAsset(string $asset, int $numObjects)
                 connectAttr -f ($obj + ".material.diffuseColor") ($material + ".color");
             } else
             {
-                string $fileNode = `createRenderNodeCB -as2DTexture "" "file" ""`;
+                //string $fileNode = `createRenderNodeCB -as2DTexture "" "file" ""`;
+                string $fileNode = `shadingNode -asTexture file`;
                 connectAttr -f ($obj + ".material.texturePath")($fileNode + ".fileTextureName");
                 connectAttr -f ($fileNode + ".outColor") ($material + ".color");
             }
@@ -245,10 +249,10 @@ global proc updateAsset(string $asset, int $numObjects)
             parent $transform $objName;
 
         string $group = $asset + "_transform";
-        if (!isParentOf($group, $objName))
-            parent $objName $group;
         if (!`objExists $group`)
             group -n $group -em;
+        if (!isParentOf($group, $objName))
+            parent $objName $group;
 
     }
 
@@ -296,4 +300,5 @@ global proc updateAsset(string $asset, int $numObjects)
             group -n $group -em;
     }
 
+    select -r $asset;
 }

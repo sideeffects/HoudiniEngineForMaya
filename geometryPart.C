@@ -59,8 +59,9 @@ GeometryPart::updateFaceCounts()
         HAPI_GetFaceCounts(assetId, objectId, geoId, partId, myFaceCounts, 0, numFaceCount);
         MIntArray result(myFaceCounts, numFaceCount);
 
-	delete[] myFaceCounts;
         faceCounts = result;
+
+        delete[] myFaceCounts;
     }
     //cerr << "facecounts: " << faceCounts << endl;
 }
@@ -223,6 +224,16 @@ GeometryPart::getAttributeFloatData(HAPI_AttributeOwner owner, MString name)
 }
 
 
+bool
+GeometryPart::hasMesh()
+{
+    update();
+    if (partInfo.pointCount == 0 || partInfo.faceCount == 0 || partInfo.vertexCount == 0)
+        return false;
+    return true;
+}
+
+
 MStatus
 GeometryPart::compute(MDataHandle& handle)
 {
@@ -235,12 +246,13 @@ GeometryPart::compute(MDataHandle& handle)
     //MDataHandle transformHandle = handle.child(AssetNodeAttributes::transform);
     MDataHandle materialHandle = handle.child(AssetNodeAttributes::material);
 
+    // Don't output mesh for degenerate geos
+    if (partInfo.pointCount == 0 || partInfo.faceCount == 0|| partInfo.vertexCount == 0)
+        return MS::kFailure;
+
     if (neverBuilt || geoInfo.hasGeoChanged)
     {
         cerr << "compute part mesh: " << partName << endl;
-        // Don't output mesh for degenerate geos
-        if (partInfo.pointCount == 0 || partInfo.faceCount == 0|| partInfo.vertexCount == 0)
-            return MS::kFailure;
 
 
         // Object name
@@ -341,7 +353,6 @@ GeometryPart::updateMaterial(MDataHandle& handle)
         diffuseHandle.set3Float(materialInfo.diffuse[0], materialInfo.diffuse[1], materialInfo.diffuse[2]);
         specularHandle.set3Float(materialInfo.specular[0], materialInfo.specular[1], materialInfo.specular[2]);
         
-        // TODO: this doesn't do anything, HAPI does not support opacity yet
         float alpha = 1 - materialInfo.diffuse[3];
         alphaHandle.set3Float(alpha, alpha, alpha);
         

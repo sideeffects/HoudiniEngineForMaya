@@ -26,22 +26,22 @@ Asset::Asset(MString otlFilePath, MObject node)
 
     // load the otl
     const char* filename = otlFilePath.asChar();
-    info.minVerticesPerPrimitive = 3;
-    info.maxVerticesPerPrimitive = 20;
 
     //cerr << "loadasset" << endl;
     MString texturePath;
     MGlobal::executeCommand("workspace -q -rd;", texturePath);
     texturePath += "sourceimages";
-    hstat = HAPI_LoadOTLFile(filename, texturePath.asChar(), &info);
+
+    int assetId;
+    hstat = HAPI_LoadOTLFile(filename, texturePath.asChar(), 3, 20, &assetId);
+    Util::checkHAPIStatus(hstat);
+    hstat = HAPI_GetAssetInfo(assetId, &info);
     Util::checkHAPIStatus(hstat);
 
 
     cerr << "Loaded asset: " << otlFilePath << " " << info.id << endl;
     cerr << "type: " << info.type << endl;
     cerr << "objectCount: " << info.objectCount << endl;
-    cerr << "minGeoInputCount: " << info.minGeoInputCount << endl;
-    cerr << "maxGeoInputCount: " << info.maxGeoInputCount << endl;
 
     init();
 
@@ -333,6 +333,7 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
         cerr << "mark instanced obj: " << obj->getName() << endl;
     }
 
+    instancersHandle.setAllClean();
     data.setClean(instancersPlug);
 }
 
@@ -726,6 +727,7 @@ Asset::getParmFloatValues(HAPI_ParmInfo& parm)
     HAPI_GetParmFloatValues(info.id, values, index, size);
 
     MFloatArray ret(values, size);
+
     delete[] values;
     return ret;
 }

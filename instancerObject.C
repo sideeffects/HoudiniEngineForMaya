@@ -227,6 +227,7 @@ InstancerObject::compute(MDataHandle& handle)
             }
         }
         instancedObjectNamesHandle.set(builder);
+        instancedObjectNamesHandle.setAllClean();
 
 
         handle.setClean();

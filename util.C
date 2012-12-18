@@ -1,3 +1,5 @@
+#include <maya/MGlobal.h>
+
 #include "util.h"
 
 //=============================================================================
@@ -67,9 +69,9 @@ MString
 Util::getString(int handle)
 {
     int bufLen;
-    HAPI_GetStringLength(handle, &bufLen);
-    char * buffer = new char[bufLen+1];
-    HAPI_GetString(handle, buffer, bufLen+1);    
+    HAPI_GetStringBufLength(handle, &bufLen);
+    char * buffer = new char[bufLen];
+    HAPI_GetString(handle, buffer, bufLen);
 
     MString ret(buffer);
     delete[] buffer;
@@ -152,4 +154,55 @@ Util::checkMayaStatus(MStatus stat)
     {
         throw MayaError(stat);
     }
+}
+
+
+void
+Util::printHAPIStatus(HAPI_StatusCode stat)
+{
+    if (hasHAPICallFailed(stat))
+    {
+        int bufLen;
+        HAPI_GetLastErrorStringLength(&bufLen);
+        char* buffer = new char[bufLen];
+        HAPI_GetLastErrorString(buffer);
+
+        MString str;
+        str += "******************** Maya Error ********************\n";
+        str += buffer;
+        str += "\n****************************************************";
+
+        cerr << str << endl;
+    }
+}
+
+
+void
+Util::printMayaStatus(MStatus stat)
+{
+    if (stat.error())
+    {
+        cerr << stat << endl;
+    }
+}
+
+
+MString
+Util::executeCommand(MString& cmd)
+{
+    MString result;
+    try
+    {
+        MStatus stat;
+        stat = MGlobal::executeCommand(cmd, result);
+        checkMayaStatus(stat);
+    }
+    catch (MayaError& e)
+    {
+        // Handle the exception here because sometimes command executes
+        // but Maya still returns failure status.
+        cerr << "Execute MEL error: " << cmd << endl;
+        cerr << e.what() << endl;
+    }
+    return result;
 }

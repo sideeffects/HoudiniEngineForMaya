@@ -4,7 +4,6 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnEnumAttribute.h>
 #include <maya/MFnUnitAttribute.h>
-#include <maya/MFnPlugin.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MFloatVectorArray.h>
@@ -101,13 +100,14 @@ void printAssetInfo(HAPI_AssetInfo* assetInfo)
 MStatus
 AssetNode::initialize()
 {
+    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
     //char* dir = "C:/cygwin/home/ken/dev_projects/HAPI/Unity/Assets/OTLs/Scanned";
     //cerr << "hapi initialize" << endl;
     //HAPI_Initialize("C:/cygwin/home/ken/dev_x86/dev/hfs", dir);
 
     char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
-    //cerr << "hapi initialize" << endl;
-    HAPI_Initialize("/home/jhuang/dev/hfs/", dir);
+    hstat = HAPI_Initialize("/home/jhuang/dev/hfs/", dir, false, -1);
+    Util::printHAPIStatus(hstat);
 
     // maya plugin stuff
     MFnNumericAttribute nAttr;
@@ -307,6 +307,7 @@ AssetNode::AssetNode()
 {
     // houdini
     //char* filename = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/SideFX__spaceship.otl";
+    asset = NULL;
 
     builtParms = false;
     assetChanged = true;
@@ -514,6 +515,7 @@ AssetNode::updateAttrValues(MDataBlock& data)
     MPlug p(thisMObject(), AssetNodeAttributes::parmsModified);
     MDataHandle h = data.outputValue(p);
     h.set(true);
+
     delete[] myParmInfos;
 }
 
@@ -564,12 +566,12 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 values[i] = handle.asInt();
             }
         }
-        double before = getTime();
+        //double before = getTime();
         HAPI_SetParmIntValues(asset->info.id, values, parm.intValuesIndex, size);
-        double after = getTime();
+        //double after = getTime();
 
-	delete[] values;
         //cerr << "type: " << parm.type << " time: " << (after - before) << " int" << endl;
+        delete[] values;
     }
 
     if (parm.isFloat())
@@ -588,12 +590,12 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 values[i] = handle.asFloat();
             }
         }
-        double before = getTime();
+        //double before = getTime();
         HAPI_SetParmFloatValues(asset->info.id, values, parm.floatValuesIndex, size);
-        double after = getTime();
+        //double after = getTime();
 
-	delete[] values;
         //cerr << "type: " << parm.type << " id: " << parm.id << " time: " << (after - before) << " float" << endl;
+        delete[] values;
     }
 
     if (parm.isString())
@@ -632,17 +634,14 @@ AssetNode::setParmValues(MDataBlock& data)
     HAPI_ParmInfo * myParmInfos = new HAPI_ParmInfo[parmCount];
     HAPI_GetParameters(asset->info.id, myParmInfos, 0, parmCount);
 
-    double before = getTime();
     for (int i=0; i<parmCount; i++)
     {
 
         HAPI_ParmInfo& parm = myParmInfos[i];
         setParmValue(parm, data);
     }
-    double end = getTime();
 
     delete[] myParmInfos;
-    //cerr << "time: " << (end - before) << endl;
 }
 
 
@@ -712,20 +711,20 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     return MS::kSuccess;
 }
 
-MStatus
-initializePlugin(MObject obj)
-{
-    MStatus status;
-    MFnPlugin plugin(obj, "Asset plugin", "1.0", "Any");
-    status = plugin.registerNode("hAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
-    return status;
-}
+//MStatus
+//initializePlugin(MObject obj)
+//{
+    //MStatus status;
+    //MFnPlugin plugin(obj, "Asset plugin", "1.0", "Any");
+    //status = plugin.registerNode("hAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
+    //return status;
+//}
 
-MStatus
-uninitializePlugin(MObject obj)
-{
-    MStatus status;
-    MFnPlugin plugin(obj);
-    status = plugin.deregisterNode(AssetNode::id);
-    return status;
-}
+//MStatus
+//uninitializePlugin(MObject obj)
+//{
+    //MStatus status;
+    //MFnPlugin plugin(obj);
+    //status = plugin.deregisterNode(AssetNode::id);
+    //return status;
+//}

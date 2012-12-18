@@ -10,12 +10,18 @@ LIBS=-L$(MAYA_DIR)/lib -lOpenMaya -lFoundation -L$(HDSO) `python2.6 $(SHM)/list_
 
 all: asset.so
 
-asset.so: assetNode.o asset.o object.o util.o common.o geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o
-	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so assetNode.o asset.o object.o util.o common.o \
-	    geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o $(LIBS)
+asset.so: assetNode.o assetCommand.o assetManager.o asset.o object.o util.o common.o geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o plugin.o
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so assetNode.o assetCommand.o assetManager.o asset.o object.o util.o common.o \
+	    geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o plugin.o $(LIBS)
 
 assetNode.o: assetNode.C assetNode.h
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetNode.C
+
+assetCommand.o: assetCommand.C assetCommand.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetCommand.C
+
+assetManager.o: assetManager.C assetManager.h
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetManager.C
 
 asset.o: asset.C asset.h
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) asset.C
@@ -40,6 +46,9 @@ assetNodeMonitor.o: assetNodeMonitor.C assetNodeMonitor.h
 
 geometryPart.o: geometryPart.C geometryPart.h
 	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) geometryPart.C
+
+plugin.o: plugin.C
+	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) plugin.C
 
 
 clean:

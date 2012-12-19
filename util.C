@@ -1,3 +1,4 @@
+#include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
 
 #include "util.h"
@@ -188,7 +189,7 @@ Util::printMayaStatus(MStatus stat)
 
 
 MString
-Util::executeCommand(MString& cmd)
+Util::executeCommand(const MString& cmd)
 {
     MString result;
     try
@@ -205,4 +206,18 @@ Util::executeCommand(MString& cmd)
         cerr << e.what() << endl;
     }
     return result;
+}
+
+
+MObject
+Util::findNodeByName(MString& name)
+{
+    MSelectionList selection;
+    selection.add(name);
+
+    MObject ret;
+
+    if(selection.length())
+        selection.getDependNode(0, ret);
+    return ret;
 }

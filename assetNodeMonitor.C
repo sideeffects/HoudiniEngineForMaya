@@ -87,7 +87,6 @@ AssetNodeMonitor::attachNodeDirtyCallback()
 {
     MStatus stat;
     nodeDirtyCBId = MNodeMessage::addNodeDirtyPlugCallback(node, &nodeDirtyPlugCB, this, &stat);
-    cerr << "attachNodeDirtyCallback: " << stat << endl;
     Util::checkMayaStatus(stat);
 }
 

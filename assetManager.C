@@ -4,7 +4,6 @@
 #include <maya/MFnPhongShader.h>
 #include <maya/MFileObject.h>
 #include <maya/MSelectionList.h>
-#include <maya/MPlug.h>
 #include <maya/MStatus.h>
 #include <maya/MGlobal.h>
 
@@ -36,20 +35,6 @@ AssetManager::AssetManager(const MString& filePath)
 
 AssetManager::~AssetManager()
 {
-}
-
-
-MObject
-AssetManager::findNodeByName(MString& name)
-{
-    MSelectionList selection;
-    selection.add(name);
-
-    MObject ret;
-
-    if(selection.length())
-        selection.getDependNode(0, ret);
-    return ret;
 }
 
 
@@ -148,11 +133,11 @@ AssetManager::init()
         {
             MFnDependencyNode fnDN(partNodes[i]);
             MString nodeName = fnDN.name();
-            
+
             int usIndex = nodeName.rindexW('_');
             MString objName = nodeName.substringW(0, usIndex-1);
 
-            MObject objNode = findNodeByName(objName);
+            MObject objNode = Util::findNodeByName(objName);
             if (objNode.isNull())
             {
                 objNode = fnDag.create("transform", objName, topTransform, &stat);
@@ -181,7 +166,7 @@ AssetManager::init()
 
             cmd = "shadingNode -asShader phong";
             result = Util::executeCommand(cmd); // phong node
-            MObject phongNode = findNodeByName(result);
+            MObject phongNode = Util::findNodeByName(result);
             materialNodes.append(phongNode);
 
             stat = MGlobal::selectByName(MFnDependencyNode(partNodes[i]).name(), MGlobal::kReplaceList);
@@ -190,7 +175,7 @@ AssetManager::init()
             cmd = "hyperShade -assign " + result;
             cerr << cmd << endl;
             result = Util::executeCommand(cmd); // shadingEngine node
-            MObject seNode = findNodeByName(result);
+            MObject seNode = Util::findNodeByName(result);
             seNodes.append(seNode);
 
             if (matExists)
@@ -207,7 +192,6 @@ AssetManager::init()
                 dest = MFnDependencyNode(phongNode).findPlug("transparency");
                 stat = dg.connect(src, dest);
                 Util::checkMayaStatus(stat);
-                
 
                 MString texturePath = materialPlug.child(AssetNodeAttributes::texturePath).asString();
                 cerr << "texturePath: " << texturePath << endl;
@@ -228,7 +212,7 @@ AssetManager::init()
                     cmd = "shadingNode -asTexture file";
                     cerr << texturePath << endl;
                     result = Util::executeCommand(cmd); // file node
-                    MObject fileNode = findNodeByName(result);
+                    MObject fileNode = Util::findNodeByName(result);
                     fileNodes.append(fileNode);
 
                     // connect attributes
@@ -275,13 +259,14 @@ AssetManager::init()
             for (int j=0; j<ionCount; j++)
             {
                 MString name = instancedNames[j].asString();
-                
-                src = MFnDependencyNode(findNodeByName(name)).findPlug("matrix");
+
+                src = MFnDependencyNode(Util::findNodeByName(name)).findPlug("matrix");
                 dest = MFnDependencyNode(instancer).findPlug("inputHierarchy").elementByLogicalIndex(j);
                 stat = dg.connect(src, dest);
                 Util::checkMayaStatus(stat);
 
-                MGlobal::executeCommand("hide " + name);
+                MString cmd = "hide " + name;
+                Util::executeCommand(cmd);
             }
 
 
@@ -306,4 +291,131 @@ AssetManager::init()
 void
 AssetManager::update()
 {
+}
+
+
+ObjectNodeGroup*
+AssetManager::getObjectGroup(MPlug& plug)
+{
+    try
+    {
+        int index = plug.logicalIndex();
+        ObjectNodeGroup* ret = objectNodeGroups.at(index);
+        return ret;
+    }
+    catch (...)
+    {
+        return NULL;
+    }
+}
+
+
+MStatus
+AssetManager::createObjectNodeGroup(MPlug& plug)
+{
+    ObjectNodeGroup* objGroup = getObjectGroup(plug);
+    if (objGroup == NULL)
+    {
+        objGroup = new ObjectNodeGroup();
+        objectNodeGroups.push_back(objGroup);
+    }
+
+    return objGroup->update();
+}
+
+
+MStatus
+ObjectNodeGroup::update()
+{
+    MStatus stat;
+
+    stat = updateNodes();
+    stat = updateConnections();
+}
+
+
+MStatus
+ObjectNodeGroup::updateNodes()
+{
+    MStatus stat;
+    MFnDagNode fnDag;
+    MDGModifier dg;
+    MString cmd, result;
+
+    try
+    {
+        if (partNode.isNull())
+        {
+            MString name = plug.child(AssetNodeAttributes::objectName).asString();
+            // Creates a mesh node and its parent, returns the parent to me.
+            partNode = fnDag.create("mesh", name, MObject::kNullObj, &stat);
+            Util::checkMayaStatus(stat);
+        }
+
+        MPlug materialPlug = plug.child(AssetNodeAttributes::material);
+        if (materialNode.isNull())
+        {
+            MString result;
+            MString cmd;
+
+            cmd = "shadingNode -asShader phong";
+            result = Util::executeCommand(cmd); // phong node
+            materialNode = Util::findNodeByName(result);
+        }
+
+        if (seNode.isNull())
+        {
+            stat = MGlobal::selectByName(MFnDependencyNode(partNode).name(), MGlobal::kReplaceList);
+            Util::checkMayaStatus(stat);
+
+            cmd = "hyperShade -assign " + result;
+            result = Util::executeCommand(cmd); // shadingEngine node
+            seNode = Util::findNodeByName(result);
+        }
+
+        bool matExists = materialPlug.child(AssetNodeAttributes::materialExists).asBool();
+        if (matExists)
+        {
+            MString texturePath = materialPlug.child(AssetNodeAttributes::texturePath).asString();
+            if (texturePath != "")
+            {
+                if (fileNode.isNull())
+                {
+                    cmd = "shadingNode -asTexture file";
+                    result = Util::executeCommand(cmd); // file node
+                    fileNode = Util::findNodeByName(result);
+                }
+            }
+            else
+            {
+                if (!fileNode.isNull())
+                {
+                    stat = dg.deleteNode(fileNode);
+                    Util::checkMayaStatus(stat);
+                    stat = dg.doIt();
+                    Util::checkMayaStatus(stat);
+                }
+            }
+        }
+
+        return MS::kSuccess;
+    }
+    catch (MayaError& e)
+    {
+        return MS::kFailure;
+    }
+}
+
+
+MStatus
+ObjectNodeGroup::updateConnections()
+{
+    return MS::kSuccess;
+}
+
+
+MStatus
+InstNodeGroup::update()
+{
+    return MS::kSuccess;
 }

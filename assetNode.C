@@ -363,9 +363,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     dirtyParmAttribute = plugBeingDirtied.attribute();
     //cerr << "plugBeingDirtied: " << plugBeingDirtied.name();
     //cerr << "name: " << dirtyParmPlug->name();
-
-    //MPlug meshesPlug(thisMObject(), meshes);
-    //MPlug transformsPlug(thisMObject(), transforms);
+    
     affectedPlugs.append(MPlug(thisMObject(), AssetNodeAttributes::output));
 
     MPlug objectsPlug(thisMObject(), AssetNodeAttributes::objects);
@@ -373,7 +371,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
     for (int i=0; i < objectsPlug.numElements(); i++)
     {
-        cerr << "()()()() setDependentsDirty ()()()() " << i << endl;
         MPlug elemPlug = objectsPlug[i];
 
         MPlug objectNamePlug = elemPlug.child(AssetNodeAttributes::objectName);
@@ -386,8 +383,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         affectedPlugs.append(objectNamePlug);
         affectedPlugs.append(metaDataPlug);
         affectedPlugs.append(meshPlug);
-        //affectedPlugs.append(transformPlug);
-        //affectedPlugs.append(materialPlug);
 
         affectedPlugs.append(transformPlug.child(AssetNodeAttributes::translateAttr));
         affectedPlugs.append(transformPlug.child(AssetNodeAttributes::rotateAttr));
@@ -398,6 +393,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         affectedPlugs.append(materialPlug.child(AssetNodeAttributes::ambientAttr));
         affectedPlugs.append(materialPlug.child(AssetNodeAttributes::diffuseAttr));
         affectedPlugs.append(materialPlug.child(AssetNodeAttributes::specularAttr));
+	affectedPlugs.append(materialPlug.child(AssetNodeAttributes::alphaAttr));
     }
 
     for (int i=0; i<instancersPlug.numElements(); i++)
@@ -433,9 +429,7 @@ AssetNode::getAttrFromParm(HAPI_ParmInfo& parm)
 
 void
 AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
-{
-    //cerr << "update attr value ================" << endl;
-
+{    
     // get attribute
     MObject attr = getAttrFromParm(parm);
 
@@ -505,6 +499,7 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 }
 
 
+// This function will update Maya attrs based on Houdini Parms
 void
 AssetNode::updateAttrValues(MDataBlock& data)
 {
@@ -529,7 +524,6 @@ AssetNode::updateAttrValues(MDataBlock& data)
     delete[] myParmInfos;
 }
 
-
 double
 getTime()
 {
@@ -544,16 +538,22 @@ getTime()
     return 0.0;
 }
 
+
+// This function takes Maya attr values and pushes it into Houdini
 void
 AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
-{
-    //cerr << "set parm value ===========" << endl;
+{    
 
     MObject attr = getAttrFromParm(parm);
     MPlug plug(thisMObject(), attr);
     MPlug dirtyParmPlug(thisMObject(), dirtyParmAttribute);
+
     //cerr << "plug: " << plug.name() << endl;
     //cerr << "dirtyParmPlug: " << dirtyParmPlug.name() << endl;
+
+    //Only push into Houdini the minimum changes necessary.
+    //Only push what has been dirtied.
+
 
     bool found = false;
     if (!dirtyParmPlug.isNull())
@@ -564,6 +564,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         {
             found = true;
         }
+
 
         // if the parm is a type we know how to handle and the dirtied plug
         // is a child of it, then the parm should be a tuple attribute, so we
@@ -579,6 +580,8 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
     if (!found)
         return;
 
+
+	// this is the tuple size
     int size = parm.size;
 
     if (parm.isInt())
@@ -651,11 +654,9 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         }
     }
 
-    //dirtyParmAttribute = MObject();
-
 }
 
-
+// This function takes Maya attr values and pushes it into Houdini
 void
 AssetNode::setParmValues(MDataBlock& data)
 {
@@ -681,13 +682,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
     cerr << "compute #################################### " << plug.name() << endl;
 
-    //MPlug inputPlug(thisMObject(), AssetNodeAttributes::input);
-    //MPlug elemInputPlug = inputPlug.child(0);
-    //cerr << "is input1 connected: " << elemInputPlug.isConnected() << endl;
-
-
     // load otl
-    // TODO: manage assets properly
     if (assetChanged)
     {
         MPlug p(thisMObject(), AssetNodeAttributes::fileNameAttr);
@@ -704,14 +699,16 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             cerr << e.what() << endl;
             return MS::kFailure;
         }
-    }
-
-    //cerr << "check1" << endl;
+    }    
 
     if (!builtParms)
     {
         // add ALL the parms
         cerr << "add parms ...." << endl;
+
+	//These are dynamic input attributes.  These represent
+	// the parms of the asset, which we only know after we have
+	// loaded the asset.
         MObjectArray parmAttributes = asset->getParmAttributes();
         MFnDependencyNode fnDN(thisMObject());
         int size = parmAttributes.length();
@@ -722,13 +719,17 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         }
 
         builtParms = true;
+
     }
 
-
+    //check if the user has manipulated this node, if so, then push modified
+    //parms into Houdini
     MPlug parmsModifiedPlug(thisMObject(), AssetNodeAttributes::parmsModified);
     MDataHandle parmsModifiedHandle = data.inputValue(parmsModifiedPlug);
     if (parmsModifiedHandle.asBool())
         setParmValues(data);
+
+    //updates Maya attrs from Houdini
     updateAttrValues(data);
 
     MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
@@ -739,20 +740,3 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     return MS::kSuccess;
 }
 
-//MStatus
-//initializePlugin(MObject obj)
-//{
-    //MStatus status;
-    //MFnPlugin plugin(obj, "Asset plugin", "1.0", "Any");
-    //status = plugin.registerNode("hAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
-    //return status;
-//}
-
-//MStatus
-//uninitializePlugin(MObject obj)
-//{
-    //MStatus status;
-    //MFnPlugin plugin(obj);
-    //status = plugin.deregisterNode(AssetNode::id);
-    //return status;
-//}

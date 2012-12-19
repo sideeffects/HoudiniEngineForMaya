@@ -331,6 +331,7 @@ ObjectNodeGroup::update()
 
     stat = updateNodes();
     stat = updateConnections();
+    return stat;
 }
 
 

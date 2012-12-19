@@ -171,6 +171,10 @@ Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
         }
 
         // input from another asset
+	// Depending on whether the input connection is coming from a Houdni asset or
+	// just a simple Maya Mesh output, we will either connect the underlying Houdini
+	// asset or simply marshal the Maya geometry.
+
         MDataHandle elemInputHandle = data.inputValue(elemInputPlug);
         if (elemInputHandle.type() == MFnData::kIntArray)
         {
@@ -213,10 +217,7 @@ Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
             int inputGeoId = -1;
             HAPI_CreateGeoInput(info.id, i, &inputObjId, &inputGeoId);
 
-            // set up GeoInfo
-            //HAPI_GeoInfo* inputGeoInfo = new HAPI_GeoInfo();
-            //inputGeoInfo->id           = inputGeoId;
-            //inputGeoInfo->partCount    = 1;
+            // set up GeoInfo            
             HAPI_PartInfo* partInfo    = new HAPI_PartInfo();
             partInfo->id               = 0;
             partInfo->materialId       = -1;
@@ -401,6 +402,9 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     // Set the type
     MPlug typePlug(node, AssetNodeAttributes::assetType);
     MDataHandle typeHandle = data.outputValue(typePlug);
+
+    //The asset info struct (info) was set at the constructor
+    //of this class, which is at asset load time.
     typeHandle.set(info.type);
 
     // Set the time
@@ -411,6 +415,8 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     cerr << "current time: " << time << endl;
     HAPI_SetTime(time);
 
+    //this figures out the Houdini asset inputs (Geo, Transform)
+    //for inter-asset stuff
     computeGeoInputs(plug, data);
 
     HAPI_CookAsset(info.id);

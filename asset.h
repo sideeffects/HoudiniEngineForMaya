@@ -50,14 +50,14 @@ class Asset {
         MObject createStringAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
         MObject createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
 
-        void computeGeoInputs(const MPlug& plug, MDataBlock& data);
+        void computeAssetInputs(const MPlug& plug, MDataBlock& data);
         void computeInstancerObjects(const MPlug& plug, MDataBlock& data);
         void computeGeometryObjects(const MPlug& plug, MDataBlock& data);
 
 
     private:
         MObject node;
-        MObject inputs;
+        MObject mayaInputs;
         Object** objects;
 
         // Arrays of infos that can be accessed when updating objects,

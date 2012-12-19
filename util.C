@@ -129,21 +129,21 @@ Util::reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
 
 
 bool
-Util::hasHAPICallFailed(HAPI_StatusCode stat)
+Util::hasHAPICallFailed(HAPI_Result stat)
 {
     return stat > 0;
 }
 
 
 void
-Util::checkHAPIStatus(HAPI_StatusCode stat)
+Util::checkHAPIStatus(HAPI_Result stat)
 {
     if (hasHAPICallFailed(stat))
     {
         int bufLen;
-        HAPI_GetLastErrorStringLength(&bufLen);
-        char * buffer = new char[bufLen + 1];
-        HAPI_GetLastErrorString(buffer);
+        HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufLen);
+        char * buffer = new char[bufLen];
+        HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer);
         throw HAPIError(buffer);
     }
 }
@@ -160,14 +160,14 @@ Util::checkMayaStatus(MStatus stat)
 
 
 void
-Util::printHAPIStatus(HAPI_StatusCode stat)
+Util::printHAPIStatus(HAPI_Result stat)
 {
     if (hasHAPICallFailed(stat))
     {
         int bufLen;
-        HAPI_GetLastErrorStringLength(&bufLen);
-        char* buffer = new char[bufLen];
-        HAPI_GetLastErrorString(buffer);
+        HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufLen);
+        char * buffer = new char[bufLen];
+        HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer);
 
         MString str;
         str += "******************** Maya Error ********************\n";

@@ -98,14 +98,21 @@ void printAssetInfo(HAPI_AssetInfo* assetInfo)
 MStatus
 AssetNode::initialize()
 {
-    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
-    char* dir = "C:/cygwin/home/ken/dev_projects/HAPI/Unity/Assets/OTLs/Scanned";
-    //cerr << "hapi initialize" << endl;
-    hstat = HAPI_Initialize("C:/cygwin/home/ken/dev_x86/dev/hfs", dir, false, -1);
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
+    //char* dir = "C:/cygwin/home/ken/dev_projects/HAPI/Unity/Assets/OTLs/Scanned";
+    ////cerr << "hapi initialize" << endl;
+    //hstat = HAPI_Initialize("C:/cygwin/home/ken/dev_x86/dev/hfs", dir, false, -1);
 
-    //char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
-    //hstat = HAPI_Initialize("/home/jhuang/dev/hfs/", dir, false, -1);
-    Util::printHAPIStatus(hstat);
+    char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
+    MString hfs(getenv("HFS"));
+    if (hfs == NULL)
+    {
+        cerr << "*Error*: HFS directory not found" << endl;
+        throw HAPIError("HFS directory not found");
+    }
+    hfs += "/";
+    cerr << "hfs: " << hfs.asChar() << endl;
+    hstat = HAPI_Initialize(hfs.asChar(), dir, false, -1);
 
     // maya plugin stuff
     MFnNumericAttribute nAttr;
@@ -324,7 +331,7 @@ AssetNode::AssetNode()
 
 
 AssetNode::~AssetNode() {
-    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     cerr << "Asset node destroy" << endl;
     try
     {

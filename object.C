@@ -54,7 +54,7 @@ Object::init()
 {
 
     // Do a full update, ignoring what has changed
-    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
         // update object
@@ -83,7 +83,7 @@ MString Object::getName() { return Util::getString(objectInfo.nameSH); }
 void
 Object::update()
 {
-    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
         // update object

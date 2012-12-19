@@ -26,7 +26,7 @@ GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
     , neverBuilt(true)
 {
     // Do a full update
-    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
         hstat = HAPI_GetPartInfo(assetId, objectId, geoId, partId, &partInfo);
@@ -162,7 +162,7 @@ GeometryPart::update()
     //if (!geoInfo.hasGeoChanged)
         //return;
 
-    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
         //hstat = HAPI_GetGeoInfo(assetId, objectId, geoId, &geoInfo);

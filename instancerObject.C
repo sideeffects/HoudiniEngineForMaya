@@ -78,7 +78,7 @@ InstancerObject::update()
         // TODO: assume only one part for instancers
         //try
         //{
-            HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+            HAPI_Result hstat = HAPI_RESULT_SUCCESS;
             hstat = HAPI_GetPartInfo(assetId, objectId, 0, 0, &partInfo);
             Util::checkHAPIStatus(hstat);
         //}

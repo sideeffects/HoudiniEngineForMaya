@@ -18,7 +18,7 @@
 Asset::Asset(MString otlFilePath, MObject node)
     :node(node)
 {
-    HAPI_StatusCode hstat = HAPI_STATUS_SUCCESS;
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
     objectInfos = NULL;
     transformInfos = NULL;
@@ -60,7 +60,7 @@ Asset::init()
 
         int inputCount = info.maxGeoInputCount;
 
-        inputs = cAttr.create("inputs", "ins");
+        mayaInputs= cAttr.create("inputs", "ins");
 
         for (int i=0; i<inputCount; i++)
         {
@@ -72,7 +72,7 @@ Asset::init()
 
             cAttr.addChild(input);
         }
-        addAttrTo(inputs, NULL);
+        addAttrTo(mayaInputs, NULL);
     }
 
     // get the infos
@@ -156,12 +156,12 @@ Asset::update()
 
 
 void
-Asset::computeGeoInputs(const MPlug& plug, MDataBlock& data)
+Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 {
     // Geo inputs
     for (int i=0; i<info.maxGeoInputCount; i++)
     {
-        MPlug inputPlug(node, inputs);
+        MPlug inputPlug(node, mayaInputs);
         MPlug elemInputPlug = inputPlug.child(i);
 
         if (!elemInputPlug.isConnected())
@@ -417,7 +417,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
 
     //this figures out the Houdini asset inputs (Geo, Transform)
     //for inter-asset stuff
-    computeGeoInputs(plug, data);
+    computeAssetInputs(plug, data);
 
     HAPI_CookAsset(info.id);
     cerr << "cooked asset" << endl;

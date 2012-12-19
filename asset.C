@@ -467,9 +467,10 @@ Asset::createAttr(HAPI_ParmInfo& parm)
 
     MString label = Util::getString(parm.labelSH);
     MString name = Util::getString(parm.nameSH);
+    MString parmName = Util::replaceChar(name, ' ', '_');
 
-    MString shortName = MString("_parm") + parm.id + "_";
-    MString longName = MString("_H_parm") + parm.id + "_";
+    MString shortName = MString("_parm") + parm.id + "_" + parmName + "_";
+    MString longName = MString("_H_parm") + parm.id + "_" + parmName + "_";
 
     MObject result;
 

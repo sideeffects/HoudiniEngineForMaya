@@ -1,3 +1,4 @@
+#include <maya/MStringArray.h>
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
 
@@ -220,4 +221,21 @@ Util::findNodeByName(MString& name)
     if(selection.length())
         selection.getDependNode(0, ret);
     return ret;
+}
+
+
+MString
+Util::replaceChar(MString& str, char oldChar, char newChar)
+{
+    MStringArray tokens;
+    str.split(oldChar, tokens);
+    MString newStr;
+    for (int i=0; i<tokens.length(); i++)
+    {
+        newStr += tokens[i];
+        newStr += newChar;
+    }
+    
+    // return the new string, dicarding the last char
+    return newStr.substring(0, newStr.length()-2);
 }

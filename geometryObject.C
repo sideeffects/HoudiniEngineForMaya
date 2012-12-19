@@ -269,6 +269,11 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
             if (parts[i].hasMesh())
             {
                 MDataHandle h = builder->addElement(*index);
+                if (neverBuilt || objectInfo.hasTransformChanged)
+                {
+                    MDataHandle t = h.child(AssetNodeAttributes::transform);
+                    updateTransform(t);
+                }
                 (*index)++;
             }
         }

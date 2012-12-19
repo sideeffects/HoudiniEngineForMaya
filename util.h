@@ -60,6 +60,7 @@ class Util {
 
         static MString executeCommand(const MString& cmd);
         static MObject findNodeByName(MString& name);
+        static MString replaceChar(MString& str, char oldChar, char newChar);
 };
 
 #endif

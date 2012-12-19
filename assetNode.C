@@ -423,7 +423,9 @@ AssetNode::getAttrFromParm(HAPI_ParmInfo& parm)
 {
     MFnDependencyNode fnDN(thisMObject());
 
-    MString name = MString("_parm") + parm.id + "_";
+    MString tmp = Util::getString(parm.nameSH);
+    MString parmName = Util::replaceChar(tmp, ' ', '_');
+    MString name = MString("_parm") + parm.id + "_" + parmName + "_";
     MObject attr = fnDN.attribute(name);
     return attr;
 }
@@ -552,9 +554,30 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
     MPlug dirtyParmPlug(thisMObject(), dirtyParmAttribute);
     //cerr << "plug: " << plug.name() << endl;
     //cerr << "dirtyParmPlug: " << dirtyParmPlug.name() << endl;
+
+    bool found = false;
     if (!dirtyParmPlug.isNull())
-        if (plug != dirtyParmPlug)
-            return;
+    {
+        // if the dirtied plug matches the parm, then we have a 1-tuple
+        // (non-compound Maya attribute)
+        if (plug == dirtyParmPlug)
+        {
+            found = true;
+        }
+
+        // if the parm is a type we know how to handle and the dirtied plug
+        // is a child of it, then the parm should be a tuple attribute, so we
+        // need to set the whole tuple
+        if (parm.isInt() || parm.isFloat() || parm.isString())
+        {
+            if (dirtyParmPlug.isChild() && dirtyParmPlug.parent() == plug)
+                found = true;
+        }
+    }
+
+    // if the parm and the dirtied plug did not match, do nothing
+    if (!found)
+        return;
 
     int size = parm.size;
 
@@ -700,9 +723,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         builtParms = true;
     }
-    //{
-        //setParmValues(data);
-    //}
 
 
     MPlug parmsModifiedPlug(thisMObject(), AssetNodeAttributes::parmsModified);

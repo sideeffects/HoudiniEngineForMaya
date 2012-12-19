@@ -1,7 +1,9 @@
-print ":::::::::::::::::::::::: Maya started up yo!!!!";
+print ":::::::: Initializing Houdini Plugin Scripts :::::::::";
 
 menu -l "Houdini Assets" -p MayaWindow;
     menuItem -l "Load Houdini Asset" -c "loadOTLMenuClick";
+
+scriptJob -event "SelectionChanged" "houdiniPluginOnSelectionChanged";
 
 global proc loadOTLMenuClick()
 {
@@ -9,4 +11,60 @@ global proc loadOTLMenuClick()
     string $results[] = `fileDialog2 -cap "Load Houdini Asset" -okc "Open" -fileFilter $filter -fm 1`;
     if (size($results) > 0)
         makeAsset $results[0];
+}
+
+
+//This whole ugliness with callbacks on selection changed 
+//has to do with a bug in Maya where AETemplates don't behave
+//properly when the underlying attributes are dynamically changing.  It tends to assume
+//that the attrs are static.  So when you select a different Houdini Asset, the 
+//Attribute editors are messed up, and can only be fixed by a call to
+//refreshEditorTemplates.
+
+global string $gLastSelectedHAsset = "";
+
+global proc houdiniPluginOnSelectionChanged()
+{
+    global string $gLastSelectedHAsset;
+    int $foundHAsset = 0;
+    int $foundDiffHAsset = 0;
+    string $currSel[] = `ls -sl`;
+    for( $ii = 0; $ii < size($currSel); $ii++)
+    {
+        string $sel = $currSel[$ii];
+        if(`nodeType $sel` == "hAsset")
+        {
+            $foundHAsset = 1;
+            if( $sel != $gLastSelectedHAsset )
+            {
+                $foundDiffHAsset = 1;
+                $gLastSelectedHAsset = $sel;
+            }
+            break;
+        }
+        string $connections[] = `listConnections $sel`;
+
+        for( $jj = 0; $jj < size($connections); $jj++)
+        {
+            string $conn = $connections[$jj];
+            if(`nodeType $conn` == "hAsset")
+            {
+                $foundHAsset = 1;
+
+                if( $conn != $gLastSelectedHAsset )
+                {
+                    $foundDiffHAsset = 1;
+                    $gLastSelectedHAsset = $conn;
+                }
+
+                break;
+            }
+        }
+
+        if($foundHAsset)
+            break;
+        
+    }
+    if($foundHAsset && $foundDiffHAsset)
+        refreshEditorTemplates;
 }

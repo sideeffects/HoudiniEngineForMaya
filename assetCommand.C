@@ -7,6 +7,7 @@
 
 #include "assetCommand.h"
 #include "assetManager.h"
+#include "assetNodeMonitor.h"
 #include "util.h"
 
 AssetCommand::AssetCommand()
@@ -33,7 +34,9 @@ MStatus AssetCommand::doIt(const MArgList& args)
     cerr << "AssetCommand doIt" << endl;
 
     MString filePath = args.asString(0);
-    AssetManager::createManager(filePath);
+    AssetManager* manager = AssetManager::createManager(filePath);
+    AssetNodeMonitor* monitor = new AssetNodeMonitor(manager);
+    monitor->watch();
 
     return MS::kSuccess;
 }

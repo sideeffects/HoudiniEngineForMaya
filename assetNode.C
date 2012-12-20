@@ -105,7 +105,7 @@ AssetNode::initialize()
 
     char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
     MString hfs(getenv("HFS"));
-    if (hfs == NULL)
+    if (hfs == "")
     {
         cerr << "*Error*: HFS directory not found" << endl;
         throw HAPIError("HFS directory not found");
@@ -345,18 +345,18 @@ AssetNode::~AssetNode() {
     {
         cerr << e.what() << endl;
     }
-    monitor->stop();
+    //monitor->stop();
 
     delete asset;
-    delete monitor;
+    //delete monitor;
 }
 
 
 void
 AssetNode::postConstructor()
 {
-    monitor = new AssetNodeMonitor(thisMObject());
-    MStatus stat = monitor->watch();
+    //monitor = new AssetNodeMonitor(thisMObject());
+    //MStatus stat = monitor->watch();
 }
 
 

@@ -7,15 +7,18 @@
 #include <maya/MNodeMessage.h>
 #include <maya/MDGModifier.h>
 
+#include "assetManager.h"
 
 class AssetNodeMonitor
 {
     public:
-        AssetNodeMonitor(MObject n);
+        AssetNodeMonitor(AssetManager* m);
         virtual ~AssetNodeMonitor();
 
         MStatus watch();
         MStatus stop();
+
+        AssetManager* getManager();
 
     private:
         void attachNodeDirtyCallback();
@@ -28,7 +31,8 @@ class AssetNodeMonitor
 
 
     private:
-        MObject node;
+        MObject myNode;
+        AssetManager* myManager;
 
         MCallbackId attrChangedCBId;
         MCallbackId nodeDirtyCBId;

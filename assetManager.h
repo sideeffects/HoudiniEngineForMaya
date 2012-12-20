@@ -13,8 +13,9 @@ struct ObjectNodeGroup
     // Members
     MPlug plug;
     MObject meshNode;
-    MObject partNode;
-    MObject objectNode;
+    MObject partTransform;
+    MObject objectTransform;
+    MObject assetTransform;
     MObject materialNode;
     MObject seNode;
     MObject fileNode;
@@ -30,21 +31,26 @@ struct InstNodeGroup
     // Members
     MPlug plug;
     MObject instancerNode;
+    MObject assetTransform;
 
     // Functions
     MStatus update();
+    MStatus updateNodes();
+    MStatus updateConnections();
 };
 
 class AssetManager
 {
     public:
-        static void createManager(const MString& filePath);
+        static AssetManager* createManager(const MString& filePath);
 
         AssetManager();
         AssetManager(const MString& filePath);
         virtual ~AssetManager();
 
-        void update();
+        MStatus update();
+
+        MObject getAssetNode();
 
     private:
         void init();
@@ -52,8 +58,8 @@ class AssetManager
         ObjectNodeGroup* getObjectGroup(MPlug& plug);
         InstNodeGroup* getInstGroup(MPlug& plug);
 
-        MStatus createObjectNodeGroup(MPlug& plug);
-        MStatus createInstNodeGroup(MPlug& plug);
+        MStatus createObjectNodeGroup(MPlug& plug, MObject& assetTransform);
+        MStatus createInstNodeGroup(MPlug& plug, MObject& assetTransform);
 
 
     private:
@@ -64,6 +70,7 @@ class AssetManager
 
         MString filePath;
         MObject assetNode;
+        MObject assetTransform;
         MObjectArray partNodes;
         MObjectArray objectNodes;
         MObjectArray instancerNodes;

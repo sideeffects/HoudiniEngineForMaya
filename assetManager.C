@@ -4,6 +4,7 @@
 #include <maya/MFnPhongShader.h>
 #include <maya/MFileObject.h>
 #include <maya/MSelectionList.h>
+#include <maya/MPlugArray.h>
 #include <maya/MStatus.h>
 #include <maya/MGlobal.h>
 
@@ -14,13 +15,15 @@
 
 std::vector<AssetManager*> AssetManager::managers;
 
-void
+AssetManager*
 AssetManager::createManager(const MString& filePath)
 {
     AssetManager* m = new AssetManager(filePath);
     managers.push_back(m);
     m->init();
+    return m;
 }
+
 
 AssetManager::AssetManager()
 {
@@ -35,6 +38,14 @@ AssetManager::AssetManager(const MString& filePath)
 
 AssetManager::~AssetManager()
 {
+    // TODO: destroy stuff
+}
+
+
+MObject
+AssetManager::getAssetNode()
+{
+    return assetNode;
 }
 
 
@@ -50,6 +61,7 @@ AssetManager::init()
 
     try
     {
+
         // Create the asset node
         assetNode = dg.createNode("hAsset", &stat);
         Util::checkMayaStatus(stat);
@@ -66,7 +78,7 @@ AssetManager::init()
         fnDN.setName(assetName, &stat);
         Util::checkMayaStatus(stat);
 
-        MObject topTransform = fnDag.create("transform", assetName + "_transform", MObject::kNullObj, &stat);
+        assetTransform = fnDag.create("transform", assetName + "_transform", MObject::kNullObj, &stat);
         Util::checkMayaStatus(stat);
 
         // DGModifier do it
@@ -75,208 +87,11 @@ AssetManager::init()
 
         plug.setLocked(true);
 
-        // Create the objs/meshes
-        MPlug objectsPlug(assetNode, AssetNodeAttributes::objects);
-        int objCount = objectsPlug.evaluateNumElements(&stat);
+        stat = update();
         Util::checkMayaStatus(stat);
 
-        for (int i=0; i<objCount; i++)
-        {
-            MPlug elemPlug = objectsPlug[i];
-            MString name = elemPlug.child(AssetNodeAttributes::objectName).asString();
-            MObject transformNode = fnDag.create("mesh", name, MObject::kNullObj, &stat);
-            Util::checkMayaStatus(stat);
-
-            partNodes.append(transformNode);
-        }
-
-        // Connect the objects
-        for (int i=0; i<objCount; i++)
-        {
-            MPlug elemPlug = objectsPlug[i];
-
-            // Transform
-            MObject transformNode = partNodes[i];
-            MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
-
-            src = transformPlug.child(AssetNodeAttributes::translateAttr);
-            cerr << src.name() << endl;
-            dest = MFnDependencyNode(transformNode).findPlug("translate", true);
-            stat = dag.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-            src = transformPlug.child(AssetNodeAttributes::rotateAttr);
-            dest = MFnDependencyNode(transformNode).findPlug("rotate", true);
-            stat = dag.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-            src = transformPlug.child(AssetNodeAttributes::scaleAttr);
-            dest = MFnDependencyNode(transformNode).findPlug("scale", true);
-            stat = dag.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-            // Mesh
-            MObject meshNode = MFnDagNode(transformNode).child(0, &stat);
-            Util::checkMayaStatus(stat);
-            src = elemPlug.child(AssetNodeAttributes::mesh);
-            dest = MFnDependencyNode(meshNode).findPlug("inMesh", true);
-            stat = dag.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-        }
-        stat = dag.doIt();
-        Util::checkMayaStatus(stat);
-
-
-        // Parent nodes
-        for (int i=0; i<objCount; i++)
-        {
-            MFnDependencyNode fnDN(partNodes[i]);
-            MString nodeName = fnDN.name();
-
-            int usIndex = nodeName.rindexW('_');
-            MString objName = nodeName.substringW(0, usIndex-1);
-
-            MObject objNode = Util::findNodeByName(objName);
-            if (objNode.isNull())
-            {
-                objNode = fnDag.create("transform", objName, topTransform, &stat);
-                Util::checkMayaStatus(stat);
-                stat = dag.reparentNode(objNode, topTransform);
-                Util::checkMayaStatus(stat);
-            }
-
-            stat = dag.reparentNode(partNodes[i], objNode);
-            Util::checkMayaStatus(stat);
-
-        }
-        stat = dag.doIt();
-        Util::checkMayaStatus(stat);
-
-
-        // Create the materials
-        for (int i=0; i<objCount; i++)
-        {
-            MPlug elemPlug = objectsPlug[i];
-            MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
-            bool matExists = materialPlug.child(AssetNodeAttributes::materialExists).asBool();
-
-            MString result;
-            MString cmd;
-
-            cmd = "shadingNode -asShader phong";
-            result = Util::executeCommand(cmd); // phong node
-            MObject phongNode = Util::findNodeByName(result);
-            materialNodes.append(phongNode);
-
-            stat = MGlobal::selectByName(MFnDependencyNode(partNodes[i]).name(), MGlobal::kReplaceList);
-            Util::checkMayaStatus(stat);
-
-            cmd = "hyperShade -assign " + result;
-            cerr << cmd << endl;
-            result = Util::executeCommand(cmd); // shadingEngine node
-            MObject seNode = Util::findNodeByName(result);
-            seNodes.append(seNode);
-
-            if (matExists)
-            {
-
-                // connect attributes
-
-                src = materialPlug.child(AssetNodeAttributes::specularAttr);
-                dest = MFnDependencyNode(phongNode).findPlug("specularColor");
-                stat = dg.connect(src, dest);
-                Util::checkMayaStatus(stat);
-
-                src = materialPlug.child(AssetNodeAttributes::alphaAttr);
-                dest = MFnDependencyNode(phongNode).findPlug("transparency");
-                stat = dg.connect(src, dest);
-                Util::checkMayaStatus(stat);
-
-                MString texturePath = materialPlug.child(AssetNodeAttributes::texturePath).asString();
-                cerr << "texturePath: " << texturePath << endl;
-                if (texturePath == "")
-                {
-                    src = materialPlug.child(AssetNodeAttributes::diffuseAttr);
-                    dest = MFnDependencyNode(phongNode).findPlug("color");
-                    stat = dg.connect(src, dest);
-                    Util::checkMayaStatus(stat);
-
-                    src = materialPlug.child(AssetNodeAttributes::ambientAttr);
-                    dest = MFnDependencyNode(phongNode).findPlug("ambientColor");
-                    stat = dg.connect(src, dest);
-                    Util::checkMayaStatus(stat);
-                }
-                else
-                {
-                    cmd = "shadingNode -asTexture file";
-                    cerr << texturePath << endl;
-                    result = Util::executeCommand(cmd); // file node
-                    MObject fileNode = Util::findNodeByName(result);
-                    fileNodes.append(fileNode);
-
-                    // connect attributes
-                    src = materialPlug.child(AssetNodeAttributes::texturePath);
-                    dest = MFnDependencyNode(fileNode).findPlug("fileTextureName");
-                    stat = dg.connect(src, dest);
-                    Util::checkMayaStatus(stat);
-
-                    src = MFnDependencyNode(fileNode).findPlug("outColor");
-                    dest = MFnDependencyNode(phongNode).findPlug("color");
-                    stat = dg.connect(src, dest);
-                    Util::checkMayaStatus(stat);
-                }
-            }
-        }
-        stat = dg.doIt();
-        Util::checkMayaStatus(stat);
-
-
-        // Create instancers
-        MPlug instancersPlug(assetNode, AssetNodeAttributes::instancers);
-        int instCount = instancersPlug.numElements(&stat);
-        cerr << "instCount: " << instCount << endl;
-        Util::checkMayaStatus(stat);
-
-        for (int i=0; i<instCount; i++)
-        {
-            MPlug elemPlug = instancersPlug[i];
-
-            MObject instancer = fnDN.create("instancer", "instancer", &stat);
-            Util::checkMayaStatus(stat);
-            instancerNodes.append(instancer);
-
-            stat = dg.newPlugValueInt(MFnDependencyNode(instancer).findPlug("rau"), 1);
-            Util::checkMayaStatus(stat);
-
-            src = elemPlug.child(AssetNodeAttributes::instancerData);
-            dest = MFnDependencyNode(instancer).findPlug("inputPoints");
-            stat = dg.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-            MPlug instancedNames = elemPlug.child(AssetNodeAttributes::instancedObjectNames);
-            int ionCount = instancedNames.numElements();
-            for (int j=0; j<ionCount; j++)
-            {
-                MString name = instancedNames[j].asString();
-
-                src = MFnDependencyNode(Util::findNodeByName(name)).findPlug("matrix");
-                dest = MFnDependencyNode(instancer).findPlug("inputHierarchy").elementByLogicalIndex(j);
-                stat = dg.connect(src, dest);
-                Util::checkMayaStatus(stat);
-
-                MString cmd = "hide " + name;
-                Util::executeCommand(cmd);
-            }
-
-
-            stat = dag.reparentNode(instancer, topTransform);
-            Util::checkMayaStatus(stat);
-
-        }
-        stat = dg.doIt();
-        Util::checkMayaStatus(stat);
-        stat = dag.doIt();
+        // Select the newly created asset
+        stat = MGlobal::select(assetNode, MGlobal::kReplaceList);
         Util::checkMayaStatus(stat);
 
     }
@@ -288,9 +103,44 @@ AssetManager::init()
 }
 
 
-void
+MStatus
 AssetManager::update()
 {
+    cerr << "AssetManager::update() called" << endl;
+    MStatus stat;
+    try
+    {
+        // Create the objs/meshes
+        MPlug objectsPlug(assetNode, AssetNodeAttributes::objects);
+        int objCount = objectsPlug.evaluateNumElements(&stat);
+        Util::checkMayaStatus(stat);
+
+        for (int i=0; i<objCount; i++)
+        {
+            MPlug elemPlug = objectsPlug[i];
+            createObjectNodeGroup(elemPlug, assetTransform);
+        }
+
+        // Instancers
+        MPlug instancersPlug(assetNode, AssetNodeAttributes::instancers);
+        int instCount = instancersPlug.numElements(&stat);
+        Util::checkMayaStatus(stat);
+
+        for (int i=0; i<instCount; i++)
+        {
+            MPlug elemPlug = instancersPlug[i];
+            createInstNodeGroup(elemPlug, assetTransform);
+        }
+
+        // TODO: delete extra node groups
+
+        return MS::kSuccess;
+    }
+    catch (MayaError& e)
+    {
+        cerr << e.what() << endl;
+        return MS::kFailure;
+    }
 }
 
 
@@ -300,6 +150,7 @@ AssetManager::getObjectGroup(MPlug& plug)
     try
     {
         int index = plug.logicalIndex();
+        // This throws an exception if index is out of bounds
         ObjectNodeGroup* ret = objectNodeGroups.at(index);
         return ret;
     }
@@ -310,17 +161,52 @@ AssetManager::getObjectGroup(MPlug& plug)
 }
 
 
+InstNodeGroup*
+AssetManager::getInstGroup(MPlug& plug)
+{
+    try
+    {
+        int index = plug.logicalIndex();
+        // This throws an exception if index is out of bounds
+        InstNodeGroup* ret = instNodeGroups.at(index);
+        return ret;
+    }
+    catch (...)
+    {
+        return NULL;
+    }
+}
+
+
 MStatus
-AssetManager::createObjectNodeGroup(MPlug& plug)
+AssetManager::createObjectNodeGroup(MPlug& plug, MObject& assetTransform)
 {
     ObjectNodeGroup* objGroup = getObjectGroup(plug);
     if (objGroup == NULL)
     {
         objGroup = new ObjectNodeGroup();
+        objGroup->plug = plug;
+        objGroup->assetTransform = assetTransform;
         objectNodeGroups.push_back(objGroup);
     }
 
     return objGroup->update();
+}
+
+
+MStatus
+AssetManager::createInstNodeGroup(MPlug& plug, MObject& assetTransform)
+{
+    InstNodeGroup* instGroup = getInstGroup(plug);
+    if (instGroup == NULL)
+    {
+        instGroup = new InstNodeGroup();
+        instGroup->plug = plug;
+        instGroup->assetTransform = assetTransform;
+        instNodeGroups.push_back(instGroup);
+    }
+
+    return instGroup->update();
 }
 
 
@@ -341,24 +227,60 @@ ObjectNodeGroup::updateNodes()
     MStatus stat;
     MFnDagNode fnDag;
     MDGModifier dg;
+    MDagModifier dag;
     MString cmd, result;
 
     try
     {
-        if (partNode.isNull())
+
+        // Check to see if the object transform has been created, if so,
+        // then add the part transform under it, if not, then create the
+        // object transform then add the part transform
+        MString partName = plug.child(AssetNodeAttributes::objectName).asString();
+
+        int usIndex = partName.rindexW('_');
+        MString objName = partName.substringW(0, usIndex-1);
+
+        MString objFullPath = "|" + MFnDependencyNode(assetTransform).name() +
+                              "|" + objName;
+        cerr << objFullPath << endl;
+        cmd = "objExists " + objFullPath;
+        int exists = 0;
+        stat = MGlobal::executeCommand(cmd, exists);
+        Util::checkMayaStatus(stat);
+        cerr << exists << endl;
+
+        MObject objNode;
+        if (exists)
         {
-            MString name = plug.child(AssetNodeAttributes::objectName).asString();
+            objNode = Util::findNodeByName(objFullPath);
+        }
+        else
+        {
+            objNode = fnDag.create("transform", objName, assetTransform, &stat);
+            Util::checkMayaStatus(stat);
+        }
+        objectTransform = objNode;
+
+        if (partTransform.isNull())
+        {
+            cerr << "createing mesh" << endl;
             // Creates a mesh node and its parent, returns the parent to me.
-            partNode = fnDag.create("mesh", name, MObject::kNullObj, &stat);
+            partTransform = fnDag.create("mesh", partName, MObject::kNullObj, &stat);
+            Util::checkMayaStatus(stat);
+            meshNode = MFnDagNode(partTransform).child(0, &stat);
+            Util::checkMayaStatus(stat);
+            stat = dag.reparentNode(partTransform, objectTransform);
+            Util::checkMayaStatus(stat);
+            stat = dag.doIt();
             Util::checkMayaStatus(stat);
         }
 
+        // Materials
         MPlug materialPlug = plug.child(AssetNodeAttributes::material);
         if (materialNode.isNull())
         {
-            MString result;
-            MString cmd;
-
+            cerr << "createing mateiral" << endl;
             cmd = "shadingNode -asShader phong";
             result = Util::executeCommand(cmd); // phong node
             materialNode = Util::findNodeByName(result);
@@ -366,12 +288,22 @@ ObjectNodeGroup::updateNodes()
 
         if (seNode.isNull())
         {
-            stat = MGlobal::selectByName(MFnDependencyNode(partNode).name(), MGlobal::kReplaceList);
+            cerr << "createing se: " << MFnDagNode(partTransform).fullPathName() << endl;
+            stat = MGlobal::selectByName(MFnDagNode(partTransform).fullPathName(), MGlobal::kReplaceList);
             Util::checkMayaStatus(stat);
 
-            cmd = "hyperShade -assign " + result;
+            cmd = "hyperShade -assign " + MFnDependencyNode(materialNode).name();
             result = Util::executeCommand(cmd); // shadingEngine node
-            seNode = Util::findNodeByName(result);
+
+            MPlugArray connectedPlugs;
+            bool hasConnections = MFnDependencyNode(materialNode).findPlug("outColor").connectedTo(
+                    connectedPlugs, false, true, &stat);
+            Util::checkMayaStatus(stat);
+            if (hasConnections)
+            {
+                seNode = connectedPlugs[0].node();
+                cerr << "seNode: " << MFnDependencyNode(seNode).name() << endl;
+            }
         }
 
         bool matExists = materialPlug.child(AssetNodeAttributes::materialExists).asBool();
@@ -393,16 +325,18 @@ ObjectNodeGroup::updateNodes()
                 {
                     stat = dg.deleteNode(fileNode);
                     Util::checkMayaStatus(stat);
-                    stat = dg.doIt();
-                    Util::checkMayaStatus(stat);
                 }
             }
         }
+        cerr << "check" << endl;
+        stat = dg.doIt();
+        Util::checkMayaStatus(stat);
 
         return MS::kSuccess;
     }
     catch (MayaError& e)
     {
+        cerr << e.what() << endl;
         return MS::kFailure;
     }
 }
@@ -411,12 +345,183 @@ ObjectNodeGroup::updateNodes()
 MStatus
 ObjectNodeGroup::updateConnections()
 {
-    return MS::kSuccess;
+    MDGModifier dg;
+    MPlug src, dest;
+    MStatus stat;
+
+    try
+    {
+        // Transform
+        MPlug transformPlug = plug.child(AssetNodeAttributes::transform);
+
+        src = transformPlug.child(AssetNodeAttributes::translateAttr);
+        cerr << src.name() << endl;
+        dest = MFnDependencyNode(partTransform).findPlug("translate", true);
+        stat = dg.connect(src, dest);
+        Util::checkMayaStatus(stat);
+
+        src = transformPlug.child(AssetNodeAttributes::rotateAttr);
+        dest = MFnDependencyNode(partTransform).findPlug("rotate", true);
+        stat = dg.connect(src, dest);
+        Util::checkMayaStatus(stat);
+
+        src = transformPlug.child(AssetNodeAttributes::scaleAttr);
+        dest = MFnDependencyNode(partTransform).findPlug("scale", true);
+        stat = dg.connect(src, dest);
+        Util::checkMayaStatus(stat);
+
+        // Mesh
+        src = plug.child(AssetNodeAttributes::mesh);
+        dest = MFnDependencyNode(meshNode).findPlug("inMesh", true);
+        stat = dg.connect(src, dest);
+        Util::checkMayaStatus(stat);
+
+        // Materials
+        MPlug materialPlug = plug.child(AssetNodeAttributes::material);
+        bool matExists = materialPlug.child(AssetNodeAttributes::materialExists).asBool();
+        if (matExists)
+        {
+            src = materialPlug.child(AssetNodeAttributes::specularAttr);
+            dest = MFnDependencyNode(materialNode).findPlug("specularColor");
+            stat = dg.connect(src, dest);
+            Util::checkMayaStatus(stat);
+
+            src = materialPlug.child(AssetNodeAttributes::alphaAttr);
+            dest = MFnDependencyNode(materialNode).findPlug("transparency");
+            stat = dg.connect(src, dest);
+            Util::checkMayaStatus(stat);
+
+            MString texturePath = materialPlug.child(AssetNodeAttributes::texturePath).asString();
+            cerr << "texturePath: " << texturePath << endl;
+            if (texturePath == "")
+            {
+                src = materialPlug.child(AssetNodeAttributes::diffuseAttr);
+                dest = MFnDependencyNode(materialNode).findPlug("color");
+                stat = dg.connect(src, dest);
+                Util::checkMayaStatus(stat);
+
+                src = materialPlug.child(AssetNodeAttributes::ambientAttr);
+                dest = MFnDependencyNode(materialNode).findPlug("ambientColor");
+                stat = dg.connect(src, dest);
+                Util::checkMayaStatus(stat);
+            }
+            else
+            {
+                src = materialPlug.child(AssetNodeAttributes::texturePath);
+                dest = MFnDependencyNode(fileNode).findPlug("fileTextureName");
+                stat = dg.connect(src, dest);
+                Util::checkMayaStatus(stat);
+
+                src = MFnDependencyNode(fileNode).findPlug("outColor");
+                dest = MFnDependencyNode(materialNode).findPlug("color");
+                stat = dg.connect(src, dest);
+                Util::checkMayaStatus(stat);
+            }
+        }
+       Util::checkMayaStatus(stat);
+
+        stat = dg.doIt();
+        Util::checkMayaStatus(stat);
+
+        return MS::kSuccess;
+    }
+    catch (MayaError& e)
+    {
+        cerr << e.what() << endl;
+        return MS::kFailure;
+    }
+
 }
 
 
 MStatus
 InstNodeGroup::update()
 {
-    return MS::kSuccess;
+    MStatus stat;
+
+    stat = updateNodes();
+    stat = updateConnections();
+    return stat;
+}
+
+
+MStatus
+InstNodeGroup::updateNodes()
+{
+    MStatus stat;
+    MDagModifier dag;
+    MFnDependencyNode fnDN;
+
+    try
+    {
+        // Create the instancer node
+        if (instancerNode.isNull())
+        {
+            instancerNode = fnDN.create("instancer", "instancer", &stat);
+            Util::checkMayaStatus(stat);
+        }
+
+        // Set the rotation units to radians
+        stat = dag.newPlugValueInt(MFnDependencyNode(instancerNode).findPlug("rau"), 1);
+        Util::checkMayaStatus(stat);
+
+        stat = dag.reparentNode(instancerNode, assetTransform);
+        Util::checkMayaStatus(stat);
+
+        stat = dag.doIt();
+        Util::checkMayaStatus(stat);
+
+        return MS::kSuccess;
+    }
+    catch (MayaError& e)
+    {
+        cerr << e.what() << endl;
+        return MS::kFailure;
+    }
+
+}
+
+
+MStatus
+InstNodeGroup::updateConnections()
+{
+    MStatus stat;
+    MPlug src, dest;
+    MDGModifier dg;
+
+    try
+    {
+        // Connect the input points
+        src = plug.child(AssetNodeAttributes::instancerData);
+        dest = MFnDependencyNode(instancerNode).findPlug("inputPoints");
+        stat = dg.connect(src, dest);
+        Util::checkMayaStatus(stat);
+
+        // Connect the instanced objects
+        MPlug instancedNames = plug.child(AssetNodeAttributes::instancedObjectNames);
+        int ionCount = instancedNames.numElements();
+        for (int i=0; i<ionCount; i++)
+        {
+            MString name = "|" + MFnDependencyNode(assetTransform).name() +
+                "|" + instancedNames[i].asString();
+
+            src = MFnDependencyNode(Util::findNodeByName(name)).findPlug("matrix");
+            dest = MFnDependencyNode(instancerNode).findPlug("inputHierarchy").elementByLogicalIndex(i);
+            stat = dg.connect(src, dest);
+            Util::checkMayaStatus(stat);
+
+            MString cmd = "hide " + name;
+            Util::executeCommand(cmd);
+        }
+
+        stat = dg.doIt();
+        Util::checkMayaStatus(stat);
+
+        return MS::kSuccess;
+    }
+    catch (MayaError& e)
+    {
+        cerr << e.what() << endl;
+        return MS::kFailure;
+    }
 }

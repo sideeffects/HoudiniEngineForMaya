@@ -61,7 +61,7 @@ class AssetNode: public MPxNode
         bool assetChanged;
         MObject dirtyParmAttribute;
 
-        AssetNodeMonitor* monitor;
+        //AssetNodeMonitor* monitor;
 
 };
 

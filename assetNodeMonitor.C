@@ -11,8 +11,9 @@
 //=============================================================================
 // Public
 //=============================================================================
-AssetNodeMonitor::AssetNodeMonitor(MObject n)
-    : node(n)
+AssetNodeMonitor::AssetNodeMonitor(AssetManager* m)
+    : myManager(m)
+    , myNode(m->getAssetNode())
     , attrChangedCBId(0)
     , nodeDirtyCBId(0)
     , sceneNewCBId(0)
@@ -29,7 +30,7 @@ AssetNodeMonitor::watch()
 
     MStatus stat;
     try {
-        attrChangedCBId = MNodeMessage::addAttributeChangedCallback(node,
+        attrChangedCBId = MNodeMessage::addAttributeChangedCallback(myNode,
                 &attributeChangedCB, this, &stat);
         Util::checkMayaStatus(stat);
 
@@ -79,6 +80,13 @@ AssetNodeMonitor::stop()
 }
 
 
+AssetManager*
+AssetNodeMonitor::getManager()
+{
+    return myManager;
+}
+
+
 //=============================================================================
 // Private
 //=============================================================================
@@ -86,7 +94,7 @@ void
 AssetNodeMonitor::attachNodeDirtyCallback()
 {
     MStatus stat;
-    nodeDirtyCBId = MNodeMessage::addNodeDirtyPlugCallback(node, &nodeDirtyPlugCB, this, &stat);
+    nodeDirtyCBId = MNodeMessage::addNodeDirtyPlugCallback(myNode, &nodeDirtyPlugCB, this, &stat);
     Util::checkMayaStatus(stat);
 }
 
@@ -111,18 +119,8 @@ AssetNodeMonitor::attributeChangedCB(MNodeMessage::AttributeMessage msg, MPlug& 
     {
         cerr << "Attr changed: " << plug.name() << " //// " << plug.asFloat() << endl;
 
-        MObject node = plug.node();
-        MFnDependencyNode fnDN(node);
-
-        // force a compute cycle
-        // TODO: this should be in the command to be executed,
-        // but MEL does not report the same number of objects
-        // so we pass this in for now
-        MPlug objectsPlug(node, AssetNodeAttributes::objects);
-        int numObjects = objectsPlug.evaluateNumElements();
-
-        MString command = "updateAsset " + fnDN.name() + " " + numObjects + ";";
-        MGlobal::executeCommand(command);
+        AssetNodeMonitor* mon = (AssetNodeMonitor*) clientData;
+        mon->getManager()->update();
     }
     else if ((msg & MNodeMessage::kConnectionMade) && (msg & MNodeMessage::kIncomingDirection))
     {
@@ -138,22 +136,13 @@ AssetNodeMonitor::attributeChangedCB(MNodeMessage::AttributeMessage msg, MPlug& 
 void
 AssetNodeMonitor::nodeDirtyPlugCB(MObject& node, MPlug& plug, void* clientData)
 {
-    MFnDependencyNode fnDN(node);
     cerr << "Node dirty: " << plug.name() << " |||| " << plug.asFloat() << endl;
 
-    // force compute
-    MPlug objectsPlug(node, AssetNodeAttributes::objects);
-
-    //Every time the node gets dirtied, the number of objects could have changed,
-    // so we need to run the updateAsset script to make sure new connection that 
-    // need to get made are made.
-    int numObjects = objectsPlug.evaluateNumElements();
-    MString command = "updateAsset " + fnDN.name() + " " + numObjects + ";";
-    MGlobal::executeCommand(command);
+    AssetNodeMonitor* mon = (AssetNodeMonitor*) clientData;
+    mon->getManager()->update();
 
     // detach the callback because we only need to do this once when new 
     // input connection is made
-    AssetNodeMonitor* mon = (AssetNodeMonitor*) clientData;
     mon->detachNodeDirtyCallback();
 }
 

@@ -10,7 +10,7 @@ global proc loadOTLMenuClick()
     string $filter = "Houdini Digital Assets (*.otl);;All Files (*.*)";
     string $results[] = `fileDialog2 -cap "Load Houdini Asset" -okc "Open" -fileFilter $filter -fm 1`;
     if (size($results) > 0)
-        makeAsset $results[0];
+        assetCommand $results[0];
 }
 
 

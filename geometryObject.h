@@ -41,8 +41,8 @@ class GeometryObject: public Object
         //void updateUVs();
 
     private:
-        HAPI_Transform transformInfo;
-        GeometryPart* parts;
+        HAPI_Transform myTransformInfo;
+        GeometryPart* myParts;
         //HAPI_MaterialInfo materialInfo;
 
         //MIntArray faceCounts;

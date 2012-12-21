@@ -56,10 +56,10 @@ class AssetNode: public MPxNode
 
 
     private:
-        Asset* asset;
-        bool builtParms;
-        bool assetChanged;
-        MObject dirtyParmAttribute;
+        Asset* myAsset;
+        bool myBuiltParms;
+        bool myAssetChanged;
+        MObject myDirtyParmAttribute;
 
         //AssetNodeMonitor* monitor;
 

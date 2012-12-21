@@ -68,15 +68,15 @@ class AssetManager
         std::vector<ObjectNodeGroup*> objectNodeGroups;
         std::vector<InstNodeGroup*> instNodeGroups;
 
-        MString filePath;
-        MObject assetNode;
-        MObject assetTransform;
-        MObjectArray partNodes;
-        MObjectArray objectNodes;
-        MObjectArray instancerNodes;
-        MObjectArray materialNodes;
-        MObjectArray seNodes;
-        MObjectArray fileNodes;
+        MString myFilePath;
+        MObject myAssetNode;
+        MObject myAssetTransform;
+        MObjectArray myPartNodes;
+        MObjectArray myObjectNodes;
+        MObjectArray myInstancerNodes;
+        MObjectArray myMaterialNodes;
+        MObjectArray mySeNodes;
+        MObjectArray myFileNodes;
 };
 
 

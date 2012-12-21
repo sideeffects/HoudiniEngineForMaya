@@ -16,7 +16,7 @@ class GeometryPart
         virtual bool hasMesh();
 
     public:
-        MString partName;
+        MString myPartName;
 
     protected:
         virtual void update();
@@ -35,25 +35,25 @@ class GeometryPart
         virtual MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, MString name);
 
     private:
-        Asset* objectControl;
+        Asset* myObjectControl;
 
-        int assetId;
-        int objectId;
-        int geoId;
-        int partId;
+        int myAssetId;
+        int myObjectId;
+        int myGeoId;
+        int myPartId;
 
-        HAPI_GeoInfo geoInfo;
-        HAPI_PartInfo partInfo;
-        HAPI_MaterialInfo materialInfo;
+        HAPI_GeoInfo myGeoInfo;
+        HAPI_PartInfo myPartInfo;
+        HAPI_MaterialInfo myMaterialInfo;
 
-        MIntArray faceCounts;
-        MIntArray vertexList;
-        MFloatPointArray points;
-        MVectorArray normals;
-        MFloatArray us;
-        MFloatArray vs;
+        MIntArray myFaceCounts;
+        MIntArray myVertexList;
+        MFloatPointArray myPoints;
+        MVectorArray myNormals;
+        MFloatArray myUs;
+        MFloatArray myVs;
 
-        bool neverBuilt;
+        bool myNeverBuilt;
 };
 
 #endif

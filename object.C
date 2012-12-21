@@ -27,7 +27,7 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
         obj = new GeometryObject(assetId, objectId);
     }
 
-    obj->objectControl = objControl;
+    obj->myObjectControl = objControl;
     //obj->objectInfo = objInfo;
 
     return obj;
@@ -41,10 +41,10 @@ Object::~Object() {}
 
 
 Object::Object(int assetId, int objectId)
-    :objectId(objectId), assetId(assetId), isInstanced(false),
-    neverBuilt(true)
+    : myObjectId(objectId), myAssetId(assetId), myIsInstanced(false),
+    myNeverBuilt(true)
 {
-    objectControl = NULL;
+    myObjectControl = NULL;
 
 }
 
@@ -60,9 +60,9 @@ Object::init()
         // update object
         //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
         //Util::checkHAPIStatus(hstat);
-        objectInfo = objectControl->getObjectInfo(objectId);
+        myObjectInfo = myObjectControl->getObjectInfo( myObjectId );
         // update geometry
-        hstat = HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
+        hstat = HAPI_GetGeoInfo( myAssetId, myObjectInfo.id, 0, &myGeoInfo);
         Util::checkHAPIStatus(hstat);
 
     }
@@ -76,8 +76,8 @@ Object::init()
 
 // Getters ----------------------------------------------------
 
-int Object::getId() { return objectId; }
-MString Object::getName() { return Util::getString(objectInfo.nameSH); }
+int Object::getId() { return myObjectId; }
+MString Object::getName() { return Util::getString( myObjectInfo.nameSH); }
 
 
 void
@@ -89,12 +89,12 @@ Object::update()
         // update object
         //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
         //Util::checkHAPIStatus(hstat);
-        objectInfo = objectControl->getObjectInfo(objectId);
+        myObjectInfo = myObjectControl->getObjectInfo( myObjectId );
 
         // update geometry
-        if (neverBuilt || objectInfo.haveGeosChanged)
+        if ( myNeverBuilt || myObjectInfo.haveGeosChanged)
         {
-            hstat = HAPI_GetGeoInfo(assetId, objectInfo.id, 0, &geoInfo);
+            hstat = HAPI_GetGeoInfo( myAssetId, myObjectInfo.id, 0, &myGeoInfo);
             Util::checkHAPIStatus(hstat);
         }
 
@@ -103,7 +103,7 @@ Object::update()
     {
         cerr << "obj " << getId() << " " << getName() << endl;
         cerr << e.what() << endl;
-        geoInfo.clear();
+        myGeoInfo.clear();
     }
     
 }

@@ -25,21 +25,21 @@ GeometryObject::init()
     // Do a full update
     Object::init();
 
-    int partCount = geoInfo.partCount;
-    parts = new GeometryPart[partCount];
+    int partCount = myGeoInfo.partCount;
+    myParts = new GeometryPart[partCount];
 
     for (int i=0; i<partCount; i++)
     {
         MString partName = getName() + "_partShape" + (i+1);
         cerr << "&&&&&&&&&&&& partName: " << partName << endl;
-        parts[i] = GeometryPart(assetId, objectId, 0, i, partName, geoInfo, objectControl);
+        myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, partName, myGeoInfo, myObjectControl );
     }
 }
 
 
 GeometryObject::~GeometryObject()
 {
-    delete[] parts;
+    delete[] myParts;
 }
 
 
@@ -156,27 +156,27 @@ GeometryObject::type()
 void
 GeometryObject::update()
 {
-    int oldPartCount = geoInfo.partCount;
+    int oldPartCount = myGeoInfo.partCount;
     Object::update();
-    int partCount = geoInfo.partCount;
+    int partCount = myGeoInfo.partCount;
 
     // if partCount changed, we clear out the array and make a new one.
     if (oldPartCount != partCount)
     {
-        delete[] parts;
-        parts = new GeometryPart[partCount];
+        delete[] myParts;
+        myParts = new GeometryPart[partCount];
         for (int i=0; i<partCount; i++)
         {
             MString partName = getName() + "_partShape" + (i+1);
             cerr << "&&&&&&&&&&&& partName: " << partName << endl;
-            parts[i] = GeometryPart(assetId, objectId, 0, i, partName, geoInfo, objectControl);
+            myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, partName, myGeoInfo, myObjectControl);
         }
     }
     else
     {
         for (int i=0; i<partCount; i++)
         {
-            parts[i].setGeoInfo(geoInfo);
+            myParts[i].setGeoInfo( myGeoInfo );
         }
     }
 
@@ -234,42 +234,42 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
     update();
 
     // TODO: this may be temporary until HAPI supports actual groups
-    if (neverBuilt || objectInfo.haveGeosChanged)
+    if ( myNeverBuilt || myObjectInfo.haveGeosChanged)
     {
         MStatus stat;
 
         // Don't output mesh for invisible geos
-        if (!objectInfo.isVisible && !isInstanced)
+        if (! myObjectInfo.isVisible && ! myIsInstanced)
             return MS::kFailure;
 
         // TODO: right now assume one geo
-        for (int i=0; i<geoInfo.partCount; i++)
+        for (int i=0; i< myGeoInfo.partCount; i++)
         {
             MDataHandle h = builder->addElement(*index);
-            stat = parts[i].compute(h);
+            stat = myParts[i].compute(h);
 
             if (MS::kSuccess == stat)
             {
-                if (neverBuilt || objectInfo.hasTransformChanged)
+                if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
                 {
                     MDataHandle t = h.child(AssetNodeAttributes::transform);
                     updateTransform(t);
                 }
-                cerr << *index << " index++: " + parts[i].partName << endl;
+                cerr << *index << " index++: " + myParts[i].myPartName << endl;
                 (*index)++;
             }
         }
 
-        neverBuilt = false;
+        myNeverBuilt = false;
     }
     else
     {
-        for (int i=0; i<geoInfo.partCount; i++)
+        for (int i=0; i< myGeoInfo.partCount; i++)
         {
-            if (parts[i].hasMesh())
+            if ( myParts[i].hasMesh() )
             {
                 MDataHandle h = builder->addElement(*index);
-                if (neverBuilt || objectInfo.hasTransformChanged)
+                if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
                 {
                     MDataHandle t = h.child(AssetNodeAttributes::transform);
                     updateTransform(t);
@@ -351,17 +351,17 @@ void GeometryObject::updateTransform(MDataHandle& handle)
     MDataHandle rotateHandle = handle.child(AssetNodeAttributes::rotateAttr);
     MDataHandle scaleHandle = handle.child(AssetNodeAttributes::scaleAttr);
 
-    HAPI_GetObjectTransforms(assetId, 5, &transformInfo, objectId, 1);
+    HAPI_GetObjectTransforms( myAssetId, 5, &myTransformInfo, myObjectId, 1 );
     //transformInfo = objectControl->getTransformInfo(objectId);
 
     // convert to euler angle
-    MEulerRotation r = MQuaternion(transformInfo.rotationQuaternion[0],
-            transformInfo.rotationQuaternion[1], transformInfo.rotationQuaternion[2],
-            transformInfo.rotationQuaternion[3]).asEulerRotation();
+    MEulerRotation r = MQuaternion(myTransformInfo.rotationQuaternion[0],
+            myTransformInfo.rotationQuaternion[1], myTransformInfo.rotationQuaternion[2],
+            myTransformInfo.rotationQuaternion[3]).asEulerRotation();
 
-    translateHandle.set3Double((double)(transformInfo.position[0]), (double)transformInfo.position[1], (double)transformInfo.position[2]);
+    translateHandle.set3Double((double)( myTransformInfo.position[0]), (double) myTransformInfo.position[1], (double) myTransformInfo.position[2]);
     rotateHandle.set3Double((double)r[0], (double)r[1], (double)r[2]);
-    scaleHandle.set3Double((double)transformInfo.scale[0], (double)transformInfo.scale[1], (double)transformInfo.scale[2]);
+    scaleHandle.set3Double((double) myTransformInfo.scale[0], (double) myTransformInfo.scale[1], (double) myTransformInfo.scale[2]);
 
     translateHandle.setClean();
     rotateHandle.setClean();

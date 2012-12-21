@@ -16,13 +16,13 @@
 #include "geometryObject.h"
 
 Asset::Asset(MString otlFilePath, MObject node)
-    :node(node)
+    :myNode(node)
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    objectInfos = NULL;
-    transformInfos = NULL;
-    materialInfos = NULL;
+    myObjectInfos = NULL;
+    myTransformInfos = NULL;
+    myMaterialInfos = NULL;
 
     // load the otl
     const char* filename = otlFilePath.asChar();
@@ -60,7 +60,7 @@ Asset::init()
 
         int inputCount = info.maxGeoInputCount;
 
-        mayaInputs= cAttr.create("inputs", "ins");
+        myMayaInputs= cAttr.create("inputs", "ins");
 
         for (int i=0; i<inputCount; i++)
         {
@@ -72,7 +72,7 @@ Asset::init()
 
             cAttr.addChild(input);
         }
-        addAttrTo(mayaInputs, NULL);
+        addAttrTo(myMayaInputs, NULL);
     }
 
     // get the infos
@@ -81,13 +81,13 @@ Asset::init()
 
     // objects
     int objCount = info.objectCount;
-    objects = new Object*[objCount];
+    myObjects = new Object*[objCount];
     numVisibleObjects = 0;
     numObjects = objCount;
     for (int i=0; i<objCount; i++)
     {
-        objects[i] = Object::createObject(info.id, i, this);
-        objects[i]->init();
+        myObjects[i] = Object::createObject(info.id, i, this);
+        myObjects[i]->init();
     }
 
     // build parms
@@ -98,11 +98,11 @@ Asset::init()
 Asset::~Asset()
 {
     for (int i=0; i<numObjects; i++)
-        delete objects[i];
-    delete[] objects;
-    delete[] objectInfos;
-    delete[] transformInfos;
-    delete[] materialInfos;
+        delete myObjects[i];
+    delete[] myObjects;
+    delete[] myObjectInfos;
+    delete[] myTransformInfos;
+    delete[] myMaterialInfos;
 }
 
 
@@ -111,8 +111,8 @@ Asset::findObjectByName(MString name)
 {
     for (int i=0; i<info.objectCount; i++)
     {
-        if (objects[i]->getName() == name)
-            return objects[i];
+        if ( myObjects[i]->getName() == name )
+            return myObjects[i];
     }
 
     return NULL;
@@ -122,26 +122,26 @@ Asset::findObjectByName(MString name)
 Object*
 Asset::findObjectById(int id)
 {
-    return objects[id];
+    return myObjects[id];
 }
 
 
 // Getters for infos
 HAPI_ObjectInfo
-Asset::getObjectInfo(int id) { return objectInfos[id]; }
+Asset::getObjectInfo(int id) { return myObjectInfos[id]; }
 HAPI_Transform
-Asset::getTransformInfo(int id) { return transformInfos[id]; }
+Asset::getTransformInfo(int id) { return myTransformInfos[id]; }
 HAPI_MaterialInfo
-Asset::getMaterialInfo(int id) { return materialInfos[id]; }
+Asset::getMaterialInfo(int id) { return myMaterialInfos[id]; }
 
 
 void
 Asset::update()
 {
     // update object infos
-    delete[] objectInfos;
-    objectInfos = new HAPI_ObjectInfo[info.objectCount];
-    HAPI_GetObjects(info.id, objectInfos, 0, info.objectCount);
+    delete[] myObjectInfos;
+    myObjectInfos = new HAPI_ObjectInfo[info.objectCount];
+    HAPI_GetObjects(info.id, myObjectInfos, 0, info.objectCount);
 
     // update transform infos
     //delete[] transformInfos;
@@ -161,7 +161,7 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
     // Geo inputs
     for (int i=0; i<info.maxGeoInputCount; i++)
     {
-        MPlug inputPlug(node, mayaInputs);
+        MPlug inputPlug(myNode, myMayaInputs);
         MPlug elemInputPlug = inputPlug.child(i);
 
         if (!elemInputPlug.isConnected())
@@ -288,7 +288,7 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
     MIntArray instancedObjIds;
     for (int i=0; i<numObjects; i++)
     {
-        Object* obj = objects[i];
+        Object* obj = myObjects[i];
         //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
 
         if (obj->type() == Object::OBJECT_TYPE_INSTANCER)
@@ -329,8 +329,8 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
     // mark instanced objects
     for (int i=0; i<instancedObjIds.length(); i++)
     {
-        Object* obj = objects[instancedObjIds[i]];
-        obj->isInstanced = true;
+        Object* obj = myObjects[instancedObjIds[i]];
+        obj->myIsInstanced = true;
         cerr << "mark instanced obj: " << obj->getName() << endl;
     }
 
@@ -355,7 +355,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     {
 
 
-        GeometryObject* obj = (GeometryObject*)(objects[i]);
+        GeometryObject* obj = (GeometryObject*)(myObjects[i]);
         //MPlug objectElemPlug = objectsPlug.elementByLogicalIndex(objectIndex);
 
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
@@ -400,7 +400,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     MStatus stat(MS::kSuccess);
 
     // Set the type
-    MPlug typePlug(node, AssetNodeAttributes::assetType);
+    MPlug typePlug( myNode, AssetNodeAttributes::assetType);
     MDataHandle typeHandle = data.outputValue(typePlug);
 
     //The asset info struct (info) was set at the constructor
@@ -408,7 +408,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     typeHandle.set(info.type);
 
     // Set the time
-    MPlug timePlug(node, AssetNodeAttributes::timeInput);
+    MPlug timePlug( myNode, AssetNodeAttributes::timeInput);
     MDataHandle timeHandle = data.inputValue(timePlug);
     MTime currentTime = timeHandle.asTime();
     float time = (float)currentTime.as(MTime::kSeconds);
@@ -437,14 +437,14 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
 MObjectArray
 Asset::getParmAttributes()
 {
-    return parmAttributes;
+    return myParmAttributes;
 }
 
 
 Object**
 Asset::getObjects()
 {
-    return objects;
+    return myObjects;
 }
 
 
@@ -454,7 +454,7 @@ Asset::addAttrTo(MObject& child, MObject* parent)
 {
     if (NULL == parent)
     {
-        parmAttributes.append(child);
+        myParmAttributes.append(child);
         return;
     }
 
@@ -660,32 +660,32 @@ Asset::buildParms()
     int parmCount = info.parmCount;
     if (parmCount <= 0)
         return;
-    HAPI_ParmInfo * myParmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(info.id, myParmInfos, 0, parmCount);
+    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
+    HAPI_GetParameters(info.id, parmInfos, 0, parmCount);
 
     int index = 0;
     while (index < parmCount)
     {
-        int consumed = buildAttrTree(myParmInfos, NULL, index, index+1);
+        int consumed = buildAttrTree(parmInfos, NULL, index, index+1);
         index += consumed;
     }
 
-    delete[] myParmInfos;
+    delete[] parmInfos;
 
 }
 
 
 int
-Asset::buildAttrTree(HAPI_ParmInfo* myParmInfos, MObject* parent, int current, int start)
+Asset::buildAttrTree(HAPI_ParmInfo* parmInfos, MObject* parent, int current, int start)
 {
-    HAPI_ParmInfo parm = myParmInfos[current];
+    HAPI_ParmInfo parm = parmInfos[current];
 
     if (parm.type == HAPI_PARMTYPE_FOLDERLIST)
     {
         int offset = parm.size;
         for (int i = start; i < start+parm.size; i++)
         {
-            int count = buildAttrTree(myParmInfos, parent, i, start + offset);
+            int count = buildAttrTree(parmInfos, parent, i, start + offset);
             offset += count;
         }
         return offset + 1;
@@ -697,7 +697,7 @@ Asset::buildAttrTree(HAPI_ParmInfo* myParmInfos, MObject* parent, int current, i
         int offset = 0;
         for (int i = start; i < start+parm.size; i++)
         {
-            int count = buildAttrTree(myParmInfos, &result, start + offset, start + offset + 1);
+            int count = buildAttrTree(parmInfos, &result, start + offset, start + offset + 1);
             offset += count;
         }
         addAttrTo(result, parent);

@@ -45,20 +45,20 @@ class Object {
         virtual void printAttributes(HAPI_AttributeOwner owner);
 
     public:
-        Asset* objectControl;
-        bool isInstanced;
+        Asset* myObjectControl;
+        bool myIsInstanced;
 
     protected:
         virtual void update();
 
 
     protected:
-        HAPI_ObjectInfo objectInfo;
-        HAPI_GeoInfo geoInfo;
-        int assetId;
-        int objectId;
+        HAPI_ObjectInfo myObjectInfo;
+        HAPI_GeoInfo myGeoInfo;
+        int myAssetId;
+        int myObjectId;
 
-        bool neverBuilt;
+        bool myNeverBuilt;
 };
 
 #endif

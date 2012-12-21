@@ -10,26 +10,26 @@
 
 HAPIError::HAPIError() throw()
     : exception()
-    , message("")
+    , myMessage("")
 {}
 
 HAPIError::HAPIError( const HAPIError & error ) throw()
     : exception()
-    , message(error.message)
+    , myMessage(error.myMessage)
 {}
 
 HAPIError::HAPIError( MString msg ) throw()
     : exception()
-    , message(msg)
+    , myMessage(msg)
 {}
 
 const char *
 HAPIError::what() const throw()
 {
-    buffer = "******************** HAPI Error ********************\n";
-    buffer += message;
-    buffer += "\n****************************************************";
-    return buffer.asChar();
+    myBuffer = "******************** HAPI Error ********************\n";
+    myBuffer += myMessage;
+    myBuffer += "\n****************************************************";
+    return myBuffer.asChar();
 }
 
 
@@ -42,25 +42,25 @@ MayaError::MayaError() throw()
 
 MayaError::MayaError( const MayaError & error ) throw()
     : exception()
-    , stat(error.stat)
+    , myStat(error.myStat)
 {}
 
 MayaError::MayaError( MStatus stat ) throw()
     : exception()
-    , stat(stat)
+    , myStat(stat)
 {}
 
 const char *
 MayaError::what() const throw()
 {
-    buffer = "******************** Maya Error ********************\n";
-    buffer += stat.errorString();
-    buffer += "\n****************************************************";
-    return buffer.asChar();
+    myBuffer = "******************** Maya Error ********************\n";
+    myBuffer += myStat.errorString();
+    myBuffer += "\n****************************************************";
+    return myBuffer.asChar();
 }
 
 MStatus
-MayaError::status() { return stat; }
+MayaError::status() { return myStat; }
 
 
 //=============================================================================

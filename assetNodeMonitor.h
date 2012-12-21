@@ -34,10 +34,10 @@ class AssetNodeMonitor
         MObject myNode;
         AssetManager* myManager;
 
-        MCallbackId attrChangedCBId;
-        MCallbackId nodeDirtyCBId;
-        MCallbackId sceneNewCBId;
-        MCallbackId sceneOpenCBId;
+        MCallbackId myAttrChangedCBId;
+        MCallbackId myNodeDirtyCBId;
+        MCallbackId mySceneNewCBId;
+        MCallbackId mySceneOpenCBId;
 };
 
 #endif

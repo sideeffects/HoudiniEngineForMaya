@@ -43,7 +43,7 @@ InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
     attr_info.owner = owner;
-    HAPI_GetAttributeInfo(assetId, objectId, 0, 0, name.asChar(), &attr_info);
+    HAPI_GetAttributeInfo( myAssetId, myObjectId, 0, 0, name.asChar(), &attr_info);
 
     MStringArray ret;
     if (!attr_info.exists)
@@ -55,7 +55,7 @@ InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
     for (int j=0; j<size; j++){
         data[j] = 0;
     }
-    int status = HAPI_GetAttributeStrData(assetId, objectId, 0, 0, name.asChar(),
+    int status = HAPI_GetAttributeStrData( myAssetId, myObjectId, 0, 0, name.asChar(),
             &attr_info, data, 0, attr_info.count);
 
     for (int j=0; j<size; j++){
@@ -73,13 +73,13 @@ InstancerObject::update()
 {
     Object::update();
 
-    if (neverBuilt || geoInfo.hasGeoChanged)
+    if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
         // TODO: assume only one part for instancers
         //try
         //{
             HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-            hstat = HAPI_GetPartInfo(assetId, objectId, 0, 0, &partInfo);
+            hstat = HAPI_GetPartInfo( myAssetId, myObjectId, 0, 0, &myPartInfo);
             Util::checkHAPIStatus(hstat);
         //}
         //catch (HAPIError& e)
@@ -88,13 +88,13 @@ InstancerObject::update()
         //}
 
         // clear the arrays
-        instancedObjectNames.clear();
-        instancedObjectIndices.clear();
-        uniqueInstObjNames.clear();
+        myInstancedObjectNames.clear();
+        myInstancedObjectIndices.clear();
+        myUniqueInstObjNames.clear();
 
-        if (objectInfo.objectToInstanceId >= 0)
+        if ( myObjectInfo.objectToInstanceId >= 0)
         {
-            instancedObjectIndices = MIntArray(partInfo.pointCount, 0);
+            myInstancedObjectIndices = MIntArray( myPartInfo.pointCount, 0);
             return;
         }
 
@@ -104,26 +104,26 @@ InstancerObject::update()
         {
             MStringArray splitObjName;
             fullObjNames[i].split('/', splitObjName);
-            instancedObjectNames.append(splitObjName[splitObjName.length()-1]);
+            myInstancedObjectNames.append(splitObjName[splitObjName.length()-1]);
         }
 
         // get a list of unique instanced names, and compute the object indices that would
         // be passed to Maya instancer
-        for (int i=0; i<instancedObjectNames.length(); i++)
+        for (int i=0; i< myInstancedObjectNames.length(); i++)
         {
             bool duplicate = false;
             int j;
-            for (j=0; j<uniqueInstObjNames.length(); j++)
+            for (j=0; j< myUniqueInstObjNames.length(); j++)
             {
-                if (uniqueInstObjNames[j] == instancedObjectNames[i])
+                if ( myUniqueInstObjNames[j] == myInstancedObjectNames[i])
                 {
                     duplicate = true;
                     break;
                 }
             }
             if (!duplicate)
-                uniqueInstObjNames.append(instancedObjectNames[i]);
-            instancedObjectIndices.append(j);
+                myUniqueInstObjNames.append( myInstancedObjectNames[i]);
+            myInstancedObjectIndices.append(j);
         }
     }
 
@@ -136,8 +136,8 @@ MIntArray
 InstancerObject::getInstancedObjIds()
 {
     MIntArray ret;
-    if (objectInfo.objectToInstanceId >= 0)
-        ret.append(objectInfo.objectToInstanceId);
+    if ( myObjectInfo.objectToInstanceId >= 0 )
+        ret.append( myObjectInfo.objectToInstanceId );
     return ret;
 }
 
@@ -145,7 +145,7 @@ InstancerObject::getInstancedObjIds()
 MStringArray
 InstancerObject::getUniqueInstObjNames()
 {
-    return uniqueInstObjNames;
+    return myUniqueInstObjNames;
 }
 
 
@@ -155,7 +155,7 @@ InstancerObject::compute(MDataHandle& handle)
 {
     update();
 
-    if (neverBuilt || geoInfo.hasGeoChanged)
+    if ( myNeverBuilt || myGeoInfo.hasGeoChanged )
     {
         MDataHandle instancerDataHandle = handle.child(AssetNodeAttributes::instancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNodeAttributes::instancedObjectNames);
@@ -168,9 +168,9 @@ InstancerObject::compute(MDataHandle& handle)
         MVectorArray scales = fnAAD.vectorArray("scale");
         MIntArray objectIndices = fnAAD.intArray("objectIndex");
 
-        int size = partInfo.pointCount;
+        int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
-        HAPI_GetInstanceTransforms(assetId, objectInfo.id, 0, 5, instTransforms, 0, size);
+        HAPI_GetInstanceTransforms( myAssetId, myObjectInfo.id, 0, 5, instTransforms, 0, size );
 
 
         //cerr << "instancedObjectNames: " << instancedObjectNames << endl;
@@ -185,7 +185,7 @@ InstancerObject::compute(MDataHandle& handle)
                     it.rotationQuaternion[3]).asEulerRotation().asVector();
             MVector s(it.scale[0], it.scale[1], it.scale[2]);
 
-            int objIndex = instancedObjectIndices[j];
+            int objIndex = myInstancedObjectIndices[j];
 
             positions.append(p);
             rotations.append(r);
@@ -198,10 +198,10 @@ InstancerObject::compute(MDataHandle& handle)
         instancerDataHandle.set(instOutput);
 
         MArrayDataBuilder builder = instancedObjectNamesHandle.builder();
-        if (objectInfo.objectToInstanceId >= 0)
+        if ( myObjectInfo.objectToInstanceId >= 0 )
         {
             // instancing a single object
-            Object* objToInstance = objectControl->findObjectById(objectInfo.objectToInstanceId);
+            Object* objToInstance = myObjectControl->findObjectById( myObjectInfo.objectToInstanceId );
             MString name = objToInstance->getName();
 
             MDataHandle h = builder.addElement(0);
@@ -210,17 +210,17 @@ InstancerObject::compute(MDataHandle& handle)
         } else 
         {
             // instancing multiple objects
-            for (int i=0; i<uniqueInstObjNames.length(); i++)
+            for (int i=0; i< myUniqueInstObjNames.length(); i++)
             {
                 MDataHandle h = builder.addElement(i);
-                h.set(uniqueInstObjNames[i]);
+                h.set( myUniqueInstObjNames[i]);
             }
 
             // clean up extra elements
             int builderSizeCheck = builder.elementCount();
-            if (builderSizeCheck > uniqueInstObjNames.length())
+            if (builderSizeCheck > myUniqueInstObjNames.length())
             {
-                for (int i=uniqueInstObjNames.length(); i<builderSizeCheck; i++)
+                for (int i= myUniqueInstObjNames.length(); i<builderSizeCheck; i++)
                 {
                     builder.removeElement(i);
                 }
@@ -236,7 +236,7 @@ InstancerObject::compute(MDataHandle& handle)
         //data.setClean(instancerDataPlug);
 
 
-        neverBuilt = false;
+        myNeverBuilt = false;
     }
 
     return MS::kSuccess;

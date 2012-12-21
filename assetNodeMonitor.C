@@ -14,10 +14,10 @@
 AssetNodeMonitor::AssetNodeMonitor(AssetManager* m)
     : myManager(m)
     , myNode(m->getAssetNode())
-    , attrChangedCBId(0)
-    , nodeDirtyCBId(0)
-    , sceneNewCBId(0)
-    , sceneOpenCBId(0)
+    , myAttrChangedCBId(0)
+    , myNodeDirtyCBId(0)
+    , mySceneNewCBId(0)
+    , mySceneOpenCBId(0)
 {
 }
 
@@ -30,15 +30,15 @@ AssetNodeMonitor::watch()
 
     MStatus stat;
     try {
-        attrChangedCBId = MNodeMessage::addAttributeChangedCallback(myNode,
+        myAttrChangedCBId = MNodeMessage::addAttributeChangedCallback(myNode,
                 &attributeChangedCB, this, &stat);
         Util::checkMayaStatus(stat);
 
-        sceneNewCBId = MSceneMessage::addCallback(MSceneMessage::kBeforeNew,
+        mySceneNewCBId = MSceneMessage::addCallback(MSceneMessage::kBeforeNew,
                 &sceneOpenedCB, this, &stat);
         Util::checkMayaStatus(stat);
 
-        sceneOpenCBId = MSceneMessage::addCallback(MSceneMessage::kBeforeOpen,
+        mySceneOpenCBId = MSceneMessage::addCallback(MSceneMessage::kBeforeOpen,
                 &sceneOpenedCB, this, &stat);
         Util::checkMayaStatus(stat);
 
@@ -56,20 +56,20 @@ AssetNodeMonitor::stop()
     MStatus stat;
     try
     {
-        if (attrChangedCBId){
-            stat = MMessage::removeCallback(attrChangedCBId);
+        if ( myAttrChangedCBId ){
+            stat = MMessage::removeCallback( myAttrChangedCBId );
             Util::checkMayaStatus(stat);
         }
-        if (nodeDirtyCBId){
-            stat = MMessage::removeCallback(nodeDirtyCBId);
+        if ( myNodeDirtyCBId ){
+            stat = MMessage::removeCallback( myNodeDirtyCBId );
             Util::checkMayaStatus(stat);
         }
-        if (sceneNewCBId){
-            stat = MMessage::removeCallback(sceneNewCBId);
+        if ( mySceneNewCBId ){
+            stat = MMessage::removeCallback( mySceneNewCBId );
             Util::checkMayaStatus(stat);
         }
-        if (sceneOpenCBId){
-            stat = MMessage::removeCallback(sceneOpenCBId);
+        if ( mySceneOpenCBId ){
+            stat = MMessage::removeCallback( mySceneOpenCBId );
             Util::checkMayaStatus(stat);
         }
     }
@@ -94,7 +94,7 @@ void
 AssetNodeMonitor::attachNodeDirtyCallback()
 {
     MStatus stat;
-    nodeDirtyCBId = MNodeMessage::addNodeDirtyPlugCallback(myNode, &nodeDirtyPlugCB, this, &stat);
+    myNodeDirtyCBId = MNodeMessage::addNodeDirtyPlugCallback(myNode, &nodeDirtyPlugCB, this, &stat);
     Util::checkMayaStatus(stat);
 }
 
@@ -102,7 +102,7 @@ AssetNodeMonitor::attachNodeDirtyCallback()
 void
 AssetNodeMonitor::detachNodeDirtyCallback()
 {
-    MStatus stat = MNodeMessage::removeCallback(nodeDirtyCBId);
+    MStatus stat = MNodeMessage::removeCallback( myNodeDirtyCBId );
     Util::checkMayaStatus(stat);
 }
 

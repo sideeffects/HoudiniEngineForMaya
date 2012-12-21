@@ -19,8 +19,8 @@ class HAPIError: public std::exception
         virtual const char* what() const throw();
 
     protected:
-        mutable MString buffer;
-        const MString message;
+        mutable MString myBuffer;
+        const MString myMessage;
 };
 
 
@@ -38,8 +38,8 @@ class MayaError: public std::exception
         virtual MStatus status();
 
     protected:
-        mutable MString buffer;
-        MStatus stat;
+        mutable MString myBuffer;
+        MStatus myStat;
 };
 
 

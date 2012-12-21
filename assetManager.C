@@ -31,7 +31,7 @@ AssetManager::AssetManager()
 
 
 AssetManager::AssetManager(const MString& filePath)
-    :filePath(filePath)
+    : myFilePath(filePath)
 {
 }
 
@@ -45,7 +45,7 @@ AssetManager::~AssetManager()
 MObject
 AssetManager::getAssetNode()
 {
-    return assetNode;
+    return myAssetNode;
 }
 
 
@@ -63,27 +63,27 @@ AssetManager::init()
     {
 
         // Create the asset node
-        assetNode = dg.createNode("hAsset", &stat);
+        myAssetNode = dg.createNode("hAsset", &stat);
         Util::checkMayaStatus(stat);
-        MPlug plug(assetNode, AssetNodeAttributes::fileNameAttr);
-        stat = dg.newPlugValueString(plug, filePath);
+        MPlug plug( myAssetNode, AssetNodeAttributes::fileNameAttr);
+        stat = dg.newPlugValueString(plug, myFilePath);
 
         MFileObject file;
-        file.setRawFullName(filePath);
+        file.setRawFullName( myFilePath );
         MString fileName = file.resolvedName();
         int dotIndex = fileName.rindexW('.');
         MString assetName = fileName.substringW(0, dotIndex-1);
         assetName += "_asset";
-        MFnDependencyNode fnDN(assetNode);
+        MFnDependencyNode fnDN( myAssetNode );
         fnDN.setName(assetName, &stat);
         Util::checkMayaStatus(stat);
 
-        assetTransform = fnDag.create("transform", assetName + "_transform", MObject::kNullObj, &stat);
+        myAssetTransform = fnDag.create("transform", assetName + "_transform", MObject::kNullObj, &stat);
         Util::checkMayaStatus(stat);
 
 	MObject timeNode = Util::findNodeByName(MString("time1"));
 	src = MFnDependencyNode(timeNode).findPlug("outTime");
-	dest = MPlug(assetNode, AssetNodeAttributes::timeInput);
+	dest = MPlug( myAssetNode, AssetNodeAttributes::timeInput );
 	dg.connect(src, dest);
 
         // DGModifier do it
@@ -96,7 +96,7 @@ AssetManager::init()
         Util::checkMayaStatus(stat);
 
         // Select the newly created asset
-        stat = MGlobal::select(assetNode, MGlobal::kReplaceList);
+        stat = MGlobal::select( myAssetNode, MGlobal::kReplaceList );
         Util::checkMayaStatus(stat);
 
     }
@@ -116,25 +116,25 @@ AssetManager::update()
     try
     {
         // Create the objs/meshes
-        MPlug objectsPlug(assetNode, AssetNodeAttributes::objects);
+        MPlug objectsPlug( myAssetNode, AssetNodeAttributes::objects );
         int objCount = objectsPlug.evaluateNumElements(&stat);
         Util::checkMayaStatus(stat);
 
         for (int i=0; i<objCount; i++)
         {
             MPlug elemPlug = objectsPlug[i];
-            createObjectNodeGroup(elemPlug, assetTransform);
+            createObjectNodeGroup(elemPlug, myAssetTransform);
         }
 
         // Instancers
-        MPlug instancersPlug(assetNode, AssetNodeAttributes::instancers);
+        MPlug instancersPlug(myAssetNode, AssetNodeAttributes::instancers);
         int instCount = instancersPlug.numElements(&stat);
         Util::checkMayaStatus(stat);
 
         for (int i=0; i<instCount; i++)
         {
             MPlug elemPlug = instancersPlug[i];
-            createInstNodeGroup(elemPlug, assetTransform);
+            createInstNodeGroup(elemPlug, myAssetTransform);
         }
 
         // TODO: delete extra node groups

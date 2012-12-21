@@ -31,11 +31,11 @@ class InstancerObject: public Object
         virtual MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
 
     private:
-        HAPI_PartInfo partInfo;
+        HAPI_PartInfo myPartInfo;
 
-        MStringArray instancedObjectNames;
-        MStringArray uniqueInstObjNames;
-        MIntArray instancedObjectIndices;
+        MStringArray myInstancedObjectNames;
+        MStringArray myUniqueInstObjNames;
+        MIntArray myInstancedObjectIndices;
 };
 
 #endif

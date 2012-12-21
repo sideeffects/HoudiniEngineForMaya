@@ -9,5 +9,5 @@ class Parm {
         MStringArray getStringValues();
 
     public:
-        HAPI_ParmInfo info;
+        HAPI_ParmInfo myInfo;
 }

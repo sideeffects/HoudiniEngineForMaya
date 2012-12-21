@@ -56,18 +56,18 @@ class Asset {
 
 
     private:
-        MObject node;
-        MObject mayaInputs;
-        Object** objects;
+        MObject myNode;
+        MObject myMayaInputs;
+        Object** myObjects;
 
         // Arrays of infos that can be accessed when updating objects,
         // keeping them here avoids getting them for individual object.
-        HAPI_ObjectInfo* objectInfos;
-        HAPI_Transform* transformInfos;
-        HAPI_MaterialInfo* materialInfos;
+        HAPI_ObjectInfo* myObjectInfos;
+        HAPI_Transform* myTransformInfos;
+        HAPI_MaterialInfo* myMaterialInfos;
 
         //Object* visibleObjects;
-        MObjectArray parmAttributes;
+        MObjectArray myParmAttributes;
 
 };
 

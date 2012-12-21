@@ -320,10 +320,10 @@ AssetNode::initialize()
 
 AssetNode::AssetNode()
 {    
-    asset = NULL;
+    myAsset = NULL;
 
-    builtParms = false;
-    assetChanged = true;
+    myBuiltParms = false;
+    myAssetChanged = true;
 
 }
 
@@ -333,9 +333,9 @@ AssetNode::~AssetNode() {
     cerr << "Asset node destroy" << endl;
     try
     {
-        if (asset != NULL)
+        if ( myAsset != NULL )
         {
-            hstat = HAPI_UnloadOTLFile(asset->info.id);
+            hstat = HAPI_UnloadOTLFile( myAsset->info.id);
             Util::checkHAPIStatus(hstat);
         }
     }
@@ -345,7 +345,7 @@ AssetNode::~AssetNode() {
     }
     //monitor->stop();
 
-    delete asset;
+    delete myAsset;
     //delete monitor;
 }
 
@@ -365,7 +365,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     if (plugBeingDirtied == AssetNodeAttributes::fileNameAttr)
         return MS::kSuccess;
 
-    dirtyParmAttribute = plugBeingDirtied.attribute();
+    myDirtyParmAttribute = plugBeingDirtied.attribute();
     //cerr << "plugBeingDirtied: " << plugBeingDirtied.name();
     //cerr << "name: " << dirtyParmPlug->name();
     
@@ -444,7 +444,7 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
     int size = parm.size;
     if(parm.isInt())
     {
-        MIntArray values = asset->getParmIntValues(parm);
+        MIntArray values = myAsset->getParmIntValues(parm);
         if (size == 1)
         {
             MDataHandle handle = data.inputValue(plug);
@@ -464,7 +464,7 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     if(parm.isFloat())
     {
-        MFloatArray values = asset->getParmFloatValues(parm);
+        MFloatArray values = myAsset->getParmFloatValues(parm);
         if (size == 1)
         {
             MDataHandle handle = data.inputValue(plug);
@@ -484,7 +484,7 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     if(parm.isString())
     {
-        MStringArray values = asset->getParmStringValues(parm);
+        MStringArray values = myAsset->getParmStringValues(parm);
         if (size == 1)
         {
             MDataHandle handle = data.inputValue(plug);
@@ -508,15 +508,15 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 void
 AssetNode::updateAttrValues(MDataBlock& data)
 {
-    int parmCount = asset->info.parmCount;
+    int parmCount = myAsset->info.parmCount;
     if (parmCount <= 0)
         return;
-    HAPI_ParmInfo * myParmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(asset->info.id, myParmInfos, 0, parmCount);
+    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
+    HAPI_GetParameters(myAsset->info.id, parmInfos, 0, parmCount);
 
     for (int i=0; i<parmCount; i++)
     {
-        HAPI_ParmInfo& parm = myParmInfos[i];
+        HAPI_ParmInfo& parm = parmInfos[i];
         updateAttrValue(parm, data);
     }
 
@@ -526,7 +526,7 @@ AssetNode::updateAttrValues(MDataBlock& data)
     MDataHandle h = data.outputValue(p);
     h.set(true);
 
-    delete[] myParmInfos;
+    delete[] parmInfos;
 }
 
 double
@@ -551,7 +551,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     MObject attr = getAttrFromParm(parm);
     MPlug plug(thisMObject(), attr);
-    MPlug dirtyParmPlug(thisMObject(), dirtyParmAttribute);
+    MPlug dirtyParmPlug(thisMObject(), myDirtyParmAttribute);
 
     //cerr << "plug: " << plug.name() << endl;
     //cerr << "dirtyParmPlug: " << dirtyParmPlug.name() << endl;
@@ -606,7 +606,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
             }
         }
         //double before = getTime();
-        HAPI_SetParmIntValues(asset->info.id, values, parm.intValuesIndex, size);
+        HAPI_SetParmIntValues( myAsset->info.id, values, parm.intValuesIndex, size );
         //double after = getTime();
 
         //cerr << "type: " << parm.type << " time: " << (after - before) << " int" << endl;
@@ -630,7 +630,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
             }
         }
         //double before = getTime();
-        HAPI_SetParmFloatValues(asset->info.id, values, parm.floatValuesIndex, size);
+        HAPI_SetParmFloatValues( myAsset->info.id, values, parm.floatValuesIndex, size);
         //double after = getTime();
 
         //cerr << "type: " << parm.type << " id: " << parm.id << " time: " << (after - before) << " float" << endl;
@@ -643,7 +643,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         {
             MDataHandle handle = data.inputValue(plug);
             const char* val = handle.asString().asChar();
-            HAPI_SetParmStringValue(asset->info.id, val, parm.id, 0);
+            HAPI_SetParmStringValue( myAsset->info.id, val, parm.id, 0);
         } else
         {
             for (int i=0; i<size; i++)
@@ -652,7 +652,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 MDataHandle handle = data.inputValue(child);
                 const char* val = handle.asString().asChar();
                 double before = getTime();
-                HAPI_SetParmStringValue(asset->info.id, val, parm.id, i);
+                HAPI_SetParmStringValue( myAsset->info.id, val, parm.id, i);
                 double after = getTime();
                 //cerr << "type: " << parm.type << " time: " << (after - before) << " string" << endl;
             }
@@ -665,20 +665,20 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 void
 AssetNode::setParmValues(MDataBlock& data)
 {
-    int parmCount = asset->info.parmCount;
+    int parmCount = myAsset->info.parmCount;
     if (parmCount <= 0)
         return;
-    HAPI_ParmInfo * myParmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(asset->info.id, myParmInfos, 0, parmCount);
+    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
+    HAPI_GetParameters( myAsset->info.id, parmInfos, 0, parmCount );
 
     for (int i=0; i<parmCount; i++)
     {
 
-        HAPI_ParmInfo& parm = myParmInfos[i];
+        HAPI_ParmInfo& parm = parmInfos[i];
         setParmValue(parm, data);
     }
 
-    delete[] myParmInfos;
+    delete[] parmInfos;
 }
 
 
@@ -688,7 +688,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     cerr << "compute #################################### " << plug.name() << endl;
 
     // load otl
-    if (assetChanged)
+    if ( myAssetChanged )
     {
         MPlug p(thisMObject(), AssetNodeAttributes::fileNameAttr);
         MDataHandle h = data.inputValue(p);
@@ -696,8 +696,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         try
         {
-            asset = new Asset(filePath, thisMObject());
-            assetChanged = false;
+            myAsset = new Asset(filePath, thisMObject());
+            myAssetChanged = false;
         }
         catch (HAPIError& e)
         {
@@ -706,7 +706,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         }
     }    
 
-    if (!builtParms)
+    if (!myBuiltParms)
     {
         // add ALL the parms
         cerr << "add parms ...." << endl;
@@ -714,7 +714,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	//These are dynamic input attributes.  These represent
 	// the parms of the asset, which we only know after we have
 	// loaded the asset.
-        MObjectArray parmAttributes = asset->getParmAttributes();
+        MObjectArray parmAttributes = myAsset->getParmAttributes();
         MFnDependencyNode fnDN(thisMObject());
         int size = parmAttributes.length();
         for (int i=0; i<size; i++)
@@ -723,7 +723,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             fnDN.addAttribute(parmAttributes[i]);
         }
 
-        builtParms = true;
+        myBuiltParms = true;
 
     }
 
@@ -738,7 +738,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     updateAttrValues(data);
 
     MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
-    asset->compute(outputPlug, data);
+    myAsset->compute(outputPlug, data);
 
     cerr << "end compute #################################### " << plug.name() << endl;
 

@@ -144,6 +144,12 @@ global proc AEhAssetInputsNew(string $attrFullName)
     string $nodeName = $buffer[0];
     string $attrName = $buffer[1];
 
+    if( `attributeExists $nodeName $attrName` == 0)
+    {
+        print("Warning: nodename= " + $nodeName + " attrName=" + $attrName + " Not found\n");
+        return;
+    }
+
     string $children[] = `attributeQuery -n $nodeName -lc $attrName`;
 
     //editorTemplate -beginLayout "Inputs" -collapse false;

@@ -81,6 +81,11 @@ AssetManager::init()
         assetTransform = fnDag.create("transform", assetName + "_transform", MObject::kNullObj, &stat);
         Util::checkMayaStatus(stat);
 
+	MObject timeNode = Util::findNodeByName(MString("time1"));
+	src = MFnDependencyNode(timeNode).findPlug("outTime");
+	dest = MPlug(assetNode, AssetNodeAttributes::timeInput);
+	dg.connect(src, dest);
+
         // DGModifier do it
         stat = dg.doIt();
         Util::checkMayaStatus(stat);
@@ -220,7 +225,7 @@ ObjectNodeGroup::update()
     return stat;
 }
 
-
+// Check if necessary nodes exist, and if not, will create them
 MStatus
 ObjectNodeGroup::updateNodes()
 {
@@ -341,7 +346,7 @@ ObjectNodeGroup::updateNodes()
     }
 }
 
-
+//Once you know all the nodes exist, then make sure all proper connections exist
 MStatus
 ObjectNodeGroup::updateConnections()
 {

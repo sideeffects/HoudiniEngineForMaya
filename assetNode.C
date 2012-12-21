@@ -99,20 +99,18 @@ MStatus
 AssetNode::initialize()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    //char* dir = "C:/cygwin/home/ken/dev_projects/HAPI/Unity/Assets/OTLs/Scanned";
-    ////cerr << "hapi initialize" << endl;
-    //hstat = HAPI_Initialize("C:/cygwin/home/ken/dev_x86/dev/hfs", dir, false, -1);
-
-    char* dir = "/home/jhuang/dev_projects/HAPI/Maya/assets/otls/";
-    MString hfs(getenv("HFS"));
+    
+    MString otl_dir(getenv("HAPI_OTL_PATH"));    
+    
+    MString hfs(getenv("HAPI_PATH"));
     if (hfs == "")
     {
-        cerr << "*Error*: HFS directory not found" << endl;
+        cerr << "*Error*: HAPI_PATH not found" << endl;
         throw HAPIError("HFS directory not found");
     }
     hfs += "/";
     cerr << "hfs: " << hfs.asChar() << endl;
-    hstat = HAPI_Initialize(hfs.asChar(), dir, false, -1);
+    hstat = HAPI_Initialize(hfs.asChar(), otl_dir.asChar(), false, -1);
 
     // maya plugin stuff
     MFnNumericAttribute nAttr;

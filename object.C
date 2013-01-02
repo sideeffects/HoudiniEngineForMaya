@@ -94,6 +94,7 @@ Object::update()
         // update geometry
         if ( myNeverBuilt || myObjectInfo.haveGeosChanged)
         {
+	    //TODO: This assumes that there is only 1 geo, and the index of the geo is 0
             hstat = HAPI_GetGeoInfo( myAssetId, myObjectInfo.id, 0, &myGeoInfo);
             Util::checkHAPIStatus(hstat);
         }

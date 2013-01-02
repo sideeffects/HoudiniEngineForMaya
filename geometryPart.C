@@ -37,12 +37,7 @@ GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
         cerr << e.what() << endl;
         myPartInfo.clear();
     }
-
-    //updateFaceCounts();
-    //updateVertexList();
-    //updatePoints();
-    //updateNormals();
-    //updateUVs();
+    
 }
 
 

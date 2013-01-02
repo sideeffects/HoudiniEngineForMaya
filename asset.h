@@ -22,9 +22,7 @@ class Asset {
         Object* findObjectById(int id);
 
         // Getters for infos
-        HAPI_ObjectInfo getObjectInfo(int id);
-        HAPI_Transform getTransformInfo(int id);
-        HAPI_MaterialInfo getMaterialInfo(int id);
+        HAPI_ObjectInfo getObjectInfo(int id);        
 
         MStatus compute(const MPlug& plug, MDataBlock& data);
 
@@ -56,15 +54,15 @@ class Asset {
 
 
     private:
-        MObject myNode;
-        MObject myMayaInputs;
-        Object** myObjects;
+        MObject myNode;		    //The Maya asset node
+        MObject myMayaInputs;	    //The input attributes on the asset node (added dynamically)
+
+	//TODO: make this a vector.  The double pointer assumes the number of objects is static
+        Object** myObjects;	    //the Object class contains a 1 to 1 map with HAPI_ObjectInfos.
 
         // Arrays of infos that can be accessed when updating objects,
         // keeping them here avoids getting them for individual object.
-        HAPI_ObjectInfo* myObjectInfos;
-        HAPI_Transform* myTransformInfos;
-        HAPI_MaterialInfo* myMaterialInfos;
+        HAPI_ObjectInfo* myObjectInfos;       
 
         //Object* visibleObjects;
         MObjectArray myParmAttributes;

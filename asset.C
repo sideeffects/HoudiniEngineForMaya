@@ -20,9 +20,7 @@ Asset::Asset(MString otlFilePath, MObject node)
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    myObjectInfos = NULL;
-    myTransformInfos = NULL;
-    myMaterialInfos = NULL;
+    myObjectInfos = NULL;    
 
     // load the otl
     const char* filename = otlFilePath.asChar();
@@ -77,6 +75,8 @@ Asset::init()
 
     // get the infos
     update();
+
+    //TODO: remove this call - should not be necessary.
     update();
 
     // objects
@@ -100,9 +100,7 @@ Asset::~Asset()
     for (int i=0; i<numObjects; i++)
         delete myObjects[i];
     delete[] myObjects;
-    delete[] myObjectInfos;
-    delete[] myTransformInfos;
-    delete[] myMaterialInfos;
+    delete[] myObjectInfos;    
 }
 
 
@@ -129,10 +127,6 @@ Asset::findObjectById(int id)
 // Getters for infos
 HAPI_ObjectInfo
 Asset::getObjectInfo(int id) { return myObjectInfos[id]; }
-HAPI_Transform
-Asset::getTransformInfo(int id) { return myTransformInfos[id]; }
-HAPI_MaterialInfo
-Asset::getMaterialInfo(int id) { return myMaterialInfos[id]; }
 
 
 void
@@ -355,19 +349,18 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     {
 
 
-        GeometryObject* obj = (GeometryObject*)(myObjects[i]);
-        //MPlug objectElemPlug = objectsPlug.elementByLogicalIndex(objectIndex);
+        Object * obj = myObjects[i];        
 
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
-            stat = obj->computeParts(&objectsBuilder, &objectIndex);
-            //if (MS::kSuccess == stat)
-            //{
-                //objectIndex++;
-            //}
+	    GeometryObject * geoObj = dynamic_cast<GeometryObject *>(obj);
+            stat = geoObj->computeParts(&objectsBuilder, &objectIndex);
+            
         }
     }
+
     // clean up extra elements
+    // in case the number of objects shrinks
     int objBuilderSizeCheck = objectsBuilder.elementCount();
     cerr << "objectIndex: " << objectIndex  << " objBuilderSizeCheck: " << objBuilderSizeCheck << endl;
     if (objBuilderSizeCheck > objectIndex)
@@ -425,6 +418,11 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     update();
 
     // first pass - instancers
+    // There is a reason that instancers are computed first.  
+    // computeInstancerObjects will mark instanced geometry objects as
+    // instanced.  In computeGeometryObjects, each object will check 
+    // if it is instanced or not, and will compute an output or not 
+    // depending on whether it is instanced and whether it is visible
     computeInstancerObjects(plug, data);
 
     // second pass - geometry objects

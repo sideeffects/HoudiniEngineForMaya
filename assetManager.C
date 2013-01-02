@@ -13,13 +13,13 @@
 #include "util.h"
 
 
-std::vector<AssetManager*> AssetManager::managers;
+std::vector<AssetManager*> AssetManager::myManagers;
 
 AssetManager*
 AssetManager::createManager(const MString& filePath)
 {
     AssetManager* m = new AssetManager(filePath);
-    managers.push_back(m);
+    myManagers.push_back(m);
     m->init();
     return m;
 }
@@ -157,7 +157,7 @@ AssetManager::getObjectGroup(MPlug& plug)
     {
         int index = plug.logicalIndex();
         // This throws an exception if index is out of bounds
-        ObjectNodeGroup* ret = objectNodeGroups.at(index);
+        ObjectNodeGroup* ret = myObjectNodeGroups.at(index);
         return ret;
     }
     catch (...)
@@ -174,7 +174,7 @@ AssetManager::getInstGroup(MPlug& plug)
     {
         int index = plug.logicalIndex();
         // This throws an exception if index is out of bounds
-        InstNodeGroup* ret = instNodeGroups.at(index);
+        InstNodeGroup* ret = myInstNodeGroups.at(index);
         return ret;
     }
     catch (...)
@@ -193,7 +193,7 @@ AssetManager::createObjectNodeGroup(MPlug& plug, MObject& assetTransform)
         objGroup = new ObjectNodeGroup();
         objGroup->plug = plug;
         objGroup->assetTransform = assetTransform;
-        objectNodeGroups.push_back(objGroup);
+        myObjectNodeGroups.push_back(objGroup);
     }
 
     return objGroup->update();
@@ -209,7 +209,7 @@ AssetManager::createInstNodeGroup(MPlug& plug, MObject& assetTransform)
         instGroup = new InstNodeGroup();
         instGroup->plug = plug;
         instGroup->assetTransform = assetTransform;
-        instNodeGroups.push_back(instGroup);
+        myInstNodeGroups.push_back(instGroup);
     }
 
     return instGroup->update();
@@ -517,6 +517,11 @@ InstNodeGroup::updateConnections()
             Util::checkMayaStatus(stat);
 
             MString cmd = "hide " + name;
+
+	    //TODO: this hide command sometimes "fails" to execute, in that Maya reports an error from the 
+	    //execution of the command, but it actually does succeed in hiding the objects.  Might be
+	    // a Maya bug or perhaps we are not executing the commands at a good time for Maya (this should
+	    // be happening immediately after a compute
             Util::executeCommand(cmd);
         }
 

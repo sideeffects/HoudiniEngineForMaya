@@ -81,7 +81,8 @@ AssetManager::init()
         myAssetTransform = fnDag.create("transform", assetName + "_transform", MObject::kNullObj, &stat);
         Util::checkMayaStatus(stat);
 
-	MObject timeNode = Util::findNodeByName(MString("time1"));
+        MString t = "time1";
+	MObject timeNode = Util::findNodeByName(t);
 	src = MFnDependencyNode(timeNode).findPlug("outTime");
 	dest = MPlug( myAssetNode, AssetNodeAttributes::timeInput );
 	dg.connect(src, dest);

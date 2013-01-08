@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="asset.C" />
+    <ClCompile Include="assetCommand.C" />
+    <ClCompile Include="assetManager.C" />
+    <ClCompile Include="assetNode.C" />
+    <ClCompile Include="assetNodeMonitor.C" />
+    <ClCompile Include="geometryObject.C" />
+    <ClCompile Include="geometryPart.C" />
+    <ClCompile Include="instancerObject.C" />
+    <ClCompile Include="object.C" />
+    <ClCompile Include="plugin.C" />
+    <ClCompile Include="util.C" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="asset.h" />
+    <ClInclude Include="assetCommand.h" />
+    <ClInclude Include="assetManager.h" />
+    <ClInclude Include="assetNode.h" />
+    <ClInclude Include="assetNodeMonitor.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="geometryObject.h" />
+    <ClInclude Include="geometryPart.h" />
+    <ClInclude Include="instancerObject.h" />
+    <ClInclude Include="object.h" />
+    <ClInclude Include="util.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>hapi</ProjectName>
+    <ProjectGuid>{172E9C0A-9475-ABE1-D99D-796DE06473C9}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <TargetExt>.mll</TargetExt>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <IncludePath>C:\Program Files (x86)\Autodesk\Maya2013\include;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\include\HAPI;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\dsolib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <TargetExt>.mll</TargetExt>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <IncludePath>C:\Program Files\Autodesk\Maya2013\include;C:\cygwin\home\damian\houdini\dev_d\hfs\custom\houdini\include\HAPI;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_d\hfs\custom\houdini\dsolib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <TargetExt>.mll</TargetExt>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <IncludePath>C:\Program Files (x86)\Autodesk\Maya2013\include;C:\cygwin\home\damian\houdini\dev_r_x86\hfs\custom\houdini\include\HAPI;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_r_x86\hfs\custom\houdini\dsolib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <TargetExt>.mll</TargetExt>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <IncludePath>C:\Program Files (x86)\Autodesk\Maya2013\include;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\include\HAPI;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\dsolib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <Optimization>Disabled</Optimization>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <Optimization>Disabled</Optimization>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <Optimization>Disabled</Optimization>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <Optimization>Disabled</Optimization>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

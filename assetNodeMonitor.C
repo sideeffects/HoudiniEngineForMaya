@@ -27,9 +27,9 @@ AssetNodeMonitor::~AssetNodeMonitor() {};
 MStatus
 AssetNodeMonitor::watch()
 {
-
     MStatus stat;
-    try {
+    try 
+    {
         myAttrChangedCBId = MNodeMessage::addAttributeChangedCallback(myNode,
                 &attributeChangedCB, this, &stat);
         Util::checkMayaStatus(stat);
@@ -42,13 +42,13 @@ AssetNodeMonitor::watch()
                 &sceneOpenedCB, this, &stat);
         Util::checkMayaStatus(stat);
 
+	return stat;
     }
-    catch (MayaError& e)
+    catch ( MayaError& e )
     {
         return e.status();
     }
 }
-
 
 MStatus
 AssetNodeMonitor::stop()
@@ -72,6 +72,8 @@ AssetNodeMonitor::stop()
             stat = MMessage::removeCallback( mySceneOpenCBId );
             Util::checkMayaStatus(stat);
         }
+
+	return stat;
     }
     catch (MayaError& e)
     {

@@ -283,28 +283,28 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
     for (int i=0; i<numObjects; i++)
     {
         Object* obj = myObjects[i];
-        //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
+        //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex( instancerIndex );
 
-        if (obj->type() == Object::OBJECT_TYPE_INSTANCER)
+        if ( obj->type() == Object::OBJECT_TYPE_INSTANCER )
         {
-            MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
-            stat = obj->compute(instancerElemHandle);
-            if (MS::kSuccess == stat)
+            MDataHandle instancerElemHandle = instancersBuilder.addElement( instancerIndex );
+            stat = obj->compute( instancerElemHandle );
+            if ( MS::kSuccess == stat )
             {
                 instancerIndex++;
 
                 // get all the object ids that are instanced
-                MIntArray instIds = ((InstancerObject*)obj)->getInstancedObjIds();
-                MStringArray instNames = ((InstancerObject*)obj)->getUniqueInstObjNames();
-                for (int j=0; j<instNames.length(); j++)
+                MIntArray instIds = dynamic_cast< InstancerObject* >( obj )->getInstancedObjIds();
+                MStringArray instNames = dynamic_cast< InstancerObject* >( obj )->getUniqueInstObjNames();
+                for ( unsigned int j = 0; j < instNames.length(); ++j )
                 {
-                    Object* o = findObjectByName(instNames[j]);
-                    if (o != NULL)
-                        instancedObjIds.append(o->getId());
+                    Object* o = findObjectByName( instNames[ j ] );
+                    if ( o != NULL )
+                        instancedObjIds.append( o->getId() );
                 }
-                for (int j=0; j<instIds.length(); j++)
+                for ( unsigned int j = 0; j < instIds.length(); ++j )
                 {
-                    instancedObjIds.append(instIds[j]);
+                    instancedObjIds.append( instIds[ j ] );
                 }
             }
         }
@@ -321,15 +321,15 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
     instancersHandle.set(instancersBuilder);
 
     // mark instanced objects
-    for (int i=0; i<instancedObjIds.length(); i++)
+    for ( unsigned int i = 0; i < instancedObjIds.length(); ++i )
     {
-        Object* obj = myObjects[instancedObjIds[i]];
+        Object* obj = myObjects[ instancedObjIds[ i ] ];
         obj->myIsInstanced = true;
         cerr << "mark instanced obj: " << obj->getName() << endl;
     }
 
     instancersHandle.setAllClean();
-    data.setClean(instancersPlug);
+    data.setClean( instancersPlug );
 }
 
 

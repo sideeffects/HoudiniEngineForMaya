@@ -374,9 +374,9 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     MPlug objectsPlug(thisMObject(), AssetNodeAttributes::objects);
     MPlug instancersPlug(thisMObject(), AssetNodeAttributes::instancers);
 
-    for (int i=0; i < objectsPlug.numElements(); i++)
+    for ( unsigned int i = 0; i < objectsPlug.numElements(); ++i )
     {
-        MPlug elemPlug = objectsPlug[i];
+        MPlug elemPlug = objectsPlug[ i ];
 
         MPlug objectNamePlug = elemPlug.child(AssetNodeAttributes::objectName);
         MPlug metaDataPlug = elemPlug.child(AssetNodeAttributes::metaData);
@@ -401,19 +401,16 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	affectedPlugs.append(materialPlug.child(AssetNodeAttributes::alphaAttr));
     }
 
-    for (int i=0; i<instancersPlug.numElements(); i++)
+    for ( unsigned int i = 0; i < instancersPlug.numElements(); ++i )
     {
-        MPlug elemPlug = instancersPlug[i];
-        MPlug instancerDataPlug = elemPlug.child(AssetNodeAttributes::instancerData);
-        MPlug instancedObjectNamesPlug = elemPlug.child(AssetNodeAttributes::instancedObjectNames);
+	MPlug elemPlug = instancersPlug[ i ];
+	MPlug instancerDataPlug = elemPlug.child( AssetNodeAttributes::instancerData );
+	MPlug instancedObjectNamesPlug = elemPlug.child( AssetNodeAttributes::instancedObjectNames );
 
-        affectedPlugs.append(instancerDataPlug);
+	affectedPlugs.append( instancerDataPlug );
 
-        for (int j=0; j<instancedObjectNamesPlug.numElements(); j++)
-        {
-            affectedPlugs.append(instancedObjectNamesPlug[j]);
-        }
-
+	for ( unsigned int j = 0; j < instancedObjectNamesPlug.numElements(); ++j )
+	    affectedPlugs.append( instancedObjectNamesPlug[ j ] );
     }
     return MS::kSuccess;
 }

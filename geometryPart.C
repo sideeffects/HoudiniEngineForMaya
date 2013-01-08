@@ -288,36 +288,36 @@ GeometryPart::createMesh()
 {
 
     //cerr << "Creating mesh... " << Util::getString(objectInfo.nameSH) << endl;
-    // Mesh data
+    // Mesh Data
     MFnMeshData dataCreator;
     MObject outData = dataCreator.create();
 
-    // create mesh
+    // Create mesh.
     MFnMesh meshFS;
     MObject newMesh = meshFS.create( myPoints.length(), myFaceCounts.length(),
-            myPoints, myFaceCounts, myVertexList, outData);
+				     myPoints, myFaceCounts, myVertexList, 
+				     outData );
 
-    // set normals
+    // Set normals.
     if ( myNormals.length() > 0)
     {
         MIntArray vlist;
-        for (int j=0; j< myPoints.length(); j++)
-            vlist.append(j);
-        meshFS.setVertexNormals( myNormals, vlist);
+        for ( unsigned int j = 0; j < myPoints.length(); ++j )
+            vlist.append( j );
+        meshFS.setVertexNormals( myNormals, vlist );
     }
 
-    // set UVs
-    if ( myUs.length() > 0)
+    // Set UVs.
+    if ( myUs.length() > 0 )
     {
-        meshFS.setUVs( myUs, myVs);
-        MIntArray uvIds;
-        for (int j=0; j< myVertexList.length(); j++)
-            uvIds.append(j);
-        meshFS.assignUVs( myFaceCounts, uvIds);
+	meshFS.setUVs( myUs, myVs );
+	MIntArray uvIds;
+	for ( unsigned int j = 0; j < myVertexList.length(); ++j )
+	    uvIds.append( j );
+	meshFS.assignUVs( myFaceCounts, uvIds );
     }
 
     return outData;
-
 }
 
 

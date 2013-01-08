@@ -100,7 +100,7 @@ InstancerObject::update()
 
         // fill array of size pointCount of instanced names
         MStringArray fullObjNames = getAttributeStringData(HAPI_ATTROWNER_POINT, "instance");
-        for (int i=0; i<fullObjNames.length(); i++)
+        for (unsigned int i=0; i<fullObjNames.length(); i++)
         {
             MStringArray splitObjName;
             fullObjNames[i].split('/', splitObjName);
@@ -109,21 +109,21 @@ InstancerObject::update()
 
         // get a list of unique instanced names, and compute the object indices that would
         // be passed to Maya instancer
-        for (int i=0; i< myInstancedObjectNames.length(); i++)
+        for ( unsigned int i = 0; i< myInstancedObjectNames.length(); ++i )
         {
             bool duplicate = false;
-            int j;
-            for (j=0; j< myUniqueInstObjNames.length(); j++)
+            unsigned int j = 0;
+            for ( ; j< myUniqueInstObjNames.length(); ++j )
             {
-                if ( myUniqueInstObjNames[j] == myInstancedObjectNames[i])
+                if ( myUniqueInstObjNames[ j ] == myInstancedObjectNames[ i ] )
                 {
                     duplicate = true;
                     break;
                 }
             }
-            if (!duplicate)
-                myUniqueInstObjNames.append( myInstancedObjectNames[i]);
-            myInstancedObjectIndices.append(j);
+            if ( !duplicate )
+                myUniqueInstObjNames.append( myInstancedObjectNames[ i ] );
+            myInstancedObjectIndices.append( (int) j );
         }
     }
 
@@ -210,7 +210,7 @@ InstancerObject::compute(MDataHandle& handle)
         } else 
         {
             // instancing multiple objects
-            for (int i=0; i< myUniqueInstObjNames.length(); i++)
+            for ( unsigned int i=0; i< myUniqueInstObjNames.length(); i++)
             {
                 MDataHandle h = builder.addElement(i);
                 h.set( myUniqueInstObjNames[i]);
@@ -218,7 +218,7 @@ InstancerObject::compute(MDataHandle& handle)
 
             // clean up extra elements
             int builderSizeCheck = builder.elementCount();
-            if (builderSizeCheck > myUniqueInstObjNames.length())
+            if (builderSizeCheck > (int) myUniqueInstObjNames.length())
             {
                 for (int i= myUniqueInstObjNames.length(); i<builderSizeCheck; i++)
                 {

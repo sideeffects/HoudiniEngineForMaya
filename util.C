@@ -209,7 +209,6 @@ Util::executeCommand(const MString& cmd)
     return result;
 }
 
-
 MObject
 Util::findNodeByName(MString& name)
 {
@@ -223,19 +222,18 @@ Util::findNodeByName(MString& name)
     return ret;
 }
 
-
 MString
-Util::replaceChar(MString& str, char oldChar, char newChar)
+Util::replaceChar( MString& str, char oldChar, char newChar )
 {
     MStringArray tokens;
-    str.split(oldChar, tokens);
+    str.split( oldChar, tokens );
     MString newStr;
-    for (int i=0; i<tokens.length(); i++)
+    for ( unsigned int i = 0; i < tokens.length(); ++i )
     {
-        newStr += tokens[i];
+        newStr += tokens[ i ];
         newStr += newChar;
     }
     
-    // return the new string, dicarding the last char
-    return newStr.substring(0, newStr.length()-2);
+    // Return the new string, dicarding the last char.
+    return newStr.substring( 0, newStr.length() - 2 );
 }

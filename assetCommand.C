@@ -11,28 +11,23 @@
 #include "util.h"
 
 AssetCommand::AssetCommand()
-{
-    cerr << "AssetCommand constructor" << endl;
+{    
 }
 
 
 AssetCommand::~AssetCommand()
 {
-    cerr << "AssetCommand destructor" << endl;
 }
 
 
 void* AssetCommand::creator()
 {
-    cerr << "AssetCommand creator" << endl;
     return new AssetCommand();
 }
 
 
 MStatus AssetCommand::doIt(const MArgList& args)
 {
-    cerr << "AssetCommand doIt" << endl;
-
 
     MStatus status;
     for ( int ii = 0; ii < args.length(); ii++ )
@@ -42,11 +37,9 @@ MStatus AssetCommand::doIt(const MArgList& args)
         if ( MString( "-l" ) == args.asString( ii, &status )
             && MS::kSuccess == status )
         {
-	    MString filePath = args.asString(++ii);
-	    AssetManager* manager = AssetManager::createManager(filePath);
-	    AssetNodeMonitor* monitor = new AssetNodeMonitor(manager);
-	    monitor->watch();
-	    return MS::kSuccess;            
+	    myOperationType = kOperationLoad;
+	    myAssetOtlPath = args.asString(++ii);
+	    
         }        
         else
         {
@@ -57,5 +50,30 @@ MStatus AssetCommand::doIt(const MArgList& args)
         }
     }
 
+    return redoIt();
     
+}
+
+MStatus AssetCommand::redoIt() 
+{
+    if( myOperationType == kOperationLoad )
+    {
+	AssetManager* manager = AssetManager::createManager(myAssetOtlPath);
+	AssetNodeMonitor* monitor = new AssetNodeMonitor(manager);
+	monitor->watch();
+	return MS::kSuccess;            
+    }
+    return MS::kFailure;
+}
+
+MStatus AssetCommand::undoIt() 
+{
+    
+    return MS::kSuccess;
+}
+
+bool AssetCommand::isUndoable() const 
+{
+    cout << "In AssetCommand::isUndoable()\n";
+    return true;
 }

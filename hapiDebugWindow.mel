@@ -1,0 +1,118 @@
+
+
+proc hapiPopulateTree(string $uiTree)
+{
+	string $otl_scan_path = `getenv "HAPI_OTL_PATH"`;
+	string $array[];
+	$array = stringToStringArray($otl_scan_path, "/");
+	
+	string $otl_path = "";
+	for( $ii = 0; $ii < size($array) - 1; $ii++)
+	{
+		$otl_path = $otl_path + $array[ $ii ] + "/";		
+	}
+	
+	string $assets_path = "";	
+	for( $ii = 0; $ii < size($array) - 2; $ii++)
+	{
+		$assets_path = $assets_path + $array[ $ii ] + "/";		
+	}
+	
+	string $logoPath = $assets_path + "sideEffectsLogo.png";
+	
+	string $otlDirContents[] = `getFileList -folder $otl_path`;
+	
+	for( $ii = 0; $ii < size($otlDirContents) ; $ii++)
+	{
+		string $subDir = $otl_path + $otlDirContents[ $ii ] + "/"; 
+		
+		string $subDirContents[] = `getFileList -folder $subDir -filespec "*.*"`;
+		
+		for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
+		{
+			string $fullPath = $subDir + $subDirContents[ $jj ];
+			string $cmd = "assetCommand -l \"" + $fullPath + "\"";
+			string $filePath = "All Assets/" + $otlDirContents[ $ii ] + "/" + $subDirContents[ $jj ];
+			treeLister -e -add $filePath $logoPath $cmd
+				  $uiTree;
+		}
+			
+	}			
+}
+
+global proc hapiAboutBox()
+{
+	string $aboutBox = `window -width 200 -t "About HAPI"`;
+	string $otl_scan_path = `getenv "HAPI_OTL_PATH"`;
+	string $hapi_path = `getenv "HAPI_PATH"`;
+	string $otl_scan_path_label = "HAPI_OTL_PATH: " + $otl_scan_path;
+	string $hapi_path_label = "HAPI_PATH: " + $hapi_path;
+	
+	string $closeCmd = "deleteUI " + $aboutBox;
+	columnLayout -adjustableColumn true;
+		text -label $otl_scan_path_label;
+		text -label $hapi_path_label;		
+		button -label "OK" -c $closeCmd;
+		
+	showWindow;
+}
+
+global proc hapiInstanceAllCoreAssets()
+{
+	string $otl_scan_path = `getenv "HAPI_OTL_PATH"`;
+	string $array[];
+	$array = stringToStringArray($otl_scan_path, "/");
+	
+	string $otl_path = "";
+	for( $ii = 0; $ii < size($array) - 1; $ii++)
+	{
+		$otl_path = $otl_path + $array[ $ii ] + "/";		
+	}
+		
+	string $subDir = $otl_path + "Core/"; 
+	
+	string $subDirContents[] = `getFileList -folder $subDir -filespec "*.*"`;
+	
+	for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
+	{
+		string $fullPath = $subDir + $subDirContents[ $jj ];
+		string $cmd = "assetCommand -l \"" + $fullPath + "\"";
+		eval $cmd;		
+	}
+			
+	
+
+}
+
+global proc hapiDebugWindow()
+{
+	window -menuBar true -width 500 -height 600 -t "HAPI Debug";
+	
+	menu -label "File" -tearOff true;    
+    menuItem -label "Save Current Houdini Scene...";
+	menuItem -label "Load Houdini Asset..." -c "loadOTLMenuClick";       
+	menu -label "Help" -helpMenu true;
+		menuItem -label "About..." -c "hapiAboutBox";
+	
+	
+	formLayout "hapiForm";	
+	string $instanceAllCoreButton = `button -label "Instantiate All Core Assets" -c "hapiInstanceAllCoreAssets"`;	
+	string $uiTree = `treeLister`;
+	
+	hapiPopulateTree($uiTree);	
+	
+	formLayout -e			
+		//-af $instanceAllCoreButton top 0
+		-af $instanceAllCoreButton left 0
+		-af $instanceAllCoreButton right 0				
+		-ac $instanceAllCoreButton "bottom" 0 $uiTree
+		-af $uiTree top 0
+		-af $uiTree left 0
+		-af $uiTree bottom 0
+		-af $uiTree right 0		
+		hapiForm;
+	showWindow;
+	
+	
+}
+

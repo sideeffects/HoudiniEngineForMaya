@@ -11,7 +11,8 @@
 #include "util.h"
 
 AssetCommand::AssetCommand()
-{    
+{
+    myOperationType = kOperationInvalid;
 }
 
 
@@ -26,7 +27,7 @@ void* AssetCommand::creator()
 }
 
 
-MStatus AssetCommand::doIt(const MArgList& args)
+MStatus AssetCommand::doIt( const MArgList& args )
 {
 
     MStatus status;
@@ -38,7 +39,7 @@ MStatus AssetCommand::doIt(const MArgList& args)
             && MS::kSuccess == status )
         {
 	    myOperationType = kOperationLoad;
-	    myAssetOtlPath = args.asString(++ii);
+	    myAssetOtlPath = args.asString( ++ii );
 	    
         }        
         else
@@ -58,8 +59,8 @@ MStatus AssetCommand::redoIt()
 {
     if( myOperationType == kOperationLoad )
     {
-	AssetManager* manager = AssetManager::createManager(myAssetOtlPath);
-	AssetNodeMonitor* monitor = new AssetNodeMonitor(manager);
+	AssetManager* manager = AssetManager::createManager( myAssetOtlPath );
+	AssetNodeMonitor* monitor = new AssetNodeMonitor( manager );
 	monitor->watch();
 	return MS::kSuccess;            
     }
@@ -73,7 +74,6 @@ MStatus AssetCommand::undoIt()
 }
 
 bool AssetCommand::isUndoable() const 
-{
-    cout << "In AssetCommand::isUndoable()\n";
+{    
     return true;
 }

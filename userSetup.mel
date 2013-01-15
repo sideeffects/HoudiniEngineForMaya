@@ -1,9 +1,16 @@
 print ":::::::: Initializing Houdini Plugin Scripts :::::::::";
 
 menu -l "Houdini Assets" -p MayaWindow;
-    menuItem -l "Load Houdini Asset" -c "loadOTLMenuClick";
+    menuItem -l "Load Houdini Asset..." -c "loadOTLMenuClick";
+	menuItem -l "HAPI Debug Window" -c "hapiDebugWindowMenuClick";
 
 scriptJob -event "SelectionChanged" "houdiniPluginOnSelectionChanged";
+
+
+global proc hapiDebugWindowMenuClick()
+{
+	hapiDebugWindow();
+}
 
 global proc loadOTLMenuClick()
 {

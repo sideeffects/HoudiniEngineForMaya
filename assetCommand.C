@@ -33,14 +33,29 @@ MStatus AssetCommand::doIt(const MArgList& args)
 {
     cerr << "AssetCommand doIt" << endl;
 
-    //This command for the moment only accept 1 parameter, which is the name of the otl file 
-    // to be loaded.  You call this command like so:
-    // assetCommand "C:\\cygwin\\home\\ken\\dev_projects\\HAPI\\Maya\\assets\\otls\\Core\\SideFX__spaceship.otl";
 
-    MString filePath = args.asString(0);
-    AssetManager* manager = AssetManager::createManager(filePath);
-    AssetNodeMonitor* monitor = new AssetNodeMonitor(manager);
-    monitor->watch();
+    MStatus status;
+    for ( int ii = 0; ii < args.length(); ii++ )
+    {
+	// -l load an otl file
+	// expected arguments: otl_file_name - the name of the otl file to load
+        if ( MString( "-l" ) == args.asString( ii, &status )
+            && MS::kSuccess == status )
+        {
+	    MString filePath = args.asString(++ii);
+	    AssetManager* manager = AssetManager::createManager(filePath);
+	    AssetNodeMonitor* monitor = new AssetNodeMonitor(manager);
+	    monitor->watch();
+	    return MS::kSuccess;            
+        }        
+        else
+        {
+            MString msg = "Invalid flag: ";
+            msg += args.asString( ii );
+            displayError( msg );
+            return MS::kFailure;
+        }
+    }
 
-    return MS::kSuccess;
+    
 }

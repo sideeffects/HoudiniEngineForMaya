@@ -33,15 +33,23 @@ MStatus AssetCommand::doIt( const MArgList& args )
     MStatus status;
     for ( int ii = 0; ii < args.length(); ii++ )
     {
-	// -l load an otl file
+	// -load load an otl file
 	// expected arguments: otl_file_name - the name of the otl file to load
-        if ( MString( "-l" ) == args.asString( ii, &status )
+        if ( MString( "-load" ) == args.asString( ii, &status )
             && MS::kSuccess == status )
         {
 	    myOperationType = kOperationLoad;
 	    myAssetOtlPath = args.asString( ++ii );
 	    
-        }        
+        }
+	// -saveHip saves the contents of the current Houdini scene as a hip file
+	// expected arguments: hip_file_name - the name of the hip file to save
+        else if ( MString( "-saveHip" ) == args.asString( ii, &status )
+            && MS::kSuccess == status )
+        {
+	    myOperationType = kOperationSaveHip;
+	    myHIPFilePath = args.asString( ++ii );	    
+	}
         else
         {
             MString msg = "Invalid flag: ";
@@ -64,6 +72,13 @@ MStatus AssetCommand::redoIt()
 	monitor->watch();
 	return MS::kSuccess;            
     }
+
+    if( myOperationType == kOperationSaveHip )
+    {
+	HAPI_SaveHIPFile( myHIPFilePath.asChar() );
+	return MS::kSuccess;            
+    }
+
     return MS::kFailure;
 }
 

@@ -31,7 +31,7 @@ proc hapiPopulateTree(string $uiTree)
 		for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
 		{
 			string $fullPath = $subDir + $subDirContents[ $jj ];
-			string $cmd = "assetCommand -l \"" + $fullPath + "\"";
+			string $cmd = "assetCommand -load \"" + $fullPath + "\"";
 			string $filePath = "All Assets/" + $otlDirContents[ $ii ] + "/" + $subDirContents[ $jj ];
 			treeLister -e -add $filePath $logoPath $cmd
 				  $uiTree;
@@ -76,7 +76,7 @@ global proc hapiInstanceAllCoreAssets()
 	for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
 	{
 		string $fullPath = $subDir + $subDirContents[ $jj ];
-		string $cmd = "assetCommand -l \"" + $fullPath + "\"";
+		string $cmd = "assetCommand -load \"" + $fullPath + "\"";
 		eval $cmd;		
 	}
 			
@@ -84,12 +84,20 @@ global proc hapiInstanceAllCoreAssets()
 
 }
 
+global proc saveHipFile()
+{
+	string $filter = "Houdini Scene Files (*.hip);;All Files (*.*)";
+    string $results[] = `fileDialog2 -cap "Save Houdini Asset" -okc "Save" -fileFilter $filter -fm 0`;
+    if (size($results) > 0)
+        assetCommand -saveHip $results[0];
+}
+
 global proc hapiDebugWindow()
 {
 	window -menuBar true -width 500 -height 600 -t "HAPI Debug";
 	
 	menu -label "File" -tearOff true;    
-    menuItem -label "Save Current Houdini Scene...";
+    menuItem -label "Save Current Houdini Scene..." -c "saveHipFile";
 	menuItem -label "Load Houdini Asset..." -c "loadOTLMenuClick";       
 	menu -label "Help" -helpMenu true;
 		menuItem -label "About..." -c "hapiAboutBox";

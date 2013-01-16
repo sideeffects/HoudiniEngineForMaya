@@ -8,6 +8,7 @@ class AssetCommand: public MPxCommand
     enum AssetOperationType
     {
 	kOperationLoad = 0,
+	kOperationSaveHip,
 	kOperationInvalid
     };
 
@@ -24,6 +25,7 @@ class AssetCommand: public MPxCommand
 
     private:
 	MString myAssetOtlPath;
+	MString myHIPFilePath;
 	AssetOperationType myOperationType;
 };
 

@@ -31,7 +31,7 @@ proc hapiPopulateTree(string $uiTree)
 		for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
 		{
 			string $fullPath = $subDir + $subDirContents[ $jj ];
-			string $cmd = "assetCommand -load \"" + $fullPath + "\"";
+			string $cmd = "hAsset -load \"" + $fullPath + "\"";
 			string $filePath = "All Assets/" + $otlDirContents[ $ii ] + "/" + $subDirContents[ $jj ];
 			treeLister -e -add $filePath $logoPath $cmd
 				  $uiTree;
@@ -76,12 +76,10 @@ global proc hapiInstanceAllCoreAssets()
 	for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
 	{
 		string $fullPath = $subDir + $subDirContents[ $jj ];
-		string $cmd = "assetCommand -load \"" + $fullPath + "\"";
+		string $cmd = "hAsset -load \"" + $fullPath + "\"";
 		eval $cmd;		
 	}
-			
 	
-
 }
 
 global proc saveHipFile()
@@ -89,7 +87,7 @@ global proc saveHipFile()
 	string $filter = "Houdini Scene Files (*.hip);;All Files (*.*)";
     string $results[] = `fileDialog2 -cap "Save Houdini Asset" -okc "Save" -fileFilter $filter -fm 0`;
     if (size($results) > 0)
-        assetCommand -saveHip $results[0];
+        hAsset -saveHip $results[0];
 }
 
 global proc hapiDebugWindow()

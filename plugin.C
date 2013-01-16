@@ -14,7 +14,7 @@ initializePlugin(MObject obj)
     status = plugin.registerNode("hAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
     Util::printMayaStatus(status);
 
-    status = plugin.registerCommand("assetCommand", AssetCommand::creator);
+    status = plugin.registerCommand("hAsset", AssetCommand::creator);
     Util::printMayaStatus(status);
 
     return status;

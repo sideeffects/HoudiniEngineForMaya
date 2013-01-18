@@ -121,22 +121,31 @@ AssetManager::update()
         int objCount = objectsPlug.evaluateNumElements(&stat);
         Util::checkMayaStatus(stat);
 
+	MString title = "HAPI";
+	MString status = "Composing Objects...";
+	Util::showProgressWindow( title, status, 0 );
         for (int i=0; i<objCount; i++)
         {
+	    Util::updateProgressWindow( status, (int) ( (float)i*100.0f / (float) objCount) );
             MPlug elemPlug = objectsPlug[i];
             createObjectNodeGroup(elemPlug, myAssetTransform);
         }
+	Util::hideProgressWindow();
 
         // Instancers
         MPlug instancersPlug(myAssetNode, AssetNodeAttributes::instancers);
         int instCount = instancersPlug.numElements(&stat);
         Util::checkMayaStatus(stat);
 
+	status = "Instancing Objects...";
+	Util::showProgressWindow( title, status, 0 );
         for (int i=0; i<instCount; i++)
         {
+	    Util::updateProgressWindow( status, (int) ( (float)i*100.0f / (float) instCount) );
             MPlug elemPlug = instancersPlug[i];
             createInstNodeGroup(elemPlug, myAssetTransform);
         }
+	Util::hideProgressWindow();
 
         // TODO: delete extra node groups
 

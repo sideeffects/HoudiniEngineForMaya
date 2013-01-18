@@ -32,6 +32,7 @@ Asset::Asset(MString otlFilePath, MObject node)
 
     int assetId;
     hstat = HAPI_LoadOTLFile(filename, texturePath.asChar(), 3, 20, &assetId);
+    Util::statusCheckLoop();
     Util::checkHAPIStatus(hstat);
     hstat = HAPI_GetAssetInfo(assetId, &info);
     Util::checkHAPIStatus(hstat);
@@ -84,11 +85,19 @@ Asset::init()
     myObjects = new Object*[objCount];
     numVisibleObjects = 0;
     numObjects = objCount;
+
+    MString title = "HAPI";
+    MString status = "Creating Objects...";
+    Util::showProgressWindow( title, status, 0 );
+
     for (int i=0; i<objCount; i++)
     {
+	Util::updateProgressWindow( status, (int)( (float) i *100.0f / (float) objCount) );
         myObjects[i] = Object::createObject(info.id, i, this);
         myObjects[i]->init();
     }
+
+    Util::hideProgressWindow();
 
     // build parms
     buildParms();
@@ -413,6 +422,10 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     computeAssetInputs(plug, data);
 
     HAPI_CookAsset(info.id);
+
+
+    Util::statusCheckLoop();
+
     cerr << "cooked asset" << endl;
 
     update();

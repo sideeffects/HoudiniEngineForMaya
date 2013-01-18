@@ -27,13 +27,14 @@ GeometryObject::init()
 
     int partCount = myGeoInfo.partCount;
     myParts = new GeometryPart[partCount];
-
+    
     for (int i=0; i<partCount; i++)
     {
         MString partName = getName() + "_partShape" + (i+1);
-        cerr << "&&&&&&&&&&&& partName: " << partName << endl;
+        //cerr << "&&&&&&&&&&&& partName: " << partName << endl;	
         myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, partName, myGeoInfo, myObjectControl );
     }
+    
 }
 
 

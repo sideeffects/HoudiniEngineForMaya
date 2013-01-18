@@ -148,6 +148,133 @@ Util::checkHAPIStatus(HAPI_Result stat)
     }
 }
 
+//TODO: For each of the ifdefs, implement them for other platforms (mac and linux)
+void pumpmsgs()
+{
+#ifdef _WIN32
+    MSG msg;
+    
+    while( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0 )
+    {	    	
+	TranslateMessage(&msg);
+	DispatchMessage(&msg);	
+    }        
+#endif
+}
+
+void 
+Util::showProgressWindow( const MString & title, const MString & status, int progress )
+{
+#ifdef _WIN32
+    MString cmdStr = "progressWindow -t \"";
+    cmdStr += title;
+    cmdStr += "\" -progress ";
+    cmdStr += progress;
+    cmdStr += " -status \"";
+    cmdStr += status;
+    cmdStr += "\" -ii false";
+    MGlobal::executeCommand( cmdStr );
+    pumpmsgs();    
+#endif
+}
+
+void 
+Util::updateProgressWindow( const MString & status, int progress )
+{
+#ifdef _WIN32
+    MString cmdStr;
+    cmdStr = "progressWindow -e -progress ";	    	    
+    cmdStr += progress;
+
+    cmdStr += " -st \"";
+    cmdStr += status;
+    cmdStr += "\"";
+        	    
+    MGlobal::executeCommand( cmdStr );	
+    pumpmsgs();
+#endif    
+}
+
+void 
+Util::hideProgressWindow()
+{
+#ifdef _WIN32
+    MString cmdStr = "progressWindow -endProgress";
+    MGlobal::executeCommand( cmdStr );
+    pumpmsgs();
+#endif
+    
+}
+
+void
+Util::statusCheckLoop()
+{
+    
+    MString title("HAPI");
+    MString status("Working...");    
+    Util::showProgressWindow( title, status, 0 );
+
+    HAPI_State state = HAPI_STATE_STARTING_LOAD;    
+    int currState = (int) state;
+    int currCookCount = 0;
+    int totalCookCount = 1;       
+    
+    int startTime = 0;
+    
+#ifdef _WIN32
+    startTime = ::GetTickCount();
+#endif
+
+    while ( state != HAPI_STATE_READY )
+    {
+	    HAPI_GetStatus( HAPI_STATUS_STATE, &currState );
+	    state = (HAPI_State) currState;
+
+	    int percent = 0;
+	    if ( state == HAPI_STATE_COOKING )
+	    {
+		    HAPI_GetCookingCurrentCount( &currCookCount ); 
+		    HAPI_GetCookingTotalCount( &totalCookCount );		    
+		    percent = (int) ( (float) currCookCount*100 / (float) totalCookCount);
+	    }
+	    else
+	    {
+		    int elapsedTime = 0;
+#ifdef _WIN32
+		    elapsedTime = (int)::GetTickCount() - startTime;
+#endif
+		    percent = (int)((elapsedTime / 1000) % 100);
+	    }
+	    
+	    int statusBufSize = 0;
+	    HAPI_GetStatusStringBufLength( HAPI_STATUS_STATE, 
+					     &statusBufSize );
+
+	    char * statusBuf = NULL;
+
+	    if( statusBufSize > 0 )
+	    {
+		statusBuf = new char[ statusBufSize ];	        
+		HAPI_GetStatusString( HAPI_STATUS_STATE, statusBuf );		
+	    }
+	        	    	    
+
+	    if( statusBuf != NULL )
+	    {
+		MString statusStr = statusBuf;
+		updateProgressWindow( statusStr, percent );
+		delete[] statusBuf;
+#ifdef _WIN32
+		::Sleep( 100 );
+#endif
+
+	    }	    
+
+    }    
+
+    Util::hideProgressWindow();    
+}
+
 
 void
 Util::checkMayaStatus(MStatus stat)

@@ -30,7 +30,7 @@ uninitializePlugin(MObject obj)
     status = plugin.deregisterNode(AssetNode::id);
     Util::printMayaStatus(status);
 
-    status = plugin.deregisterCommand("assetCommand");
+    status = plugin.deregisterCommand("hAsset");
     Util::printMayaStatus(status);
 
     return status;

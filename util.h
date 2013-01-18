@@ -53,6 +53,10 @@ class Util {
         // Throws an exception if an error occurred
         static void checkHAPIStatus(HAPI_Result stat);
         static void checkMayaStatus(MStatus stat);
+	static void statusCheckLoop();
+	static void showProgressWindow(const MString & title, const MString & status, int progress);
+	static void updateProgressWindow(const MString & status, int progress);
+	static void hideProgressWindow();
 
         // Prints the error message if an error occurred.
         static void printHAPIStatus(HAPI_Result stat);

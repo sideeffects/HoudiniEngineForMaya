@@ -110,7 +110,7 @@ AssetNode::initialize()
     }
     hfs += "/";
     cerr << "hfs: " << hfs.asChar() << endl;
-    hstat = HAPI_Initialize(hfs.asChar(), otl_dir.asChar(), false, -1);
+    hstat = HAPI_Initialize(hfs.asChar(), otl_dir.asChar(), true, -1);
 
     // maya plugin stuff
     MFnNumericAttribute nAttr;

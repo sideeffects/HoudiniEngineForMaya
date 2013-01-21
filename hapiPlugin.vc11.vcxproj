@@ -111,8 +111,8 @@
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
     <TargetExt>.mll</TargetExt>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <IncludePath>C:\Program Files (x86)\Autodesk\Maya2013\include;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\include\HAPI;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\dsolib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files\Autodesk\Maya2013\include;C:\cygwin\home\damian\houdini\dev_vc11\hfs\custom\houdini\include\HAPI;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_vc11\hfs\custom\houdini\dsolib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

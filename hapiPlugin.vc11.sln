@@ -17,6 +17,7 @@ Global
 		{172E9C0A-9475-ABE1-D99D-796DE06473C9}.Release|Win32.ActiveCfg = Release|Win32
 		{172E9C0A-9475-ABE1-D99D-796DE06473C9}.Release|Win32.Build.0 = Release|Win32
 		{172E9C0A-9475-ABE1-D99D-796DE06473C9}.Release|x64.ActiveCfg = Release|x64
+		{172E9C0A-9475-ABE1-D99D-796DE06473C9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

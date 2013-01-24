@@ -75,10 +75,7 @@ Asset::init()
     }
 
     // get the infos
-    update();
-
-    //TODO: remove this call - should not be necessary.
-    update();
+    update();   
 
     // objects
     int objCount = info.objectCount;

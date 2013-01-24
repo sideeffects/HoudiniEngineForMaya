@@ -4,6 +4,8 @@
 
 #include "util.h"
 
+//minimum cook time to show the progress bar, in milliseconds
+#define MIN_COOKTIME_FOR_PROGRESSBAR	1000 
 //=============================================================================
 // HAPIError
 //=============================================================================
@@ -208,12 +210,8 @@ Util::hideProgressWindow()
 
 void
 Util::statusCheckLoop()
-{
-    
-    MString title("HAPI");
-    MString status("Working...");    
-    Util::showProgressWindow( title, status, 0 );
-
+{        
+    bool showProgressWindow = false;
     HAPI_State state = HAPI_STATE_STARTING_LOAD;    
     int currState = (int) state;
     int currCookCount = 0;
@@ -225,10 +223,25 @@ Util::statusCheckLoop()
     startTime = ::GetTickCount();
 #endif
 
+    int elapsedTime = 0;
     while ( state != HAPI_STATE_READY )
     {
 	    HAPI_GetStatus( HAPI_STATUS_STATE, &currState );
 	    state = (HAPI_State) currState;
+
+	    
+#ifdef _WIN32
+	    elapsedTime = (int)::GetTickCount() - startTime;
+#endif
+
+	    if( elapsedTime > MIN_COOKTIME_FOR_PROGRESSBAR && !showProgressWindow )
+	    {
+		MString title("HAPI");
+		MString status("Working...");    
+		Util::showProgressWindow( title, status, 0 );
+		showProgressWindow = true;
+
+	    }
 
 	    int percent = 0;
 	    if ( state == HAPI_STATE_COOKING )
@@ -238,11 +251,7 @@ Util::statusCheckLoop()
 		    percent = (int) ( (float) currCookCount*100 / (float) totalCookCount);
 	    }
 	    else
-	    {
-		    int elapsedTime = 0;
-#ifdef _WIN32
-		    elapsedTime = (int)::GetTickCount() - startTime;
-#endif
+	    {		    
 		    percent = (int)((elapsedTime / 1000) % 100);
 	    }
 	    
@@ -259,7 +268,7 @@ Util::statusCheckLoop()
 	    }
 	        	    	    
 
-	    if( statusBuf != NULL )
+	    if( statusBuf != NULL && showProgressWindow )
 	    {
 		MString statusStr = statusBuf;
 		updateProgressWindow( statusStr, percent );
@@ -272,7 +281,8 @@ Util::statusCheckLoop()
 
     }    
 
-    Util::hideProgressWindow();    
+    if( showProgressWindow )
+	Util::hideProgressWindow();    
 }
 
 

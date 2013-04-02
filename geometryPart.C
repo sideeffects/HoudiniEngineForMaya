@@ -339,7 +339,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
     {
         // get material info
         int matId = myPartInfo.materialId;
-        HAPI_GetMaterials( myAssetId, & myMaterialInfo, matId, 1);
+        HAPI_GetMaterial( myAssetId, matId, &myMaterialInfo );
         //materialInfo = objectControl->getMaterialInfo(matId);
 
         matExistsHandle.set(true);

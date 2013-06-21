@@ -86,21 +86,14 @@ AssetNode::creator()
     return ret;
 }
 
-void printAssetInfo(HAPI_AssetInfo* assetInfo)
-{
-    cerr << "id: " << assetInfo->id << endl;
-    cerr << "parmCount: " << assetInfo->parmCount << endl;
-    cerr << "parmChoiceCount: " << assetInfo->parmChoiceCount << endl;
-    cerr << "handleCount: " << assetInfo->handleCount << endl;
-    cerr << "objectCount: " << assetInfo->objectCount << endl;
-}
-
 MStatus
 AssetNode::initialize()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     
+    // TODO: FIXME: Make sure DSO path is set if it's actually needed.
     MString otl_dir(getenv("HAPI_OTL_PATH"));    
+    MString dso_dir(getenv("HAPI_DSO_PATH"));    
     
     MString hfs(getenv("HAPI_PATH"));
     if (hfs == "")
@@ -110,7 +103,8 @@ AssetNode::initialize()
     }
     hfs += "/";
     cerr << "hfs: " << hfs.asChar() << endl;
-    hstat = HAPI_Initialize(hfs.asChar(), otl_dir.asChar(), true, -1);
+    hstat = HAPI_Initialize(hfs.asChar(), otl_dir.asChar(), 
+    	dso_dir.asChar(), true, -1);
 
     // maya plugin stuff
     MFnNumericAttribute nAttr;
@@ -335,7 +329,7 @@ AssetNode::~AssetNode() {
     {
         if ( myAsset != NULL )
         {
-            hstat = HAPI_UnloadOTLFile( myAsset->info.id);
+            hstat = HAPI_UnloadOTLFile( myAsset->assetInfo.id);
             Util::checkHAPIStatus(hstat);
         }
     }
@@ -505,11 +499,11 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 void
 AssetNode::updateAttrValues(MDataBlock& data)
 {
-    int parmCount = myAsset->info.parmCount;
+    int parmCount = myAsset->nodeInfo.parmCount;
     if (parmCount <= 0)
         return;
     HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(myAsset->info.id, parmInfos, 0, parmCount);
+    HAPI_GetParameters(myAsset->assetInfo.id, parmInfos, 0, parmCount);
 
     for (int i=0; i<parmCount; i++)
     {
@@ -603,7 +597,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
             }
         }
         //double before = getTime();
-        HAPI_SetParmIntValues( myAsset->info.id, values, parm.intValuesIndex, size );
+        HAPI_SetParmIntValues( myAsset->assetInfo.id, values, parm.intValuesIndex, size );
         //double after = getTime();
 
         //cerr << "type: " << parm.type << " time: " << (after - before) << " int" << endl;
@@ -627,7 +621,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
             }
         }
         //double before = getTime();
-        HAPI_SetParmFloatValues( myAsset->info.id, values, parm.floatValuesIndex, size);
+        HAPI_SetParmFloatValues( myAsset->assetInfo.id, values, parm.floatValuesIndex, size);
         //double after = getTime();
 
         //cerr << "type: " << parm.type << " id: " << parm.id << " time: " << (after - before) << " float" << endl;
@@ -640,7 +634,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         {
             MDataHandle handle = data.inputValue(plug);
             const char* val = handle.asString().asChar();
-            HAPI_SetParmStringValue( myAsset->info.id, val, parm.id, 0);
+            HAPI_SetParmStringValue( myAsset->assetInfo.id, val, parm.id, 0);
         } else
         {
             for (int i=0; i<size; i++)
@@ -649,7 +643,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 MDataHandle handle = data.inputValue(child);
                 const char* val = handle.asString().asChar();
                 double before = getTime();
-                HAPI_SetParmStringValue( myAsset->info.id, val, parm.id, i);
+                HAPI_SetParmStringValue( myAsset->assetInfo.id, val, parm.id, i);
                 double after = getTime();
                 //cerr << "type: " << parm.type << " time: " << (after - before) << " string" << endl;
             }
@@ -662,11 +656,11 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 void
 AssetNode::setParmValues(MDataBlock& data)
 {
-    int parmCount = myAsset->info.parmCount;
+    int parmCount = myAsset->nodeInfo.parmCount;
     if (parmCount <= 0)
         return;
     HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters( myAsset->info.id, parmInfos, 0, parmCount );
+    HAPI_GetParameters( myAsset->assetInfo.id, parmInfos, 0, parmCount );
 
     for (int i=0; i<parmCount; i++)
     {

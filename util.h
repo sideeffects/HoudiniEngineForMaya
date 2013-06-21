@@ -5,6 +5,8 @@
 #include <maya/MIntArray.h>
 #include <maya/MFloatArray.h>
 
+#include <vector>
+
 #include <HAPI.h>
 
 class HAPIError: public std::exception
@@ -65,6 +67,9 @@ class Util {
         static MString executeCommand(const MString& cmd);
         static MObject findNodeByName(MString& name);
         static MString replaceChar(MString& str, char oldChar, char newChar);
+
+        // Returns true if the parm was found.
+        static int findParm(std::vector<HAPI_ParmInfo>& parms, MString name);
 };
 
 #endif

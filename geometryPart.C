@@ -5,10 +5,14 @@
 #include <maya/MFnArrayAttrsData.h>
 #include <maya/MFnIntArrayData.h>
 
+#include <vector>
+
 #include "asset.h"
 #include "geometryPart.h"
 #include "util.h"
 #include "common.h"
+
+using namespace std;
 
 GeometryPart::GeometryPart()
 {
@@ -340,18 +344,41 @@ GeometryPart::updateMaterial(MDataHandle& handle)
         // get material info
         int matId = myPartInfo.materialId;
         HAPI_GetMaterial( myAssetId, matId, &myMaterialInfo );
-        //materialInfo = objectControl->getMaterialInfo(matId);
+        HAPI_NodeInfo materialNodeInfo;
+        HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
+
+        vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);
+        HAPI_GetParameters(myMaterialInfo.nodeId, &parms[0], 0, materialNodeInfo.parmCount);
+
+        // TODO: FIXME: Make sure these are the correct param names.
+        int ambientParmIndex = Util::findParm(parms, "ambient");
+        int diffuseParmIndex = Util::findParm(parms, "diffuse");
+        int specularParmIndex = Util::findParm(parms, "specular");
+        int texturePathSHParmIndex = Util::findParm(parms, "textureFilePathSH");
+        float valueHolder[4];
 
         matExistsHandle.set(true);
 
-        ambientHandle.set3Float( myMaterialInfo.ambient[0], myMaterialInfo.ambient[1], myMaterialInfo.ambient[2]);
-        diffuseHandle.set3Float( myMaterialInfo.diffuse[0], myMaterialInfo.diffuse[1], myMaterialInfo.diffuse[2]);
-        specularHandle.set3Float(myMaterialInfo.specular[0], myMaterialInfo.specular[1], myMaterialInfo.specular[2]);
+        HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+        	parms[ambientParmIndex].floatValuesIndex, 4);
+        ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+
+        HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+        	parms[specularParmIndex].floatValuesIndex, 4);
+        specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
         
-        float alpha = 1 - myMaterialInfo.diffuse[3];
+        HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+        	parms[diffuseParmIndex].floatValuesIndex, 4);
+        diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+        
+        // Alpha component of the diffuse color.
+        float alpha = 1 - valueHolder[3];
         alphaHandle.set3Float(alpha, alpha, alpha);
         
-        MString texturePath = Util::getString( myMaterialInfo.textureFilePathSH);
+        int filePathSH;
+        HAPI_GetParmIntValues(myMaterialInfo.nodeId, &filePathSH, 
+        	parms[texturePathSHParmIndex].intValuesIndex, 1);
+        MString texturePath = Util::getString(filePathSH);
         texturePathHandle.set(texturePath);
     }
 

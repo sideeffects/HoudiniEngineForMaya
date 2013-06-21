@@ -4,6 +4,8 @@
 
 #include "util.h"
 
+using namespace std;
+
 //minimum cook time to show the progress bar, in milliseconds
 #define MIN_COOKTIME_FOR_PROGRESSBAR	1000 
 //=============================================================================
@@ -373,4 +375,14 @@ Util::replaceChar( MString& str, char oldChar, char newChar )
     
     // Return the new string, dicarding the last char.
     return newStr.substring( 0, newStr.length() - 2 );
+}
+
+int
+Util::findParm(vector<HAPI_ParmInfo>& parms, MString name)
+{
+    for (int i = 0; i < parms.size(); i++)
+    	if (getString(parms[i].nameSH) == name)
+    	   return i;
+
+    return -1;
 }

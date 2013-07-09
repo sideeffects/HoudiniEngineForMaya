@@ -87,7 +87,7 @@ Asset::init()
     numVisibleObjects = 0;
     numObjects = objCount;
 
-    MString title = "HAPI";
+    MString title = "Houdini";
     MString status = "Creating Objects...";
     Util::showProgressWindow( title, status, 0 );
 

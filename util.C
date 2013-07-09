@@ -238,7 +238,7 @@ Util::statusCheckLoop()
 
 	    if( elapsedTime > MIN_COOKTIME_FOR_PROGRESSBAR && !showProgressWindow )
 	    {
-		MString title("HAPI");
+		MString title("Houdini");
 		MString status("Working...");    
 		Util::showProgressWindow( title, status, 0 );
 		showProgressWindow = true;

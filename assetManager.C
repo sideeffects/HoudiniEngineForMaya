@@ -121,7 +121,7 @@ AssetManager::update()
         int objCount = objectsPlug.evaluateNumElements(&stat);
         Util::checkMayaStatus(stat);
 
-	MString title = "HAPI";
+	MString title = "Houdini";
 	MString status = "Composing Objects...";
 	Util::showProgressWindow( title, status, 0 );
         for (int i=0; i<objCount; i++)

@@ -40,7 +40,8 @@ Asset::Asset(MString otlFilePath, MObject node)
     Util::checkHAPIStatus(hstat);
     hstat = HAPI_GetAssetInfo(assetId, &assetInfo);
     Util::checkHAPIStatus(hstat);
-
+    hstat = HAPI_GetNodeInfo(assetInfo.nodeId, &nodeInfo);
+    Util::checkHAPIStatus(hstat);
 
     cerr << "Loaded asset: " << otlFilePath << " " << assetInfo.id << endl;
     cerr << "type: " << assetInfo.type << endl;
@@ -589,7 +590,7 @@ Asset::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortN
         eAttr.setNiceNameOverride(niceName);
 
         HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[choiceCount];
-        HAPI_GetParmChoiceLists(assetInfo.id, choiceInfos, parm.choiceIndex, choiceCount);
+        HAPI_GetParmChoiceLists(nodeInfo.id, choiceInfos, parm.choiceIndex, choiceCount);
         for (int i=0; i<choiceCount; i++)
         {
             MString field = Util::getString(choiceInfos[i].labelSH);
@@ -672,7 +673,7 @@ Asset::buildParms()
     if (parmCount <= 0)
         return;
     HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(assetInfo.id, parmInfos, 0, parmCount);
+    HAPI_GetParameters(nodeInfo.id, parmInfos, 0, parmCount);
 
     int index = 0;
     while (index < parmCount)
@@ -727,7 +728,7 @@ Asset::getParmIntValues(HAPI_ParmInfo& parm)
     int index = parm.intValuesIndex;
     int size = parm.size;
     int * values = new int[size];
-    HAPI_GetParmIntValues(assetInfo.id, values, index, size);
+    HAPI_GetParmIntValues(nodeInfo.id, values, index, size);
 
     MIntArray ret(values, size);
 
@@ -742,7 +743,7 @@ Asset::getParmFloatValues(HAPI_ParmInfo& parm)
     int index = parm.floatValuesIndex;
     int size = parm.size;
     float * values = new float[size];
-    HAPI_GetParmFloatValues(assetInfo.id, values, index, size);
+    HAPI_GetParmFloatValues(nodeInfo.id, values, index, size);
 
     MFloatArray ret(values, size);
 
@@ -757,7 +758,7 @@ Asset::getParmStringValues(HAPI_ParmInfo& parm)
     int index = parm.stringValuesIndex;
     int size = parm.size;
     int * handles = new int[size];
-    HAPI_GetParmStringValues(assetInfo.id, handles, index, size);
+    HAPI_GetParmStringValues(nodeInfo.id, handles, index, size);
 
     MStringArray ret;
     for (int i=0; i<size; i++)

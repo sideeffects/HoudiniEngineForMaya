@@ -394,8 +394,18 @@ int
 Util::findParm(vector<HAPI_ParmInfo>& parms, MString name)
 {
     for (int i = 0; i < parms.size(); i++)
-    	if (getString(parms[i].nameSH) == name)
-    	   return i;
+    {
+	MString current_parm_name = getString(parms[i].nameSH);
+	if(parms[i].isMultiParm)
+	{
+	    current_parm_name = replaceString(current_parm_name, "#", MString() + parms[i].instanceNum);
+	}
+
+	if (current_parm_name == name)
+	{
+	    return i;
+	}
+    }
 
     return -1;
 }

@@ -308,7 +308,8 @@ ObjectNodeGroup::updateNodes()
             Util::checkMayaStatus(stat);
 
             cmd = "hyperShade -assign " + MFnDependencyNode(materialNode).name();
-            result = Util::executeCommand(cmd); // shadingEngine node
+	    stat = MGlobal::executeCommand(cmd);
+            Util::checkMayaStatus(stat);
 
             MPlugArray connectedPlugs;
             bool hasConnections = MFnDependencyNode(materialNode).findPlug("outColor").connectedTo(
@@ -527,11 +528,8 @@ InstNodeGroup::updateConnections()
 
             MString cmd = "hide " + name;
 
-	    //TODO: this hide command sometimes "fails" to execute, in that Maya reports an error from the 
-	    //execution of the command, but it actually does succeed in hiding the objects.  Might be
-	    // a Maya bug or perhaps we are not executing the commands at a good time for Maya (this should
-	    // be happening immediately after a compute
-            Util::executeCommand(cmd);
+	    stat = MGlobal::executeCommand(cmd);
+	    Util::checkMayaStatus(stat);
         }
 
         stat = dg.doIt();

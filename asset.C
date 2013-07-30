@@ -25,16 +25,8 @@ Asset::Asset(MString otlFilePath, MObject node)
     // load the otl
     const char* filename = otlFilePath.asChar();
 
-    //cerr << "loadasset" << endl;
-    MString texturePath;
-    MGlobal::executeCommand("workspace -q -rd;", texturePath);
-    texturePath += "sourceimages";
-
     int assetId;
     hstat = HAPI_LoadOTLFile(filename, 3, 20, &assetId);
-
-    // Old version : hstat = HAPI_LoadOTLFile(filename, texturePath.asChar(), 3, 20, &assetId);
-    // TODO: FIXME: Does the texture need to be loaded at some point in the code?
 
     Util::statusCheckLoop();
     Util::checkHAPIStatus(hstat);

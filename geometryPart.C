@@ -1,5 +1,6 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFnMeshData.h>
+#include <maya/MGlobal.h>
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
@@ -350,36 +351,53 @@ GeometryPart::updateMaterial(MDataHandle& handle)
         vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);
         HAPI_GetParameters(myMaterialInfo.nodeId, &parms[0], 0, materialNodeInfo.parmCount);
 
-        // TODO: FIXME: Make sure these are the correct param names.
-        int ambientParmIndex = Util::findParm(parms, "ambient");
-        int diffuseParmIndex = Util::findParm(parms, "diffuse");
-        int specularParmIndex = Util::findParm(parms, "specular");
-        int texturePathSHParmIndex = Util::findParm(parms, "textureFilePathSH");
+        int ambientParmIndex = Util::findParm(parms, "ogl_amb");
+        int diffuseParmIndex = Util::findParm(parms, "ogl_diff");
+        int specularParmIndex = Util::findParm(parms, "ogl_spec");
+        int texturePathSHParmIndex = Util::findParm(parms, "ogl_tex1");
         float valueHolder[4];
 
         matExistsHandle.set(true);
 
-        HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
-        	parms[ambientParmIndex].floatValuesIndex, 4);
-        ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+	if(ambientParmIndex >= 0)
+	{
+	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+		    parms[ambientParmIndex].floatValuesIndex, 4);
+	    ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+	}
 
-        HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
-        	parms[specularParmIndex].floatValuesIndex, 4);
-        specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+	if(specularParmIndex >= 0)
+	{
+	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+		    parms[specularParmIndex].floatValuesIndex, 4);
+	    specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+	}
         
-        HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
-        	parms[diffuseParmIndex].floatValuesIndex, 4);
-        diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+	if(diffuseParmIndex >= 0)
+	{
+	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+		    parms[diffuseParmIndex].floatValuesIndex, 4);
+	    diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+
+	    // Alpha component of the diffuse color.
+	    float alpha = 1 - valueHolder[3];
+	    alphaHandle.set3Float(alpha, alpha, alpha);
+	}
         
-        // Alpha component of the diffuse color.
-        float alpha = 1 - valueHolder[3];
-        alphaHandle.set3Float(alpha, alpha, alpha);
-        
-        int filePathSH;
-        HAPI_GetParmIntValues(myMaterialInfo.nodeId, &filePathSH, 
-        	parms[texturePathSHParmIndex].intValuesIndex, 1);
-        MString texturePath = Util::getString(filePathSH);
-        texturePathHandle.set(texturePath);
+	if(texturePathSHParmIndex >= 0)
+	{
+	    MString destinationFolderPath;
+	    MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
+		    destinationFolderPath);
+
+	    int filePathSH;
+	    HAPI_ExtractTextureToFile(myMaterialInfo.nodeId,
+		    parms[texturePathSHParmIndex].id,
+		    destinationFolderPath.asChar(),
+		    NULL, &filePathSH);
+	    MString texturePath = Util::getString(filePathSH);
+	    texturePathHandle.set(texturePath);
+	}
     }
 
     

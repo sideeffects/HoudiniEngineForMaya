@@ -362,19 +362,32 @@ Util::findNodeByName(MString& name)
 }
 
 MString
-Util::replaceChar( MString& str, char oldChar, char newChar )
+Util::replaceString(const MString &str, const MString &searchStr, const MString &replaceStr)
 {
-    MStringArray tokens;
-    str.split( oldChar, tokens );
-    MString newStr;
-    for ( unsigned int i = 0; i < tokens.length(); ++i )
+    MString remaining = str;
+    MString result;
+
+    while(true)
     {
-        newStr += tokens[ i ];
-        newStr += newChar;
+	int length = remaining.numChars();
+	int index = remaining.indexW(searchStr);
+	if(index < 0)
+	{
+	    index = length;
+	}
+	if(index > 0)
+	{
+	    result += remaining.substringW(0, index - 1);
+	}
+	if(index == length)
+	{
+	    break;
+	}
+	result += replaceStr;
+	remaining = remaining.substringW(index + searchStr.numChars(), length - 1);;
     }
-    
-    // Return the new string, dicarding the last char.
-    return newStr.substring( 0, newStr.length() - 2 );
+
+    return result;
 }
 
 int

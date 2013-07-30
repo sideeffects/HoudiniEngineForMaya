@@ -66,7 +66,7 @@ class Util {
 
         static MString executeCommand(const MString& cmd);
         static MObject findNodeByName(MString& name);
-        static MString replaceChar(MString& str, char oldChar, char newChar);
+        static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
 
         // Returns true if the parm was found.
         static int findParm(std::vector<HAPI_ParmInfo>& parms, MString name);

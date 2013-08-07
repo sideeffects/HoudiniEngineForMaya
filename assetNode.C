@@ -18,7 +18,7 @@
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
-
+#include "MayaTypeID.h"
 #include "assetNode.h"
 #include "assetNodeMonitor.h"
 #include "common.h"
@@ -38,7 +38,7 @@
             MGlobal::displayInfo(str);          \
         }
 
-MTypeId AssetNode::id(0x80000);
+MTypeId AssetNode::id(MayaTypeID_HoudiniAssetNode);
 MObject AssetNodeAttributes::fileNameAttr;
 MObject AssetNodeAttributes::parmsModified;
 MObject AssetNodeAttributes::timeInput;

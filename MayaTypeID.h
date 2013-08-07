@@ -34,6 +34,7 @@
 // Globally unique IDs being used by Side Effects
 enum MayaTypeID
 {
+    MayaTypeID_HoudiniAssetNode = 0x0011E240,
 };
 
 #endif

@@ -1,55 +1,65 @@
-MAYA_DIR=/usr/autodesk/maya2014-x64
-HOUDINI_INCLUDES=-I$(HI)/HAPI -I$(HI) -I$(HC)/include -I$(HC)/include/zlib -I$(HC)/include/OpenEXR
+MAYA_DIR = /usr/autodesk/maya2014-x64
+HOUDINI_INCLUDES = -I$(HI)/HAPI -I$(HI) -I$(HC)/include -I$(HC)/include/zlib -I$(HC)/include/OpenEXR
 
-CC=g++412
-CFLAGS=-m64 -O0 -pthread -pipe -D_BOOL -DLINUX_64 -DREQUIRE_IOSTREAM -fPIC -Wno-deprecated -fno-gnu-keywords
-DEBUGFLAGS=-g -gstabs+
-LDFLAGS=-Wl,-Bsymbolic -Wl,-rpath,$(HDSO)
-INCLUDES=-I. -I.. -I$(MAYA_DIR)/include -I/usr/X11R6/include $(HOUDINI_INCLUDES)
-LIBS=-L$(MAYA_DIR)/lib -lOpenMaya -lFoundation -L$(HDSO) `python$(PYVER) $(SHM)/list_link_libs.py HAPI`
+LIBNAME = asset
 
-all: asset.so
+SOSUFFIX = so
+SONAME = $(LIBNAME).$(SOSUFFIX)
 
-asset.so: assetNode.o assetCommand.o assetManager.o asset.o object.o util.o geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o plugin.o
-	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o asset.so assetNode.o assetCommand.o assetManager.o asset.o object.o util.o \
-	    geometryObject.o instancerObject.o assetNodeMonitor.o geometryPart.o plugin.o $(LIBS)
+CC = g++
+CXX = g++
 
-assetNode.o: assetNode.C assetNode.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetNode.C
+CPPFLAGS += -I. -I.. -I$(MAYA_DIR)/include -I/usr/X11R6/include $(HOUDINI_INCLUDES)
+CPPFLAGS += -D_BOOL -DLINUX_64 -DREQUIRE_IOSTREAM
 
-assetCommand.o: assetCommand.C assetCommand.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetCommand.C
+CXXFLAGS += -m64 -O0 -pthread -pipe -fPIC -Wno-deprecated -fno-gnu-keywords
+CXXFLAGS += -g -gstabs+
 
-assetManager.o: assetManager.C assetManager.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetManager.C
+LDFLAGS += -Wl,-Bsymbolic -Wl,-rpath,$(HDSO)
+LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lFoundation -L$(HDSO) `python$(PYVER) $(SHM)/list_link_libs.py HAPI`
 
-asset.o: asset.C asset.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) asset.C
+CXXFILES = \
+	   assetNode.C \
+	   assetCommand.C \
+	   assetManager.C \
+	   asset.C \
+	   object.C \
+	   util.C \
+	   geometryObject.C \
+	   instancerObject.C \
+	   assetNodeMonitor.C \
+	   geometryPart.C \
+	   plugin.C
 
-object.o: object.C object.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) object.C
+OBJ_DIR = .obj
+DEP_DIR = .dep
 
-util.o: util.C util.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) util.C
+OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
 
-geometryObject.o: geometryObject.C geometryObject.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) geometryObject.C
+DEPFILES = $(patsubst %.C, $(DEP_DIR)/%.d, $(CXXFILES))
 
-instancerObject.o: instancerObject.C instancerObject.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) instancerObject.C
+.PHONY: all
+all: $(SONAME)
 
-assetNodeMonitor.o: assetNodeMonitor.C assetNodeMonitor.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) assetNodeMonitor.C
+$(SONAME): $(OBJFILES)
+	@mkdir -p $(dir $(@))
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $(@) $(OBJFILES) $(LDLIBS)
 
-geometryPart.o: geometryPart.C geometryPart.h
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) geometryPart.C
+$(OBJ_DIR)/%.o: %.C
+	@mkdir -p $(dir $(@))
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $(@) -c $(<)
 
-plugin.o: plugin.C
-	$(CC) -c $(CFLAGS) $(DEBUGFLAGS) $(INCLUDES) plugin.C
+$(DEP_DIR)/%.d: %.C
+	@echo generating dependency for $(<)
+	@mkdir -p $(dir $(@))
+	@$(CXX) -MM -MP -MT $(OBJ_DIR)/$(*).o $(CPPFLAGS) $(<) -o $(@)
 
+ifneq ($(MAKECMDGOALS),clean)
+-include $(DEPFILES)
+endif
 
+.PHONY: clean
 clean:
-	rm -f *.o
-	rm -f *.so
-	rm -f .*.swp
-	rm -f *.gch
+	rm -f $(SONAME)
+	rm -f $(OBJFILES)
+	rm -f $(DEPFILES)

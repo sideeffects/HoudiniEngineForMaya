@@ -91,12 +91,8 @@ AssetNode::initialize()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     
-    MString otl_dir(getenv("HAPI_OTL_PATH"));    
-    MString dso_dir(getenv("HAPI_DSO_PATH"));    
-
-    // Need to use Houdini's OTL's as well as the plugin-specific ones.
-    otl_dir = "@/otls_^;@/otls;" + otl_dir;
-    dso_dir = "@/dso_^;@/dso;" + dso_dir;
+    MString otl_dir(getenv("HAPI_OTL_PATH"));
+    MString dso_dir(getenv("HAPI_DSO_PATH"));
 
     MString hfs(getenv("HAPI_PATH"));
     if (hfs == "")

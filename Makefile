@@ -38,8 +38,10 @@ OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
 
 DEPFILES = $(patsubst %.C, $(DEP_DIR)/%.d, $(CXXFILES))
 
+ALL_TARGETS := $(shell if [ -d $(MAYA_DIR) ]; then echo $(SONAME); fi)
+
 .PHONY: all
-all: $(SONAME)
+all: $(ALL_TARGETS)
 
 $(SONAME): $(OBJFILES)
 	@mkdir -p $(dir $(@))

@@ -325,27 +325,6 @@ Util::printMayaStatus(MStatus stat)
     }
 }
 
-
-MString
-Util::executeCommand(const MString& cmd)
-{
-    MString result;
-    try
-    {
-        MStatus stat;
-        stat = MGlobal::executeCommand(cmd, result);
-        checkMayaStatus(stat);
-    }
-    catch (MayaError& e)
-    {
-        // Handle the exception here because sometimes command executes
-        // but Maya still returns failure status.
-        cerr << "Execute MEL error: " << cmd << endl;
-        cerr << e.what() << endl;
-    }
-    return result;
-}
-
 MObject
 Util::findNodeByName(MString& name)
 {

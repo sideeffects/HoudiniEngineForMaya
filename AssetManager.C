@@ -297,7 +297,8 @@ ObjectNodeGroup::updateNodes()
         {
             cerr << "createing mateiral" << endl;
             cmd = "shadingNode -asShader phong";
-            result = Util::executeCommand(cmd); // phong node
+	    stat = MGlobal::executeCommand(cmd, result); // phong node
+            Util::checkMayaStatus(stat);
             materialNode = Util::findNodeByName(result);
         }
 
@@ -331,7 +332,8 @@ ObjectNodeGroup::updateNodes()
                 if (fileNode.isNull())
                 {
                     cmd = "shadingNode -asTexture file";
-                    result = Util::executeCommand(cmd); // file node
+		    stat = MGlobal::executeCommand(cmd, result); // file node
+		    Util::checkMayaStatus(stat);
                     fileNode = Util::findNodeByName(result);
                 }
             }

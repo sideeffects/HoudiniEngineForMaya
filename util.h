@@ -64,7 +64,6 @@ class Util {
         static void printHAPIStatus(HAPI_Result stat);
         static void printMayaStatus(MStatus stat);
 
-        static MString executeCommand(const MString& cmd);
         static MObject findNodeByName(MString& name);
         static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
 

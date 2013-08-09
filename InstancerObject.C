@@ -5,7 +5,7 @@
 #include <maya/MFnArrayAttrsData.h>
 
 #include "Asset.h"
-#include "common.h"
+#include "AssetNode.h"
 #include "InstancerObject.h"
 #include "util.h"
 
@@ -157,8 +157,8 @@ InstancerObject::compute(MDataHandle& handle)
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged )
     {
-        MDataHandle instancerDataHandle = handle.child(AssetNodeAttributes::instancerData);
-        MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNodeAttributes::instancedObjectNames);
+        MDataHandle instancerDataHandle = handle.child(AssetNode::instancerData);
+        MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::instancedObjectNames);
 
         //MDataHandle instHandle = data.outputValue(instancerDataPlug);
         MFnArrayAttrsData fnAAD;

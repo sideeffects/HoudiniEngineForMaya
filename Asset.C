@@ -10,7 +10,7 @@
 #include <maya/MGlobal.h>
 
 #include "Asset.h"
-#include "common.h"
+#include "AssetNode.h"
 #include "GeometryObject.h"
 #include "InstancerObject.h"
 #include "util.h"
@@ -276,7 +276,7 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
 {
     MStatus stat;
 
-    MPlug instancersPlug = plug.child(AssetNodeAttributes::instancers);
+    MPlug instancersPlug = plug.child(AssetNode::instancers);
 
     int instancerIndex = 0;
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
@@ -340,7 +340,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 {
     MStatus stat;
 
-    MPlug objectsPlug = plug.child(AssetNodeAttributes::objects);
+    MPlug objectsPlug = plug.child(AssetNode::objects);
 
     int objectIndex = 0;
     cerr << "objectsPlug: " << objectsPlug.name() << endl;
@@ -395,7 +395,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     MStatus stat(MS::kSuccess);
 
     // Set the type
-    MPlug typePlug( myNode, AssetNodeAttributes::assetType);
+    MPlug typePlug( myNode, AssetNode::assetType);
     MDataHandle typeHandle = data.outputValue(typePlug);
 
     //The asset info struct (info) was set at the constructor
@@ -403,7 +403,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     typeHandle.set(assetInfo.type);
 
     // Set the time
-    MPlug timePlug( myNode, AssetNodeAttributes::timeInput);
+    MPlug timePlug( myNode, AssetNode::timeInput);
     MDataHandle timeHandle = data.inputValue(timePlug);
     MTime currentTime = timeHandle.asTime();
     float time = (float)currentTime.as(MTime::kSeconds);

@@ -9,7 +9,7 @@
 #include <maya/MGlobal.h>
 
 #include "AssetManager.h"
-#include "common.h"
+#include "AssetNode.h"
 #include "util.h"
 
 
@@ -65,7 +65,7 @@ AssetManager::init()
         // Create the asset node
         myAssetNode = dg.createNode("hAsset", &stat);
         Util::checkMayaStatus(stat);
-        MPlug plug( myAssetNode, AssetNodeAttributes::fileNameAttr);
+        MPlug plug( myAssetNode, AssetNode::fileNameAttr);
         stat = dg.newPlugValueString(plug, myFilePath);
 
         MFileObject file;
@@ -84,7 +84,7 @@ AssetManager::init()
         MString t = "time1";
 	MObject timeNode = Util::findNodeByName(t);
 	src = MFnDependencyNode(timeNode).findPlug("outTime");
-	dest = MPlug( myAssetNode, AssetNodeAttributes::timeInput );
+	dest = MPlug( myAssetNode, AssetNode::timeInput );
 	dg.connect(src, dest);
 
         // DGModifier do it
@@ -117,7 +117,7 @@ AssetManager::update()
     try
     {
         // Create the objs/meshes
-        MPlug objectsPlug( myAssetNode, AssetNodeAttributes::objects );
+        MPlug objectsPlug( myAssetNode, AssetNode::objects );
         int objCount = objectsPlug.evaluateNumElements(&stat);
         Util::checkMayaStatus(stat);
 
@@ -133,7 +133,7 @@ AssetManager::update()
 	Util::hideProgressWindow();
 
         // Instancers
-        MPlug instancersPlug(myAssetNode, AssetNodeAttributes::instancers);
+        MPlug instancersPlug(myAssetNode, AssetNode::instancers);
         int instCount = instancersPlug.numElements(&stat);
         Util::checkMayaStatus(stat);
 
@@ -251,7 +251,7 @@ ObjectNodeGroup::updateNodes()
         // Check to see if the object transform has been created, if so,
         // then add the part transform under it, if not, then create the
         // object transform then add the part transform
-        MString partName = plug.child(AssetNodeAttributes::objectName).asString();
+        MString partName = plug.child(AssetNode::objectName).asString();
 
         int usIndex = partName.rindexW('_');
         MString objName = partName.substringW(0, usIndex-1);
@@ -292,7 +292,7 @@ ObjectNodeGroup::updateNodes()
         }
 
         // Materials
-        MPlug materialPlug = plug.child(AssetNodeAttributes::material);
+        MPlug materialPlug = plug.child(AssetNode::material);
         if (materialNode.isNull())
         {
             cerr << "createing mateiral" << endl;
@@ -322,10 +322,10 @@ ObjectNodeGroup::updateNodes()
             }
         }
 
-        bool matExists = materialPlug.child(AssetNodeAttributes::materialExists).asBool();
+        bool matExists = materialPlug.child(AssetNode::materialExists).asBool();
         if (matExists)
         {
-            MString texturePath = materialPlug.child(AssetNodeAttributes::texturePath).asString();
+            MString texturePath = materialPlug.child(AssetNode::texturePath).asString();
             if (texturePath != "")
             {
                 if (fileNode.isNull())
@@ -368,62 +368,62 @@ ObjectNodeGroup::updateConnections()
     try
     {
         // Transform
-        MPlug transformPlug = plug.child(AssetNodeAttributes::transform);
+        MPlug transformPlug = plug.child(AssetNode::transform);
 
-        src = transformPlug.child(AssetNodeAttributes::translateAttr);
+        src = transformPlug.child(AssetNode::translateAttr);
         cerr << src.name() << endl;
         dest = MFnDependencyNode(partTransform).findPlug("translate", true);
         stat = dg.connect(src, dest);
         Util::checkMayaStatus(stat);
 
-        src = transformPlug.child(AssetNodeAttributes::rotateAttr);
+        src = transformPlug.child(AssetNode::rotateAttr);
         dest = MFnDependencyNode(partTransform).findPlug("rotate", true);
         stat = dg.connect(src, dest);
         Util::checkMayaStatus(stat);
 
-        src = transformPlug.child(AssetNodeAttributes::scaleAttr);
+        src = transformPlug.child(AssetNode::scaleAttr);
         dest = MFnDependencyNode(partTransform).findPlug("scale", true);
         stat = dg.connect(src, dest);
         Util::checkMayaStatus(stat);
 
         // Mesh
-        src = plug.child(AssetNodeAttributes::mesh);
+        src = plug.child(AssetNode::mesh);
         dest = MFnDependencyNode(meshNode).findPlug("inMesh", true);
         stat = dg.connect(src, dest);
         Util::checkMayaStatus(stat);
 
         // Materials
-        MPlug materialPlug = plug.child(AssetNodeAttributes::material);
-        bool matExists = materialPlug.child(AssetNodeAttributes::materialExists).asBool();
+        MPlug materialPlug = plug.child(AssetNode::material);
+        bool matExists = materialPlug.child(AssetNode::materialExists).asBool();
         if (matExists)
         {
-            src = materialPlug.child(AssetNodeAttributes::specularAttr);
+            src = materialPlug.child(AssetNode::specularAttr);
             dest = MFnDependencyNode(materialNode).findPlug("specularColor");
             stat = dg.connect(src, dest);
             Util::checkMayaStatus(stat);
 
-            src = materialPlug.child(AssetNodeAttributes::alphaAttr);
+            src = materialPlug.child(AssetNode::alphaAttr);
             dest = MFnDependencyNode(materialNode).findPlug("transparency");
             stat = dg.connect(src, dest);
             Util::checkMayaStatus(stat);
 
-            MString texturePath = materialPlug.child(AssetNodeAttributes::texturePath).asString();
+            MString texturePath = materialPlug.child(AssetNode::texturePath).asString();
             cerr << "texturePath: " << texturePath << endl;
             if (texturePath == "")
             {
-                src = materialPlug.child(AssetNodeAttributes::diffuseAttr);
+                src = materialPlug.child(AssetNode::diffuseAttr);
                 dest = MFnDependencyNode(materialNode).findPlug("color");
                 stat = dg.connect(src, dest);
                 Util::checkMayaStatus(stat);
 
-                src = materialPlug.child(AssetNodeAttributes::ambientAttr);
+                src = materialPlug.child(AssetNode::ambientAttr);
                 dest = MFnDependencyNode(materialNode).findPlug("ambientColor");
                 stat = dg.connect(src, dest);
                 Util::checkMayaStatus(stat);
             }
             else
             {
-                src = materialPlug.child(AssetNodeAttributes::texturePath);
+                src = materialPlug.child(AssetNode::texturePath);
                 dest = MFnDependencyNode(fileNode).findPlug("fileTextureName");
                 stat = dg.connect(src, dest);
                 Util::checkMayaStatus(stat);
@@ -508,13 +508,13 @@ InstNodeGroup::updateConnections()
     try
     {
         // Connect the input points
-        src = plug.child(AssetNodeAttributes::instancerData);
+        src = plug.child(AssetNode::instancerData);
         dest = MFnDependencyNode(instancerNode).findPlug("inputPoints");
         stat = dg.connect(src, dest);
         Util::checkMayaStatus(stat);
 
         // Connect the instanced objects
-        MPlug instancedNames = plug.child(AssetNodeAttributes::instancedObjectNames);
+        MPlug instancedNames = plug.child(AssetNode::instancedObjectNames);
         int ionCount = instancedNames.numElements();
         for (int i=0; i<ionCount; i++)
         {

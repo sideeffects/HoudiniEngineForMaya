@@ -3,8 +3,8 @@
 #include <maya/MStringArray.h>
 #include <maya/MSceneMessage.h>
 
+#include "AssetNode.h"
 #include "AssetNodeMonitor.h"
-#include "common.h"
 #include "util.h"
 
 
@@ -116,7 +116,7 @@ void
 AssetNodeMonitor::attributeChangedCB(MNodeMessage::AttributeMessage msg, MPlug& plug,
         MPlug& otherPlug, void* clientData)
 {
-    if ((msg & MNodeMessage::kAttributeSet && plug != AssetNodeAttributes::fileNameAttr) ||
+    if ((msg & MNodeMessage::kAttributeSet && plug != AssetNode::fileNameAttr) ||
         (msg & MNodeMessage::kConnectionBroken) && (msg & MNodeMessage::kIncomingDirection))
     {
         cerr << "Attr changed: " << plug.name() << " //// " << plug.asFloat() << endl;

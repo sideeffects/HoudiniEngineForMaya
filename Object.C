@@ -5,7 +5,6 @@
 #include <maya/MFnArrayAttrsData.h>
 
 #include "Asset.h"
-#include "common.h"
 #include "GeometryObject.h"
 #include "InstancerObject.h"
 #include "Object.h"

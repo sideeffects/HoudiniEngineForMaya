@@ -20,7 +20,6 @@
 
 #include "AssetNode.h"
 #include "AssetNodeMonitor.h"
-#include "common.h"
 #include "MayaTypeID.h"
 #include "util.h"
 
@@ -39,44 +38,44 @@
         }
 
 MTypeId AssetNode::id(MayaTypeID_HoudiniAssetNode);
-MObject AssetNodeAttributes::fileNameAttr;
-MObject AssetNodeAttributes::parmsModified;
-MObject AssetNodeAttributes::timeInput;
+MObject AssetNode::fileNameAttr;
+MObject AssetNode::parmsModified;
+MObject AssetNode::timeInput;
 
-MObject AssetNodeAttributes::assetType;
+MObject AssetNode::assetType;
 
-MObject AssetNodeAttributes::output;
-MObject AssetNodeAttributes::objects;
+MObject AssetNode::output;
+MObject AssetNode::objects;
 
-MObject AssetNodeAttributes::objectName;
-MObject AssetNodeAttributes::metaData;
-MObject AssetNodeAttributes::mesh;
+MObject AssetNode::objectName;
+MObject AssetNode::metaData;
+MObject AssetNode::mesh;
 
-MObject AssetNodeAttributes::transform;
-MObject AssetNodeAttributes::translateAttr;
-MObject AssetNodeAttributes::translateAttrX;
-MObject AssetNodeAttributes::translateAttrY;
-MObject AssetNodeAttributes::translateAttrZ;
-MObject AssetNodeAttributes::rotateAttr;
-MObject AssetNodeAttributes::rotateAttrX;
-MObject AssetNodeAttributes::rotateAttrY;
-MObject AssetNodeAttributes::rotateAttrZ;
-MObject AssetNodeAttributes::scaleAttr;
-MObject AssetNodeAttributes::scaleAttrX;
-MObject AssetNodeAttributes::scaleAttrY;
-MObject AssetNodeAttributes::scaleAttrZ;
+MObject AssetNode::transform;
+MObject AssetNode::translateAttr;
+MObject AssetNode::translateAttrX;
+MObject AssetNode::translateAttrY;
+MObject AssetNode::translateAttrZ;
+MObject AssetNode::rotateAttr;
+MObject AssetNode::rotateAttrX;
+MObject AssetNode::rotateAttrY;
+MObject AssetNode::rotateAttrZ;
+MObject AssetNode::scaleAttr;
+MObject AssetNode::scaleAttrX;
+MObject AssetNode::scaleAttrY;
+MObject AssetNode::scaleAttrZ;
 
-MObject AssetNodeAttributes::material;
-MObject AssetNodeAttributes::materialExists;
-MObject AssetNodeAttributes::texturePath;
-MObject AssetNodeAttributes::ambientAttr;
-MObject AssetNodeAttributes::diffuseAttr;
-MObject AssetNodeAttributes::specularAttr;
-MObject AssetNodeAttributes::alphaAttr;
+MObject AssetNode::material;
+MObject AssetNode::materialExists;
+MObject AssetNode::texturePath;
+MObject AssetNode::ambientAttr;
+MObject AssetNode::diffuseAttr;
+MObject AssetNode::specularAttr;
+MObject AssetNode::alphaAttr;
 
-MObject AssetNodeAttributes::instancers;
-MObject AssetNodeAttributes::instancerData;
-MObject AssetNodeAttributes::instancedObjectNames;
+MObject AssetNode::instancers;
+MObject AssetNode::instancerData;
+MObject AssetNode::instancedObjectNames;
 
 
 void*
@@ -113,7 +112,7 @@ AssetNode::initialize()
 
     // file name
     // The name of the otl file we loaded.
-    AssetNodeAttributes::fileNameAttr = tAttr.create("fileName", "fn", MFnData::kString);
+    AssetNode::fileNameAttr = tAttr.create("fileName", "fn", MFnData::kString);
     tAttr.setStorable(true);
 
     // parms modified
@@ -121,31 +120,31 @@ AssetNode::initialize()
     // and because it's a Maya attr, it will get saved.  When we load back the file, 
     // if this attr is true, we know we are loading a previously modified asset as opposed
     // to instantiating a new asset.
-    AssetNodeAttributes::parmsModified = nAttr.create("parmsModified", "pm", MFnNumericData::kBoolean, false);
+    AssetNode::parmsModified = nAttr.create("parmsModified", "pm", MFnNumericData::kBoolean, false);
     nAttr.setStorable(true);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
 
     // time input
     // For time dpendence.
-    AssetNodeAttributes::timeInput = uAttr.create("inTime", "it", MTime());
+    AssetNode::timeInput = uAttr.create("inTime", "it", MTime());
     uAttr.setStorable(true);
     uAttr.setHidden(true);
 
     // asset type
     // This maps to the underlying Houdini asset type: OBJ, SOP, etc. (see HAPI_AssetType)
-    AssetNodeAttributes::assetType = nAttr.create("assetType", "typ", MFnNumericData::kInt);
+    AssetNode::assetType = nAttr.create("assetType", "typ", MFnNumericData::kInt);
     nAttr.setStorable(false);
     nAttr.setWritable(false);    
         
     //----------------------------------  instancer compound multi----------------------------------------------
     // instancer data
-    AssetNodeAttributes::instancerData = tAttr.create("instancerData", "idt", MFnData::kDynArrayAttrs);
+    AssetNode::instancerData = tAttr.create("instancerData", "idt", MFnData::kDynArrayAttrs);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     // instanced object names
-    AssetNodeAttributes::instancedObjectNames = tAttr.create("instancedObjectNames", "ion", MFnData::kString);
+    AssetNode::instancedObjectNames = tAttr.create("instancedObjectNames", "ion", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     tAttr.setArray(true);
@@ -153,9 +152,9 @@ AssetNode::initialize()
     cAttr.setUsesArrayDataBuilder(true);
 
     // instancers
-    AssetNodeAttributes::instancers = cAttr.create("instancers", "inst");
-    cAttr.addChild(AssetNodeAttributes::instancerData);
-    cAttr.addChild(AssetNodeAttributes::instancedObjectNames);
+    AssetNode::instancers = cAttr.create("instancers", "inst");
+    cAttr.addChild(AssetNode::instancerData);
+    cAttr.addChild(AssetNode::instancedObjectNames);
     cAttr.setStorable(false);
     cAttr.setWritable(false);
     cAttr.setArray(true);
@@ -165,117 +164,117 @@ AssetNode::initialize()
     //----------------------------------  objects compound multi------------------------------------------------
 
     // object name
-    AssetNodeAttributes::objectName = tAttr.create("objectName", "on", MFnData::kString);
+    AssetNode::objectName = tAttr.create("objectName", "on", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     // meta data
-    AssetNodeAttributes::metaData = tAttr.create("metaData", "md", MFnData::kIntArray);
+    AssetNode::metaData = tAttr.create("metaData", "md", MFnData::kIntArray);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     // mesh
-    AssetNodeAttributes::mesh = tAttr.create("mesh", "ms", MFnData::kMesh);
+    AssetNode::mesh = tAttr.create("mesh", "ms", MFnData::kMesh);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     // translate
-    AssetNodeAttributes::translateAttrX = uAttr.create("translateX", "tx", MFnUnitAttribute::kDistance);
+    AssetNode::translateAttrX = uAttr.create("translateX", "tx", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNodeAttributes::translateAttrY = uAttr.create("translateY", "ty", MFnUnitAttribute::kDistance);
+    AssetNode::translateAttrY = uAttr.create("translateY", "ty", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNodeAttributes::translateAttrZ = uAttr.create("translateZ", "tz", MFnUnitAttribute::kDistance);
+    AssetNode::translateAttrZ = uAttr.create("translateZ", "tz", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNodeAttributes::translateAttr = nAttr.create("translate", "t", AssetNodeAttributes::translateAttrX,
-            AssetNodeAttributes::translateAttrY, AssetNodeAttributes::translateAttrZ);
+    AssetNode::translateAttr = nAttr.create("translate", "t", AssetNode::translateAttrX,
+            AssetNode::translateAttrY, AssetNode::translateAttrZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // rotate
-    AssetNodeAttributes::rotateAttrX = uAttr.create("rotateX", "rx", MFnUnitAttribute::kAngle);
+    AssetNode::rotateAttrX = uAttr.create("rotateX", "rx", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNodeAttributes::rotateAttrY = uAttr.create("rotateY", "ry", MFnUnitAttribute::kAngle);
+    AssetNode::rotateAttrY = uAttr.create("rotateY", "ry", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNodeAttributes::rotateAttrZ = uAttr.create("rotateZ", "rz", MFnUnitAttribute::kAngle);
+    AssetNode::rotateAttrZ = uAttr.create("rotateZ", "rz", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNodeAttributes::rotateAttr = nAttr.create("rotate", "r", AssetNodeAttributes::rotateAttrX,
-            AssetNodeAttributes::rotateAttrY, AssetNodeAttributes::rotateAttrZ);
+    AssetNode::rotateAttr = nAttr.create("rotate", "r", AssetNode::rotateAttrX,
+            AssetNode::rotateAttrY, AssetNode::rotateAttrZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // scale
-    AssetNodeAttributes::scaleAttrX = nAttr.create("scaleX", "sx", MFnNumericData::kDouble, 1.0);
+    AssetNode::scaleAttrX = nAttr.create("scaleX", "sx", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    AssetNodeAttributes::scaleAttrY = nAttr.create("scaleY", "sy", MFnNumericData::kDouble, 1.0);
+    AssetNode::scaleAttrY = nAttr.create("scaleY", "sy", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    AssetNodeAttributes::scaleAttrZ = nAttr.create("scaleZ", "sz", MFnNumericData::kDouble, 1.0);
+    AssetNode::scaleAttrZ = nAttr.create("scaleZ", "sz", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    AssetNodeAttributes::scaleAttr = nAttr.create("scale", "s", AssetNodeAttributes::scaleAttrX,
-            AssetNodeAttributes::scaleAttrY, AssetNodeAttributes::scaleAttrZ);
+    AssetNode::scaleAttr = nAttr.create("scale", "s", AssetNode::scaleAttrX,
+            AssetNode::scaleAttrY, AssetNode::scaleAttrZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // transform
-    AssetNodeAttributes::transform = cAttr.create("transform", "xfs");
-    cAttr.addChild(AssetNodeAttributes::translateAttr);
-    cAttr.addChild(AssetNodeAttributes::rotateAttr);
-    cAttr.addChild(AssetNodeAttributes::scaleAttr);
+    AssetNode::transform = cAttr.create("transform", "xfs");
+    cAttr.addChild(AssetNode::translateAttr);
+    cAttr.addChild(AssetNode::rotateAttr);
+    cAttr.addChild(AssetNode::scaleAttr);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
     // material exists
-    AssetNodeAttributes::materialExists = nAttr.create("materialExists", "me", MFnNumericData::kBoolean, false);
+    AssetNode::materialExists = nAttr.create("materialExists", "me", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
     // material ambient
-    AssetNodeAttributes::ambientAttr = nAttr.createColor("ambientColor", "amb");
+    AssetNode::ambientAttr = nAttr.createColor("ambientColor", "amb");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // material diffuse
-    AssetNodeAttributes::diffuseAttr = nAttr.createColor("diffuseColor", "dif");
+    AssetNode::diffuseAttr = nAttr.createColor("diffuseColor", "dif");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // material specular
-    AssetNodeAttributes::specularAttr = nAttr.createColor("specularColor", "spe");
+    AssetNode::specularAttr = nAttr.createColor("specularColor", "spe");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // material alpha
-    AssetNodeAttributes::alphaAttr = nAttr.createColor("alphaColor", "alp");
+    AssetNode::alphaAttr = nAttr.createColor("alphaColor", "alp");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // texture path
-    AssetNodeAttributes::texturePath = tAttr.create("texturePath", "tp", MFnData::kString);
+    AssetNode::texturePath = tAttr.create("texturePath", "tp", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     // material
-    AssetNodeAttributes::material = cAttr.create("material", "mats");
-    cAttr.addChild(AssetNodeAttributes::materialExists);
-    cAttr.addChild(AssetNodeAttributes::ambientAttr);
-    cAttr.addChild(AssetNodeAttributes::diffuseAttr);
-    cAttr.addChild(AssetNodeAttributes::specularAttr);
-    cAttr.addChild(AssetNodeAttributes::alphaAttr);
-    cAttr.addChild(AssetNodeAttributes::texturePath);
+    AssetNode::material = cAttr.create("material", "mats");
+    cAttr.addChild(AssetNode::materialExists);
+    cAttr.addChild(AssetNode::ambientAttr);
+    cAttr.addChild(AssetNode::diffuseAttr);
+    cAttr.addChild(AssetNode::specularAttr);
+    cAttr.addChild(AssetNode::alphaAttr);
+    cAttr.addChild(AssetNode::texturePath);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
-    AssetNodeAttributes::objects = cAttr.create("objects", "objs");
-    cAttr.addChild(AssetNodeAttributes::objectName);
-    cAttr.addChild(AssetNodeAttributes::metaData);
-    cAttr.addChild(AssetNodeAttributes::mesh);
-    cAttr.addChild(AssetNodeAttributes::transform);
-    cAttr.addChild(AssetNodeAttributes::material);
+    AssetNode::objects = cAttr.create("objects", "objs");
+    cAttr.addChild(AssetNode::objectName);
+    cAttr.addChild(AssetNode::metaData);
+    cAttr.addChild(AssetNode::mesh);
+    cAttr.addChild(AssetNode::transform);
+    cAttr.addChild(AssetNode::material);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
@@ -285,9 +284,9 @@ AssetNode::initialize()
     //------------------------------- END  objects compound multi------------------------------------------------
 
     // output
-    AssetNodeAttributes::output = cAttr.create("output", "out");    
-    cAttr.addChild(AssetNodeAttributes::objects);
-    cAttr.addChild(AssetNodeAttributes::instancers);
+    AssetNode::output = cAttr.create("output", "out");    
+    cAttr.addChild(AssetNode::objects);
+    cAttr.addChild(AssetNode::instancers);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     
@@ -295,16 +294,16 @@ AssetNode::initialize()
     cAttr.setStorable(false);
 
     // add the static attributes to the node
-    addAttribute(AssetNodeAttributes::fileNameAttr);
-    addAttribute(AssetNodeAttributes::parmsModified);
-    addAttribute(AssetNodeAttributes::timeInput);
-    addAttribute(AssetNodeAttributes::assetType);
-    addAttribute(AssetNodeAttributes::output);
+    addAttribute(AssetNode::fileNameAttr);
+    addAttribute(AssetNode::parmsModified);
+    addAttribute(AssetNode::timeInput);
+    addAttribute(AssetNode::assetType);
+    addAttribute(AssetNode::output);
 
     
     //most of the dependencies between attrs are set via the AssetNode::setDependentsDirty() call
     //this call may not even be necessary.
-    attributeAffects(AssetNodeAttributes::fileNameAttr, AssetNodeAttributes::output);
+    attributeAffects(AssetNode::fileNameAttr, AssetNode::output);
     
 
     return MS::kSuccess;
@@ -355,50 +354,50 @@ MStatus
 AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlugArray& affectedPlugs)
 {
-    if (plugBeingDirtied == AssetNodeAttributes::fileNameAttr)
+    if (plugBeingDirtied == AssetNode::fileNameAttr)
         return MS::kSuccess;
 
     myDirtyParmAttribute = plugBeingDirtied.attribute();
     //cerr << "plugBeingDirtied: " << plugBeingDirtied.name();
     //cerr << "name: " << dirtyParmPlug->name();
     
-    affectedPlugs.append(MPlug(thisMObject(), AssetNodeAttributes::output));
+    affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
 
-    MPlug objectsPlug(thisMObject(), AssetNodeAttributes::objects);
-    MPlug instancersPlug(thisMObject(), AssetNodeAttributes::instancers);
+    MPlug objectsPlug(thisMObject(), AssetNode::objects);
+    MPlug instancersPlug(thisMObject(), AssetNode::instancers);
 
     for ( unsigned int i = 0; i < objectsPlug.numElements(); ++i )
     {
         MPlug elemPlug = objectsPlug[ i ];
 
-        MPlug objectNamePlug = elemPlug.child(AssetNodeAttributes::objectName);
-        MPlug metaDataPlug = elemPlug.child(AssetNodeAttributes::metaData);
-        MPlug meshPlug = elemPlug.child(AssetNodeAttributes::mesh);
-        MPlug transformPlug = elemPlug.child(AssetNodeAttributes::transform);
-        MPlug materialPlug = elemPlug.child(AssetNodeAttributes::material);
+        MPlug objectNamePlug = elemPlug.child(AssetNode::objectName);
+        MPlug metaDataPlug = elemPlug.child(AssetNode::metaData);
+        MPlug meshPlug = elemPlug.child(AssetNode::mesh);
+        MPlug transformPlug = elemPlug.child(AssetNode::transform);
+        MPlug materialPlug = elemPlug.child(AssetNode::material);
 
 
         affectedPlugs.append(objectNamePlug);
         affectedPlugs.append(metaDataPlug);
         affectedPlugs.append(meshPlug);
 
-        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::translateAttr));
-        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::rotateAttr));
-        affectedPlugs.append(transformPlug.child(AssetNodeAttributes::scaleAttr));
+        affectedPlugs.append(transformPlug.child(AssetNode::translateAttr));
+        affectedPlugs.append(transformPlug.child(AssetNode::rotateAttr));
+        affectedPlugs.append(transformPlug.child(AssetNode::scaleAttr));
 
-        affectedPlugs.append(materialPlug.child(AssetNodeAttributes::materialExists));
-        affectedPlugs.append(materialPlug.child(AssetNodeAttributes::texturePath));
-        affectedPlugs.append(materialPlug.child(AssetNodeAttributes::ambientAttr));
-        affectedPlugs.append(materialPlug.child(AssetNodeAttributes::diffuseAttr));
-        affectedPlugs.append(materialPlug.child(AssetNodeAttributes::specularAttr));
-	affectedPlugs.append(materialPlug.child(AssetNodeAttributes::alphaAttr));
+        affectedPlugs.append(materialPlug.child(AssetNode::materialExists));
+        affectedPlugs.append(materialPlug.child(AssetNode::texturePath));
+        affectedPlugs.append(materialPlug.child(AssetNode::ambientAttr));
+        affectedPlugs.append(materialPlug.child(AssetNode::diffuseAttr));
+        affectedPlugs.append(materialPlug.child(AssetNode::specularAttr));
+	affectedPlugs.append(materialPlug.child(AssetNode::alphaAttr));
     }
 
     for ( unsigned int i = 0; i < instancersPlug.numElements(); ++i )
     {
 	MPlug elemPlug = instancersPlug[ i ];
-	MPlug instancerDataPlug = elemPlug.child( AssetNodeAttributes::instancerData );
-	MPlug instancedObjectNamesPlug = elemPlug.child( AssetNodeAttributes::instancedObjectNames );
+	MPlug instancerDataPlug = elemPlug.child( AssetNode::instancerData );
+	MPlug instancedObjectNamesPlug = elemPlug.child( AssetNode::instancedObjectNames );
 
 	affectedPlugs.append( instancerDataPlug );
 
@@ -512,7 +511,7 @@ AssetNode::updateAttrValues(MDataBlock& data)
 
     // mark parms as modified, so that if scene is saved we know to
     // use the maya attributes to set parm values in Houdini
-    MPlug p(thisMObject(), AssetNodeAttributes::parmsModified);
+    MPlug p(thisMObject(), AssetNode::parmsModified);
     MDataHandle h = data.outputValue(p);
     h.set(true);
 
@@ -680,7 +679,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     // load otl
     if ( myAssetChanged )
     {
-        MPlug p(thisMObject(), AssetNodeAttributes::fileNameAttr);
+        MPlug p(thisMObject(), AssetNode::fileNameAttr);
         MDataHandle h = data.inputValue(p);
         MString filePath = h.asString();
 
@@ -719,7 +718,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
     //check if the user has manipulated this node, if so, then push modified
     //parms into Houdini
-    MPlug parmsModifiedPlug(thisMObject(), AssetNodeAttributes::parmsModified);
+    MPlug parmsModifiedPlug(thisMObject(), AssetNode::parmsModified);
     MDataHandle parmsModifiedHandle = data.inputValue(parmsModifiedPlug);
     if (parmsModifiedHandle.asBool())
         setParmValues(data);
@@ -727,7 +726,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     //updates Maya attrs from Houdini
     updateAttrValues(data);
 
-    MPlug outputPlug(thisMObject(), AssetNodeAttributes::output);
+    MPlug outputPlug(thisMObject(), AssetNode::output);
     myAsset->compute(outputPlug, data);
 
     cerr << "end compute #################################### " << plug.name() << endl;

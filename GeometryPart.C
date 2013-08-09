@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "Asset.h"
-#include "common.h"
+#include "AssetNode.h"
 #include "GeometryPart.h"
 #include "util.h"
 
@@ -240,11 +240,11 @@ GeometryPart::compute(MDataHandle& handle)
     update();
 
     // Get plugs
-    MDataHandle objectNameHandle = handle.child(AssetNodeAttributes::objectName);
-    MDataHandle metaDataHandle = handle.child(AssetNodeAttributes::metaData);
-    MDataHandle meshHandle = handle.child(AssetNodeAttributes::mesh);
-    //MDataHandle transformHandle = handle.child(AssetNodeAttributes::transform);
-    MDataHandle materialHandle = handle.child(AssetNodeAttributes::material);
+    MDataHandle objectNameHandle = handle.child(AssetNode::objectName);
+    MDataHandle metaDataHandle = handle.child(AssetNode::metaData);
+    MDataHandle meshHandle = handle.child(AssetNode::mesh);
+    //MDataHandle transformHandle = handle.child(AssetNode::transform);
+    MDataHandle materialHandle = handle.child(AssetNode::material);
 
     // Don't output mesh for degenerate geos
     if ( myPartInfo.pointCount == 0 || myPartInfo.faceCount == 0|| myPartInfo.vertexCount == 0)
@@ -330,12 +330,12 @@ void
 GeometryPart::updateMaterial(MDataHandle& handle)
 {
     cerr << "Update material: " << myPartName << endl;
-    MDataHandle matExistsHandle = handle.child(AssetNodeAttributes::materialExists);
-    MDataHandle ambientHandle = handle.child(AssetNodeAttributes::ambientAttr);
-    MDataHandle diffuseHandle = handle.child(AssetNodeAttributes::diffuseAttr);
-    MDataHandle specularHandle = handle.child(AssetNodeAttributes::specularAttr);
-    MDataHandle alphaHandle = handle.child(AssetNodeAttributes::alphaAttr);
-    MDataHandle texturePathHandle = handle.child(AssetNodeAttributes::texturePath);
+    MDataHandle matExistsHandle = handle.child(AssetNode::materialExists);
+    MDataHandle ambientHandle = handle.child(AssetNode::ambientAttr);
+    MDataHandle diffuseHandle = handle.child(AssetNode::diffuseAttr);
+    MDataHandle specularHandle = handle.child(AssetNode::specularAttr);
+    MDataHandle alphaHandle = handle.child(AssetNode::alphaAttr);
+    MDataHandle texturePathHandle = handle.child(AssetNode::texturePath);
 
     if ( myPartInfo.materialId < 0)
     {

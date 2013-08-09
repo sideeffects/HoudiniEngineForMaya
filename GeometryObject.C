@@ -5,7 +5,7 @@
 #include <maya/MFnArrayAttrsData.h>
 
 #include "Asset.h"
-#include "common.h"
+#include "AssetNode.h"
 #include "GeometryObject.h"
 #include "GeometryPart.h"
 #include "util.h"
@@ -114,7 +114,7 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
             {
                 if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
                 {
-                    MDataHandle t = h.child(AssetNodeAttributes::transform);
+                    MDataHandle t = h.child(AssetNode::transform);
                     updateTransform(t);
                 }
                 cerr << *index << " index++: " + myParts[i].myPartName << endl;
@@ -133,7 +133,7 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
                 MDataHandle h = builder->addElement(*index);
                 if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
                 {
-                    MDataHandle t = h.child(AssetNodeAttributes::transform);
+                    MDataHandle t = h.child(AssetNode::transform);
                     updateTransform(t);
                 }
                 (*index)++;
@@ -149,20 +149,20 @@ MStatus
 GeometryObject::setClean(MPlug& plug, MDataBlock& data)
 {
     data.setClean(plug);
-    data.setClean(plug.child(AssetNodeAttributes::mesh));
-    data.setClean(plug.child(AssetNodeAttributes::objectName));
+    data.setClean(plug.child(AssetNode::mesh));
+    data.setClean(plug.child(AssetNode::objectName));
 
-    MPlug transformPlug = plug.child(AssetNodeAttributes::transform);
-    data.setClean(transformPlug.child(AssetNodeAttributes::translateAttr));
-    data.setClean(transformPlug.child(AssetNodeAttributes::rotateAttr));
-    data.setClean(transformPlug.child(AssetNodeAttributes::scaleAttr));
+    MPlug transformPlug = plug.child(AssetNode::transform);
+    data.setClean(transformPlug.child(AssetNode::translateAttr));
+    data.setClean(transformPlug.child(AssetNode::rotateAttr));
+    data.setClean(transformPlug.child(AssetNode::scaleAttr));
 
-    MPlug materialPlug = plug.child(AssetNodeAttributes::material);
-    data.setClean(materialPlug.child(AssetNodeAttributes::materialExists));
-    data.setClean(materialPlug.child(AssetNodeAttributes::ambientAttr));
-    data.setClean(materialPlug.child(AssetNodeAttributes::diffuseAttr));
-    data.setClean(materialPlug.child(AssetNodeAttributes::specularAttr));
-    data.setClean(materialPlug.child(AssetNodeAttributes::texturePath));
+    MPlug materialPlug = plug.child(AssetNode::material);
+    data.setClean(materialPlug.child(AssetNode::materialExists));
+    data.setClean(materialPlug.child(AssetNode::ambientAttr));
+    data.setClean(materialPlug.child(AssetNode::diffuseAttr));
+    data.setClean(materialPlug.child(AssetNode::specularAttr));
+    data.setClean(materialPlug.child(AssetNode::texturePath));
 
     return MS::kSuccess;
 }
@@ -172,9 +172,9 @@ GeometryObject::setClean(MPlug& plug, MDataBlock& data)
 void GeometryObject::updateTransform(MDataHandle& handle)
 {
     cerr << "Update transform: " << getName() << endl;
-    MDataHandle translateHandle = handle.child(AssetNodeAttributes::translateAttr);
-    MDataHandle rotateHandle = handle.child(AssetNodeAttributes::rotateAttr);
-    MDataHandle scaleHandle = handle.child(AssetNodeAttributes::scaleAttr);
+    MDataHandle translateHandle = handle.child(AssetNode::translateAttr);
+    MDataHandle rotateHandle = handle.child(AssetNode::rotateAttr);
+    MDataHandle scaleHandle = handle.child(AssetNode::scaleAttr);
 
     HAPI_GetObjectTransforms( myAssetId, 5, &myTransformInfo, myObjectId, 1 );
     //transformInfo = objectControl->getTransformInfo(objectId);

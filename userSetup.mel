@@ -1,24 +1,8 @@
 print ":::::::: Initializing Houdini Plugin Scripts :::::::::";
 
-menu -l "Houdini Assets" -p MayaWindow;
-    menuItem -l "Load Houdini Asset..." -c "loadOTLMenuClick";
-	menuItem -l "HAPI Debug Window" -c "hapiDebugWindowMenuClick";
-
 scriptJob -event "SelectionChanged" "houdiniPluginOnSelectionChanged";
 
 
-global proc hapiDebugWindowMenuClick()
-{
-	hapiDebugWindow();
-}
-
-global proc loadOTLMenuClick()
-{
-    string $filter = "Houdini Digital Assets (*.otl);;All Files (*.*)";
-    string $results[] = `fileDialog2 -cap "Load Houdini Asset" -okc "Open" -fileFilter $filter -fm 1`;
-    if (size($results) > 0)
-        hAsset -load $results[0];
-}
 
 
 //This whole ugliness with callbacks on selection changed 

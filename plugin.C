@@ -11,6 +11,9 @@ initializePlugin(MObject obj)
     MStatus status;
     MFnPlugin plugin(obj, "Side Effects", "1.0", "Any");
     
+    status = plugin.registerUI("hAssetCreateUI", "hAssetDeleteUI");
+    Util::printMayaStatus(status);
+
     status = plugin.registerNode("hAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
     Util::printMayaStatus(status);
 

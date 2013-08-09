@@ -96,7 +96,7 @@ global proc hapiDebugWindow()
 	
 	menu -label "File" -tearOff true;    
     menuItem -label "Save Current Houdini Scene..." -c "saveHipFile";
-	menuItem -label "Load Houdini Asset..." -c "loadOTLMenuClick";       
+	menuItem -label "Load Houdini Asset..." -c "hAsset_loadOTLMenuClick";
 	menu -label "Help" -helpMenu true;
 		menuItem -label "About..." -c "hapiAboutBox";
 	

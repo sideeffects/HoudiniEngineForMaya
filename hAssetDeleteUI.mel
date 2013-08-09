@@ -1,0 +1,7 @@
+global proc hAssetDeleteUI()
+{
+    if(`menu -q -exists hAssetMenu`)
+    {
+	deleteUI -menu hAssetMenu;
+    }
+}

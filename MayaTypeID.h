@@ -1,5 +1,5 @@
-#ifndef MAYATYPEID_H
-#define MAYATYPEID_H
+#ifndef __MayaTypeID_h__
+#define __MayaTypeID_h__
 
 // Inside Maya, the type IDs are used to identify nodes and dependency graph
 // data. So when we create custom nodes and data in any Maya plugins, they must

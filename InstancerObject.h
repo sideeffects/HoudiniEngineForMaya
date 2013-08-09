@@ -1,5 +1,5 @@
-#ifndef INSTANCER_OBJECT_H
-#define INSTANCER_OBJECT_H
+#ifndef __InstancerObject_h__
+#define __InstancerObject_h__
 
 //#include <Maya/MIntArray.h>
 

@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef __util_h__
+#define __util_h__
 
 #include <maya/MString.h>
 #include <maya/MIntArray.h>

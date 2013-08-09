@@ -1,5 +1,5 @@
-#ifndef GEOMETRY_OBJECT_H
-#define GEOMETRY_OBJECT_H
+#ifndef __GeometryObject_h__
+#define __GeometryObject_h__
 
 #include "GeometryPart.h"
 #include "Object.h"

@@ -1,5 +1,5 @@
-#ifndef ASSET_MANAGER_H
-#define ASSET_MANAGER_H
+#ifndef __AssetManager_h__
+#define __AssetManager_h__
 
 #include <maya/MString.h>
 #include <maya/MPlug.h>

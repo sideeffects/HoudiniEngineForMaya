@@ -1,5 +1,5 @@
-#ifndef GEOMETRY_PART_H
-#define GEOMETRY_PART_H
+#ifndef __GeometryPart_h__
+#define __GeometryPart_h__
 
 class GeometryPart
 {

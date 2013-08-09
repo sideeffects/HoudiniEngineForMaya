@@ -1,5 +1,5 @@
-#ifndef OBJECT_H
-#define OBJECT_H
+#ifndef __Object_h__
+#define __Object_h__
 
 #include <maya/MStatus.h>
 #include <maya/MFloatArray.h>

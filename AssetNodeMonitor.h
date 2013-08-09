@@ -1,5 +1,5 @@
-#ifndef ASSET_NODE_MONITOR_H
-#define ASSET_NODE_MONITOR_H
+#ifndef __AssetNodeMonitor_h__
+#define __AssetNodeMonitor_h__
 
 #include <maya/MObject.h>
 #include <maya/MPlug.h>

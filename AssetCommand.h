@@ -1,5 +1,5 @@
-#ifndef ASSET_COMMAND_H
-#define ASSET_COMMAND_H
+#ifndef __AssetCommand_h__
+#define __AssetCommand_h__
 
 #include <maya/MPxCommand.h>
 

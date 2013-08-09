@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef __common_h__
+#define __common_h__
 
 #include <maya/MObject.h>
 

@@ -1,5 +1,5 @@
-#ifndef ASSET_H
-#define ASSET_H
+#ifndef __Asset_h__
+#define __Asset_h__
 
 #include <maya/MObjectArray.h>
 #include <maya/MObject.h>

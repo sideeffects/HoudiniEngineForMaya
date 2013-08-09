@@ -1,5 +1,5 @@
-#ifndef ASSET_NODE_H
-#define ASSET_NODE_H
+#ifndef __AssetNode_h__
+#define __AssetNode_h__
 
 
 #include <string.h>

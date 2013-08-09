@@ -12,24 +12,24 @@ scriptJob -event "SelectionChanged" "houdiniPluginOnSelectionChanged";
 //Attribute editors are messed up, and can only be fixed by a call to
 //refreshEditorTemplates.
 
-global string $gLastSelectedHAsset = "";
+global string $gLastSelectedHoudiniAsset = "";
 
 global proc houdiniPluginOnSelectionChanged()
 {
-    global string $gLastSelectedHAsset;
-    int $foundHAsset = 0;
-    int $foundDiffHAsset = 0;
+    global string $gLastSelectedHoudiniAsset;
+    int $foundHoudiniAsset = 0;
+    int $foundDiffHoudiniAsset = 0;
     string $currSel[] = `ls -sl`;
     for( $ii = 0; $ii < size($currSel); $ii++)
     {
         string $sel = $currSel[$ii];
-        if(`nodeType $sel` == "hAsset")
+        if(`nodeType $sel` == "houdiniAsset")
         {
-            $foundHAsset = 1;
-            if( $sel != $gLastSelectedHAsset )
+            $foundHoudiniAsset = 1;
+            if( $sel != $gLastSelectedHoudiniAsset )
             {
-                $foundDiffHAsset = 1;
-                $gLastSelectedHAsset = $sel;
+                $foundDiffHoudiniAsset = 1;
+                $gLastSelectedHoudiniAsset = $sel;
             }
             break;
         }
@@ -38,24 +38,24 @@ global proc houdiniPluginOnSelectionChanged()
         for( $jj = 0; $jj < size($connections); $jj++)
         {
             string $conn = $connections[$jj];
-            if(`nodeType $conn` == "hAsset")
+            if(`nodeType $conn` == "houdiniAsset")
             {
-                $foundHAsset = 1;
+                $foundHoudiniAsset = 1;
 
-                if( $conn != $gLastSelectedHAsset )
+                if( $conn != $gLastSelectedHoudiniAsset )
                 {
-                    $foundDiffHAsset = 1;
-                    $gLastSelectedHAsset = $conn;
+                    $foundDiffHoudiniAsset = 1;
+                    $gLastSelectedHoudiniAsset = $conn;
                 }
 
                 break;
             }
         }
 
-        if($foundHAsset)
+        if($foundHoudiniAsset)
             break;
         
     }
-    if($foundHAsset && $foundDiffHAsset)
+    if($foundHoudiniAsset && $foundDiffHoudiniAsset)
         refreshEditorTemplates;
 }

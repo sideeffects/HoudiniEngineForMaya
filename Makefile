@@ -1,7 +1,7 @@
 MAYA_DIR = /usr/autodesk/maya2014-x64
 HOUDINI_INCLUDES = -I$(HI)/HAPI -I$(HI) -I$(HC)/include -I$(HC)/include/zlib -I$(HC)/include/OpenEXR
 
-LIBNAME = asset
+LIBNAME = houdiniEngine
 
 SOSUFFIX = so
 SONAME = $(LIBNAME).$(SOSUFFIX)

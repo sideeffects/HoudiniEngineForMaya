@@ -63,7 +63,7 @@ AssetManager::init()
     {
 
         // Create the asset node
-        myAssetNode = dg.createNode("hAsset", &stat);
+        myAssetNode = dg.createNode("houdiniAsset", &stat);
         Util::checkMayaStatus(stat);
         MPlug plug( myAssetNode, AssetNode::fileNameAttr);
         stat = dg.newPlugValueString(plug, myFilePath);

@@ -82,7 +82,7 @@ global proc string makeAsset(string $fileName) {
     string $tmpStr = $tmpArray[size($tmpArray)-1];
     $tmpArray = stringToStringArray($tmpStr, ".");
     string $asset = $tmpArray[0] + "_asset";
-    $asset = `createNode hAsset -n $asset`;
+    $asset = `createNode houdiniAsset -n $asset`;
     setAttr -type "string" ($asset + ".fileName") $fileName;
     setAttr -lock on ($asset + ".fileName");
 

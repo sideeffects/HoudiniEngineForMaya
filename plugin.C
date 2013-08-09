@@ -54,13 +54,13 @@ initializePlugin(MObject obj)
 	return MStatus::kFailure;
     }
 
-    status = plugin.registerUI("hAssetCreateUI", "hAssetDeleteUI");
+    status = plugin.registerUI("houdiniEngineCreateUI", "houdiniEngineDeleteUI");
     Util::printMayaStatus(status);
 
-    status = plugin.registerNode("hAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
+    status = plugin.registerNode("houdiniAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
     Util::printMayaStatus(status);
 
-    status = plugin.registerCommand("hAsset", AssetCommand::creator, AssetCommand::newSyntax);
+    status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);
     Util::printMayaStatus(status);
 
     return status;
@@ -76,7 +76,7 @@ uninitializePlugin(MObject obj)
     status = plugin.deregisterNode(AssetNode::id);
     Util::printMayaStatus(status);
 
-    status = plugin.deregisterCommand("hAsset");
+    status = plugin.deregisterCommand("houdiniAsset");
     Util::printMayaStatus(status);
 
     return status;

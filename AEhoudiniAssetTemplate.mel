@@ -35,7 +35,7 @@ proc buildAttrTree(string $nodeName, string $attr)
 }
 
 
-global proc AEhAssetSetInputToSelection(string $textField, string $inputAttr)
+global proc AEhoudiniAssetSetInputToSelection(string $textField, string $inputAttr)
 {
     string $buf[] = `ls -sl`;
 
@@ -43,7 +43,7 @@ global proc AEhAssetSetInputToSelection(string $textField, string $inputAttr)
     {
         if (`objExists $buf[0]` && `nodeType $buf[0]` == "mesh")
         {
-            AEhAssetSetInput($textField, $inputAttr, $buf[0]);
+            AEhoudiniAssetSetInput($textField, $inputAttr, $buf[0]);
             return;
         }
     }
@@ -53,23 +53,23 @@ global proc AEhAssetSetInputToSelection(string $textField, string $inputAttr)
     string $meshes[] = `ls -sl -typ mesh`;
  
     if (size($sel) == 1)
-        AEhAssetSetInput($textField, $inputAttr, $sel[0]);
+        AEhoudiniAssetSetInput($textField, $inputAttr, $sel[0]);
 }
 
 
-global proc AEhAssetSetInputToText(string $textField, string $inputAttr)
+global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
 {    
     string $str = `textField -q -text $textField`;
 
     if (!`objExists $str`)
     {
-        AEhAssetSetInput($textField, $inputAttr, $str);
+        AEhoudiniAssetSetInput($textField, $inputAttr, $str);
         return;
     }
 
     if (`nodeType $str` == "mesh")
     {
-        AEhAssetSetInput($textField, $inputAttr, $str);
+        AEhoudiniAssetSetInput($textField, $inputAttr, $str);
         return;
     }
 
@@ -77,7 +77,7 @@ global proc AEhAssetSetInputToText(string $textField, string $inputAttr)
     string $sel[] = `ls -typ mesh $buf2`;
     if (size($sel) == 1)
     {
-        AEhAssetSetInput($textField, $inputAttr, $sel[0]);
+        AEhoudiniAssetSetInput($textField, $inputAttr, $sel[0]);
         return;
     }
 
@@ -85,7 +85,7 @@ global proc AEhAssetSetInputToText(string $textField, string $inputAttr)
 }
 
 
-global proc AEhAssetSetInput(string $textField, string $inputAttr, string $str)
+global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string $str)
 {
     if ($str == "")
     {
@@ -109,7 +109,7 @@ global proc AEhAssetSetInput(string $textField, string $inputAttr, string $str)
             {
                 // TODO: Assume that assets with inputs are SOPs, and that
                 // Only one object output from SOP assets
-                if (`nodeType $histNode` == "hAsset")
+                if (`nodeType $histNode` == "houdiniAsset")
                 {
                     // *** A bit of a hack, plugNode just takes a substring of 
                     // everything before the first '.', even if the substring is
@@ -136,7 +136,7 @@ global proc AEhAssetSetInput(string $textField, string $inputAttr, string $str)
 }
 
 
-global proc AEhAssetInputsNew(string $attrFullName)
+global proc AEhoudiniAssetInputsNew(string $attrFullName)
 {
 
     string $buffer[];
@@ -146,7 +146,7 @@ global proc AEhAssetInputsNew(string $attrFullName)
 
     if( `attributeExists $attrName $nodeName` == 0)
     {
-        print("Warning: nodename= " + $nodeName + " attrName=" + $attrName + " Not found in AEhAssetInputsNew\n");
+        print("Warning: nodename= " + $nodeName + " attrName=" + $attrName + " Not found in AEhoudiniAssetInputsNew\n");
         return;
     }
 
@@ -169,26 +169,26 @@ global proc AEhAssetInputsNew(string $attrFullName)
             -columnAttach 3 "left"  2;
             text -label $niceName;
             string $inputTextField = `textField -aie true`;
-            AEhAssetSetInput $inputTextField ($nodeName + "." + $child) " ";
+            AEhoudiniAssetSetInput $inputTextField ($nodeName + "." + $child) " ";
             textField -edit -enterCommand
-                ("AEhAssetSetInputToText \"" + $inputTextField + "\" \"" 
+                ("AEhoudiniAssetSetInputToText \"" + $inputTextField + "\" \"" 
                 + ($nodeName + "." + $child) + "\"") $inputTextField;
             button -label "Set to Selection" 
-                -c ("AEhAssetSetInputToSelection \"" + $inputTextField + "\" \"" 
+                -c ("AEhoudiniAssetSetInputToSelection \"" + $inputTextField + "\" \"" 
                 + ($nodeName + "." + $child) + "\"");
     }
 
 }
 
 
-global proc AEhAssetInputsReplace(string $attrFullName)
+global proc AEhoudiniAssetInputsReplace(string $attrFullName)
 {
     deleteUI "inputsLayout";
-    AEhAssetInputsNew($attrFullName);
+    AEhoudiniAssetInputsNew($attrFullName);
 }
 
 
-global proc AEhAssetTemplate( string $nodeName )
+global proc AEhoudiniAssetTemplate( string $nodeName )
 {
     editorTemplate -addControl "fileName";
     editorTemplate -addControl "dummyMesh";
@@ -201,7 +201,7 @@ global proc AEhAssetTemplate( string $nodeName )
     if ($inputAttr != "")
     {
         editorTemplate -beginLayout "Inputs" -collapse false;
-        editorTemplate -callCustom "AEhAssetInputsNew" "AEhAssetInputsReplace"
+        editorTemplate -callCustom "AEhoudiniAssetInputsNew" "AEhoudiniAssetInputsReplace"
             $inputAttr;
        
         editorTemplate -endLayout;

@@ -1,0 +1,7 @@
+global proc houdiniEngineDeleteUI()
+{
+    if(`menu -q -exists houdiniEngineMenu`)
+    {
+	deleteUI -menu houdiniEngineMenu;
+    }
+}

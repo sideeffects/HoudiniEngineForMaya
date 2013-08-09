@@ -3,14 +3,20 @@
 
 #include <maya/MPxCommand.h>
 
+#include <maya/MSyntax.h>
+
 class AssetCommand: public MPxCommand
 {
     enum AssetOperationType
     {
-	kOperationLoad = 0,
+	kOperationLoadOTL,
 	kOperationSaveHip,
 	kOperationInvalid
     };
+
+    public:
+	static void* creator();
+	static MSyntax newSyntax();
 
     public:
         AssetCommand();
@@ -21,7 +27,8 @@ class AssetCommand: public MPxCommand
 	MStatus undoIt();
         bool isUndoable() const;
 
-        static void* creator();
+    private:
+	MStatus parseArgs(const MArgList &args);
 
     private:
 	MString myAssetOtlPath;

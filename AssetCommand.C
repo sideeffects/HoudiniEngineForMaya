@@ -1,18 +1,41 @@
+#include <maya/MArgDatabase.h>
 #include <maya/MArgList.h>
 #include <maya/MStatus.h>
-#include <maya/MDGModifier.h>
-#include <maya/MFnMesh.h>
-#include <maya/MIntArray.h>
-#include <maya/MFloatPointArray.h>
 
 #include "AssetCommand.h"
 #include "AssetManager.h"
 #include "AssetNodeMonitor.h"
 #include "util.h"
 
-AssetCommand::AssetCommand()
+#define kLoadOTLFlag "-lo"
+#define kLoadOTLFlagLong "-loadOTL"
+#define kSaveHIPFlag "-sh"
+#define kSaveHIPFlagLong "-saveHIP"
+
+void* AssetCommand::creator()
 {
-    myOperationType = kOperationInvalid;
+    return new AssetCommand();
+}
+
+MSyntax
+AssetCommand::newSyntax()
+{
+    MSyntax syntax;
+
+    // -loadOTL load an otl file
+    // expected arguments: otl_file_name - the name of the otl file to load
+    CHECK_MSTATUS(syntax.addFlag(kLoadOTLFlag, kLoadOTLFlagLong, MSyntax::kString));
+
+    // -saveHIP saves the contents of the current Houdini scene as a hip file
+    // expected arguments: hip_file_name - the name of the hip file to save
+    CHECK_MSTATUS(syntax.addFlag(kSaveHIPFlag, kSaveHIPFlagLong, MSyntax::kString));
+
+    return syntax;
+}
+
+AssetCommand::AssetCommand() :
+    myOperationType(kOperationInvalid)
+{
 }
 
 
@@ -21,42 +44,60 @@ AssetCommand::~AssetCommand()
 }
 
 
-void* AssetCommand::creator()
+MStatus
+AssetCommand::parseArgs(const MArgList &args)
 {
-    return new AssetCommand();
-}
+    MStatus status;
+    MArgDatabase argData(syntax(), args, &status);
+    if(!status)
+    {
+	return status;
+    }
 
+    if(!(argData.isFlagSet(kLoadOTLFlag)
+		^ argData.isFlagSet(kSaveHIPFlag)))
+    {
+	displayError("Exactly one of these flags must be specified:\n"
+		kLoadOTLFlagLong "\n"
+		kSaveHIPFlagLong "\n");
+        return MStatus::kInvalidParameter;
+    }
+
+    if(argData.isFlagSet(kLoadOTLFlag))
+    {
+	myOperationType = kOperationLoadOTL;
+
+	status = argData.getFlagArgument(kLoadOTLFlag, 0, myAssetOtlPath);
+	if(!status)
+	{
+	    displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
+	    return status;
+	}
+    }
+
+    if(argData.isFlagSet(kSaveHIPFlag))
+    {
+	myOperationType = kOperationSaveHip;
+
+	status = argData.getFlagArgument(kSaveHIPFlag, 0, myHIPFilePath);
+	if(!status)
+	{
+	    displayError("Invalid argument for \"" kSaveHIPFlagLong "\".");
+	    return status;
+	}
+    }
+
+    return MStatus::kSuccess;
+}
 
 MStatus AssetCommand::doIt( const MArgList& args )
 {
-
     MStatus status;
-    for ( unsigned int ii = 0; ii < args.length(); ii++ )
+
+    status = parseArgs(args);
+    if(!status)
     {
-	// -load load an otl file
-	// expected arguments: otl_file_name - the name of the otl file to load
-        if ( MString( "-load" ) == args.asString( ii, &status )
-            && MS::kSuccess == status )
-        {
-	    myOperationType = kOperationLoad;
-	    myAssetOtlPath = args.asString( ++ii );
-	    
-        }
-	// -saveHip saves the contents of the current Houdini scene as a hip file
-	// expected arguments: hip_file_name - the name of the hip file to save
-        else if ( MString( "-saveHip" ) == args.asString( ii, &status )
-            && MS::kSuccess == status )
-        {
-	    myOperationType = kOperationSaveHip;
-	    myHIPFilePath = args.asString( ++ii );
-	}
-        else
-        {
-            MString msg = "Invalid flag: ";
-            msg += args.asString( ii );
-            displayError( msg );
-            return MS::kFailure;
-        }
+	return status;
     }
 
     return redoIt();
@@ -65,7 +106,7 @@ MStatus AssetCommand::doIt( const MArgList& args )
 
 MStatus AssetCommand::redoIt() 
 {
-    if( myOperationType == kOperationLoad )
+    if( myOperationType == kOperationLoadOTL )
     {
 	AssetManager* manager = AssetManager::createManager( myAssetOtlPath );
 	AssetNodeMonitor* monitor = new AssetNodeMonitor( manager );

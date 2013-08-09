@@ -13,8 +13,6 @@
 #include "GeometryPart.h"
 #include "util.h"
 
-using namespace std;
-
 GeometryPart::GeometryPart()
 {
 }
@@ -348,7 +346,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
         HAPI_NodeInfo materialNodeInfo;
         HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
 
-        vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);
+        std::vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);
         HAPI_GetParameters(myMaterialInfo.nodeId, &parms[0], 0, materialNodeInfo.parmCount);
 
         int ambientParmIndex = Util::findParm(parms, "ogl_amb");

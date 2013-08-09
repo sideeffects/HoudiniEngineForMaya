@@ -1,8 +1,8 @@
 #ifndef GEOMETRY_OBJECT_H
 #define GEOMETRY_OBJECT_H
 
-#include "object.h"
-#include "geometryPart.h"
+#include "GeometryPart.h"
+#include "Object.h"
 
 class GeometryObject: public Object
 {

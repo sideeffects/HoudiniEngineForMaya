@@ -7,7 +7,7 @@
 
 #include <HAPI.h>
 
-#include "object.h"
+#include "Object.h"
 
 class Asset {
     public:

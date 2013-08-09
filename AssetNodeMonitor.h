@@ -7,7 +7,7 @@
 #include <maya/MNodeMessage.h>
 #include <maya/MDGModifier.h>
 
-#include "assetManager.h"
+#include "AssetManager.h"
 
 class AssetNodeMonitor
 {

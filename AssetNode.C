@@ -18,10 +18,10 @@
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
-#include "MayaTypeID.h"
-#include "assetNode.h"
-#include "assetNodeMonitor.h"
+#include "AssetNode.h"
+#include "AssetNodeMonitor.h"
 #include "common.h"
+#include "MayaTypeID.h"
 #include "util.h"
 
 // MCheckStatus (Debugging tool)

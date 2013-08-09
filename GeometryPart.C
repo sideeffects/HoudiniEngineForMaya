@@ -8,10 +8,10 @@
 
 #include <vector>
 
-#include "asset.h"
-#include "geometryPart.h"
-#include "util.h"
+#include "Asset.h"
 #include "common.h"
+#include "GeometryPart.h"
+#include "util.h"
 
 using namespace std;
 

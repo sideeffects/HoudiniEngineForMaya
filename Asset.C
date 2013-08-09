@@ -9,11 +9,11 @@
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
-#include "asset.h"
-#include "util.h"
+#include "Asset.h"
 #include "common.h"
-#include "instancerObject.h"
-#include "geometryObject.h"
+#include "GeometryObject.h"
+#include "InstancerObject.h"
+#include "util.h"
 
 Asset::Asset(MString otlFilePath, MObject node)
     :myNode(node)

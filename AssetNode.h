@@ -16,7 +16,8 @@
 #include <maya/MNodeMessage.h>
 
 #include <HAPI.h>
-#include "asset.h"
+
+#include "Asset.h"
 
 // -------------------------------------------------------------------------------
 //Overall structure:

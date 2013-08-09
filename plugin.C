@@ -1,7 +1,7 @@
 #include <maya/MFnPlugin.h>
 
-#include "assetNode.h"
-#include "assetCommand.h"
+#include "AssetCommand.h"
+#include "AssetNode.h"
 #include "util.h"
 
 

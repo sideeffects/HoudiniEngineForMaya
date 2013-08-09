@@ -3,7 +3,7 @@
 
 //#include <Maya/MIntArray.h>
 
-#include "object.h"
+#include "Object.h"
 
 
 class InstancerObject: public Object

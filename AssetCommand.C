@@ -5,9 +5,9 @@
 #include <maya/MIntArray.h>
 #include <maya/MFloatPointArray.h>
 
-#include "assetCommand.h"
-#include "assetManager.h"
-#include "assetNodeMonitor.h"
+#include "AssetCommand.h"
+#include "AssetManager.h"
+#include "AssetNodeMonitor.h"
 #include "util.h"
 
 AssetCommand::AssetCommand()

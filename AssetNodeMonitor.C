@@ -3,9 +3,9 @@
 #include <maya/MStringArray.h>
 #include <maya/MSceneMessage.h>
 
-#include "assetNodeMonitor.h"
-#include "util.h"
+#include "AssetNodeMonitor.h"
 #include "common.h"
+#include "util.h"
 
 
 //=============================================================================

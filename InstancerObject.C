@@ -4,10 +4,10 @@
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
 
-#include "instancerObject.h"
-#include "asset.h"
-#include "util.h"
+#include "Asset.h"
 #include "common.h"
+#include "InstancerObject.h"
+#include "util.h"
 
 
 InstancerObject::InstancerObject() {}

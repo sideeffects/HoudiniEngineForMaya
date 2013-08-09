@@ -19,16 +19,16 @@ LDFLAGS += -Wl,-Bsymbolic -Wl,-rpath,$(HDSO)
 LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lFoundation -L$(HDSO) `python$(PYVER) $(SHM)/list_link_libs.py HAPI`
 
 CXXFILES = \
-	   assetNode.C \
-	   assetCommand.C \
-	   assetManager.C \
-	   asset.C \
-	   object.C \
+	   AssetNode.C \
+	   AssetCommand.C \
+	   AssetManager.C \
+	   Asset.C \
+	   Object.C \
 	   util.C \
-	   geometryObject.C \
-	   instancerObject.C \
-	   assetNodeMonitor.C \
-	   geometryPart.C \
+	   GeometryObject.C \
+	   InstancerObject.C \
+	   AssetNodeMonitor.C \
+	   GeometryPart.C \
 	   plugin.C
 
 OBJ_DIR = .obj

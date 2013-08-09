@@ -4,11 +4,11 @@
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
 
-#include "asset.h"
-#include "geometryObject.h"
-#include "geometryPart.h"
-#include "util.h"
+#include "Asset.h"
 #include "common.h"
+#include "GeometryObject.h"
+#include "GeometryPart.h"
+#include "util.h"
 
 GeometryObject::GeometryObject() {}
 

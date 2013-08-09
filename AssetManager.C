@@ -8,7 +8,7 @@
 #include <maya/MStatus.h>
 #include <maya/MGlobal.h>
 
-#include "assetManager.h"
+#include "AssetManager.h"
 #include "common.h"
 #include "util.h"
 

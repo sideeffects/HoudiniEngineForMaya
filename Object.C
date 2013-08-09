@@ -4,12 +4,12 @@
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
 
-#include "asset.h"
-#include "object.h"
-#include "instancerObject.h"
-#include "geometryObject.h"
-#include "util.h"
+#include "Asset.h"
 #include "common.h"
+#include "GeometryObject.h"
+#include "InstancerObject.h"
+#include "Object.h"
+#include "util.h"
 
 Object* 
 Object::createObject(int assetId, int objectId, Asset* objControl)

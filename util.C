@@ -272,13 +272,16 @@ Util::statusCheckLoop()
 	    {
 		MString statusStr = statusBuf;
 		updateProgressWindow( statusStr, percent );
-		delete[] statusBuf;
 #ifdef _WIN32
 		::Sleep( 100 );
 #endif
 
 	    }	    
 
+	    if(statusBuf)
+	    {
+		delete[] statusBuf;
+	    }
     }    
 
     if( showProgressWindow )

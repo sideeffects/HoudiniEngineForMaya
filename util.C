@@ -376,7 +376,7 @@ Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name)
     for (int i = 0; i < parms.size(); i++)
     {
 	MString current_parm_name = getString(parms[i].nameSH);
-	if(parms[i].isMultiParm)
+	if(parms[i].isChildOfMultiParm)
 	{
 	    current_parm_name = replaceString(current_parm_name, "#", MString() + parms[i].instanceNum);
 	}

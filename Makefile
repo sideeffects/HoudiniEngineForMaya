@@ -45,11 +45,10 @@ CXXFILES = \
 	   plugin.C
 
 OBJ_DIR = .obj
-DEP_DIR = .dep
 
 OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
 
-DEPFILES = $(patsubst %.C, $(DEP_DIR)/%.d, $(CXXFILES))
+DEPFILES = $(patsubst %.C, $(OBJ_DIR)/%.d, $(CXXFILES))
 
 # check build requirement
 CAN_BUILD := $(and \
@@ -68,20 +67,9 @@ $(SONAME): $(OBJFILES)
 
 $(OBJ_DIR)/%.o: %.C
 	@mkdir -p $(dir $(@))
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $(@) $(<)
+	$(CXX) -c -MMD -MP -MT $(@) $(CPPFLAGS) $(CXXFLAGS) -o $(@) $(<)
 
-$(DEP_DIR)/%.d: %.C
-	@echo generating dependency for $(<)
-	@mkdir -p $(dir $(@))
-	@$(CXX) -MM -MP -MT $(OBJ_DIR)/$(*).o $(CPPFLAGS) $(<) -o $(@)
-
-# if the build requirement isn't met, then we cannot even generate
-# dependencies, because that requires header files
-ifeq ($(CAN_BUILD), 1)
-ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPFILES)
-endif
-endif
 
 .PHONY: clean
 clean:

@@ -351,6 +351,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
 
         int ambientParmIndex = Util::findParm(parms, "ogl_amb");
         int diffuseParmIndex = Util::findParm(parms, "ogl_diff");
+        int alphaParmIndex = Util::findParm(parms, "ogl_alpha");
         int specularParmIndex = Util::findParm(parms, "ogl_spec");
         int texturePathSHParmIndex = Util::findParm(parms, "ogl_tex1");
         float valueHolder[4];
@@ -376,9 +377,13 @@ GeometryPart::updateMaterial(MDataHandle& handle)
 	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
 		    parms[diffuseParmIndex].floatValuesIndex, 4);
 	    diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+	}
 
-	    // Alpha component of the diffuse color.
-	    float alpha = 1 - valueHolder[3];
+	if(alphaParmIndex >= 0)
+	{
+	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
+		    parms[alphaParmIndex].floatValuesIndex, 1);
+	    float alpha = 1 - valueHolder[0];
 	    alphaHandle.set3Float(alpha, alpha, alpha);
 	}
         

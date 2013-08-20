@@ -24,8 +24,12 @@ LDLIBS += -L$(HDSO) -lHAPI
 CXXFLAGS += -m64 -pthread -pipe -fPIC -Wno-deprecated -fno-gnu-keywords
 LDFLAGS += -Wl,-Bsymbolic
 
-# debug flags
-CXXFLAGS += -O0 -g -gstabs+
+# debug/release flags
+ifeq ($(MAKETYPE),)
+    CXXFLAGS += -O0 -g -gstabs+
+else ifeq ($(MAKETYPE),Release)
+    CXXFLAGS += -O3
+endif
 
 CXXFILES = \
 	   AssetNode.C \

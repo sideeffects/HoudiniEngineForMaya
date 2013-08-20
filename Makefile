@@ -51,10 +51,16 @@ OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
 
 DEPFILES = $(patsubst %.C, $(DEP_DIR)/%.d, $(CXXFILES))
 
-ALL_TARGETS := $(shell if [ -d $(MAYA_DIR) ]; then echo $(SONAME); fi)
+# check build requirement
+CAN_BUILD := $(and \
+	$(realpath $(MAYA_DIR)), \
+	1)
 
 .PHONY: all
-all: $(ALL_TARGETS)
+all:
+ifeq ($(CAN_BUILD), 1)
+all: $(SONAME)
+endif
 
 $(SONAME): $(OBJFILES)
 	@mkdir -p $(dir $(@))
@@ -69,8 +75,12 @@ $(DEP_DIR)/%.d: %.C
 	@mkdir -p $(dir $(@))
 	@$(CXX) -MM -MP -MT $(OBJ_DIR)/$(*).o $(CPPFLAGS) $(<) -o $(@)
 
+# if the build requirement isn't met, then we cannot even generate
+# dependencies, because that requires header files
+ifeq ($(CAN_BUILD), 1)
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPFILES)
+endif
 endif
 
 .PHONY: clean

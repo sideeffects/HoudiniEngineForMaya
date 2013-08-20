@@ -21,12 +21,12 @@ LDFLAGS += -Wl,-rpath,$(HDSO)
 LDLIBS += -L$(HDSO) -lHAPI
 
 # general flags
-CXXFLAGS += -m64 -pthread -pipe -fPIC -Wno-deprecated -fno-gnu-keywords
+CXXFLAGS += -m64 -pthread -pipe -fPIC
 LDFLAGS += -Wl,-Bsymbolic
 
 # debug/release flags
 ifeq ($(MAKETYPE),)
-    CXXFLAGS += -O0 -g -gstabs+
+    CXXFLAGS += -g
 else ifeq ($(MAKETYPE),Release)
     CXXFLAGS += -O3
 endif

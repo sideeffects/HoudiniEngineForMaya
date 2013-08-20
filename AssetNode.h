@@ -15,7 +15,7 @@
 #include <maya/MDataBlock.h>
 #include <maya/MNodeMessage.h>
 
-#include <HAPI.h>
+#include <HAPI/HAPI.h>
 
 #include "Asset.h"
 

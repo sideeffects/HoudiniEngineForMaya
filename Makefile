@@ -16,9 +16,9 @@ CPPFLAGS += -D_BOOL -DREQUIRE_IOSTREAM
 LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lFoundation
 
 # Houdini flags
-CPPFLAGS += -I..
-LDFLAGS += -Wl,-rpath,$(HDSO)
-LDLIBS += -L$(HDSO) -lHAPI
+CPPFLAGS += -I$(HFS)/toolkit/include
+LDFLAGS += -Wl,-rpath,$(HFS)/dsolib
+LDLIBS += -L$(HFS)/dsolib -lHAPI
 
 # general flags
 CXXFLAGS += -m64 -pthread -pipe -fPIC

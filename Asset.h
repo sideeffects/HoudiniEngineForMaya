@@ -5,7 +5,7 @@
 #include <maya/MObject.h>
 #include <maya/MString.h>
 
-#include <HAPI.h>
+#include <HAPI/HAPI.h>
 
 #include "Object.h"
 

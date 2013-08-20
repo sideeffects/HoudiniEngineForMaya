@@ -2,6 +2,10 @@
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "util.h"
 
 //minimum cook time to show the progress bar, in milliseconds

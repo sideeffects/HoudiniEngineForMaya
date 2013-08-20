@@ -1,0 +1,70 @@
+#!/usr/bin/python
+# This script parses the "cl /showIncludes" output, and genearate a makefile
+# that can be used in Cygwin's make.
+
+import sys
+import subprocess
+
+object_file = sys.argv[1]
+
+object_extension_index = object_file.rfind(".")
+if object_extension_index < 0:
+    print >> sys.stderr, "Cannot find file extension: ", object_file
+    sys.exit(1)
+
+object_extension = object_file[object_extension_index:]
+if object_extension not in [".o"]:
+    print >> sys.stderr, "Invalid file extension: ", object_file
+    sys.exit(1)
+
+dep_file = "{}.{}".format(object_file[:object_extension_index], "d")
+
+# read all input
+include_message = "Note: including file: "
+include_message_length = len(include_message)
+
+include_files = []
+for line in sys.stdin:
+    if line.startswith(include_message):
+	include_files.append(line[include_message_length:].strip())
+    else:
+	print line
+
+def uniq(seq): 
+    seen = {}
+    result = []
+    for item in seq:
+	if item in seen:
+	    continue
+	seen[item] = 1
+	result.append(item)
+    return result
+
+# make the list unique
+include_files = uniq(include_files)
+
+# first, convert to short path to remove spaces
+cygpath_output = subprocess.Popen(
+	["cygpath", "-m", "-s"] + include_files,
+	stdout=subprocess.PIPE
+	).communicate()[0]
+include_files = cygpath_output.strip().split("\n")
+# then, convert to unix path
+cygpath_output = subprocess.Popen(
+	["cygpath", "-u"] + include_files,
+	stdout=subprocess.PIPE
+	).communicate()[0]
+include_files = cygpath_output.strip().split("\n")
+
+with open(dep_file, "w") as f:
+    # object file dependencies
+    f.write("{}: \\\n".format(object_file))
+    for include_file in include_files[:-1]:
+	f.write("\t{} \\\n".format(include_file))
+    f.write("\t{}\n".format(include_files[-1]))
+    f.write("\n")
+
+    # phony target for dependencies to workaround make errors when
+    # dependencies are removed
+    for include_file in include_files:
+	f.write("{}:\n".format(include_file))

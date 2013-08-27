@@ -12,7 +12,6 @@ class AssetCommand: public MPxCommand
     enum AssetOperationType
     {
 	kOperationSubCommand,
-	kOperationLoadOTL,
 	kOperationSaveHip,
 	kOperationInvalid
     };
@@ -34,7 +33,6 @@ class AssetCommand: public MPxCommand
 	MStatus parseArgs(const MArgList &args);
 
     private:
-	MString myAssetOtlPath;
 	MString myHIPFilePath;
 	AssetOperationType myOperationType;
 

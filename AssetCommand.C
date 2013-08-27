@@ -7,8 +7,6 @@
 #include "AssetSubCommand.h"
 #include "AssetSubCommandLoadOTL.h"
 #include "AssetSubCommandSync.h"
-#include "AssetManager.h"
-#include "AssetNodeMonitor.h"
 #include "util.h"
 
 #define kLoadOTLFlag "-lo"
@@ -85,14 +83,21 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kLoadOTLFlag))
     {
-	myOperationType = kOperationLoadOTL;
+	myOperationType = kOperationSubCommand;
 
-	status = argData.getFlagArgument(kLoadOTLFlag, 0, myAssetOtlPath);
-	if(!status)
+	MString otlPath;
 	{
-	    displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
-	    return status;
+	    status = argData.getFlagArgument(kLoadOTLFlag, 0, otlPath);
+	    if(!status)
+	    {
+		displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
+		return status;
+	    }
 	}
+
+	myAssetSubCommand = new AssetSubCommandLoadOTL(
+		otlPath
+		);
     }
 
     if(argData.isFlagSet(kSyncFlag))
@@ -174,14 +179,6 @@ MStatus AssetCommand::redoIt()
     if(myOperationType == kOperationSubCommand)
     {
 	return myAssetSubCommand->redoIt();
-    }
-
-    if( myOperationType == kOperationLoadOTL )
-    {
-	AssetManager* manager = AssetManager::createManager( myAssetOtlPath );
-	AssetNodeMonitor* monitor = new AssetNodeMonitor( manager );
-	monitor->watch();
-	return MS::kSuccess;            
     }
 
     if( myOperationType == kOperationSaveHip )

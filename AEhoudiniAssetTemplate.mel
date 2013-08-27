@@ -191,7 +191,7 @@ global proc AEhoudiniAssetInputsReplace(string $attrFullName)
 global proc AEhoudiniAssetTemplate( string $nodeName )
 {
     editorTemplate -addControl "fileName";
-    editorTemplate -addControl "dummyMesh";
+
     //Put our attributes into a scrolled layout field
     editorTemplate -beginScrollLayout;
 

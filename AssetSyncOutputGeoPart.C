@@ -1,9 +1,8 @@
 #include "AssetSyncOutputGeoPart.h"
 
-#include <maya/MDagModifier.h>
-#include <maya/MDGModifier.h>
+#include <maya/MDagPath.h>
 #include <maya/MGlobal.h>
-#include <maya/MPlugArray.h>
+#include <maya/MSelectionList.h>
 
 #include <maya/MFnDagNode.h>
 
@@ -26,237 +25,263 @@ AssetSyncOutputGeoPart::~AssetSyncOutputGeoPart()
 MStatus
 AssetSyncOutputGeoPart::doIt()
 {
-    MStatus stat;
+    MStatus status;
 
-    stat = updateNodes();
-    stat = updateConnections();
-    return stat;
+    MString objectName;
+    MString partName;
+    {
+	MString outputObjectName = myOutputPlug.child(AssetNode::objectName).asString();
+	int separatorIndex = outputObjectName.rindexW('/');
+	objectName = outputObjectName.substringW(0, separatorIndex-1);
+	partName = outputObjectName.substringW(separatorIndex + 1, outputObjectName.numChars() - 1);
+    }
+
+    MFnDagNode assetTransformFn(myAssetTransform);
+
+    // Since the objectTransform is shared by multiple parts, it may or may not
+    // already exist. Create objectTransform if it doesn't exist.
+    MObject objectTransform = Util::findDagChild(assetTransformFn, objectName);
+    if(objectTransform.isNull())
+    {
+	// create objectTransform
+	objectTransform = myDagModifier.createNode("transform", myAssetTransform, &status);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	// rename objectTransform
+	status = myDagModifier.renameNode(objectTransform, objectName);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    MFnDagNode objectTransformFn(objectTransform);
+
+    // create part
+    MObject partTransform = Util::findDagChild(objectTransformFn, partName);
+    if(partTransform.isNull())
+    {
+	status = createOutputPart(objectTransform, partName, partTransform);
+    }
+
+    // create material
+    MPlug materialPlug = myOutputPlug.child(AssetNode::material);
+    MPlug materialExistsPlug = materialPlug.child(AssetNode::materialExists);
+    if(materialExistsPlug.asBool())
+    {
+	//TODO: check if material already exists
+	status = createOutputMaterial(materialPlug, partTransform);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    return redoIt();
 }
 
 MStatus
 AssetSyncOutputGeoPart::undoIt()
 {
+    MStatus status;
+
+    status = myDagModifier.undoIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     return MStatus::kSuccess;
 }
 
 MStatus
 AssetSyncOutputGeoPart::redoIt()
 {
+    MStatus status;
+
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     return MStatus::kSuccess;
 }
 
-// Check if necessary nodes exist, and if not, will create them
 MStatus
-AssetSyncOutputGeoPart::updateNodes()
+AssetSyncOutputGeoPart::createOutputPart(
+	const MObject &objectTransform,
+	const MString &partName,
+	MObject &partTransform
+	)
 {
-    MStatus stat;
-    MFnDagNode fnDag;
-    MDGModifier dg;
-    MDagModifier dag;
-    MString cmd, result;
+    MStatus status;
 
-    try
+    // create partTransform
+    partTransform = myDagModifier.createNode("transform", objectTransform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // rename partTransform
+    status = myDagModifier.renameNode(partTransform, partName);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // create partMesh
+    MObject partMesh = myDagModifier.createNode("mesh", partTransform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // rename partMesh
+    status = myDagModifier.renameNode(partMesh, partName + "Shape");
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    MFnDependencyNode partTransformFn(partTransform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    MFnDependencyNode partMeshFn(partMesh, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // connect partTransform attributes
     {
+	MPlug transformPlug = myOutputPlug.child(AssetNode::transform);
 
-        // Check to see if the object transform has been created, if so,
-        // then add the part transform under it, if not, then create the
-        // object transform then add the part transform
-	MString objName;
-	MString partName;
-	{
-	    MString objectName = myOutputPlug.child(AssetNode::objectName).asString();
-	    int separatorIndex = objectName.rindexW('/');
-	    objName = objectName.substringW(0, separatorIndex-1);
-	    partName = objectName.substringW(separatorIndex + 1, objectName.numChars() - 1);
-	}
+	MPlug srcPlug;
+	MPlug dstPlug;
 
-        MString objFullPath = "|" + MFnDependencyNode(myAssetTransform).name() +
-                              "|" + objName;
-        cmd = "objExists " + objFullPath;
-        int exists = 0;
-        stat = MGlobal::executeCommand(cmd, exists);
-        Util::checkMayaStatus(stat);
+	srcPlug = transformPlug.child(AssetNode::translateAttr);
+	dstPlug = partTransformFn.findPlug("translate");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-        MObject objNode;
-        if (exists)
-        {
-            objNode = Util::findNodeByName(objFullPath);
-        }
-        else
-        {
-            objNode = fnDag.create("transform", objName, myAssetTransform, &stat);
-            Util::checkMayaStatus(stat);
-        }
-        myObjectTransform = objNode;
+	srcPlug = transformPlug.child(AssetNode::rotateAttr);
+	dstPlug = partTransformFn.findPlug("rotate");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	if (myPartTransform.isNull())
-	{
-	    myPartTransform = dag.createNode("transform", myObjectTransform, &stat);
-	    CHECK_MSTATUS_AND_RETURN_IT(stat);
-
-	    stat = dag.renameNode(myPartTransform, partName);
-	    CHECK_MSTATUS_AND_RETURN_IT(stat);
-
-	    myMeshNode = dag.createNode("mesh", myPartTransform, &stat);
-	    CHECK_MSTATUS_AND_RETURN_IT(stat);
-
-	    stat = dag.renameNode(myMeshNode, partName + "Shape");
-	    CHECK_MSTATUS_AND_RETURN_IT(stat);
-
-	    stat = dag.doIt();
-	    CHECK_MSTATUS_AND_RETURN_IT(stat);
-        }
-
-        // Materials
-        MPlug materialPlug = myOutputPlug.child(AssetNode::material);
-        if (myMaterialNode.isNull())
-        {
-            cmd = "shadingNode -asShader phong";
-	    stat = MGlobal::executeCommand(cmd, result); // phong node
-            Util::checkMayaStatus(stat);
-            myMaterialNode = Util::findNodeByName(result);
-        }
-
-        if (mySeNode.isNull())
-        {
-            stat = MGlobal::selectByName(MFnDagNode(myPartTransform).fullPathName(), MGlobal::kReplaceList);
-            Util::checkMayaStatus(stat);
-
-            cmd = "hyperShade -assign " + MFnDependencyNode(myMaterialNode).name();
-	    stat = MGlobal::executeCommand(cmd);
-            Util::checkMayaStatus(stat);
-
-            MPlugArray connectedPlugs;
-            bool hasConnections = MFnDependencyNode(myMaterialNode).findPlug("outColor").connectedTo(
-                    connectedPlugs, false, true, &stat);
-            Util::checkMayaStatus(stat);
-            if (hasConnections)
-            {
-                mySeNode = connectedPlugs[0].node();
-            }
-        }
-
-        bool matExists = materialPlug.child(AssetNode::materialExists).asBool();
-        if (matExists)
-        {
-            MString texturePath = materialPlug.child(AssetNode::texturePath).asString();
-            if (texturePath != "")
-            {
-                if (myFileNode.isNull())
-                {
-                    cmd = "shadingNode -asTexture file";
-		    stat = MGlobal::executeCommand(cmd, result); // file node
-		    Util::checkMayaStatus(stat);
-                    myFileNode = Util::findNodeByName(result);
-                }
-            }
-            else
-            {
-                if (!myFileNode.isNull())
-                {
-                    stat = dg.deleteNode(myFileNode);
-                    Util::checkMayaStatus(stat);
-                }
-            }
-        }
-        stat = dg.doIt();
-        Util::checkMayaStatus(stat);
-
-        return MS::kSuccess;
+	srcPlug = transformPlug.child(AssetNode::scaleAttr);
+	dstPlug = partTransformFn.findPlug("scale");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
-    catch (MayaError& e)
+
+    // connect partMesh attributes
     {
-        cerr << e.what() << endl;
-        return MS::kFailure;
+	MPlug srcPlug;
+	MPlug dstPlug;
+
+	srcPlug = myOutputPlug.child(AssetNode::mesh);
+	dstPlug = partMeshFn.findPlug("inMesh");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
+
+    // doIt
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
 }
 
-//Once you know all the nodes exist, then make sure all proper connections exist
 MStatus
-AssetSyncOutputGeoPart::updateConnections()
+AssetSyncOutputGeoPart::createOutputMaterial(
+	const MPlug &materialPlug,
+	const MObject &partTransform
+	)
 {
-    MDGModifier dg;
-    MPlug src, dest;
-    MStatus stat;
+    MStatus status;
 
-    try
+    // can't use partTransform directly to select, need to use MDagPath
+    MDagPath partTransformDag;
+    status = MDagPath::getAPathTo(partTransform, partTransformDag);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // save current selection
+    MSelectionList oldSelection;
+    MGlobal::getActiveSelectionList(oldSelection);
+
+    MSelectionList selection;
+
+    // create shader
+    MFnDependencyNode shaderFn;
     {
-        // Transform
-        MPlug transformPlug = myOutputPlug.child(AssetNode::transform);
+	MObject shader;
+	status = Util::createNodeByModifierCommand(
+		myDagModifier,
+		"shadingNode -asShader phong",
+		shader
+		);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-        src = transformPlug.child(AssetNode::translateAttr);
-        dest = MFnDependencyNode(myPartTransform).findPlug("translate", true);
-        stat = dg.connect(src, dest);
-        Util::checkMayaStatus(stat);
-
-        src = transformPlug.child(AssetNode::rotateAttr);
-        dest = MFnDependencyNode(myPartTransform).findPlug("rotate", true);
-        stat = dg.connect(src, dest);
-        Util::checkMayaStatus(stat);
-
-        src = transformPlug.child(AssetNode::scaleAttr);
-        dest = MFnDependencyNode(myPartTransform).findPlug("scale", true);
-        stat = dg.connect(src, dest);
-        Util::checkMayaStatus(stat);
-
-        // Mesh
-        src = myOutputPlug.child(AssetNode::mesh);
-        dest = MFnDependencyNode(myMeshNode).findPlug("inMesh", true);
-        stat = dg.connect(src, dest);
-        Util::checkMayaStatus(stat);
-
-        // Materials
-        MPlug materialPlug = myOutputPlug.child(AssetNode::material);
-        bool matExists = materialPlug.child(AssetNode::materialExists).asBool();
-        if (matExists)
-        {
-            src = materialPlug.child(AssetNode::specularAttr);
-            dest = MFnDependencyNode(myMaterialNode).findPlug("specularColor");
-            stat = dg.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-            src = materialPlug.child(AssetNode::alphaAttr);
-            dest = MFnDependencyNode(myMaterialNode).findPlug("transparency");
-            stat = dg.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-            MString texturePath = materialPlug.child(AssetNode::texturePath).asString();
-            if (texturePath == "")
-            {
-                src = materialPlug.child(AssetNode::diffuseAttr);
-                dest = MFnDependencyNode(myMaterialNode).findPlug("color");
-                stat = dg.connect(src, dest);
-                Util::checkMayaStatus(stat);
-
-                src = materialPlug.child(AssetNode::ambientAttr);
-                dest = MFnDependencyNode(myMaterialNode).findPlug("ambientColor");
-                stat = dg.connect(src, dest);
-                Util::checkMayaStatus(stat);
-            }
-            else
-            {
-                src = materialPlug.child(AssetNode::texturePath);
-                dest = MFnDependencyNode(myFileNode).findPlug("fileTextureName");
-                stat = dg.connect(src, dest);
-                Util::checkMayaStatus(stat);
-
-                src = MFnDependencyNode(myFileNode).findPlug("outColor");
-                dest = MFnDependencyNode(myMaterialNode).findPlug("color");
-                stat = dg.connect(src, dest);
-                Util::checkMayaStatus(stat);
-            }
-        }
-       Util::checkMayaStatus(stat);
-
-        stat = dg.doIt();
-        Util::checkMayaStatus(stat);
-
-        return MS::kSuccess;
-    }
-    catch (MayaError& e)
-    {
-        cerr << e.what() << endl;
-        return MS::kFailure;
+	status = shaderFn.setObject(shader);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
+    // select partTransform
+    status = selection.add(partTransformDag);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    MGlobal::setActiveSelectionList(selection);
+    selection.clear();
+
+    // assign shader
+    status = myDagModifier.commandToExecute("hyperShade -assign " + shaderFn.name());
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // create file node if texture exists
+    MPlug texturePathPlug = materialPlug.child(AssetNode::texturePath);
+    MString texturePath = texturePathPlug.asString();
+    MFnDependencyNode textureFileFn;
+    if(texturePath.length())
+    {
+	MObject textureFile;
+	status = Util::createNodeByModifierCommand(
+		myDagModifier,
+		"shadingNode -asTexture file",
+		textureFile
+		);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	status = textureFileFn.setObject(textureFile);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    // connect shader attributse
+    {
+	MPlug srcPlug;
+	MPlug dstPlug;
+
+	// color
+	if(textureFileFn.object().isNull())
+	{
+	    srcPlug = materialPlug.child(AssetNode::diffuseAttr);
+	    dstPlug = shaderFn.findPlug("color");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	}
+	else
+	{
+	    dstPlug = textureFileFn.findPlug("fileTextureName");
+	    status = myDagModifier.connect(texturePathPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	    srcPlug = textureFileFn.findPlug("outColor");
+	    dstPlug = shaderFn.findPlug("color");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	}
+
+	// specularColor
+	srcPlug = materialPlug.child(AssetNode::specularAttr);
+	dstPlug = shaderFn.findPlug("specularColor");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	// ambientColor
+	srcPlug = materialPlug.child(AssetNode::ambientAttr);
+	dstPlug = shaderFn.findPlug("ambientColor");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	// transparency
+	srcPlug = materialPlug.child(AssetNode::alphaAttr);
+	dstPlug = shaderFn.findPlug("transparency");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    // restore old selection
+    MGlobal::setActiveSelectionList(oldSelection);
+
+    // doIt
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
 }

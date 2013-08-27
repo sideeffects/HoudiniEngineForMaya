@@ -250,10 +250,14 @@ ObjectNodeGroup::updateNodes()
         // Check to see if the object transform has been created, if so,
         // then add the part transform under it, if not, then create the
         // object transform then add the part transform
-        MString partName = plug.child(AssetNode::objectName).asString();
-
-        int usIndex = partName.rindexW('_');
-        MString objName = partName.substringW(0, usIndex-1);
+	MString objName;
+	MString partName;
+	{
+	    MString objectName = plug.child(AssetNode::objectName).asString();
+	    int separatorIndex = objectName.rindexW('/');
+	    objName = objectName.substringW(0, separatorIndex-1);
+	    partName = objectName.substringW(separatorIndex + 1, objectName.numChars() - 1);
+	}
 
         MString objFullPath = "|" + MFnDependencyNode(assetTransform).name() +
                               "|" + objName;
@@ -275,17 +279,22 @@ ObjectNodeGroup::updateNodes()
         objectTransform = objNode;
 
         if (partTransform.isNull())
-        {
-            // Creates a mesh node and its parent, returns the parent to me.
-            partTransform = fnDag.create("mesh", partName, MObject::kNullObj, &stat);
-            Util::checkMayaStatus(stat);
-            meshNode = MFnDagNode(partTransform).child(0, &stat);
-            Util::checkMayaStatus(stat);
-            stat = dag.reparentNode(partTransform, objectTransform);
-            Util::checkMayaStatus(stat);
-            stat = dag.doIt();
-            Util::checkMayaStatus(stat);
-        }
+	{
+	    partTransform = dag.createNode("transform", objectTransform, &stat);
+	    CHECK_MSTATUS_AND_RETURN_IT(stat);
+
+	    stat = dag.renameNode(partTransform, partName);
+	    CHECK_MSTATUS_AND_RETURN_IT(stat);
+
+	    meshNode = dag.createNode("mesh", partTransform, &stat);
+	    CHECK_MSTATUS_AND_RETURN_IT(stat);
+
+	    stat = dag.renameNode(meshNode, partName + "Shape");
+	    CHECK_MSTATUS_AND_RETURN_IT(stat);
+
+	    stat = dag.doIt();
+	    CHECK_MSTATUS_AND_RETURN_IT(stat);
+	}
 
         // Materials
         MPlug materialPlug = plug.child(AssetNode::material);

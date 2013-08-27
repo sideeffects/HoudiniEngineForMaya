@@ -18,12 +18,12 @@ GeometryPart::GeometryPart()
 }
 
 GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
-        MString partName, HAPI_GeoInfo geoInfo, Asset* objectControl)
+        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl)
     : myAssetId(assetId)
     , myObjectId(objectId)
     , myGeoId(geoId)
     , myPartId(partId)
-    , myPartName(partName)
+    , myObjectInfo(objectInfo)
     , myGeoInfo(geoInfo)
     , myObjectControl(objectControl)
     , myNeverBuilt(true)
@@ -248,7 +248,8 @@ GeometryPart::compute(MDataHandle& handle)
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
         // Object name
-        objectNameHandle.set( myPartName );
+	MString objectName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
+        objectNameHandle.set(objectName);
 
         // Meta data
         MFnIntArrayData ffIAD;

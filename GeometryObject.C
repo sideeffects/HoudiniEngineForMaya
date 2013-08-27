@@ -30,8 +30,7 @@ GeometryObject::init()
     
     for (int i=0; i<partCount; i++)
     {
-        MString partName = getName() + "_partShape" + (i+1);
-        myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, partName, myGeoInfo, myObjectControl );
+        myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, myObjectInfo, myGeoInfo, myObjectControl );
     }
     
 }
@@ -64,9 +63,8 @@ GeometryObject::update()
         myParts = new GeometryPart[partCount];
         for (int i=0; i<partCount; i++)
         {
-            MString partName = getName() + "_partShape" + (i+1);
 	    //TODO: remove the hard coding of the geo id to 0
-            myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, partName, myGeoInfo, myObjectControl);
+            myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, myObjectInfo, myGeoInfo, myObjectControl);
         }
     }
     else

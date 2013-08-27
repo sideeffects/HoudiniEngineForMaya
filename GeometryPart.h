@@ -6,7 +6,7 @@ class GeometryPart
     public:
         GeometryPart();
         GeometryPart(int assetId, int objectId, int geoId, int partId,
-                MString partName, HAPI_GeoInfo geoInfo, Asset* objectControl);
+                HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl);
         virtual ~GeometryPart();
 
 
@@ -42,6 +42,7 @@ class GeometryPart
         int myGeoId;
         int myPartId;
 
+        HAPI_ObjectInfo myObjectInfo;
         HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
         HAPI_MaterialInfo myMaterialInfo;

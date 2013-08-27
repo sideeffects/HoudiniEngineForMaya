@@ -1,16 +1,20 @@
 #include <maya/MArgDatabase.h>
 #include <maya/MArgList.h>
+#include <maya/MSelectionList.h>
 #include <maya/MStatus.h>
 
 #include "AssetCommand.h"
 #include "AssetSubCommand.h"
 #include "AssetSubCommandLoadOTL.h"
+#include "AssetSubCommandSync.h"
 #include "AssetManager.h"
 #include "AssetNodeMonitor.h"
 #include "util.h"
 
 #define kLoadOTLFlag "-lo"
 #define kLoadOTLFlagLong "-loadOTL"
+#define kSyncFlag "-syn"
+#define kSyncFlagLong "-sync"
 #define kSaveHIPFlag "-sh"
 #define kSaveHIPFlagLong "-saveHIP"
 
@@ -27,6 +31,13 @@ AssetCommand::newSyntax()
     // -loadOTL load an otl file
     // expected arguments: otl_file_name - the name of the otl file to load
     CHECK_MSTATUS(syntax.addFlag(kLoadOTLFlag, kLoadOTLFlagLong, MSyntax::kString));
+
+    // -sync synchronize the Maya nodes with the asset's state
+    // expected arguments:
+    //	asset node
+    //	asset transform node
+    CHECK_MSTATUS(syntax.addFlag(kSyncFlag, kSyncFlagLong,
+		MSyntax::kSelectionItem, MSyntax::kSelectionItem));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file
     // expected arguments: hip_file_name - the name of the hip file to save
@@ -62,10 +73,12 @@ AssetCommand::parseArgs(const MArgList &args)
     }
 
     if(!(argData.isFlagSet(kLoadOTLFlag)
+		^ argData.isFlagSet(kSyncFlag)
 		^ argData.isFlagSet(kSaveHIPFlag)))
     {
 	displayError("Exactly one of these flags must be specified:\n"
 		kLoadOTLFlagLong "\n"
+		kSyncFlagLong "\n"
 		kSaveHIPFlagLong "\n");
         return MStatus::kInvalidParameter;
     }
@@ -80,6 +93,46 @@ AssetCommand::parseArgs(const MArgList &args)
 	    displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
 	    return status;
 	}
+    }
+
+    if(argData.isFlagSet(kSyncFlag))
+    {
+	myOperationType = kOperationSubCommand;
+
+	MObject assetNodeObj;
+	{
+	    MSelectionList selection;
+
+	    status = argData.getFlagArgument(kSyncFlag, 0, selection);
+	    if(!status)
+	    {
+		displayError("Invalid first argument for \"" kSyncFlagLong "\".");
+		return status;
+	    }
+
+	    selection.getDependNode(0, assetNodeObj);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	}
+
+	MObject assetTransformObj;
+	{
+	    MSelectionList selection;
+
+	    status = argData.getFlagArgument(kSyncFlag, 1, selection);
+	    if(!status)
+	    {
+		displayError("Invalid second argument for \"" kSyncFlagLong "\".");
+		return status;
+	    }
+
+	    status = selection.getDependNode(0, assetTransformObj);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	}
+
+	myAssetSubCommand = new AssetSubCommandSync(
+		assetNodeObj,
+		assetTransformObj
+		);
     }
 
     if(argData.isFlagSet(kSaveHIPFlag))

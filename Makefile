@@ -119,6 +119,7 @@ CXXFILES = \
 	   AssetCommand.C \
 	   AssetSubCommand.C \
 	   AssetSubCommandLoadOTL.C \
+	   AssetSubCommandSync.C \
 	   AssetManager.C \
 	   Asset.C \
 	   AssetInput.C \

@@ -6,6 +6,8 @@
 #include <maya/MDagModifier.h>
 #include <maya/MString.h>
 
+class AssetSubCommandSync;
+
 class AssetSubCommandLoadOTL : public AssetSubCommand
 {
     public:
@@ -24,6 +26,8 @@ class AssetSubCommandLoadOTL : public AssetSubCommand
 	MString myOTLFile;
 
 	MDagModifier myDagModifier;
+
+	AssetSubCommandSync* myAssetSubCommandSync;
 };
 
 #endif

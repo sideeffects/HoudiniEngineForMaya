@@ -4,12 +4,14 @@
 #include <maya/MPlug.h>
 
 #include "AssetNode.h"
+#include "AssetSubCommandSync.h"
 #include "util.h"
 
 AssetSubCommandLoadOTL::AssetSubCommandLoadOTL(
 	const MString &otlFile
 	) :
-    myOTLFile(otlFile)
+    myOTLFile(otlFile),
+    myAssetSubCommandSync(NULL)
 {
 }
 
@@ -69,7 +71,15 @@ AssetSubCommandLoadOTL::doIt()
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
-    return redoIt();
+    // cannot simply call redoIt, because when we use AssetSubCommandSync, we
+    // need to distinguish between doIt and redoIt
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    myAssetSubCommandSync = new AssetSubCommandSync(assetNode, assetTransform);
+    myAssetSubCommandSync->doIt();
+
+    return MStatus::kSuccess;
 }
 
 MStatus
@@ -80,6 +90,9 @@ AssetSubCommandLoadOTL::redoIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    status = myAssetSubCommandSync->redoIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     return MStatus::kSuccess;
 }
 
@@ -87,6 +100,9 @@ MStatus
 AssetSubCommandLoadOTL::undoIt()
 {
     MStatus status;
+
+    status = myAssetSubCommandSync->undoIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = myDagModifier.undoIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);

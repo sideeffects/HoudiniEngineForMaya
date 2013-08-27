@@ -119,6 +119,7 @@ CXXFILES = \
 	   AssetCommand.C \
 	   AssetManager.C \
 	   Asset.C \
+	   AssetInput.C \
 	   Object.C \
 	   util.C \
 	   GeometryObject.C \

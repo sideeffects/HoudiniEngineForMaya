@@ -10,6 +10,7 @@
 #include <maya/MGlobal.h>
 
 #include "Asset.h"
+#include "AssetInput.h"
 #include "AssetNode.h"
 #include "GeometryObject.h"
 #include "InstancerObject.h"
@@ -35,6 +36,8 @@ Asset::Asset(MString otlFilePath, MObject node)
     hstat = HAPI_GetNodeInfo(assetInfo.nodeId, &nodeInfo);
     Util::checkHAPIStatus(hstat);
 
+    myAssetInputs = new AssetInputs(assetInfo.id);
+
     init();
 
 }
@@ -43,6 +46,7 @@ Asset::Asset(MString otlFilePath, MObject node)
 void
 Asset::init()
 {
+    myAssetInputs->setNumInputs(assetInfo.maxGeoInputCount);
 
     // input geos
     if (assetInfo.maxGeoInputCount > 0)
@@ -100,6 +104,7 @@ Asset::~Asset()
         delete myObjects[i];
     delete[] myObjects;
     delete[] myObjectInfos;    
+    delete myAssetInputs;
 }
 
 

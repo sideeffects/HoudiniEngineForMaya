@@ -9,6 +9,8 @@
 
 #include "Object.h"
 
+class AssetInputs;
+
 class Asset {
     public:
         Asset(MString otlFilePath, MObject node);
@@ -58,6 +60,7 @@ class Asset {
         MObject myNode;		    //The Maya asset node
         MObject myMayaInputs;	    //The input attributes on the asset node (added dynamically)
 
+	AssetInputs* myAssetInputs;
 	//TODO: make this a vector.  The double pointer assumes the number of objects is static
         Object** myObjects;	    //the Object class contains a 1 to 1 map with HAPI_ObjectInfos.
 

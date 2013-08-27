@@ -393,10 +393,7 @@ MObject
 AssetNode::getAttrFromParm(HAPI_ParmInfo& parm)
 {
     MFnDependencyNode fnDN(thisMObject());
-
-    MString tmp = Util::getString(parm.nameSH);
-    MString parmName = Util::replaceString(tmp, " ", "_");
-    MString name = MString("_parm") + parm.id + "_" + parmName + "_";
+    MString name = Util::getAttrNameFromParm(parm);
     MObject attr = fnDN.attribute(name);
     return attr;
 }

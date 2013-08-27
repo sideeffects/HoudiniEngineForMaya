@@ -367,11 +367,7 @@ Asset::createAttr(HAPI_ParmInfo& parm)
     MFnTypedAttribute tAttr;
 
     MString label = Util::getString(parm.labelSH);
-    MString name = Util::getString(parm.nameSH);
-    MString parmName = Util::replaceString(name, " ", "_");
-
-    MString shortName = MString("_parm") + parm.id + "_" + parmName + "_";
-    MString longName = MString("_H_parm") + parm.id + "_" + parmName + "_";
+    MString attrName = Util::getAttrNameFromParm(parm);
 
     MObject result;
 
@@ -380,12 +376,12 @@ Asset::createAttr(HAPI_ParmInfo& parm)
     {
         case HAPI_PARMTYPE_FOLDERLIST:
         case HAPI_PARMTYPE_FOLDER:
-            result = cAttr.create(longName, shortName);
+            result = cAttr.create(attrName, attrName);
             cAttr.setStorable(true);
             cAttr.setNiceNameOverride(label);
             break;
         case HAPI_PARMTYPE_SEPARATOR:
-            result = gAttr.create(longName, shortName);
+            result = gAttr.create(attrName, attrName);
             gAttr.setHidden(true);
             gAttr.setStorable(false);
             gAttr.setReadable(false);
@@ -397,14 +393,14 @@ Asset::createAttr(HAPI_ParmInfo& parm)
         case HAPI_PARMTYPE_FLOAT:
         case HAPI_PARMTYPE_COLOUR:
         case HAPI_PARMTYPE_TOGGLE:
-            result = createNumericAttr(parm, longName, shortName, label);
+            result = createNumericAttr(parm, attrName, attrName, label);
             break;
         case HAPI_PARMTYPE_STRING:
         case HAPI_PARMTYPE_FILE:
-            result = createStringAttr(parm, longName, shortName, label);
+            result = createStringAttr(parm, attrName, attrName, label);
             break;
         default:
-            result = nAttr.create(longName, shortName, MFnNumericData::kFloat, 1.0);
+            result = nAttr.create(attrName, attrName, MFnNumericData::kFloat, 1.0);
             nAttr.setStorable(true);
             nAttr.setNiceNameOverride(label);
             break;

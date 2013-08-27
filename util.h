@@ -48,6 +48,7 @@ class MayaError: public std::exception
 class Util {
     public:
         static MString getString(int handle);
+	static MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
         static void reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts);
         static void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts);
         static bool hasHAPICallFailed(HAPI_Result stat);

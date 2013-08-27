@@ -87,6 +87,13 @@ Util::getString(int handle)
     return ret;
 }
 
+MString
+Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
+{
+    MString parmName = Util::getString(parm.nameSH);
+    MString name = MString("_parm") + parm.id + "_" + parmName + "_";
+    return name;
+}
 
 void
 Util::reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts)

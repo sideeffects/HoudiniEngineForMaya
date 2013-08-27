@@ -10,6 +10,8 @@
 
 #include <HAPI/HAPI.h>
 
+class MFnDagNode;
+
 class HAPIError: public std::exception
 {
     public:
@@ -67,6 +69,7 @@ class Util {
         static void printMayaStatus(MStatus stat);
 
         static MObject findNodeByName(const MString &name);
+	static MObject findDagChild(const MFnDagNode &dag, const MString &name);
         static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
 
         // Returns true if the parm was found.

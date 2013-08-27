@@ -2,6 +2,8 @@
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
 
+#include <maya/MFnDagNode.h>
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -350,6 +352,25 @@ Util::findNodeByName(const MString& name)
     if(selection.length())
         selection.getDependNode(0, ret);
     return ret;
+}
+
+MObject
+Util::findDagChild(const MFnDagNode &dag, const MString &name)
+{
+    MObject childObj;
+
+    for(unsigned int i = 0; i < dag.childCount(); i++)
+    {
+	MObject currObj = dag.child(i);
+	MFnDependencyNode currFn(currObj);
+	if(currFn.name() == name)
+	{
+	    childObj = currObj;
+	    break;
+	}
+    }
+
+    return childObj;
 }
 
 MString

@@ -49,6 +49,7 @@ AssetInputMesh::setInput(MDataHandle &dataHandle)
     }
     Util::reverseWindingOrderInt(vertexList, faceCounts);
 
+    const int inputAssetId = 0;
     HAPI_GeoInputInfo inputInfo;
     HAPI_CreateGeoInput(myAssetId, myInputIdx, &inputInfo);
 
@@ -77,12 +78,12 @@ AssetInputMesh::setInput(MDataHandle &dataHandle)
 	    pos_attr[ i * 3 + j ] = points[ i ][ j ];
 
     // Set the data
-    //HAPI_SetGeoInfo(myAssetId, inputInfo.objectId, inputInfo.geoId, inputGeoInfo);
-    HAPI_SetPartInfo(myAssetId, inputInfo.objectId, 
+    //HAPI_SetGeoInfo(inputAssetId, inputInfo.objectId, inputInfo.geoId, inputGeoInfo);
+    HAPI_SetPartInfo(inputAssetId, inputInfo.objectId, 
 	    inputInfo.geoId, partInfo);
-    HAPI_SetFaceCounts(myAssetId, inputInfo.objectId, 
+    HAPI_SetFaceCounts(inputAssetId, inputInfo.objectId, 
 	    inputInfo.geoId, fc, 0, partInfo->faceCount);
-    HAPI_SetVertexList(myAssetId, inputInfo.objectId, 
+    HAPI_SetVertexList(inputAssetId, inputInfo.objectId, 
 	    inputInfo.geoId, vl, 0, partInfo->vertexCount);
 
     // Set position attributes.
@@ -92,13 +93,13 @@ AssetInputMesh::setInput(MDataHandle &dataHandle)
     pos_attr_info->storage            = HAPI_STORAGETYPE_FLOAT;
     pos_attr_info->count              = partInfo->pointCount;
     pos_attr_info->tupleSize          = 3;
-    HAPI_AddAttribute(myAssetId, inputInfo.objectId, inputInfo.geoId, "P", pos_attr_info );
+    HAPI_AddAttribute(inputAssetId, inputInfo.objectId, inputInfo.geoId, "P", pos_attr_info );
 
-    HAPI_SetAttributeFloatData(myAssetId, inputInfo.objectId, inputInfo.geoId, "P", pos_attr_info,
+    HAPI_SetAttributeFloatData(inputAssetId, inputInfo.objectId, inputInfo.geoId, "P", pos_attr_info,
 	    pos_attr, 0, partInfo->pointCount);
 
     // Commit it
-    HAPI_CommitGeo(myAssetId, inputInfo.objectId, inputInfo.geoId);
+    HAPI_CommitGeo(inputAssetId, inputInfo.objectId, inputInfo.geoId);
 
     delete[] vl;
     delete[] fc;

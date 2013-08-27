@@ -132,6 +132,7 @@ CXXFILES = \
 	   InstancerObject.C \
 	   AssetNodeMonitor.C \
 	   GeometryPart.C \
+	   AssetSync.C \
 	   AssetSyncOutputGeoPart.C \
 	   AssetSyncOutputInstance.C \
 	   plugin.C

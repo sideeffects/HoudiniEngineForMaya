@@ -200,13 +200,11 @@ AssetManager::createAssetSyncOutputGeoPart(MPlug& plug, MObject& assetTransform)
     AssetSyncOutputGeoPart* objGroup = getObjectGroup(plug);
     if (objGroup == NULL)
     {
-        objGroup = new AssetSyncOutputGeoPart();
-        objGroup->plug = plug;
-        objGroup->assetTransform = assetTransform;
+        objGroup = new AssetSyncOutputGeoPart(plug, assetTransform);
         myAssetSyncOutputGeoParts.push_back(objGroup);
     }
 
-    return objGroup->update();
+    return objGroup->doIt();
 }
 
 
@@ -216,11 +214,9 @@ AssetManager::createAssetSyncOutputInstance(MPlug& plug, MObject& assetTransform
     AssetSyncOutputInstance* instGroup = getInstGroup(plug);
     if (instGroup == NULL)
     {
-        instGroup = new AssetSyncOutputInstance();
-        instGroup->plug = plug;
-        instGroup->assetTransform = assetTransform;
+        instGroup = new AssetSyncOutputInstance(plug, assetTransform);
         myAssetSyncOutputInstances.push_back(instGroup);
     }
 
-    return instGroup->update();
+    return instGroup->doIt();
 }

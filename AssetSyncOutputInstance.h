@@ -3,21 +3,35 @@
 
 #include <maya/MPlug.h>
 
-struct AssetSyncOutputInstance
-{
-    // Members
-    MPlug plug;			//This is the output plug from the asset node that is connected
-				//to the instancer node (eg. assetNode.instancers[0])
-    MObject instancerNode;
-    MObject assetTransform;	//a reference to the top level transform (the same as 
-				//AssetManager::myAssetTransform, it's there so it can
-				// be accessed by the instancer node (whenever one is created
-				// it is parented under this transform.
+#include "AssetSync.h"
 
-    // Functions
-    MStatus update();
-    MStatus updateNodes();
-    MStatus updateConnections();
+class AssetSyncOutputInstance : public AssetSync
+{
+    public:
+	AssetSyncOutputInstance(
+		const MPlug &outputPlug,
+		const MObject &assetTransform
+		);
+	virtual ~AssetSyncOutputInstance();
+
+	virtual MStatus doIt();
+	virtual MStatus undoIt();
+	virtual MStatus redoIt();
+
+    protected:
+	MStatus updateNodes();
+	MStatus updateConnections();
+
+    protected:
+	//This is the output plug from the asset node that is connected
+	//to the instancer node (eg. assetNode.instancers[0])
+	MPlug myOutputPlug;
+
+	//the transform of the HAPI Asset
+	MObject myAssetTransform;
+
+	MObject myInstancerNode;
+
 };
 
 #endif

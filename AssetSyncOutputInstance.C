@@ -6,8 +6,21 @@
 #include "AssetNode.h"
 #include "util.h"
 
+AssetSyncOutputInstance::AssetSyncOutputInstance(
+	const MPlug &outputPlug,
+	const MObject &assetTransform
+	) :
+    myOutputPlug(outputPlug),
+    myAssetTransform(assetTransform)
+{
+}
+
+AssetSyncOutputInstance::~AssetSyncOutputInstance()
+{
+}
+
 MStatus
-AssetSyncOutputInstance::update()
+AssetSyncOutputInstance::doIt()
 {
     MStatus stat;
 
@@ -16,6 +29,17 @@ AssetSyncOutputInstance::update()
     return stat;
 }
 
+MStatus
+AssetSyncOutputInstance::undoIt()
+{
+    return MStatus::kSuccess;
+}
+
+MStatus
+AssetSyncOutputInstance::redoIt()
+{
+    return MStatus::kSuccess;
+}
 
 MStatus
 AssetSyncOutputInstance::updateNodes()
@@ -27,17 +51,17 @@ AssetSyncOutputInstance::updateNodes()
     try
     {
         // Create the instancer node
-        if (instancerNode.isNull())
+        if (myInstancerNode.isNull())
         {
-            instancerNode = fnDN.create("instancer", "instancer", &stat);
+            myInstancerNode = fnDN.create("instancer", "instancer", &stat);
             Util::checkMayaStatus(stat);
         }
 
         // Set the rotation units to radians
-        stat = dag.newPlugValueInt(MFnDependencyNode(instancerNode).findPlug("rau"), 1);
+        stat = dag.newPlugValueInt(MFnDependencyNode(myInstancerNode).findPlug("rau"), 1);
         Util::checkMayaStatus(stat);
 
-        stat = dag.reparentNode(instancerNode, assetTransform);
+        stat = dag.reparentNode(myInstancerNode, myAssetTransform);
         Util::checkMayaStatus(stat);
 
         stat = dag.doIt();
@@ -64,21 +88,21 @@ AssetSyncOutputInstance::updateConnections()
     try
     {
         // Connect the input points
-        src = plug.child(AssetNode::instancerData);
-        dest = MFnDependencyNode(instancerNode).findPlug("inputPoints");
+        src = myOutputPlug.child(AssetNode::instancerData);
+        dest = MFnDependencyNode(myInstancerNode).findPlug("inputPoints");
         stat = dg.connect(src, dest);
         Util::checkMayaStatus(stat);
 
         // Connect the instanced objects
-        MPlug instancedNames = plug.child(AssetNode::instancedObjectNames);
+        MPlug instancedNames = myOutputPlug.child(AssetNode::instancedObjectNames);
         int ionCount = instancedNames.numElements();
         for (int i=0; i<ionCount; i++)
         {
-            MString name = "|" + MFnDependencyNode(assetTransform).name() +
+            MString name = "|" + MFnDependencyNode(myAssetTransform).name() +
                 "|" + instancedNames[i].asString();
 
             src = MFnDependencyNode(Util::findNodeByName(name)).findPlug("matrix");
-            dest = MFnDependencyNode(instancerNode).findPlug("inputHierarchy").elementByLogicalIndex(i);
+            dest = MFnDependencyNode(myInstancerNode).findPlug("inputHierarchy").elementByLogicalIndex(i);
             stat = dg.connect(src, dest);
             Util::checkMayaStatus(stat);
 

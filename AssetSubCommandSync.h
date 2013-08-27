@@ -5,6 +5,10 @@
 
 #include <maya/MObject.h>
 
+#include <vector>
+
+class AssetSync;
+
 class AssetSubCommandSync : public AssetSubCommand
 {
     public:
@@ -22,6 +26,9 @@ class AssetSubCommandSync : public AssetSubCommand
     protected:
 	MObject myAssetNodeObj;
 	MObject myAssetTransformObj;
+
+	typedef std::vector<AssetSync*> AssetSyncs;
+	AssetSyncs myAssetSyncs;
 };
 
 #endif

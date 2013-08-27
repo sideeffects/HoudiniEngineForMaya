@@ -120,6 +120,8 @@ CXXFILES = \
 	   AssetManager.C \
 	   Asset.C \
 	   AssetInput.C \
+	   AssetInputAsset.C \
+	   AssetInputMesh.C \
 	   Object.C \
 	   util.C \
 	   GeometryObject.C \

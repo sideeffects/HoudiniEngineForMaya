@@ -35,6 +35,8 @@ class AssetInput
 	enum AssetInputType
 	{
 	    AssetInputType_Invalid,
+	    AssetInputType_Asset,
+	    AssetInputType_Mesh,
 	};
 
 	static AssetInput* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);

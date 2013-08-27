@@ -2,12 +2,17 @@
 
 #include <maya/MFnGenericAttribute.h>
 
+#include "AssetInputAsset.h"
+#include "AssetInputMesh.h"
+
 MObject
 AssetInputs::createInputAttribute(const MString &attrName)
 {
     MFnGenericAttribute gAttr;
 
     MObject inputAttrObj = gAttr.create(attrName, attrName);
+    gAttr.addDataAccept(MFnData::kIntArray);
+    gAttr.addDataAccept(MFnData::kMesh);
 
     return inputAttrObj;
 }
@@ -67,6 +72,14 @@ AssetInputs::prepareAssetInput(int inputIdx, MDataHandle &dataHandle)
 
     // determine the new input type
     AssetInput::AssetInputType newAssetInputType = AssetInput::AssetInputType_Invalid;
+    if(dataHandle.type() == MFnData::kIntArray)
+    {
+	newAssetInputType = AssetInput::AssetInputType_Asset;
+    }
+    else if(dataHandle.type() == MFnData::kMesh)
+    {
+	newAssetInputType = AssetInput::AssetInputType_Mesh;
+    }
 
     // if the existing input doesn't match the new input type, delete it
     if(assetInput && assetInput->assetInputType() != newAssetInputType)
@@ -98,6 +111,12 @@ AssetInput::createAssetInput(int assetId, int inputIdx, AssetInputType assetInpu
     AssetInput* assetInput = NULL;
     switch(assetInputType)
     {
+	case AssetInputType_Asset:
+	    assetInput = new AssetInputAsset(assetId, inputIdx);
+	    break;
+	case AssetInputType_Mesh:
+	    assetInput = new AssetInputMesh(assetId, inputIdx);
+	    break;
 	case AssetInputType_Invalid:
 	    break;
     }

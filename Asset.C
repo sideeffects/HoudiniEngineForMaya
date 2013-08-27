@@ -51,7 +51,6 @@ Asset::init()
     // input geos
     if (assetInfo.maxGeoInputCount > 0)
     {
-        MFnGenericAttribute gAttr;
         MFnCompoundAttribute cAttr;
 
         int inputCount = assetInfo.maxGeoInputCount;
@@ -60,13 +59,11 @@ Asset::init()
 
         for (int i=0; i<inputCount; i++)
         {
-            MString longName = MString("input") + (i+1);
-            MString shortName = MString("in") + (i+1);
-            MObject input = gAttr.create(longName, shortName);
-            gAttr.addDataAccept(MFnData::kMesh);
-            gAttr.addDataAccept(MFnData::kIntArray);
+            MString attrName = MString("input") + (i+1);
 
-            cAttr.addChild(input);
+	    MObject inputAttrObj = AssetInputs::createInputAttribute(attrName);
+
+            cAttr.addChild(inputAttrObj);
         }
         addAttrTo(myMayaInputs, NULL);
     }
@@ -168,105 +165,8 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
             return;
         }
 
-        // input from another asset
-	// Depending on whether the input connection is coming from a Houdni asset or
-	// just a simple Maya Mesh output, we will either connect the underlying Houdini
-	// asset or simply marshal the Maya geometry.
-
         MDataHandle elemInputHandle = data.inputValue(elemInputPlug);
-        if (elemInputHandle.type() == MFnData::kIntArray)
-        {
-            MFnIntArrayData fnIAD(elemInputHandle.data());
-            MIntArray metaData = fnIAD.array();
-            HAPI_ConnectAssetGeometry(metaData[0], metaData[1], metaData[3], assetInfo.id, i);
-            return;
-        }
-
-        // raw mesh input
-        if (elemInputHandle.type() == MFnData::kMesh)
-        {
-            // extract mesh data from Maya
-            MObject inputMesh = elemInputHandle.asMesh();
-            MFnMesh fnMesh(inputMesh);
-            MItMeshPolygon itMeshPoly(inputMesh);
-
-            // get points
-            MFloatPointArray points;
-            fnMesh.getPoints(points);
-
-            // get face data
-            MIntArray faceCounts;
-            MIntArray vertexList;
-            while (!itMeshPoly.isDone())
-            {
-                int vc = itMeshPoly.polygonVertexCount();
-                faceCounts.append(vc);
-                for (int j=0; j<vc; j++)
-                {
-                    vertexList.append(itMeshPoly.vertexIndex(j));
-                }
-                itMeshPoly.next();
-            }
-            Util::reverseWindingOrderInt(vertexList, faceCounts);
-
-            HAPI_GeoInputInfo inputInfo;
-            HAPI_CreateGeoInput(assetInfo.id, i, &inputInfo);
-
-            // set up GeoInfo            
-            HAPI_PartInfo* partInfo    = new HAPI_PartInfo();
-            partInfo->id               = 0;
-            partInfo->materialId       = -1;
-            partInfo->faceCount        = faceCounts.length();
-            partInfo->vertexCount      = vertexList.length();
-            partInfo->pointCount       = points.length();
-
-            partInfo->pointAttributeCount  = 1;
-            partInfo->vertexAttributeCount = 0;
-            partInfo->faceAttributeCount   = 0;
-            partInfo->detailAttributeCount = 0;
-
-            // copy data to arrays
-            int * vl = new int[partInfo->vertexCount];
-            int * fc = new int[partInfo->faceCount];
-            vertexList.get(vl);
-            faceCounts.get(fc);
-
-            float* pos_attr = new float[ partInfo->pointCount * 3 ];
-            for ( int i = 0; i < partInfo->pointCount; ++i )
-                for ( int j = 0; j < 3; ++j )
-                    pos_attr[ i * 3 + j ] = points[ i ][ j ];
-
-            // Set the data
-            //HAPI_SetGeoInfo(assetInfo.id, inputInfo.objectId, inputInfo.geoId, inputGeoInfo);
-            HAPI_SetPartInfo(assetInfo.id, inputInfo.objectId, 
-            	inputInfo.geoId, partInfo);
-            HAPI_SetFaceCounts(assetInfo.id, inputInfo.objectId, 
-            	inputInfo.geoId, fc, 0, partInfo->faceCount);
-            HAPI_SetVertexList(assetInfo.id, inputInfo.objectId, 
-            	inputInfo.geoId, vl, 0, partInfo->vertexCount);
-
-            // Set position attributes.
-            HAPI_AttributeInfo* pos_attr_info = new HAPI_AttributeInfo();
-            pos_attr_info->exists             = true;
-            pos_attr_info->owner              = HAPI_ATTROWNER_POINT;
-            pos_attr_info->storage            = HAPI_STORAGETYPE_FLOAT;
-            pos_attr_info->count              = partInfo->pointCount;
-            pos_attr_info->tupleSize          = 3;
-            HAPI_AddAttribute( assetInfo.id, inputInfo.objectId, inputInfo.geoId, "P", pos_attr_info );
-
-            HAPI_SetAttributeFloatData(assetInfo.id, inputInfo.objectId, inputInfo.geoId, "P", pos_attr_info,
-                    pos_attr, 0, partInfo->pointCount);
-
-            // Commit it
-            HAPI_CommitGeo(assetInfo.id, inputInfo.objectId, inputInfo.geoId);
-
-	    delete[] vl;
-	    delete[] fc;
-            delete partInfo;
-            delete[] pos_attr;
-            delete pos_attr_info;
-        }
-
+	myAssetInputs->setInput(i, elemInputHandle);
     }
 }
 

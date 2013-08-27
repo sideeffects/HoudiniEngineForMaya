@@ -119,8 +119,6 @@ AssetNodeMonitor::attributeChangedCB(MNodeMessage::AttributeMessage msg, MPlug& 
     if ((msg & MNodeMessage::kAttributeSet && plug != AssetNode::fileNameAttr) ||
         (msg & MNodeMessage::kConnectionBroken) && (msg & MNodeMessage::kIncomingDirection))
     {
-        cerr << "Attr changed: " << plug.name() << " //// " << plug.asFloat() << endl;
-
         AssetNodeMonitor* mon = (AssetNodeMonitor*) clientData;
         mon->getManager()->update();
     }
@@ -128,7 +126,6 @@ AssetNodeMonitor::attributeChangedCB(MNodeMessage::AttributeMessage msg, MPlug& 
     {
         // node is not dirty yet, need to pass force compute cycle to
         // node dirty callback
-        cerr << "Attr connection made: " << plug.name() << endl;
         AssetNodeMonitor* mon = (AssetNodeMonitor*) clientData;
         mon->attachNodeDirtyCallback();
     }
@@ -138,8 +135,6 @@ AssetNodeMonitor::attributeChangedCB(MNodeMessage::AttributeMessage msg, MPlug& 
 void
 AssetNodeMonitor::nodeDirtyPlugCB(MObject& node, MPlug& plug, void* clientData)
 {
-    cerr << "Node dirty: " << plug.name() << " |||| " << plug.asFloat() << endl;
-
     AssetNodeMonitor* mon = (AssetNodeMonitor*) clientData;
     mon->getManager()->update();
 
@@ -152,7 +147,6 @@ AssetNodeMonitor::nodeDirtyPlugCB(MObject& node, MPlug& plug, void* clientData)
 void
 AssetNodeMonitor::sceneOpenedCB(void* clientData)
 {
-    cerr << "Scene opened" << endl;
     AssetNodeMonitor* mon = (AssetNodeMonitor*) clientData;
     mon->stop();
 }

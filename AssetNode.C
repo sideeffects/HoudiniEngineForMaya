@@ -306,7 +306,6 @@ AssetNode::AssetNode()
 
 AssetNode::~AssetNode() {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    cerr << "Asset node destroy" << endl;
     try
     {
         if ( myAsset != NULL )
@@ -342,8 +341,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         return MS::kSuccess;
 
     myDirtyParmAttribute = plugBeingDirtied.attribute();
-    //cerr << "plugBeingDirtied: " << plugBeingDirtied.name();
-    //cerr << "name: " << dirtyParmPlug->name();
     
     affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
 
@@ -526,9 +523,6 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
     MPlug plug(thisMObject(), attr);
     MPlug dirtyParmPlug(thisMObject(), myDirtyParmAttribute);
 
-    //cerr << "plug: " << plug.name() << endl;
-    //cerr << "dirtyParmPlug: " << dirtyParmPlug.name() << endl;
-
     //Only push into Houdini the minimum changes necessary.
     //Only push what has been dirtied.
 
@@ -582,7 +576,6 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         HAPI_SetParmIntValues( myAsset->nodeInfo.id, values, parm.intValuesIndex, size );
         //double after = getTime();
 
-        //cerr << "type: " << parm.type << " time: " << (after - before) << " int" << endl;
         delete[] values;
     }
 
@@ -606,7 +599,6 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         HAPI_SetParmFloatValues( myAsset->nodeInfo.id, values, parm.floatValuesIndex, size);
         //double after = getTime();
 
-        //cerr << "type: " << parm.type << " id: " << parm.id << " time: " << (after - before) << " float" << endl;
         delete[] values;
     }
 
@@ -627,7 +619,6 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 double before = getTime();
                 HAPI_SetParmStringValue( myAsset->nodeInfo.id, val, parm.id, i);
                 double after = getTime();
-                //cerr << "type: " << parm.type << " time: " << (after - before) << " string" << endl;
             }
         }
     }
@@ -658,8 +649,6 @@ AssetNode::setParmValues(MDataBlock& data)
 MStatus
 AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
-    cerr << "compute #################################### " << plug.name() << endl;
-
     // load otl
     if ( myAssetChanged )
     {
@@ -682,7 +671,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     if (!myBuiltParms)
     {
         // add ALL the parms
-        cerr << "add parms ...." << endl;
 
 	//These are dynamic input attributes.  These represent
 	// the parms of the asset, which we only know after we have
@@ -712,8 +700,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
     MPlug outputPlug(thisMObject(), AssetNode::output);
     myAsset->compute(outputPlug, data);
-
-    cerr << "end compute #################################### " << plug.name() << endl;
 
     return MS::kSuccess;
 }

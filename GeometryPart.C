@@ -61,7 +61,6 @@ GeometryPart::updateFaceCounts()
 
         delete[] tempFaceCounts;
     }
-    //cerr << "facecounts: " << faceCounts << endl;
 }
 
 
@@ -74,8 +73,6 @@ GeometryPart::updateVertexList()
         int * tempVertexList = new int[numVertexCount];
         HAPI_GetVertexList( myAssetId, myObjectId, myGeoId, myPartId, tempVertexList, 0, numVertexCount);
         MIntArray result(tempVertexList, numVertexCount);
-        //cerr << "vertextList: " << endl;
-        //cerr << result << endl;
         Util::reverseWindingOrderInt(result, myFaceCounts);
 
         myVertexList = result;
@@ -250,9 +247,6 @@ GeometryPart::compute(MDataHandle& handle)
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
-        cerr << "compute part mesh: " << myPartName << endl;
-
-
         // Object name
         objectNameHandle.set( myPartName );
 
@@ -289,8 +283,6 @@ GeometryPart::compute(MDataHandle& handle)
 MObject
 GeometryPart::createMesh()
 {
-
-    //cerr << "Creating mesh... " << Util::getString(objectInfo.nameSH) << endl;
     // Mesh Data
     MFnMeshData dataCreator;
     MObject outData = dataCreator.create();
@@ -327,7 +319,6 @@ GeometryPart::createMesh()
 void
 GeometryPart::updateMaterial(MDataHandle& handle)
 {
-    cerr << "Update material: " << myPartName << endl;
     MDataHandle matExistsHandle = handle.child(AssetNode::materialExists);
     MDataHandle ambientHandle = handle.child(AssetNode::ambientAttr);
     MDataHandle diffuseHandle = handle.child(AssetNode::diffuseAttr);

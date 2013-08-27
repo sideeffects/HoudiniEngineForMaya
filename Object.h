@@ -41,9 +41,6 @@ class Object {
         virtual MStatus setClean(MPlug& plug, MDataBlock& data) = 0;
         virtual ObjectType type() = 0;
 
-        // Utility
-        virtual void printAttributes(HAPI_AttributeOwner owner);
-
     public:
         Asset* myObjectControl;
         bool myIsInstanced;

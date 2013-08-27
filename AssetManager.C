@@ -112,7 +112,6 @@ AssetManager::init()
 MStatus
 AssetManager::update()
 {
-    cerr << "AssetManager::update() called" << endl;
     MStatus stat;
     try
     {
@@ -258,12 +257,10 @@ ObjectNodeGroup::updateNodes()
 
         MString objFullPath = "|" + MFnDependencyNode(assetTransform).name() +
                               "|" + objName;
-        cerr << objFullPath << endl;
         cmd = "objExists " + objFullPath;
         int exists = 0;
         stat = MGlobal::executeCommand(cmd, exists);
         Util::checkMayaStatus(stat);
-        cerr << exists << endl;
 
         MObject objNode;
         if (exists)
@@ -279,7 +276,6 @@ ObjectNodeGroup::updateNodes()
 
         if (partTransform.isNull())
         {
-            cerr << "createing mesh" << endl;
             // Creates a mesh node and its parent, returns the parent to me.
             partTransform = fnDag.create("mesh", partName, MObject::kNullObj, &stat);
             Util::checkMayaStatus(stat);
@@ -295,7 +291,6 @@ ObjectNodeGroup::updateNodes()
         MPlug materialPlug = plug.child(AssetNode::material);
         if (materialNode.isNull())
         {
-            cerr << "createing mateiral" << endl;
             cmd = "shadingNode -asShader phong";
 	    stat = MGlobal::executeCommand(cmd, result); // phong node
             Util::checkMayaStatus(stat);
@@ -304,7 +299,6 @@ ObjectNodeGroup::updateNodes()
 
         if (seNode.isNull())
         {
-            cerr << "createing se: " << MFnDagNode(partTransform).fullPathName() << endl;
             stat = MGlobal::selectByName(MFnDagNode(partTransform).fullPathName(), MGlobal::kReplaceList);
             Util::checkMayaStatus(stat);
 
@@ -319,7 +313,6 @@ ObjectNodeGroup::updateNodes()
             if (hasConnections)
             {
                 seNode = connectedPlugs[0].node();
-                cerr << "seNode: " << MFnDependencyNode(seNode).name() << endl;
             }
         }
 
@@ -346,7 +339,6 @@ ObjectNodeGroup::updateNodes()
                 }
             }
         }
-        cerr << "check" << endl;
         stat = dg.doIt();
         Util::checkMayaStatus(stat);
 
@@ -373,7 +365,6 @@ ObjectNodeGroup::updateConnections()
         MPlug transformPlug = plug.child(AssetNode::transform);
 
         src = transformPlug.child(AssetNode::translateAttr);
-        cerr << src.name() << endl;
         dest = MFnDependencyNode(partTransform).findPlug("translate", true);
         stat = dg.connect(src, dest);
         Util::checkMayaStatus(stat);
@@ -410,7 +401,6 @@ ObjectNodeGroup::updateConnections()
             Util::checkMayaStatus(stat);
 
             MString texturePath = materialPlug.child(AssetNode::texturePath).asString();
-            cerr << "texturePath: " << texturePath << endl;
             if (texturePath == "")
             {
                 src = materialPlug.child(AssetNode::diffuseAttr);

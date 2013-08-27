@@ -31,7 +31,6 @@ GeometryObject::init()
     for (int i=0; i<partCount; i++)
     {
         MString partName = getName() + "_partShape" + (i+1);
-        //cerr << "&&&&&&&&&&&& partName: " << partName << endl;	
         myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, partName, myGeoInfo, myObjectControl );
     }
     
@@ -66,7 +65,6 @@ GeometryObject::update()
         for (int i=0; i<partCount; i++)
         {
             MString partName = getName() + "_partShape" + (i+1);
-            cerr << "&&&&&&&&&&&& partName: " << partName << endl;
 	    //TODO: remove the hard coding of the geo id to 0
             myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, partName, myGeoInfo, myObjectControl);
         }
@@ -117,7 +115,6 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
                     MDataHandle t = h.child(AssetNode::transform);
                     updateTransform(t);
                 }
-                cerr << *index << " index++: " + myParts[i].myPartName << endl;
                 (*index)++;
             }
         }
@@ -171,7 +168,6 @@ GeometryObject::setClean(MPlug& plug, MDataBlock& data)
 
 void GeometryObject::updateTransform(MDataHandle& handle)
 {
-    cerr << "Update transform: " << getName() << endl;
     MDataHandle translateHandle = handle.child(AssetNode::translateAttr);
     MDataHandle rotateHandle = handle.child(AssetNode::rotateAttr);
     MDataHandle scaleHandle = handle.child(AssetNode::scaleAttr);

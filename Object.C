@@ -67,7 +67,6 @@ Object::init()
     }
     catch (HAPIError& e)
     {
-        cerr << "obj " << getId() << " " << getName() << endl;
         cerr << e.what() << endl;
     }
 }
@@ -101,39 +100,8 @@ Object::update()
     }
     catch (HAPIError& e)
     {
-        cerr << "obj " << getId() << " " << getName() << endl;
         cerr << e.what() << endl;
         myGeoInfo.clear();
     }
     
 }
-
-
-
-
-// test functions
-void 
-Object::printAttributes(HAPI_AttributeOwner owner)
-{
-    //int size = 0;
-    //switch(owner)
-    //{
-        //case HAPI_ATTROWNER_VERTEX: size = geoInfo.vertexAttributeCount; break;
-        //case HAPI_ATTROWNER_POINT: size = geoInfo.pointAttributeCount; break;
-        //case HAPI_ATTROWNER_PRIM: size = geoInfo.faceAttributeCount; break;
-        //case HAPI_ATTROWNER_DETAIL: size = geoInfo.detailAttributeCount; break;
-    //}
-    //cerr << "---------------" << endl;
-    //cerr << "owner: " << owner << endl;
-    //int data[size];
-    //HAPI_GetAttributeNames(assetId, objectInfo.id, 0, owner, data, size);
-    //for (int i=0; i<size; i++)
-    //{
-        //cerr << Util::getString(data[i]) << endl;
-    //}
-    //cerr << "---------------" << endl;
-}
-// end test functions
-
-
-

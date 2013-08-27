@@ -35,10 +35,6 @@ Asset::Asset(MString otlFilePath, MObject node)
     hstat = HAPI_GetNodeInfo(assetInfo.nodeId, &nodeInfo);
     Util::checkHAPIStatus(hstat);
 
-    cerr << "Loaded asset: " << otlFilePath << " " << assetInfo.id << endl;
-    cerr << "type: " << assetInfo.type << endl;
-    cerr << "objectCount: " << assetInfo.objectCount << endl;
-
     init();
 
 }
@@ -182,7 +178,6 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
         }
 
         // raw mesh input
-        cerr << "type: " << elemInputHandle.type() << endl;
         if (elemInputHandle.type() == MFnData::kMesh)
         {
             // extract mesh data from Maya
@@ -327,7 +322,6 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
     {
         Object* obj = myObjects[ instancedObjIds[ i ] ];
         obj->myIsInstanced = true;
-        cerr << "mark instanced obj: " << obj->getName() << endl;
     }
 
     instancersHandle.setAllClean();
@@ -343,10 +337,8 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     MPlug objectsPlug = plug.child(AssetNode::objects);
 
     int objectIndex = 0;
-    cerr << "objectsPlug: " << objectsPlug.name() << endl;
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
-    cerr << "size +++++: " << objectsBuilder.elementCount() << endl;
     for (int i=0; i<numObjects; i++)
     {
 
@@ -364,14 +356,12 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     // clean up extra elements
     // in case the number of objects shrinks
     int objBuilderSizeCheck = objectsBuilder.elementCount();
-    cerr << "objectIndex: " << objectIndex  << " objBuilderSizeCheck: " << objBuilderSizeCheck << endl;
     if (objBuilderSizeCheck > objectIndex)
     {
         for (int i=objectIndex; i<objBuilderSizeCheck; i++)
         {
             try
             {
-                cerr << "    remove item" << endl;
                 stat = objectsBuilder.removeElement(i);
                 Util::checkMayaStatus(stat);
             } catch (MayaError& e)
@@ -380,7 +370,6 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
             }
         }
     }
-    cerr << "objBuilderSizeCheck again: " << objectsBuilder.elementCount() << endl;
     objectsHandle.set(objectsBuilder);
 
     objectsHandle.setAllClean();
@@ -407,7 +396,6 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     MDataHandle timeHandle = data.inputValue(timePlug);
     MTime currentTime = timeHandle.asTime();
     float time = (float)currentTime.as(MTime::kSeconds);
-    cerr << "current time: " << time << endl;
     HAPI_SetTime(time);
 
     //this figures out the Houdini asset inputs (Geo, Transform)
@@ -418,8 +406,6 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
 
 
     Util::statusCheckLoop();
-
-    cerr << "cooked asset" << endl;
 
     update();
 

@@ -126,9 +126,6 @@ InstancerObject::update()
             myInstancedObjectIndices.append( (int) j );
         }
     }
-
-    //cerr << "update instancer: " << endl;
-    //cerr << instancedObjectIndices << endl;
 }
 
 
@@ -172,10 +169,6 @@ InstancerObject::compute(MDataHandle& handle)
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
         HAPI_GetInstanceTransforms( myAssetId, myObjectInfo.id, 0, 5, instTransforms, 0, size );
 
-
-        //cerr << "instancedObjectNames: " << instancedObjectNames << endl;
-
-        //cerr << "get instance transforms" << endl;
         for (int j=0; j<size; j++)
         {
             HAPI_Transform it = instTransforms[j];

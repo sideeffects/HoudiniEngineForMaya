@@ -64,7 +64,7 @@ AssetInputCurve::setInput(MDataHandle &dataHandle)
 
     // type
     {
-	HAPI_ParmChoiceInfo choices[typeParm.choiceCount];
+	HAPI_ParmChoiceInfo* choices = new HAPI_ParmChoiceInfo[typeParm.choiceCount];
 	HAPI_GetParmChoiceLists(myCurveNodeInfo.id, choices,
 		typeParm.choiceIndex, typeParm.choiceCount);
 
@@ -77,6 +77,8 @@ AssetInputCurve::setInput(MDataHandle &dataHandle)
 		break;
 	    }
 	}
+
+	delete [] choices;
 
 	if(nurbsIdx < 0)
 	{

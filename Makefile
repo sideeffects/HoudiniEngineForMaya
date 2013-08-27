@@ -176,7 +176,11 @@ $(OBJ_DIR)/%.o: %.C
 ifeq ($(OS), Linux)
 	$(CXX) -c -MMD -MP -MT $(@) $(CPPFLAGS) $(CXXFLAGS) -o $(@) $(<)
 else ifeq ($(OS), Cygwin)
-	$(CXX) -c -showIncludes $(CPPFLAGS) $(CXXFLAGS) -Fo$(@) -Tp$(<) | ./clShowIncludesToMake $(@)
+	$(CXX) -c -showIncludes $(CPPFLAGS) $(CXXFLAGS) -Fo$(@) -Tp$(<) > $(@).log; \
+	    compileStatus=$$?; \
+	    cat $(@).log | ./clShowIncludesToMake $(@); \
+	    rm -f $(@).log; \
+	    exit $$compileStatus
 endif
 
 -include $(DEPFILES)

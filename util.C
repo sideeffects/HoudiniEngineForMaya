@@ -91,7 +91,7 @@ MString
 Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
 {
     MString parmName = Util::getString(parm.nameSH);
-    MString name = MString("_parm") + parm.id + "_" + parmName + "_";
+    MString name = "houdiniAssetParm_" + parmName;
     return name;
 }
 

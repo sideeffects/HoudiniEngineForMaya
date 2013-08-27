@@ -4,6 +4,7 @@
 
 #include "AssetInputAsset.h"
 #include "AssetInputMesh.h"
+#include "AssetInputCurve.h"
 
 MObject
 AssetInputs::createInputAttribute(const MString &attrName)
@@ -13,6 +14,7 @@ AssetInputs::createInputAttribute(const MString &attrName)
     MObject inputAttrObj = gAttr.create(attrName, attrName);
     gAttr.addDataAccept(MFnData::kIntArray);
     gAttr.addDataAccept(MFnData::kMesh);
+    gAttr.addDataAccept(MFnData::kNurbsCurve);
 
     return inputAttrObj;
 }
@@ -80,6 +82,10 @@ AssetInputs::prepareAssetInput(int inputIdx, MDataHandle &dataHandle)
     {
 	newAssetInputType = AssetInput::AssetInputType_Mesh;
     }
+    else if(dataHandle.type() == MFnData::kNurbsCurve)
+    {
+	newAssetInputType = AssetInput::AssetInputType_Curve;
+    }
 
     // if the existing input doesn't match the new input type, delete it
     if(assetInput && assetInput->assetInputType() != newAssetInputType)
@@ -116,6 +122,9 @@ AssetInput::createAssetInput(int assetId, int inputIdx, AssetInputType assetInpu
 	    break;
 	case AssetInputType_Mesh:
 	    assetInput = new AssetInputMesh(assetId, inputIdx);
+	    break;
+	case AssetInputType_Curve:
+	    assetInput = new AssetInputCurve(assetId, inputIdx);
 	    break;
 	case AssetInputType_Invalid:
 	    break;

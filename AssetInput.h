@@ -37,6 +37,7 @@ class AssetInput
 	    AssetInputType_Invalid,
 	    AssetInputType_Asset,
 	    AssetInputType_Mesh,
+	    AssetInputType_Curve,
 	};
 
 	static AssetInput* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);

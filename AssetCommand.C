@@ -4,6 +4,7 @@
 
 #include "AssetCommand.h"
 #include "AssetSubCommand.h"
+#include "AssetSubCommandLoadOTL.h"
 #include "AssetManager.h"
 #include "AssetNodeMonitor.h"
 #include "util.h"

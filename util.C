@@ -1,3 +1,4 @@
+#include <maya/MDGModifier.h>
 #include <maya/MStringArray.h>
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
@@ -371,6 +372,40 @@ Util::findDagChild(const MFnDagNode &dag, const MString &name)
     }
 
     return childObj;
+}
+
+MStatus
+Util::createNodeByModifierCommand(
+	MDGModifier &dgModifier,
+	const MString &command,
+	MObject &object,
+	unsigned int index
+	)
+{
+    MStatus status;
+
+    // clear current selection
+    // this ensures we'll get an error if command doesn't result in a selection
+    MGlobal::clearSelectionList();
+
+    // run the command
+    status = dgModifier.commandToExecute(command);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    status = dgModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // get the selection
+    MSelectionList selection;
+    MGlobal::getActiveSelectionList(selection);
+    if(selection.length() <= index)
+    {
+	return MStatus::kInvalidParameter;
+    }
+
+    status = selection.getDependNode(index, object);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
 }
 
 MString

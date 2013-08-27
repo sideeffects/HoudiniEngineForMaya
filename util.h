@@ -10,6 +10,7 @@
 
 #include <HAPI/HAPI.h>
 
+class MDGModifier;
 class MFnDagNode;
 
 class HAPIError: public std::exception
@@ -70,6 +71,12 @@ class Util {
 
         static MObject findNodeByName(const MString &name);
 	static MObject findDagChild(const MFnDagNode &dag, const MString &name);
+	static MStatus createNodeByModifierCommand(
+		MDGModifier &dgModifier,
+		const MString &command,
+		MObject &object,
+		unsigned int index = 0
+		);
         static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
 
         // Returns true if the parm was found.

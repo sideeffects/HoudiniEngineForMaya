@@ -3,6 +3,8 @@
 #include <maya/MDagModifier.h>
 #include <maya/MGlobal.h>
 
+#include <maya/MFnDagNode.h>
+
 #include "AssetNode.h"
 #include "util.h"
 
@@ -22,104 +24,87 @@ AssetSyncOutputInstance::~AssetSyncOutputInstance()
 MStatus
 AssetSyncOutputInstance::doIt()
 {
-    MStatus stat;
+    MStatus status;
 
-    stat = updateNodes();
-    stat = updateConnections();
-    return stat;
+    status = createOutput();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return redoIt();
 }
 
 MStatus
 AssetSyncOutputInstance::undoIt()
 {
+    MStatus status;
+
+    status = myDagModifier.undoIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     return MStatus::kSuccess;
 }
 
 MStatus
 AssetSyncOutputInstance::redoIt()
 {
+    MStatus status;
+
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     return MStatus::kSuccess;
 }
 
 MStatus
-AssetSyncOutputInstance::updateNodes()
+AssetSyncOutputInstance::createOutput()
 {
-    MStatus stat;
-    MDagModifier dag;
-    MFnDependencyNode fnDN;
+    MStatus status;
 
-    try
+    MFnDagNode assetTransformFn(myAssetTransform);
+
+    // create the instancer node
+    MObject instancer = myDagModifier.createNode("instancer", myAssetTransform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    MFnDependencyNode instancerFn(instancer, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // set the rotation units to radians
+    status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits"), 1);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     {
-        // Create the instancer node
-        if (myInstancerNode.isNull())
-        {
-            myInstancerNode = fnDN.create("instancer", "instancer", &stat);
-            Util::checkMayaStatus(stat);
-        }
+	MPlug srcPlug;
+	MPlug dstPlug;
 
-        // Set the rotation units to radians
-        stat = dag.newPlugValueInt(MFnDependencyNode(myInstancerNode).findPlug("rau"), 1);
-        Util::checkMayaStatus(stat);
+	// inputPoints
+	srcPlug = myOutputPlug.child(AssetNode::instancerData);
+	dstPlug = instancerFn.findPlug("inputPoints");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-        stat = dag.reparentNode(myInstancerNode, myAssetTransform);
-        Util::checkMayaStatus(stat);
+	// go through every instanced objects
+	MPlug instancedNamesPlug = myOutputPlug.child(AssetNode::instancedObjectNames);
+	MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy");
+	for(unsigned int i = 0; i < instancedNamesPlug.numElements(); i++)
+	{
+	    MObject objectTransform = Util::findDagChild(assetTransformFn, instancedNamesPlug[i].asString());
+	    MFnDependencyNode objectTransformFn(objectTransform);
 
-        stat = dag.doIt();
-        Util::checkMayaStatus(stat);
+	    // connect inputHierarchy
+	    srcPlug = objectTransformFn.findPlug("matrix");
+	    dstPlug = inputHierarchyPlug.elementByLogicalIndex(i);
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
 
-        return MS::kSuccess;
+	    // set objectTransform hidden
+	    status = myDagModifier.newPlugValueInt(objectTransformFn.findPlug("visibility"), 0);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	}
     }
-    catch (MayaError& e)
-    {
-        cerr << e.what() << endl;
-        return MS::kFailure;
-    }
 
-}
+    // doIt
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
-
-MStatus
-AssetSyncOutputInstance::updateConnections()
-{
-    MStatus stat;
-    MPlug src, dest;
-    MDGModifier dg;
-
-    try
-    {
-        // Connect the input points
-        src = myOutputPlug.child(AssetNode::instancerData);
-        dest = MFnDependencyNode(myInstancerNode).findPlug("inputPoints");
-        stat = dg.connect(src, dest);
-        Util::checkMayaStatus(stat);
-
-        // Connect the instanced objects
-        MPlug instancedNames = myOutputPlug.child(AssetNode::instancedObjectNames);
-        int ionCount = instancedNames.numElements();
-        for (int i=0; i<ionCount; i++)
-        {
-            MString name = "|" + MFnDependencyNode(myAssetTransform).name() +
-                "|" + instancedNames[i].asString();
-
-            src = MFnDependencyNode(Util::findNodeByName(name)).findPlug("matrix");
-            dest = MFnDependencyNode(myInstancerNode).findPlug("inputHierarchy").elementByLogicalIndex(i);
-            stat = dg.connect(src, dest);
-            Util::checkMayaStatus(stat);
-
-            MString cmd = "hide " + name;
-
-	    stat = MGlobal::executeCommand(cmd);
-	    Util::checkMayaStatus(stat);
-        }
-
-        stat = dg.doIt();
-        Util::checkMayaStatus(stat);
-
-        return MS::kSuccess;
-    }
-    catch (MayaError& e)
-    {
-        cerr << e.what() << endl;
-        return MS::kFailure;
-    }
+    return MStatus::kSuccess;
 }

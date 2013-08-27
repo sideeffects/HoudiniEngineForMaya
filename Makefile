@@ -120,7 +120,6 @@ CXXFILES = \
 	   AssetSubCommand.C \
 	   AssetSubCommandLoadOTL.C \
 	   AssetSubCommandSync.C \
-	   AssetManager.C \
 	   Asset.C \
 	   AssetInput.C \
 	   AssetInputAsset.C \
@@ -130,7 +129,6 @@ CXXFILES = \
 	   util.C \
 	   GeometryObject.C \
 	   InstancerObject.C \
-	   AssetNodeMonitor.C \
 	   GeometryPart.C \
 	   AssetSync.C \
 	   AssetSyncOutputGeoPart.C \

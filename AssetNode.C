@@ -19,7 +19,6 @@
 #include <maya/MGlobal.h>
 
 #include "AssetNode.h"
-#include "AssetNodeMonitor.h"
 #include "MayaTypeID.h"
 #include "util.h"
 
@@ -318,18 +317,14 @@ AssetNode::~AssetNode() {
     {
         cerr << e.what() << endl;
     }
-    //monitor->stop();
 
     delete myAsset;
-    //delete monitor;
 }
 
 
 void
 AssetNode::postConstructor()
 {
-    //monitor = new AssetNodeMonitor(thisMObject());
-    //MStatus stat = monitor->watch();
 }
 
 

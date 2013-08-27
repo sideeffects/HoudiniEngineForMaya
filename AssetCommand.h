@@ -5,10 +5,13 @@
 
 #include <maya/MSyntax.h>
 
+class AssetSubCommand;
+
 class AssetCommand: public MPxCommand
 {
     enum AssetOperationType
     {
+	kOperationSubCommand,
 	kOperationLoadOTL,
 	kOperationSaveHip,
 	kOperationInvalid
@@ -34,6 +37,8 @@ class AssetCommand: public MPxCommand
 	MString myAssetOtlPath;
 	MString myHIPFilePath;
 	AssetOperationType myOperationType;
+
+	AssetSubCommand* myAssetSubCommand;
 };
 
 #endif

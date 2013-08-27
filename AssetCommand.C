@@ -3,6 +3,7 @@
 #include <maya/MStatus.h>
 
 #include "AssetCommand.h"
+#include "AssetSubCommand.h"
 #include "AssetManager.h"
 #include "AssetNodeMonitor.h"
 #include "util.h"
@@ -34,13 +35,18 @@ AssetCommand::newSyntax()
 }
 
 AssetCommand::AssetCommand() :
-    myOperationType(kOperationInvalid)
+    myOperationType(kOperationInvalid),
+    myAssetSubCommand(NULL)
 {
 }
 
 
 AssetCommand::~AssetCommand()
 {
+    if(myOperationType == kOperationSubCommand)
+    {
+	delete myAssetSubCommand;
+    }
 }
 
 
@@ -100,12 +106,22 @@ MStatus AssetCommand::doIt( const MArgList& args )
 	return status;
     }
 
+    if(myOperationType == kOperationSubCommand)
+    {
+	return myAssetSubCommand->doIt();
+    }
+
     return redoIt();
     
 }
 
 MStatus AssetCommand::redoIt() 
 {
+    if(myOperationType == kOperationSubCommand)
+    {
+	return myAssetSubCommand->redoIt();
+    }
+
     if( myOperationType == kOperationLoadOTL )
     {
 	AssetManager* manager = AssetManager::createManager( myAssetOtlPath );
@@ -125,11 +141,20 @@ MStatus AssetCommand::redoIt()
 
 MStatus AssetCommand::undoIt() 
 {
-    
+    if(myOperationType == kOperationSubCommand)
+    {
+	return myAssetSubCommand->undoIt();
+    }
+
     return MS::kSuccess;
 }
 
 bool AssetCommand::isUndoable() const 
 {    
+    if(myOperationType == kOperationSubCommand)
+    {
+	return myAssetSubCommand->isUndoable();
+    }
+
     return true;
 }

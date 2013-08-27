@@ -117,6 +117,7 @@ endif
 CXXFILES = \
 	   AssetNode.C \
 	   AssetCommand.C \
+	   AssetSubCommand.C \
 	   AssetManager.C \
 	   Asset.C \
 	   AssetInput.C \

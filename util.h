@@ -66,7 +66,7 @@ class Util {
         static void printHAPIStatus(HAPI_Result stat);
         static void printMayaStatus(MStatus stat);
 
-        static MObject findNodeByName(MString& name);
+        static MObject findNodeByName(const MString &name);
         static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
 
         // Returns true if the parm was found.

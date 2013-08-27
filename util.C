@@ -340,7 +340,7 @@ Util::printMayaStatus(MStatus stat)
 }
 
 MObject
-Util::findNodeByName(MString& name)
+Util::findNodeByName(const MString& name)
 {
     MSelectionList selection;
     selection.add(name);

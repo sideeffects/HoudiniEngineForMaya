@@ -1,8 +1,6 @@
 #ifndef __AssetSync_h__
 #define __AssetSync_h__
 
-#include <maya/MObject.h>
-#include <maya/MPlug.h>
 #include <maya/MStatus.h>
 
 class AssetSync

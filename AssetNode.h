@@ -1,9 +1,6 @@
 #ifndef __AssetNode_h__
 #define __AssetNode_h__
 
-
-#include <string.h>
-
 #include <maya/MPxNode.h> 
 
 #include <maya/MTypeId.h> 

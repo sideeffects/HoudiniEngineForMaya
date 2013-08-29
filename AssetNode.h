@@ -60,11 +60,6 @@ class AssetNode: public MPxNode
         static MTypeId id;
 
     private:
-        
-        void attachAttrChangedCallback();
-        void attachNodeDirtyCallback();
-        void detachNodeDirtyCallback();
-
         MObject getAttrFromParm(HAPI_ParmInfo& parm);
 
 

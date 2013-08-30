@@ -189,7 +189,7 @@ endif
 clean:
 	rm -f $(SONAME)
 ifeq ($(OS), Cygwin)
-	rm -f $(LIBNAME).lib $(LIBNAME).exp
+	rm -f $(SONAME:%.$(SOSUFFIX)=%.lib) $(SONAME:%.$(SOSUFFIX)=%.exp)
 endif
 	rm -f $(OBJFILES)
 	rm -f $(DEPFILES)

@@ -147,7 +147,7 @@ MELFILES = AEhoudiniAssetTemplate.mel \
 	   houdiniEngineCreateUI.mel \
 	   houdiniEngineDeleteUI.mel
 
-OBJ_DIR = .obj
+OBJ_DIR = .obj/maya$(MAYA_VERSION)
 
 OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
 

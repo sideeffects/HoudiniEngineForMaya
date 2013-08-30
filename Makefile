@@ -6,6 +6,13 @@ else ifneq ($(findstring CYGWIN, $(UNAME)),)
     OS = Cygwin
 endif
 
+# directory for the module description file
+DST_MODULE_DIR = $(HFS)/custom/houdiniEngine/maya
+# directory for the module directories (plug-ins, scripts, etc.)
+DST_DIR = $(DST_MODULE_DIR)/maya$(MAYA_VERSION)
+DST_PLUG_INS_DIR = $(DST_DIR)/plug-ins
+DST_SCRIPTS_DIR = $(DST_DIR)/scripts
+
 LIBNAME = houdiniEngine
 
 ifeq ($(OS), Linux)
@@ -135,11 +142,20 @@ CXXFILES = \
 	   AssetSyncOutputInstance.C \
 	   plugin.C
 
+MELFILES = AEhoudiniAssetTemplate.mel \
+	   hapiDebugWindow.mel \
+	   houdiniEngineCreateUI.mel \
+	   houdiniEngineDeleteUI.mel
+
 OBJ_DIR = .obj
 
 OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
 
 DEPFILES = $(patsubst %.C, $(OBJ_DIR)/%.d, $(CXXFILES))
+
+DST_MODULE = $(DST_MODULE_DIR)/houdiniEngine-maya$(MAYA_VERSION)
+DST_PLUG_IN = $(DST_PLUG_INS_DIR)/$(SONAME)
+DST_SCRIPTS = $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(MELFILES))
 
 # check build requirement
 ifeq ($(OS), Linux)
@@ -160,10 +176,13 @@ endif
 .PHONY: all
 all:
 ifeq ($(CAN_BUILD), 1)
-all: $(SONAME)
+all: $(DST_MODULE) $(DST_PLUG_IN) $(DST_SCRIPTS)
 endif
 
-$(SONAME): $(OBJFILES)
+$(DST_MODULE):
+	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.0 maya$(MAYA_VERSION)" > $(@)
+
+$(DST_PLUG_IN): $(OBJFILES)
 	@mkdir -p $(dir $(@))
 ifeq ($(OS), Linux)
 	$(LD) -shared $(LDFLAGS) -o $(@) $(OBJFILES) $(LDLIBS)
@@ -183,13 +202,17 @@ else ifeq ($(OS), Cygwin)
 	    exit $$compileStatus
 endif
 
+$(DST_SCRIPTS_DIR)/%.mel: %.mel
+	@mkdir -p $(dir $(@))
+	cp $(<) $(@)
+
 -include $(DEPFILES)
 
 .PHONY: clean
 clean:
-	rm -f $(SONAME)
+	rm -f $(DST_MODULE) $(DST_PLUG_IN) $(DST_SCRIPTS)
 ifeq ($(OS), Cygwin)
-	rm -f $(SONAME:%.$(SOSUFFIX)=%.lib) $(SONAME:%.$(SOSUFFIX)=%.exp)
+	rm -f $(DST_PLUG_IN:%.$(SOSUFFIX)=%.lib) $(DST_PLUG_IN:%.$(SOSUFFIX)=%.exp)
 endif
 	rm -f $(OBJFILES)
 	rm -f $(DEPFILES)

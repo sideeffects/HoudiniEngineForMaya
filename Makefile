@@ -180,6 +180,7 @@ all: $(DST_MODULE) $(DST_PLUG_IN) $(DST_SCRIPTS)
 endif
 
 $(DST_MODULE):
+	@mkdir -p $(dir $(@))
 	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.0 maya$(MAYA_VERSION)" > $(@)
 
 $(DST_PLUG_IN): $(OBJFILES)

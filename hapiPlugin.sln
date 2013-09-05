@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hapi", "hapiPlugin.vcxproj", "{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hapi", "hapiPlugin.vcxproj", "{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,18 +12,18 @@ Global
 		ReleaseDebug|x64 = ReleaseDebug|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Debug|Win32.Build.0 = Debug|Win32
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Debug|x64.ActiveCfg = Debug|x64
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Debug|x64.Build.0 = Debug|x64
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Release|Win32.ActiveCfg = Release|Win32
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Release|Win32.Build.0 = Release|Win32
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Release|x64.ActiveCfg = Release|x64
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.Release|x64.Build.0 = Release|x64
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.ReleaseDebug|Win32.ActiveCfg = ReleaseDebug|Win32
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.ReleaseDebug|Win32.Build.0 = ReleaseDebug|Win32
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.ReleaseDebug|x64.ActiveCfg = ReleaseDebug|x64
-		{E20F2F50-50ED-761C-7B5E-22BB33A68F0F}.ReleaseDebug|x64.Build.0 = ReleaseDebug|x64
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Debug|Win32.Build.0 = Debug|Win32
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Debug|x64.ActiveCfg = Debug|x64
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Debug|x64.Build.0 = Debug|x64
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Release|Win32.ActiveCfg = Release|Win32
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Release|Win32.Build.0 = Release|Win32
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Release|x64.ActiveCfg = Release|x64
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.Release|x64.Build.0 = Release|x64
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.ReleaseDebug|Win32.ActiveCfg = ReleaseDebug|Win32
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.ReleaseDebug|Win32.Build.0 = ReleaseDebug|Win32
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.ReleaseDebug|x64.ActiveCfg = ReleaseDebug|x64
+		{ACCAB49C-4B86-B220-1A63-F0FB65AEC639}.ReleaseDebug|x64.Build.0 = ReleaseDebug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

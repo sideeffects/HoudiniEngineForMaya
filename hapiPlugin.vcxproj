@@ -27,28 +27,53 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="asset.C" />
-    <ClCompile Include="assetCommand.C" />
-    <ClCompile Include="assetManager.C" />
-    <ClCompile Include="assetNode.C" />
-    <ClCompile Include="assetNodeMonitor.C" />
-    <ClCompile Include="geometryObject.C" />
-    <ClCompile Include="geometryPart.C" />
-    <ClCompile Include="instancerObject.C" />
-    <ClCompile Include="object.C" />
+    <None Include="AEhoudiniAssetTemplate.mel" />
+    <None Include="clShowIncludesToMake" />
+    <None Include="hapiDebugWindow.mel" />
+    <None Include="houdiniEngineCreateUI.mel" />
+    <None Include="houdiniEngineDeleteUI.mel" />
+    <None Include="userSetup.mel" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Asset.C" />
+    <ClCompile Include="AssetCommand.C" />
+    <ClCompile Include="AssetInput.C" />
+    <ClCompile Include="AssetInputAsset.C" />
+    <ClCompile Include="AssetInputCurve.C" />
+    <ClCompile Include="AssetInputMesh.C" />
+    <ClCompile Include="AssetNode.C" />
+    <ClCompile Include="AssetSubCommand.C" />
+    <ClCompile Include="AssetSubCommandLoadOTL.C" />
+    <ClCompile Include="AssetSubCommandSync.C" />
+    <ClCompile Include="AssetSync.C" />
+    <ClCompile Include="AssetSyncOutputGeoPart.C" />
+    <ClCompile Include="AssetSyncOutputInstance.C" />
+    <ClCompile Include="GeometryObject.C" />
+    <ClCompile Include="GeometryPart.C" />
+    <ClCompile Include="InstancerObject.C" />
+    <ClCompile Include="Object.C" />
     <ClCompile Include="plugin.C" />
     <ClCompile Include="util.C" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="asset.h" />
-    <ClInclude Include="assetCommand.h" />
-    <ClInclude Include="assetManager.h" />
-    <ClInclude Include="assetNode.h" />
-    <ClInclude Include="assetNodeMonitor.h" />
-    <ClInclude Include="geometryObject.h" />
-    <ClInclude Include="geometryPart.h" />
-    <ClInclude Include="instancerObject.h" />
-    <ClInclude Include="object.h" />
+    <ClInclude Include="Asset.h" />
+    <ClInclude Include="AssetCommand.h" />
+    <ClInclude Include="AssetInput.h" />
+    <ClInclude Include="AssetInputAsset.h" />
+    <ClInclude Include="AssetInputCurve.h" />
+    <ClInclude Include="AssetInputMesh.h" />
+    <ClInclude Include="AssetNode.h" />
+    <ClInclude Include="AssetSubCommand.h" />
+    <ClInclude Include="AssetSubCommandLoadOTL.h" />
+    <ClInclude Include="AssetSubCommandSync.h" />
+    <ClInclude Include="AssetSync.h" />
+    <ClInclude Include="AssetSyncOutputGeoPart.h" />
+    <ClInclude Include="AssetSyncOutputInstance.h" />
+    <ClInclude Include="GeometryObject.h" />
+    <ClInclude Include="GeometryPart.h" />
+    <ClInclude Include="InstancerObject.h" />
+    <ClInclude Include="MayaTypeID.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -117,7 +142,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;C:\cygwin\home\ken\dev_x86\dev\hfs\custom\houdini\include\HAPI;C:\Program Files %28x86%29\Autodesk\Maya2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;C:\Program Files %28x86%29\Side Effects Software\Houdini 13.0.163\toolkit\include;C:\Program Files %28x86%29\Autodesk\Maya2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
@@ -129,7 +154,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\cygwin\home\ken\dev_x86\dev\hfs\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\Program Files %28x86%29\Side Effects Software\Houdini 13.0.163\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
@@ -139,7 +164,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;C:\cygwin\home\ken\dev_x86\dev\hfs\custom\houdini\include\HAPI;C:\Program Files %28x86%29\Autodesk\Maya2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;C:\Program Files\Side Effects Software\Houdini 13.0.163\toolkit\include;C:\Program Files\Autodesk\Maya2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
@@ -151,7 +176,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\cygwin\home\ken\dev_x86\dev\hfs\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\Maya2013\lib;C:\Program Files\Side Effects Software\Houdini 13.0.163\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
@@ -235,7 +260,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;C:\Program Files %28x86%29\Autodesk\Maya2013\include;C:\Program Files %28x86%29\Side Effects Software\Houdini 12.5.359\toolkit\include\HAPI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;C:\Program Files %28x86%29\Autodesk\Maya2013\include;C:\Program Files %28x86%29\Side Effects Software\Houdini 13.0.163\toolkit\include\HAPI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -249,7 +274,7 @@
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\Program Files %28x86%29\Side Effects Software\Houdini 12.5.359\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\Program Files %28x86%29\Side Effects Software\Houdini 13.0.163\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
@@ -261,7 +286,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;NT_PLUGIN;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_SECURE_SCL_THROWS=0;_SECURE_SCL_DEPRECATE=0;_CRT_SECURE_NO_DEPRECATE;TBB_USE_DEBUG=0;__TBB_LIB_NAME=tbb.lib;REQUIRE_IOSTREAM;AW_NEW_IOSTREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;C:\Program Files\Autodesk\Maya2013\include;C:\cygwin\home\ken\dev\hfs\custom\houdini\include\HAPI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;C:\Program Files\Autodesk\Maya2013\include;C:\Program Files\Side Effects Software\Houdini 13.0.163\toolkit\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -275,7 +300,7 @@
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\Maya2013\lib;C:\cygwin\home\ken\dev\hfs\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\Maya2013\lib;C:\Program Files\Side Effects Software\Houdini 13.0.163\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>

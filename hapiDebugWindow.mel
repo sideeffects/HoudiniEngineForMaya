@@ -10,15 +10,9 @@ proc hapiPopulateTree(string $uiTree)
 	for( $ii = 0; $ii < size($array) - 1; $ii++)
 	{
 		$otl_path = $otl_path + $array[ $ii ] + "/";		
-	}
+	}		
 	
-	string $assets_path = "";	
-	for( $ii = 0; $ii < size($array) - 2; $ii++)
-	{
-		$assets_path = $assets_path + $array[ $ii ] + "/";		
-	}
-	
-	string $logoPath = $assets_path + "sideEffectsLogo.png";
+	string $logoPath = $otl_path + "sideEffectsLogo.png";
 	
 	string $otlDirContents[] = `getFileList -folder $otl_path`;
 	

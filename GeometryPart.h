@@ -14,6 +14,7 @@ class GeometryPart
 
         virtual void setGeoInfo(HAPI_GeoInfo& info);
         virtual bool hasMesh();
+	virtual bool hasVolume();
 
     public:
         MString myPartName;
@@ -31,6 +32,9 @@ class GeometryPart
 
         MObject createMesh();
 
+	MObject createFluidDensity();
+	void updateFluidTransform(MDataHandle& handle);
+
         // Utility
         virtual MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, MString name);
 
@@ -45,6 +49,7 @@ class GeometryPart
         HAPI_ObjectInfo myObjectInfo;
         HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
+	HAPI_VolumeInfo myVolumeInfo;
         HAPI_MaterialInfo myMaterialInfo;
 
         MIntArray myFaceCounts;

@@ -1,3 +1,17 @@
+# Useful targets:
+#     all - build the plugin for the Maya version set by MAYA_VERSION
+#     clean - clean up the generated files for the Maya version set by MAYA_VERSION
+#     all_maya - build the plugin for all the Maya versions listed in ALL_MAYA_VERSIONS
+#     all_maya_clean - clean up the generated files for all the Maya versions
+# 
+# Useful variables:
+#     HFS - directory to the Houdini installation
+#     DST_MODULE_DIR - directory for the module description file
+#     DST_DIR - directory for the module directories (plug-ins, scripts, etc.)
+#     MAKETYPE - setting this variable to "Release" will generate a release build
+#     MAYA_VERSION - the Maya version that we're building
+#     ALL_MAYA_VERSIONS - a list of all the Maya versions
+
 # detect the OS
 UNAME := $(shell uname)
 ifneq ($(findstring Linux, $(UNAME)),)
@@ -6,9 +20,8 @@ else ifneq ($(findstring CYGWIN, $(UNAME)),)
     OS = Cygwin
 endif
 
-# directory for the module description file
+# output directories
 DST_MODULE_DIR = $(HFS)/custom/houdiniEngine/maya
-# directory for the module directories (plug-ins, scripts, etc.)
 DST_DIR = $(DST_MODULE_DIR)/maya$(MAYA_VERSION)
 DST_PLUG_INS_DIR = $(DST_DIR)/plug-ins
 DST_SCRIPTS_DIR = $(DST_DIR)/scripts
@@ -228,6 +241,7 @@ $(DST_SCRIPTS_DIR)/%.mel: %.mel
 
 -include $(DEPFILES)
 
+# clean
 .PHONY: clean
 clean:
 	rm -f $(DST_MODULE) $(DST_OLD_MODULE) $(DST_PLUG_IN) $(DST_SCRIPTS)

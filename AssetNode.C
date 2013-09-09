@@ -335,7 +335,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     if (plugBeingDirtied == AssetNode::fileNameAttr)
         return MS::kSuccess;
 
-    myDirtyParmAttribute = plugBeingDirtied.attribute();
+    myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
     
     affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
 
@@ -498,37 +498,43 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     MObject attr = getAttrFromParm(parm);
     MPlug plug(thisMObject(), attr);
-    MPlug dirtyParmPlug(thisMObject(), myDirtyParmAttribute);
 
     //Only push into Houdini the minimum changes necessary.
     //Only push what has been dirtied.
-
-
-    bool found = false;
-    if (!dirtyParmPlug.isNull())
+    bool isDirty = false;
+    for(MObjectVector::iterator iter = myDirtyParmAttributes.begin();
+	    iter != myDirtyParmAttributes.end();
+	    iter++)
     {
-        // if the dirtied plug matches the parm, then we have a 1-tuple
-        // (non-compound Maya attribute)
-        if (plug == dirtyParmPlug)
-        {
-            found = true;
-        }
+	MPlug dirtyParmPlug(thisMObject(), *iter);
 
+	// If the dirtied plug matches the parm
+	if(plug == dirtyParmPlug)
+	{
+	    isDirty = true;
+	}
 
-        // if the parm is a type we know how to handle and the dirtied plug
-        // is a child of it, then the parm should be a tuple attribute, so we
-        // need to set the whole tuple
-        if (parm.isInt() || parm.isFloat() || parm.isString())
-        {
-            if (dirtyParmPlug.isChild() && dirtyParmPlug.parent() == plug)
-                found = true;
-        }
+	// If the parm is a tuple, then we also need to check the parent plug.
+	// We need to check if it's int, float, or string, because non-values
+	// like folders also use parm.size.
+	if((parm.isInt() || parm.isFloat() || parm.isString())
+		&& parm.size > 1
+		&& dirtyParmPlug.isChild() && dirtyParmPlug.parent() == plug)
+	{
+	    isDirty = true;
+	}
+
+	if(isDirty)
+	{
+	    myDirtyParmAttributes.erase(iter);
+	    break;
+	}
     }
-
-    // if the parm and the dirtied plug did not match, do nothing
-    if (!found)
-        return;
-
+    // if the parm didn't match any dirty attributes, then skip this parm
+    if (!isDirty)
+    {
+	return;
+    }
 
 	// this is the tuple size
     int size = parm.size;

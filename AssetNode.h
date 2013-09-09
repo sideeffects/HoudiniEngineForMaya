@@ -14,6 +14,8 @@
 
 #include <HAPI/HAPI.h>
 
+#include <vector>
+
 #include "Asset.h"
 
 // -------------------------------------------------------------------------------
@@ -71,7 +73,9 @@ class AssetNode: public MPxNode
         Asset* myAsset;
         bool myBuiltParms;
         bool myAssetChanged;
-        MObject myDirtyParmAttribute;        
+
+	typedef std::vector<MObject> MObjectVector;
+	MObjectVector myDirtyParmAttributes;
 
     public:
         static MObject fileNameAttr;

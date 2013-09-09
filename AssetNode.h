@@ -90,26 +90,6 @@ class AssetNode: public MPxNode
         static MObject objectName;
         static MObject metaData;
         static MObject mesh;
-
-	static MObject fluidDensity;
-	static MObject fluidResolutionW;
-	static MObject fluidResolutionH;
-	static MObject fluidResolutionD;
-
-	static MObject fluidTransform;
-        static MObject fluidTranslateAttr;
-        static MObject fluidTranslateAttrX;
-        static MObject fluidTranslateAttrY;
-        static MObject fluidTranslateAttrZ;
-        static MObject fluidRotateAttr;
-        static MObject fluidRotateAttrX;
-        static MObject fluidRotateAttrY;
-        static MObject fluidRotateAttrZ;
-        static MObject fluidScaleAttr;
-        static MObject fluidScaleAttrX;
-        static MObject fluidScaleAttrY;
-        static MObject fluidScaleAttrZ;
-	static MObject fluidFromAsset;
         
         static MObject transform;
         static MObject translateAttr;

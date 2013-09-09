@@ -121,22 +121,6 @@ AssetSyncOutputGeoPart::createOutputPart(
     status = myDagModifier.renameNode(partMesh, partName + "Shape");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    // create and rename a transform for the volume
-    MObject partVolumeTransform = myDagModifier.createNode("transform", partTransform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    status = myDagModifier.renameNode(partVolumeTransform, partName + "_fluid");
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // create partVolume
-    MObject partVolume = myDagModifier.createNode("fluidShape", partVolumeTransform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    MFnDependencyNode partVolumeFn(partVolume, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    MFnDependencyNode partFluidTransformFn(partVolumeTransform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
     MFnDependencyNode partTransformFn(partTransform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -174,70 +158,6 @@ AssetSyncOutputGeoPart::createOutputPart(
 	srcPlug = myOutputPlug.child(AssetNode::mesh);
 	dstPlug = partMeshFn.findPlug("inMesh");
 	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
-
-    // connect partVolume attributes
-    {
-	MPlug srcPlug;
-	MPlug dstPlug;
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidDensity);
-	dstPlug = partVolumeFn.findPlug("inDensity");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidResolutionW);
-	dstPlug = partVolumeFn.findPlug("resolutionW");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidResolutionH);
-	dstPlug = partVolumeFn.findPlug("resolutionH");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidResolutionD);
-	dstPlug = partVolumeFn.findPlug("resolutionD");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidResolutionW);
-	dstPlug = partVolumeFn.findPlug("dimensionsW");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidResolutionH);
-	dstPlug = partVolumeFn.findPlug("dimensionsH");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidResolutionD);
-	dstPlug = partVolumeFn.findPlug("dimensionsD");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::fluidFromAsset);
-	dstPlug = partVolumeFn.findPlug("playFromCache");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	MPlug transformPlug = myOutputPlug.child(AssetNode::fluidTransform);
-
-	srcPlug = transformPlug.child(AssetNode::fluidTranslateAttr);
-	dstPlug = partFluidTransformFn.findPlug("translate");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = transformPlug.child(AssetNode::fluidRotateAttr);
-	dstPlug = partFluidTransformFn.findPlug("rotate");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = transformPlug.child(AssetNode::fluidScaleAttr);
-	dstPlug = partFluidTransformFn.findPlug("scale");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 

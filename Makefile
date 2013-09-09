@@ -93,7 +93,7 @@ endif
 
 # Houdini flags
 CPPFLAGS += -I$(HFS)/custom/houdini/include
-#CPPFLAGS += -I$(HFS)/toolkit/include
+CPPFLAGS += -I$(HFS)/toolkit/include
 ifeq ($(OS), Linux)
     LDFLAGS += -Wl,-rpath,$(HFS)/dsolib
     LDLIBS += -L$(HFS)/dsolib -lHAPI

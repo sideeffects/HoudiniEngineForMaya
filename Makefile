@@ -236,3 +236,25 @@ ifeq ($(OS), Cygwin)
 endif
 	rm -f $(OBJFILES)
 	rm -f $(DEPFILES)
+
+# build multiple Maya versions
+ALL_MAYA_VERSIONS = 2014 \
+		2013 \
+		2012
+
+.PHONY: all_maya all_maya_clean
+
+define MAYA_VERSION_template
+.PHONY: maya$(1) maya$(1)_clean
+
+all_maya: maya$(1)
+maya$(1):
+	$$(MAKE) MAYA_VERSION=$(1)
+
+all_maya_clean: maya$(1)_clean
+maya$(1)_clean:
+	$$(MAKE) MAYA_VERSION=$(1) clean
+
+endef
+
+$(foreach maya_version, $(ALL_MAYA_VERSIONS), $(eval $(call MAYA_VERSION_template,$(maya_version))))

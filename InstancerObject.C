@@ -55,7 +55,7 @@ InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
     for (int j=0; j<size; j++){
         data[j] = 0;
     }
-    int status = HAPI_GetAttributeStrData( myAssetId, myObjectId, 0, 0, name.asChar(),
+    HAPI_GetAttributeStrData( myAssetId, myObjectId, 0, 0, name.asChar(),
             &attr_info, data, 0, attr_info.count);
 
     for (int j=0; j<size; j++){

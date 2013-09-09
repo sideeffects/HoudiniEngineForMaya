@@ -491,21 +491,6 @@ AssetNode::updateAttrValues(MDataBlock& data)
     delete[] parmInfos;
 }
 
-double
-getTime()
-{
-    //Todo: this implementation below is platform specific to Linux.  Re-implement it for
-    // a cross platform solution.
-    /*
-        timeval  tv;
-        gettimeofday(&tv, NULL);
-        double time_in_mill =
-                     (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
-        return time_in_mill;*/
-    return 0.0;
-}
-
-
 // This function takes Maya attr values and pushes it into Houdini
 void
 AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
@@ -564,9 +549,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 values[i] = handle.asInt();
             }
         }
-        //double before = getTime();
         HAPI_SetParmIntValues( myAsset->nodeInfo.id, values, parm.intValuesIndex, size );
-        //double after = getTime();
 
         delete[] values;
     }
@@ -587,9 +570,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 values[i] = handle.asFloat();
             }
         }
-        //double before = getTime();
         HAPI_SetParmFloatValues( myAsset->nodeInfo.id, values, parm.floatValuesIndex, size);
-        //double after = getTime();
 
         delete[] values;
     }
@@ -608,9 +589,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 MPlug child = plug.child(i);
                 MDataHandle handle = data.inputValue(child);
                 const char* val = handle.asString().asChar();
-                double before = getTime();
                 HAPI_SetParmStringValue( myAsset->nodeInfo.id, val, parm.id, i);
-                double after = getTime();
             }
         }
     }

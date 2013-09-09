@@ -116,11 +116,16 @@ endif
 
 # general flags
 ifeq ($(OS), Linux)
+    CXXFLAGS += -Wall
+
     CXXFLAGS += -m64 -pthread -pipe -fPIC
     LDFLAGS += -Wl,-Bsymbolic
 else ifeq ($(OS), Cygwin)
     CXXFLAGS += -nologo
     LDFLAGS += -nologo
+
+    CXXFLAGS += -W4
+    CXXFLAGS += -D_CRT_SECURE_NO_WARNINGS
 
     CPPFLAGS += -I$(MSVC_SDK_INCLUDE) -I$(WIN32_SDK_INCLUDE)
     CXXFLAGS += -EHsc

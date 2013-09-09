@@ -26,7 +26,7 @@ class HAPIError: public std::exception
 
     protected:
         mutable MString myBuffer;
-        const MString myMessage;
+        MString myMessage;
 };
 
 

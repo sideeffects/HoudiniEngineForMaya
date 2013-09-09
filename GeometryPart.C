@@ -18,15 +18,15 @@ GeometryPart::GeometryPart()
 }
 
 GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
-        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl)
-    : myAssetId(assetId)
-    , myObjectId(objectId)
-    , myGeoId(geoId)
-    , myPartId(partId)
-    , myObjectInfo(objectInfo)
-    , myGeoInfo(geoInfo)
-    , myObjectControl(objectControl)
-    , myNeverBuilt(true)
+        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl) : 
+    myObjectControl(objectControl),
+    myAssetId(assetId),
+    myObjectId(objectId),
+    myGeoId(geoId),
+    myPartId(partId),
+    myObjectInfo(objectInfo),
+    myGeoInfo(geoInfo),
+    myNeverBuilt(true)
 {
     // Do a full update
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
@@ -209,7 +209,7 @@ GeometryPart::getAttributeFloatData(HAPI_AttributeOwner owner, MString name)
     for (int j=0; j<size; j++){
         data[j] = 0;
     }
-    int status = HAPI_GetAttributeFloatData( myAssetId, myObjectId, myGeoId, myPartId, name.asChar(),
+    HAPI_GetAttributeFloatData( myAssetId, myObjectId, myGeoId, myPartId, name.asChar(),
             &attr_info, data, 0, attr_info.count);
 
     ret = MFloatArray(data, size);

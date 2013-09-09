@@ -39,8 +39,10 @@ Object::Object() {}
 Object::~Object() {}
 
 
-Object::Object(int assetId, int objectId)
-    : myObjectId(objectId), myAssetId(assetId), myIsInstanced(false),
+Object::Object(int assetId, int objectId) :
+    myIsInstanced(false),
+    myAssetId(assetId),
+    myObjectId(objectId),
     myNeverBuilt(true)
 {
     myObjectControl = NULL;

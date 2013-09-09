@@ -473,7 +473,7 @@ Asset::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortN
         for (int i=0; i<choiceCount; i++)
         {
             MString field = Util::getString(choiceInfos[i].labelSH);
-            eAttr.addField(field, i);
+            eAttr.addField(field, static_cast<short>(i));
         }
 
 	delete[] choiceInfos;

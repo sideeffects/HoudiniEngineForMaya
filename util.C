@@ -231,9 +231,9 @@ Util::statusCheckLoop()
     int currCookCount = 0;
     int totalCookCount = 1;       
     
+#ifdef _WIN32
     int startTime = 0;
     
-#ifdef _WIN32
     startTime = ::GetTickCount();
 #endif
 
@@ -440,7 +440,7 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
 int
 Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name)
 {
-    for (int i = 0; i < parms.size(); i++)
+    for (size_t i = 0; i < parms.size(); i++)
     {
 	MString current_parm_name = getString(parms[i].nameSH);
 	if(parms[i].isChildOfMultiParm)
@@ -450,7 +450,7 @@ Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name)
 
 	if (current_parm_name == name)
 	{
-	    return i;
+	    return static_cast<int>(i);
 	}
     }
 

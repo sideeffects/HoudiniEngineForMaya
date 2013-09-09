@@ -23,7 +23,7 @@ class AssetInputs
 	void prepareAssetInput(int inputIdx, MDataHandle &dataHandle);
 
     private:
-	const int myAssetId;
+	int myAssetId;
 
 	typedef std::vector<AssetInput*> AssetInputVector;
 	AssetInputVector myAssetInputs;
@@ -51,8 +51,8 @@ class AssetInput
 	virtual void setInput(MDataHandle &dataHandle) = 0;
 
     protected:
-	const int myAssetId;
-	const int myInputIdx;
+	int myAssetId;
+	int myInputIdx;
 };
 
 #endif

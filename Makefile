@@ -21,7 +21,7 @@ else ifneq ($(findstring CYGWIN, $(UNAME)),)
 endif
 
 # output directories
-DST_MODULE_DIR = $(HFS)/houdiniEngine/maya
+DST_MODULE_DIR = $(HFS)/engine/maya
 DST_DIR = $(DST_MODULE_DIR)/maya$(MAYA_VERSION)
 DST_PLUG_INS_DIR = $(DST_DIR)/plug-ins
 DST_SCRIPTS_DIR = $(DST_DIR)/scripts

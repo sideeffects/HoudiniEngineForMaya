@@ -3,13 +3,10 @@
 #include <maya/MGlobal.h>
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
-#include <maya/MMatrix.h>
 #include <maya/MFnArrayAttrsData.h>
 #include <maya/MFnIntArrayData.h>
-#include <maya/MFnFloatArrayData.h>
 
 #include <vector>
-#include <limits>
 
 #include "Asset.h"
 #include "AssetNode.h"
@@ -37,12 +34,6 @@ GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
     {
         hstat = HAPI_GetPartInfo(assetId, objectId, geoId, partId, & myPartInfo);
         Util::checkHAPIStatus(hstat);
-
-	if (myPartInfo.hasVolume)
-	{
-	    hstat = HAPI_GetVolumeInfo(assetId, objectId, geoId, partId, &myVolumeInfo);
-	    Util::checkHAPIStatus(hstat);
-	}
     }
     catch (HAPIError& e)
     {
@@ -173,11 +164,6 @@ GeometryPart::update()
         //Util::checkHAPIStatus(hstat);
         hstat = HAPI_GetPartInfo( myAssetId, myObjectId, myGeoId, myPartId, &myPartInfo);
         Util::checkHAPIStatus(hstat);
-	if (myPartInfo.hasVolume)
-	{
-	    hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
-	    Util::checkHAPIStatus(hstat);
-	}
     }
     catch (HAPIError& e)
     {
@@ -242,61 +228,6 @@ GeometryPart::hasMesh()
     return true;
 }
 
-bool
-GeometryPart::hasVolume()
-{
-    update();
-    return  myPartInfo.hasVolume;
-}
-
-void
-GeometryPart::updateFluidTransform(MDataHandle& handle)
-{
-    HAPI_Transform transform = myVolumeInfo.transform;
-    MDataHandle translateHandle = handle.child(AssetNode::fluidTranslateAttr);
-    MDataHandle rotateHandle = handle.child(AssetNode::fluidRotateAttr);
-    MDataHandle scaleHandle = handle.child(AssetNode::fluidScaleAttr);
-
-    // convert to euler angle
-    MEulerRotation r = MQuaternion(transform.rotationQuaternion[0],
-            transform.rotationQuaternion[1], transform.rotationQuaternion[2],
-            transform.rotationQuaternion[3]).asEulerRotation();
-
-    const double rot[3] = {r[0], r[1], r[2]};
-    const double scale[3] = {transform.scale[0], transform.scale[1], transform.scale[2]};
-
-    MTransformationMatrix matrix;
-    matrix.addScale(scale, MSpace::kTransform);
-    matrix.addRotation(rot, MTransformationMatrix::kXYZ, MSpace::kTransform);
-    matrix.addTranslation(MVector(transform.position[0],
-				  transform.position[1],
-				  transform.position[2]), MSpace::kTransform);
-
-    int xoffset = myVolumeInfo.xLength*0.5 + myVolumeInfo.minX;
-    int yoffset = myVolumeInfo.yLength*0.5 + myVolumeInfo.minY;
-    int zoffset = myVolumeInfo.zLength*0.5 + myVolumeInfo.minZ;
-
-    const double scale2[3] = {2, 2, 2};
-    matrix.addScale(scale2, MSpace::kPreTransform);
-    matrix.addTranslation(MVector(-0.5, -0.5, -0.5), MSpace::kPreTransform);
-    matrix.addTranslation(MVector(xoffset, yoffset, zoffset), MSpace::kPreTransform);
-
-    double final_scale[3];
-    double final_rotate[3];
-    MTransformationMatrix::RotationOrder order = MTransformationMatrix::kXYZ;
-    matrix.getScale(final_scale, MSpace::kTransform);
-    matrix.getRotation(final_rotate, order);
-    translateHandle.set(matrix.getTranslation(MSpace::kTransform));
-    rotateHandle.set3Double(final_rotate[0], final_rotate[1], final_rotate[2]);
-    scaleHandle.set3Double(final_scale[0], final_scale[1], final_scale[2]);
-
-
-    translateHandle.setClean();
-    rotateHandle.setClean();
-    scaleHandle.setClean();
-    handle.setClean();
-}
-
 
 MStatus
 GeometryPart::compute(MDataHandle& handle)
@@ -307,16 +238,11 @@ GeometryPart::compute(MDataHandle& handle)
     MDataHandle objectNameHandle = handle.child(AssetNode::objectName);
     MDataHandle metaDataHandle = handle.child(AssetNode::metaData);
     MDataHandle meshHandle = handle.child(AssetNode::mesh);
-    MDataHandle fluidDensityHandle = handle.child(AssetNode::fluidDensity);
-    MDataHandle fluidResWHandle = handle.child(AssetNode::fluidResolutionW);
-    MDataHandle fluidResHHandle = handle.child(AssetNode::fluidResolutionH);
-    MDataHandle fluidResDHandle = handle.child(AssetNode::fluidResolutionD);
-    MDataHandle fluidTransformHandle = handle.child(AssetNode::fluidTransform);
+    //MDataHandle transformHandle = handle.child(AssetNode::transform);
     MDataHandle materialHandle = handle.child(AssetNode::material);
 
     // Don't output mesh for degenerate geos
-    if ( (myPartInfo.pointCount == 0 || myPartInfo.faceCount == 0|| myPartInfo.vertexCount == 0)
-	 && !myPartInfo.hasVolume)
+    if ( myPartInfo.pointCount == 0 || myPartInfo.faceCount == 0|| myPartInfo.vertexCount == 0)
         return MS::kFailure;
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
@@ -338,29 +264,12 @@ GeometryPart::compute(MDataHandle& handle)
         // Mesh
         MObject newMeshData = createMesh();
         meshHandle.set(newMeshData);
-
-	// Volumes -> Fluid
-	
-	// resolution of the fluid
-	fluidResWHandle.set(myVolumeInfo.xLength);
-	fluidResHHandle.set(myVolumeInfo.yLength);
-	fluidResDHandle.set(myVolumeInfo.zLength);
-
-	updateFluidTransform(fluidTransformHandle);
-
-	if (myPartInfo.hasVolume)
-	    fluidDensityHandle.set(createFluidDensity());
     }
 
     if ( myNeverBuilt || myGeoInfo.hasMaterialChanged)
     {
         updateMaterial(materialHandle);
     }
-
-    fluidDensityHandle.setClean();
-    fluidResWHandle.setClean();
-    fluidResHHandle.setClean();
-    fluidResDHandle.setClean();
 
     objectNameHandle.setClean();
     meshHandle.setClean();
@@ -371,62 +280,6 @@ GeometryPart::compute(MDataHandle& handle)
     return MS::kSuccess;
 }
 
-MObject
-GeometryPart::createFluidDensity()
-{
-    int xres = myVolumeInfo.xLength;
-    int yres = myVolumeInfo.yLength;
-    int zres = myVolumeInfo.zLength;
-    int tileSize = myVolumeInfo.tileSize;
-    if (tileSize > 16)
-	return MObject();
-
-    MFloatArray density;
-    density.setLength(xres*yres*zres);
-
-    HAPI_VolumeTileInfo tile;
-    HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
-
-    float tileValues[tileSize*tileSize*tileSize];
-    std::fill(tileValues, tileValues + tileSize*tileSize*tileSize - 1, 0);
-
-    for (int i=0; i<density.length();  i++)
-	density[i] = 0;
-
-    while (tile.minX != std::numeric_limits<int>::max() &&
-	   tile.minY != std::numeric_limits<int>::max() &&
-	   tile.minZ != std::numeric_limits<int>::max())
-    {
-	HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tile, tileValues);
-
-	for (int k=0; k<tileSize; k++)
-	    for (int j=0; j<tileSize; j++)
-		for (int i=0; i<tileSize; i++)
-		{
-		    int z = k+tile.minZ - myVolumeInfo.minZ,
-			y = j+tile.minY - myVolumeInfo.minY,
-			x = i+tile.minX - myVolumeInfo.minX;
-		    int index =
-			xres * yres * z +
-			xres * y +
-			x;
-		    float value = tileValues[k * tileSize*tileSize + j*tileSize +  i];
-		    // TODO: we only support density since there is only
-		    // 	     one volume per part
-
-		    if (x < xres && y < yres && z < zres
-			&& x > 0 && y > 0 && z > 0)
-		    {
-			density[index] = value;
-		    }
-		}
-
-	HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
-    }
-
-    MFnFloatArrayData densityCreator;
-    return densityCreator.create(density);
-}
 
 MObject
 GeometryPart::createMesh()

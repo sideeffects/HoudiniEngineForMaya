@@ -123,7 +123,7 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
     {
         for (int i=0; i< myGeoInfo.partCount; i++)
         {
-            if ( myParts[i].hasMesh() || myParts[i].hasVolume() )
+            if ( myParts[i].hasMesh() )
             {
                 MDataHandle h = builder->addElement(*index);
                 if ( myNeverBuilt || myObjectInfo.hasTransformChanged)

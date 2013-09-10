@@ -4,7 +4,6 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnEnumAttribute.h>
 #include <maya/MFnUnitAttribute.h>
-#include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MFloatVectorArray.h>
@@ -50,24 +49,6 @@ MObject AssetNode::objects;
 MObject AssetNode::objectName;
 MObject AssetNode::metaData;
 MObject AssetNode::mesh;
-MObject AssetNode::fluidDensity;
-MObject AssetNode::fluidResolutionW;
-MObject AssetNode::fluidResolutionH;
-MObject AssetNode::fluidResolutionD;
-MObject AssetNode::fluidTransform;
-MObject AssetNode::fluidTranslateAttr;
-MObject AssetNode::fluidTranslateAttrX;
-MObject AssetNode::fluidTranslateAttrY;
-MObject AssetNode::fluidTranslateAttrZ;
-MObject AssetNode::fluidRotateAttr;
-MObject AssetNode::fluidRotateAttrX;
-MObject AssetNode::fluidRotateAttrY;
-MObject AssetNode::fluidRotateAttrZ;
-MObject AssetNode::fluidScaleAttr;
-MObject AssetNode::fluidScaleAttrX;
-MObject AssetNode::fluidScaleAttrY;
-MObject AssetNode::fluidScaleAttrZ;
-MObject AssetNode::fluidFromAsset;
 
 MObject AssetNode::transform;
 MObject AssetNode::translateAttr;
@@ -111,7 +92,6 @@ AssetNode::initialize()
     MFnTypedAttribute tAttr;
     MFnCompoundAttribute cAttr;
     MFnUnitAttribute uAttr;
-    MFnMatrixAttribute mAttr;
 
     // file name
     // The name of the otl file we loaded.
@@ -180,79 +160,6 @@ AssetNode::initialize()
     AssetNode::mesh = tAttr.create("mesh", "ms", MFnData::kMesh);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-
-    // fluid
-    AssetNode::fluidDensity = tAttr.create("fluidDensity", "fd", MFnData::kFloatArray);
-    tAttr.setWritable(false);
-    tAttr.setStorable(false);
-
-    AssetNode::fluidResolutionW = nAttr.create("fluidResolutionW", "frw", MFnNumericData::kInt);
-    nAttr.setWritable(false);
-    nAttr.setStorable(false);
-
-    AssetNode::fluidResolutionH = nAttr.create("fluidResolutionH", "frh", MFnNumericData::kInt);
-    nAttr.setWritable(false);
-    nAttr.setStorable(false);
-
-    AssetNode::fluidResolutionD = nAttr.create("fluidResolutionD", "frd", MFnNumericData::kInt);
-    nAttr.setWritable(false);
-    nAttr.setStorable(false);
-
-    // translate
-    AssetNode::fluidTranslateAttrX = uAttr.create("fluidTranslateX", "ftx", MFnUnitAttribute::kDistance);
-    uAttr.setStorable(false);
-    uAttr.setWritable(false);
-    AssetNode::fluidTranslateAttrY = uAttr.create("fluidTranslateY", "fty", MFnUnitAttribute::kDistance);
-    uAttr.setStorable(false);
-    uAttr.setWritable(false);
-    AssetNode::fluidTranslateAttrZ = uAttr.create("fluidTranslateZ", "ftz", MFnUnitAttribute::kDistance);
-    uAttr.setStorable(false);
-    uAttr.setWritable(false);
-    AssetNode::fluidTranslateAttr = nAttr.create("fluidTranslate", "ftr", AssetNode::fluidTranslateAttrX,
-            AssetNode::fluidTranslateAttrY, AssetNode::fluidTranslateAttrZ);
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-
-    // rotate
-    AssetNode::fluidRotateAttrX = uAttr.create("fluidRotateX", "frx", MFnUnitAttribute::kAngle);
-    uAttr.setStorable(false);
-    uAttr.setWritable(false);
-    AssetNode::fluidRotateAttrY = uAttr.create("fluidRotateY", "fry", MFnUnitAttribute::kAngle);
-    uAttr.setStorable(false);
-    uAttr.setWritable(false);
-    AssetNode::fluidRotateAttrZ = uAttr.create("fluidRotateZ", "frz", MFnUnitAttribute::kAngle);
-    uAttr.setStorable(false);
-    uAttr.setWritable(false);
-    AssetNode::fluidRotateAttr = nAttr.create("fluidRotate", "fr", AssetNode::fluidRotateAttrX,
-            AssetNode::fluidRotateAttrY, AssetNode::fluidRotateAttrZ);
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-
-    // scale
-    AssetNode::fluidScaleAttrX = nAttr.create("fluidScaleX", "fsx", MFnNumericData::kDouble, 1.0);
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    AssetNode::fluidScaleAttrY = nAttr.create("fluidScaleY", "fsy", MFnNumericData::kDouble, 1.0);
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    AssetNode::fluidScaleAttrZ = nAttr.create("fluidScaleZ", "fsz", MFnNumericData::kDouble, 1.0);
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    AssetNode::fluidScaleAttr = nAttr.create("fluidScale", "fs", AssetNode::fluidScaleAttrX,
-            AssetNode::fluidScaleAttrY, AssetNode::fluidScaleAttrZ);
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-
-    AssetNode::fluidFromAsset = nAttr.create("fluidFromAsset", "ffa", MFnNumericData::kBoolean, true);
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-
-    // transform
-    AssetNode::fluidTransform = cAttr.create("fluidTransform", "ft");
-    cAttr.addChild(AssetNode::fluidTranslateAttr);
-    cAttr.addChild(AssetNode::fluidRotateAttr);
-    cAttr.addChild(AssetNode::fluidScaleAttr);
-    cAttr.setStorable(false);
 
     // translate
     AssetNode::translateAttrX = uAttr.create("translateX", "tx", MFnUnitAttribute::kDistance);
@@ -349,12 +256,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::objectName);
     cAttr.addChild(AssetNode::metaData);
     cAttr.addChild(AssetNode::mesh);
-    cAttr.addChild(AssetNode::fluidDensity);
-    cAttr.addChild(AssetNode::fluidResolutionW);
-    cAttr.addChild(AssetNode::fluidResolutionH);
-    cAttr.addChild(AssetNode::fluidResolutionD);
-    cAttr.addChild(AssetNode::fluidTransform);
-    cAttr.addChild(AssetNode::fluidFromAsset);
     cAttr.addChild(AssetNode::transform);
     cAttr.addChild(AssetNode::material);
     cAttr.setWritable(false);
@@ -448,35 +349,17 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlug objectNamePlug = elemPlug.child(AssetNode::objectName);
         MPlug metaDataPlug = elemPlug.child(AssetNode::metaData);
         MPlug meshPlug = elemPlug.child(AssetNode::mesh);
-
-	MPlug fluidPlug = elemPlug.child(AssetNode::fluidDensity);
-	MPlug fluidTransformPlug = elemPlug.child(AssetNode::fluidTransform);
-	MPlug fluidResWPlug = elemPlug.child(AssetNode::fluidResolutionW);
-	MPlug fluidResHPlug = elemPlug.child(AssetNode::fluidResolutionH);
-	MPlug fluidResDPlug = elemPlug.child(AssetNode::fluidResolutionD);
-	MPlug fluidFromAssetPlug = elemPlug.child(AssetNode::fluidFromAsset);
-	affectedPlugs.append(fluidPlug);
-	affectedPlugs.append(fluidResHPlug);
-	affectedPlugs.append(fluidResWPlug);
-	affectedPlugs.append(fluidResDPlug);
-	affectedPlugs.append(fluidTransformPlug);
-        affectedPlugs.append(fluidTransformPlug.child(AssetNode::fluidTranslateAttr));
-        affectedPlugs.append(fluidTransformPlug.child(AssetNode::fluidRotateAttr));
-        affectedPlugs.append(fluidTransformPlug.child(AssetNode::fluidScaleAttr));
-	affectedPlugs.append(fluidFromAssetPlug);
-
         MPlug transformPlug = elemPlug.child(AssetNode::transform);
         MPlug materialPlug = elemPlug.child(AssetNode::material);
+
 
         affectedPlugs.append(objectNamePlug);
         affectedPlugs.append(metaDataPlug);
         affectedPlugs.append(meshPlug);
 
-
         affectedPlugs.append(transformPlug.child(AssetNode::translateAttr));
         affectedPlugs.append(transformPlug.child(AssetNode::rotateAttr));
         affectedPlugs.append(transformPlug.child(AssetNode::scaleAttr));
-
 
         affectedPlugs.append(materialPlug.child(AssetNode::materialExists));
         affectedPlugs.append(materialPlug.child(AssetNode::texturePath));

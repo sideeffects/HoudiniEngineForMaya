@@ -214,11 +214,11 @@ endif
 
 $(DST_MODULE):
 	@mkdir -p $(dir $(@))
-	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.0 maya$(MAYA_VERSION)" > $(@)
+	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.5 maya$(MAYA_VERSION)" > $(@)
 
 $(DST_OLD_MODULE):
 	@mkdir -p $(dir $(@))
-	echo "+ houdiniEngine 1.0 $(DST_DIR)" > $(@)
+	echo "+ houdiniEngine 1.5 $(DST_DIR)" > $(@)
 
 $(DST_PLUG_IN): $(OBJFILES)
 	@mkdir -p $(dir $(@))

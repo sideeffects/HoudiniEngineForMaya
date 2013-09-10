@@ -42,7 +42,7 @@ MStatus
 initializePlugin(MObject obj)
 {
     MStatus status;
-    MFnPlugin plugin(obj, "Side Effects", "1.0", "Any");
+    MFnPlugin plugin(obj, "Side Effects", "1.5", "Any");
     
     if(initializeHAPI())
     {

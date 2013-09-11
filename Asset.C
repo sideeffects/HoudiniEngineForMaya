@@ -31,12 +31,12 @@ Asset::Asset(MString otlFilePath, MObject node)
 
     Util::statusCheckLoop();
     Util::checkHAPIStatus(hstat);
-    hstat = HAPI_GetAssetInfo(assetId, &assetInfo);
+    hstat = HAPI_GetAssetInfo(assetId, &myAssetInfo);
     Util::checkHAPIStatus(hstat);
-    hstat = HAPI_GetNodeInfo(assetInfo.nodeId, &nodeInfo);
+    hstat = HAPI_GetNodeInfo( myAssetInfo.nodeId, & myNodeInfo);
     Util::checkHAPIStatus(hstat);
 
-    myAssetInputs = new AssetInputs(assetInfo.id);
+    myAssetInputs = new AssetInputs( myAssetInfo.id);
 
     init();
 
@@ -46,14 +46,14 @@ Asset::Asset(MString otlFilePath, MObject node)
 void
 Asset::init()
 {
-    myAssetInputs->setNumInputs(assetInfo.maxGeoInputCount);
+    myAssetInputs->setNumInputs( myAssetInfo.maxGeoInputCount);
 
     // input geos
-    if (assetInfo.maxGeoInputCount > 0)
+    if ( myAssetInfo.maxGeoInputCount > 0)
     {
         MFnCompoundAttribute cAttr;
 
-        int inputCount = assetInfo.maxGeoInputCount;
+        int inputCount = myAssetInfo.maxGeoInputCount;
 
         myMayaInputs= cAttr.create("inputs", "ins");
 
@@ -72,10 +72,10 @@ Asset::init()
     update();   
 
     // objects
-    int objCount = assetInfo.objectCount;
+    int objCount = myAssetInfo.objectCount;
     myObjects = new Object*[objCount];
-    numVisibleObjects = 0;
-    numObjects = objCount;
+    myNumVisibleObjects = 0;
+    myNumObjects = objCount;
 
     MString title = "Houdini";
     MString status = "Creating Objects...";
@@ -84,7 +84,7 @@ Asset::init()
     for (int i=0; i<objCount; i++)
     {
 	Util::updateProgressWindow( status, (int)( (float) i *100.0f / (float) objCount) );
-        myObjects[i] = Object::createObject(assetInfo.id, i, this);
+        myObjects[i] = Object::createObject( myAssetInfo.id, i, this);
         myObjects[i]->init();
     }
 
@@ -97,7 +97,7 @@ Asset::init()
 
 Asset::~Asset()
 {
-    for (int i=0; i<numObjects; i++)
+    for (int i=0; i< myNumObjects; i++)
         delete myObjects[i];
     delete[] myObjects;
     delete[] myObjectInfos;    
@@ -108,7 +108,7 @@ Asset::~Asset()
 Object*
 Asset::findObjectByName(MString name)
 {
-    for (int i=0; i<assetInfo.objectCount; i++)
+    for (int i=0; i< myAssetInfo.objectCount; i++)
     {
         if ( myObjects[i]->getName() == name )
             return myObjects[i];
@@ -135,8 +135,8 @@ Asset::update()
 {
     // update object infos
     delete[] myObjectInfos;
-    myObjectInfos = new HAPI_ObjectInfo[assetInfo.objectCount];
-    HAPI_GetObjects(assetInfo.id, myObjectInfos, 0, assetInfo.objectCount);
+    myObjectInfos = new HAPI_ObjectInfo[ myAssetInfo.objectCount];
+    HAPI_GetObjects( myAssetInfo.id, myObjectInfos, 0, myAssetInfo.objectCount);
 
     // update transform infos
     //delete[] transformInfos;
@@ -154,14 +154,14 @@ void
 Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 {
     // Geo inputs
-    for (int i=0; i<assetInfo.maxGeoInputCount; i++)
+    for (int i=0; i< myAssetInfo.maxGeoInputCount; i++)
     {
         MPlug inputPlug(myNode, myMayaInputs);
         MPlug elemInputPlug = inputPlug.child(i);
 
         if (!elemInputPlug.isConnected())
         {
-            HAPI_DisconnectAssetGeometry(assetInfo.id, i);
+            HAPI_DisconnectAssetGeometry( myAssetInfo.id, i);
             return;
         }
 
@@ -182,7 +182,7 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
     MArrayDataBuilder instancersBuilder = instancersHandle.builder();
     MIntArray instancedObjIds;
-    for (int i=0; i<numObjects; i++)
+    for (int i=0; i< myNumObjects; i++)
     {
         Object* obj = myObjects[i];
         //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex( instancerIndex );
@@ -244,7 +244,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     int objectIndex = 0;
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
-    for (int i=0; i<numObjects; i++)
+    for (int i=0; i< myNumObjects; i++)
     {
 
 
@@ -294,7 +294,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
 
     //The asset info struct (info) was set at the constructor
     //of this class, which is at asset load time.
-    typeHandle.set(assetInfo.type);
+    typeHandle.set( myAssetInfo.type);
 
     // Set the time
     MPlug timePlug( myNode, AssetNode::timeInput);
@@ -307,7 +307,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     //for inter-asset stuff
     computeAssetInputs(plug, data);
 
-    HAPI_CookAsset(assetInfo.id);
+    HAPI_CookAsset( myAssetInfo.id);
 
 
     Util::statusCheckLoop();
@@ -469,7 +469,7 @@ Asset::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortN
         eAttr.setNiceNameOverride(niceName);
 
         HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[choiceCount];
-        HAPI_GetParmChoiceLists(nodeInfo.id, choiceInfos, parm.choiceIndex, choiceCount);
+        HAPI_GetParmChoiceLists( myNodeInfo.id, choiceInfos, parm.choiceIndex, choiceCount);
         for (int i=0; i<choiceCount; i++)
         {
             MString field = Util::getString(choiceInfos[i].labelSH);
@@ -548,11 +548,11 @@ Asset::buildParms()
 {
 
     // PARMS
-    int parmCount = nodeInfo.parmCount;
+    int parmCount = myNodeInfo.parmCount;
     if (parmCount <= 0)
         return;
     HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(nodeInfo.id, parmInfos, 0, parmCount);
+    HAPI_GetParameters( myNodeInfo.id, parmInfos, 0, parmCount);
 
     int index = 0;
     while (index < parmCount)
@@ -607,7 +607,7 @@ Asset::getParmIntValues(HAPI_ParmInfo& parm)
     int index = parm.intValuesIndex;
     int size = parm.size;
     int * values = new int[size];
-    HAPI_GetParmIntValues(nodeInfo.id, values, index, size);
+    HAPI_GetParmIntValues( myNodeInfo.id, values, index, size);
 
     MIntArray ret(values, size);
 
@@ -622,7 +622,7 @@ Asset::getParmFloatValues(HAPI_ParmInfo& parm)
     int index = parm.floatValuesIndex;
     int size = parm.size;
     float * values = new float[size];
-    HAPI_GetParmFloatValues(nodeInfo.id, values, index, size);
+    HAPI_GetParmFloatValues( myNodeInfo.id, values, index, size);
 
     MFloatArray ret(values, size);
 
@@ -637,7 +637,7 @@ Asset::getParmStringValues(HAPI_ParmInfo& parm)
     int index = parm.stringValuesIndex;
     int size = parm.size;
     int * handles = new int[size];
-    HAPI_GetParmStringValues(nodeInfo.id, handles, index, size);
+    HAPI_GetParmStringValues( myNodeInfo.id, handles, index, size);
 
     MStringArray ret;
     for (int i=0; i<size; i++)

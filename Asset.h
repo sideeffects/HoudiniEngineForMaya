@@ -33,10 +33,10 @@ class Asset {
         MStringArray getParmStringValues(HAPI_ParmInfo& parm);
 
     public:
-        HAPI_AssetInfo 	assetInfo;
-        HAPI_NodeInfo	nodeInfo;
-        int numVisibleObjects;
-        int numObjects;
+        HAPI_AssetInfo 	myAssetInfo;
+        HAPI_NodeInfo	myNodeInfo;
+        int myNumVisibleObjects;
+        int myNumObjects;
 
 
     private:

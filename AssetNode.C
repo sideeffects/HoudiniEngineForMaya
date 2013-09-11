@@ -309,7 +309,7 @@ AssetNode::~AssetNode() {
     {
         if ( myAsset != NULL )
         {
-            hstat = HAPI_UnloadOTLFile( myAsset->assetInfo.id);
+            hstat = HAPI_UnloadOTLFile( myAsset->myAssetInfo.id);
             Util::checkHAPIStatus(hstat);
         }
     }
@@ -470,11 +470,11 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 void
 AssetNode::updateAttrValues(MDataBlock& data)
 {
-    int parmCount = myAsset->nodeInfo.parmCount;
+    int parmCount = myAsset->myNodeInfo.parmCount;
     if (parmCount <= 0)
         return;
     HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(myAsset->nodeInfo.id, parmInfos, 0, parmCount);
+    HAPI_GetParameters(myAsset->myNodeInfo.id, parmInfos, 0, parmCount);
 
     for (int i=0; i<parmCount; i++)
     {
@@ -555,7 +555,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 values[i] = handle.asInt();
             }
         }
-        HAPI_SetParmIntValues( myAsset->nodeInfo.id, values, parm.intValuesIndex, size );
+        HAPI_SetParmIntValues( myAsset->myNodeInfo.id, values, parm.intValuesIndex, size );
 
         delete[] values;
     }
@@ -576,7 +576,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 values[i] = handle.asFloat();
             }
         }
-        HAPI_SetParmFloatValues( myAsset->nodeInfo.id, values, parm.floatValuesIndex, size);
+        HAPI_SetParmFloatValues( myAsset->myNodeInfo.id, values, parm.floatValuesIndex, size);
 
         delete[] values;
     }
@@ -587,7 +587,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
         {
             MDataHandle handle = data.inputValue(plug);
             const char* val = handle.asString().asChar();
-            HAPI_SetParmStringValue( myAsset->nodeInfo.id, val, parm.id, 0);
+            HAPI_SetParmStringValue( myAsset->myNodeInfo.id, val, parm.id, 0);
         } else
         {
             for (int i=0; i<size; i++)
@@ -595,7 +595,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
                 MPlug child = plug.child(i);
                 MDataHandle handle = data.inputValue(child);
                 const char* val = handle.asString().asChar();
-                HAPI_SetParmStringValue( myAsset->nodeInfo.id, val, parm.id, i);
+                HAPI_SetParmStringValue( myAsset->myNodeInfo.id, val, parm.id, i);
             }
         }
     }
@@ -606,11 +606,11 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 void
 AssetNode::setParmValues(MDataBlock& data)
 {
-    int parmCount = myAsset->nodeInfo.parmCount;
+    int parmCount = myAsset->myNodeInfo.parmCount;
     if (parmCount <= 0)
         return;
     HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(myAsset->nodeInfo.id, parmInfos, 0, parmCount );
+    HAPI_GetParameters(myAsset->myNodeInfo.id, parmInfos, 0, parmCount );
 
     for (int i=0; i<parmCount; i++)
     {

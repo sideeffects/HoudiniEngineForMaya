@@ -218,7 +218,7 @@ $(DST_MODULE):
 
 $(DST_OLD_MODULE):
 	@mkdir -p $(dir $(@))
-	echo "+ houdiniEngine 1.5 $(DST_DIR)" > $(@)
+	echo "+ houdiniEngine 1.5 $(shell cygpath -w $(DST_DIR))" > $(@)
 
 $(DST_PLUG_IN): $(OBJFILES)
 	@mkdir -p $(dir $(@))

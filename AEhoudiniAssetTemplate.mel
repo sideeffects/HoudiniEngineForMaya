@@ -104,7 +104,6 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
         {
             string $histPlug = `connectionInfo -sfd ($str + ".inMesh")`;
             string $histNode = plugNode($histPlug);
-            string $assetNode = plugNode($inputAttr);
             if ($histNode != "")
             {
                 // TODO: Assume that assets with inputs are SOPs, and that
@@ -122,9 +121,6 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
                     connectAttr -force ($str + ".outMesh") $inputAttr;
                     //hide $str;
                 }
-                string $dest[] = `connectionInfo -dfs ($assetNode + ".objects[0].mesh")`;
-                if (size($dest) == 0)
-                    connectAttr -force ($assetNode + ".objects[0].mesh") ($str + ".inMesh");
             }
         }
     }

@@ -101,28 +101,25 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
     {
         // connect new input
         if (`objExists $str`)
-        {
-            string $histPlug = `connectionInfo -sfd ($str + ".inMesh")`;
-            string $histNode = plugNode($histPlug);
-            if ($histNode != "")
-            {
-                // TODO: Assume that assets with inputs are SOPs, and that
-                // Only one object output from SOP assets
-                if (`nodeType $histNode` == "houdiniAsset")
-                {
-                    // *** A bit of a hack, plugNode just takes a substring of 
-                    // everything before the first '.', even if the substring is
-                    // not a node.
-                    string $obj = plugNode(plugAttr($histPlug));
-                    connectAttr -force ($histNode + "." + $obj + ".md") $inputAttr;
-                }
-                else
-                {                
-                    connectAttr -force ($str + ".outMesh") $inputAttr;
-                    //hide $str;
-                }
-            }
-        }
+	{
+	    string $histPlug = `connectionInfo -sfd ($str + ".inMesh")`;
+	    string $histNode = plugNode($histPlug);
+	    if ($histNode != ""
+		    && `nodeType $histNode` == "houdiniAsset")
+	    {
+		// TODO: Assume that assets with inputs are SOPs
+		// *** A bit of a hack, plugNode just takes a substring of 
+		// everything before the first '.', even if the substring is
+		// not a node.
+		string $obj = plugNode(plugAttr($histPlug));
+		connectAttr -force ($histNode + "." + $obj + ".md") $inputAttr;
+	    }
+	    else if (`nodeType $str` == "mesh")
+	    {
+		connectAttr -force ($str + ".outMesh") $inputAttr;
+		//hide $str;
+	    }
+	}
     }
 
     // set the appropriate text

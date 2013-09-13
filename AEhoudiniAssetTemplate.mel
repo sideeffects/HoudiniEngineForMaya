@@ -119,7 +119,7 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
                 }
                 else
                 {                
-                    connectAttr -force $histPlug $inputAttr;
+                    connectAttr -force ($str + ".outMesh") $inputAttr;
                     //hide $str;
                 }
                 string $dest[] = `connectionInfo -dfs ($assetNode + ".objects[0].mesh")`;

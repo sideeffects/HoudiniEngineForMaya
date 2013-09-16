@@ -15,6 +15,8 @@
 #define kSyncFlagLong "-sync"
 #define kSaveHIPFlag "-sh"
 #define kSaveHIPFlagLong "-saveHIP"
+#define kResetSimulationFlag "-rs"
+#define kResetSimulationFlagLong "-resetSimulation"
 
 void* AssetCommand::creator()
 {
@@ -40,6 +42,15 @@ AssetCommand::newSyntax()
     // -saveHIP saves the contents of the current Houdini scene as a hip file
     // expected arguments: hip_file_name - the name of the hip file to save
     CHECK_MSTATUS(syntax.addFlag(kSaveHIPFlag, kSaveHIPFlagLong, MSyntax::kString));
+
+
+    // -resetSimulation resets the simulation state for an asset.  This will clear
+    // the DOPs cache for the asset.
+    // TODO: FIXME: this should be the asset name, not the id
+    // expected arguments: the asset id
+    CHECK_MSTATUS(syntax.addFlag(kResetSimulationFlag, 
+				 kResetSimulationFlagLong, 
+				 MSyntax::kLong));
 
     return syntax;
 }
@@ -72,12 +83,14 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(!(argData.isFlagSet(kLoadOTLFlag)
 		^ argData.isFlagSet(kSyncFlag)
-		^ argData.isFlagSet(kSaveHIPFlag)))
+		^ argData.isFlagSet(kSaveHIPFlag)
+		^ argData.isFlagSet(kResetSimulationFlag)))
     {
 	displayError("Exactly one of these flags must be specified:\n"
 		kLoadOTLFlagLong "\n"
 		kSyncFlagLong "\n"
-		kSaveHIPFlagLong "\n");
+		kSaveHIPFlagLong "\n"
+		kResetSimulationFlagLong "\n");
         return MStatus::kInvalidParameter;
     }
 
@@ -152,6 +165,20 @@ AssetCommand::parseArgs(const MArgList &args)
 	}
     }
 
+    if(argData.isFlagSet(kResetSimulationFlag))
+    {
+	myOperationType = kOperationResetSimulation;
+
+	//TODO: FIXME: this should be a string argument and not an asset id.  We should
+	//use the name of the asset node to lookup the proper asset id.
+	status = argData.getFlagArgument(kResetSimulationFlag, 0, myResetSimulationAssetId);
+	if(!status)
+	{
+	    displayError("Invalid argument for \"" kResetSimulationFlagLong "\".");
+	    return status;
+	}
+    }
+
     return MStatus::kSuccess;
 }
 
@@ -185,6 +212,12 @@ MStatus AssetCommand::redoIt()
     {
 	HAPI_SaveHIPFile( myHIPFilePath.asChar() );
 	return MS::kSuccess;            
+    }
+
+    if ( myOperationType == kOperationResetSimulation )
+    {
+	HAPI_ResetSimulation( myResetSimulationAssetId );
+	return MS::kSuccess;
     }
 
     return MS::kFailure;

@@ -112,7 +112,7 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
 		// everything before the first '.', even if the substring is
 		// not a node.
 		string $obj = plugNode(plugAttr($histPlug));
-		connectAttr -force ($histNode + "." + $obj + ".md") $inputAttr;
+		connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputAttr;
 	    }
 	    else if (`nodeType $str` == "mesh")
 	    {
@@ -183,7 +183,7 @@ global proc AEhoudiniAssetInputsReplace(string $attrFullName)
 
 global proc AEhoudiniAssetTemplate( string $nodeName )
 {
-    editorTemplate -addControl "fileName";
+    editorTemplate -addControl "assetPath";
 
     //Put our attributes into a scrolled layout field
     editorTemplate -beginScrollLayout;

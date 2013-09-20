@@ -48,7 +48,7 @@ AssetSubCommandLoadOTL::doIt()
 
     // set filename attribute
     {
-	MPlug plug(assetNode, AssetNode::fileNameAttr);
+	MPlug plug(assetNode, AssetNode::assetPath);
 	status = myDagModifier.newPlugValueString(plug, myOTLFile);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
@@ -65,7 +65,7 @@ AssetSubCommandLoadOTL::doIt()
     {
 	MObject srcNode = Util::findNodeByName("time1");
 	MPlug srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
-	MPlug dstPlug(assetNode, AssetNode::timeInput);
+	MPlug dstPlug(assetNode, AssetNode::inTime);
 
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);

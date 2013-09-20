@@ -38,7 +38,7 @@ AssetSubCommandSync::doIt()
     MFnDependencyNode assetNodeFn(myAssetNodeObj, &status);
 
     // geo parts
-    MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::objects);
+    MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
     unsigned int objCount = objectsPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -53,7 +53,7 @@ AssetSubCommandSync::doIt()
     }
 
     // instancers
-    MPlug instancersPlug = assetNodeFn.findPlug(AssetNode::instancers);
+    MPlug instancersPlug = assetNodeFn.findPlug(AssetNode::outputInstancers);
     unsigned int instCount = instancersPlug.numElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 

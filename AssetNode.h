@@ -1,7 +1,7 @@
 #ifndef __AssetNode_h__
 #define __AssetNode_h__
 
-#include <maya/MPxNode.h> 
+#include <maya/MPxTransform.h>
 
 #include <maya/MTypeId.h> 
 #include <maya/MPlug.h>
@@ -39,7 +39,7 @@
 //  GeometryObject class.  
 
 
-class AssetNode: public MPxNode
+class AssetNode: public MPxTransform
 {
     public:
         AssetNode();

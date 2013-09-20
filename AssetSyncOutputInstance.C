@@ -10,10 +10,10 @@
 
 AssetSyncOutputInstance::AssetSyncOutputInstance(
 	const MPlug &outputPlug,
-	const MObject &assetTransform
+	const MObject &assetNodeObj
 	) :
     myOutputPlug(outputPlug),
-    myAssetTransform(assetTransform)
+    myAssetNodeObj(assetNodeObj)
 {
 }
 
@@ -59,10 +59,10 @@ AssetSyncOutputInstance::createOutput()
 {
     MStatus status;
 
-    MFnDagNode assetTransformFn(myAssetTransform);
+    MFnDagNode assetNodeFn(myAssetNodeObj);
 
     // create the instancer node
-    MObject instancer = myDagModifier.createNode("instancer", myAssetTransform, &status);
+    MObject instancer = myDagModifier.createNode("instancer", myAssetNodeObj, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     MFnDependencyNode instancerFn(instancer, &status);
@@ -87,7 +87,7 @@ AssetSyncOutputInstance::createOutput()
 	MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy");
 	for(unsigned int i = 0; i < instancedNamesPlug.numElements(); i++)
 	{
-	    MObject objectTransform = Util::findDagChild(assetTransformFn, instancedNamesPlug[i].asString());
+	    MObject objectTransform = Util::findDagChild(assetNodeFn, instancedNamesPlug[i].asString());
 	    MFnDependencyNode objectTransformFn(objectTransform);
 
 	    // connect inputHierarchy

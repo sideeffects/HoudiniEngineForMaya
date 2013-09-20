@@ -11,10 +11,10 @@
 
 AssetSyncOutputGeoPart::AssetSyncOutputGeoPart(
 	const MPlug &outputPlug,
-	const MObject &assetTransform
+	const MObject &assetNodeObj
 	) :
     myOutputPlug(outputPlug),
-    myAssetTransform(assetTransform)
+    myAssetNodeObj(assetNodeObj)
 {
 }
 
@@ -36,15 +36,15 @@ AssetSyncOutputGeoPart::doIt()
 	partName = outputObjectName.substringW(separatorIndex + 1, outputObjectName.numChars() - 1);
     }
 
-    MFnDagNode assetTransformFn(myAssetTransform);
+    MFnDagNode assetNodeFn(myAssetNodeObj);
 
     // Since the objectTransform is shared by multiple parts, it may or may not
     // already exist. Create objectTransform if it doesn't exist.
-    MObject objectTransform = Util::findDagChild(assetTransformFn, objectName);
+    MObject objectTransform = Util::findDagChild(assetNodeFn, objectName);
     if(objectTransform.isNull())
     {
 	// create objectTransform
-	objectTransform = myDagModifier.createNode("transform", myAssetTransform, &status);
+	objectTransform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	// rename objectTransform

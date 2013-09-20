@@ -35,9 +35,8 @@ AssetCommand::newSyntax()
     // -sync synchronize the Maya nodes with the asset's state
     // expected arguments:
     //	asset node
-    //	asset transform node
     CHECK_MSTATUS(syntax.addFlag(kSyncFlag, kSyncFlagLong,
-		MSyntax::kSelectionItem, MSyntax::kSelectionItem));
+		MSyntax::kSelectionItem));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file
     // expected arguments: hip_file_name - the name of the hip file to save
@@ -132,24 +131,8 @@ AssetCommand::parseArgs(const MArgList &args)
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 	}
 
-	MObject assetTransformObj;
-	{
-	    MSelectionList selection;
-
-	    status = argData.getFlagArgument(kSyncFlag, 1, selection);
-	    if(!status)
-	    {
-		displayError("Invalid second argument for \"" kSyncFlagLong "\".");
-		return status;
-	    }
-
-	    status = selection.getDependNode(0, assetTransformObj);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	}
-
 	myAssetSubCommand = new AssetSubCommandSync(
-		assetNodeObj,
-		assetTransformObj
+		assetNodeObj
 		);
     }
 

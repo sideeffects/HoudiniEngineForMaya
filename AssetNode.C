@@ -273,9 +273,6 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     
-    cAttr.setWritable(false);
-    cAttr.setStorable(false);
-
     // add the static attributes to the node
     addAttribute(AssetNode::fileNameAttr);
     addAttribute(AssetNode::parmsModified);

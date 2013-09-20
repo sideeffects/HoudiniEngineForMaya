@@ -43,7 +43,7 @@ AssetSubCommandLoadOTL::doIt()
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node
-    status = myDagModifier.renameNode(assetNode, assetName + "_asset");
+    status = myDagModifier.renameNode(assetNode, assetName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set filename attribute
@@ -52,14 +52,6 @@ AssetSubCommandLoadOTL::doIt()
 	status = myDagModifier.newPlugValueString(plug, myOTLFile);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
-
-    // create transform node
-    MObject assetTransform = myDagModifier.createNode("transform", MObject::kNullObj, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // rename transform node
-    status = myDagModifier.renameNode(assetTransform, assetName + "_transform");
-    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // time1.outTime -> houdiniAsset.inTime
     {
@@ -76,7 +68,7 @@ AssetSubCommandLoadOTL::doIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    myAssetSubCommandSync = new AssetSubCommandSync(assetNode, assetTransform);
+    myAssetSubCommandSync = new AssetSubCommandSync(assetNode);
     myAssetSubCommandSync->doIt();
 
     return MStatus::kSuccess;

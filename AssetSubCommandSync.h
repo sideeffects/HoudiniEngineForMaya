@@ -13,8 +13,7 @@ class AssetSubCommandSync : public AssetSubCommand
 {
     public:
 	AssetSubCommandSync(
-		const MObject &assetNodeObj,
-		const MObject &assetTransformObj
+		const MObject &assetNodeObj
 		);
 	virtual ~AssetSubCommandSync();
 
@@ -25,7 +24,6 @@ class AssetSubCommandSync : public AssetSubCommand
 
     protected:
 	MObject myAssetNodeObj;
-	MObject myAssetTransformObj;
 
 	typedef std::vector<AssetSync*> AssetSyncs;
 	AssetSyncs myAssetSyncs;

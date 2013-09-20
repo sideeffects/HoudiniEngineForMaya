@@ -11,7 +11,7 @@ class AssetSyncOutputGeoPart : public AssetSync
     public:
 	AssetSyncOutputGeoPart(
 		const MPlug &outputPlug,
-		const MObject &assetTransform
+		const MObject &assetNodeObj
 		);
 	virtual ~AssetSyncOutputGeoPart();
 
@@ -36,7 +36,7 @@ class AssetSyncOutputGeoPart : public AssetSync
 	const MPlug myOutputPlug;
 
 	//the transform of the HAPI Asset
-	const MObject myAssetTransform;
+	const MObject myAssetNodeObj;
 
 	MDagModifier myDagModifier;
 };

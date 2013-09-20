@@ -11,7 +11,7 @@ class AssetSyncOutputInstance : public AssetSync
     public:
 	AssetSyncOutputInstance(
 		const MPlug &outputPlug,
-		const MObject &assetTransform
+		const MObject &assetNodeObj
 		);
 	virtual ~AssetSyncOutputInstance();
 
@@ -28,7 +28,7 @@ class AssetSyncOutputInstance : public AssetSync
 	const MPlug myOutputPlug;
 
 	//the transform of the HAPI Asset
-	const MObject myAssetTransform;
+	const MObject myAssetNodeObj;
 
 	MDagModifier myDagModifier;
 };

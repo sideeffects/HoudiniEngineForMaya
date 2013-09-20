@@ -11,11 +11,9 @@
 #include "AssetSyncOutputInstance.h"
 
 AssetSubCommandSync::AssetSubCommandSync(
-	const MObject &assetNodeObj,
-	const MObject &assetTransformObj
+	const MObject &assetNodeObj
 	) :
-    myAssetNodeObj(assetNodeObj),
-    myAssetTransformObj(assetTransformObj)
+    myAssetNodeObj(assetNodeObj)
 {
 }
 
@@ -46,7 +44,7 @@ AssetSubCommandSync::doIt()
     {
 	MPlug elemPlug = objectsPlug[i];
 
-        AssetSync* syncOutput = new AssetSyncOutputGeoPart(elemPlug, myAssetTransformObj);
+        AssetSync* syncOutput = new AssetSyncOutputGeoPart(elemPlug, myAssetNodeObj);
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);
@@ -61,7 +59,7 @@ AssetSubCommandSync::doIt()
     {
 	MPlug elemPlug = instancersPlug[i];
 
-        AssetSync* syncOutput = new AssetSyncOutputInstance(elemPlug, myAssetTransformObj);
+        AssetSync* syncOutput = new AssetSyncOutputInstance(elemPlug, myAssetNodeObj);
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);

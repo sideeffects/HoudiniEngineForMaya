@@ -39,7 +39,7 @@ AssetSubCommandLoadOTL::doIt()
     }
 
     // create houdiniAsset node
-    MObject assetNode = dynamic_cast<MDGModifier&>(myDagModifier).createNode("houdiniAsset", &status);
+    MObject assetNode = myDagModifier.createNode(AssetNode::id, MObject::kNullObj, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node

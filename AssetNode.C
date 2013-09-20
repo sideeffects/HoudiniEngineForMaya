@@ -18,6 +18,8 @@
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
+#include <algorithm>
+
 #include "AssetNode.h"
 #include "MayaTypeID.h"
 #include "util.h"
@@ -76,6 +78,7 @@ MObject AssetNode::outputInstancers;
 MObject AssetNode::outputInstancerData;
 MObject AssetNode::outputInstancedObjectNames;
 
+std::vector<MObject> computeAttributes;
 
 void*
 AssetNode::creator()
@@ -120,12 +123,14 @@ AssetNode::initialize()
     AssetNode::assetType = nAttr.create("assetType", "assetType", MFnNumericData::kInt);
     nAttr.setStorable(false);
     nAttr.setWritable(false);    
+    computeAttributes.push_back(AssetNode::assetType);
         
     //----------------------------------  instancer compound multi----------------------------------------------
     // instancer data
     AssetNode::outputInstancerData = tAttr.create("outputInstancerData", "outputInstancerData", MFnData::kDynArrayAttrs);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstancerData);
 
     // instanced object names
     AssetNode::outputInstancedObjectNames = tAttr.create("outputInstancedObjectNames", "outputInstancedObjectNames", MFnData::kString);
@@ -134,6 +139,7 @@ AssetNode::initialize()
     tAttr.setArray(true);
     tAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputInstancedObjectNames);
 
     // instancers
     AssetNode::outputInstancers = cAttr.create("outputInstancers", "outputInstancers");
@@ -143,6 +149,7 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputInstancers);
     //--------------------------------End instancer compound multi----------------------------------------------
 
     //----------------------------------  objects compound multi------------------------------------------------
@@ -151,61 +158,76 @@ AssetNode::initialize()
     AssetNode::outputObjectName = tAttr.create("outputObjectName", "outputObjectName", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectName);
 
     // meta data
     AssetNode::outputObjectMetaData = tAttr.create("outputObjectMetaData", "outputObjectMetaData", MFnData::kIntArray);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectMetaData);
 
     // mesh
     AssetNode::outputObjectMesh = tAttr.create("outputObjectMesh", "outputObjectMesh", MFnData::kMesh);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputObjectMesh);
 
     // translate
     AssetNode::outputObjectTranslateX = uAttr.create("outputObjectTranslateX", "outputObjectTranslateX", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectTranslateX);
     AssetNode::outputObjectTranslateY = uAttr.create("outputObjectTranslateY", "outputObjectTranslateY", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectTranslateY);
     AssetNode::outputObjectTranslateZ = uAttr.create("outputObjectTranslateZ", "outputObjectTranslateZ", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectTranslateZ);
     AssetNode::outputObjectTranslate = nAttr.create("outputObjectTranslate", "outputObjectTranslate", AssetNode::outputObjectTranslateX,
             AssetNode::outputObjectTranslateY, AssetNode::outputObjectTranslateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectTranslate);
 
     // rotate
     AssetNode::outputObjectRotateX = uAttr.create("outputObjectRotateX", "outputObjectRotateX", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectRotateX);
     AssetNode::outputObjectRotateY = uAttr.create("outputObjectRotateY", "outputObjectRotateY", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectRotateY);
     AssetNode::outputObjectRotateZ = uAttr.create("outputObjectRotateZ", "outputObjectRotateZ", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectRotateZ);
     AssetNode::outputObjectRotate = nAttr.create("outputObjectRotate", "outputObjectRotate", AssetNode::outputObjectRotateX,
             AssetNode::outputObjectRotateY, AssetNode::outputObjectRotateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectRotate);
 
     // scale
     AssetNode::outputObjectScaleX = nAttr.create("outputObjectScaleX", "outputObjectScaleX", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectScaleX);
     AssetNode::outputObjectScaleY = nAttr.create("outputObjectScaleY", "outputObjectScaleY", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectScaleY);
     AssetNode::outputObjectScaleZ = nAttr.create("outputObjectScaleZ", "outputObjectScaleZ", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectScaleZ);
     AssetNode::outputObjectScale = nAttr.create("outputObjectScale", "outputObjectScale", AssetNode::outputObjectScaleX,
             AssetNode::outputObjectScaleY, AssetNode::outputObjectScaleZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectScale);
 
     // transform
     AssetNode::outputObjectTransform = cAttr.create("outputObjectTransform", "outputObjectTransform");
@@ -214,6 +236,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputObjectScale);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputObjectTransform);
 
     // material exists
     AssetNode::outputObjectMaterialExists = nAttr.create("outputObjectMaterialExists", "outputObjectMaterialExists", MFnNumericData::kBoolean, false);
@@ -221,26 +244,32 @@ AssetNode::initialize()
     nAttr.setWritable(false);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
+    computeAttributes.push_back(AssetNode::outputObjectMaterialExists);
     // material ambient
     AssetNode::outputObjectAmbientColor = nAttr.createColor("outputObjectAmbientColor", "outputObjectAmbientColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectAmbientColor);
     // material diffuse
     AssetNode::outputObjectDiffuseColor = nAttr.createColor("outputObjectDiffuseColor", "outputObjectDiffuseColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectDiffuseColor);
     // material specular
     AssetNode::outputObjectSpecularColor = nAttr.createColor("outputObjectSpecularColor", "outputObjectSpecularColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectSpecularColor);
     // material alpha
     AssetNode::outputObjectAlphaColor = nAttr.createColor("outputObjectAlphaColor", "outputObjectAlphaColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectAlphaColor);
     // texture path
     AssetNode::outputObjectTexturePath = tAttr.create("outputObjectTexturePath", "outputObjectTexturePath", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectTexturePath);
 
     // material
     AssetNode::outputObjectMaterial = cAttr.create("outputObjectMaterial", "outputObjectMaterial");
@@ -252,6 +281,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputObjectTexturePath);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputObjectMaterial);
 
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputObjectName);
@@ -264,6 +294,7 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputObjects);
 
     //------------------------------- END  objects compound multi------------------------------------------------
 
@@ -273,6 +304,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputInstancers);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::output);
     
     // add the static attributes to the node
     addAttribute(AssetNode::assetPath);
@@ -624,58 +656,68 @@ AssetNode::setParmValues(MDataBlock& data)
 MStatus
 AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
-    // load otl
-    if ( myAssetChanged )
+    if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
+	!= computeAttributes.end())
     {
-        MPlug p(thisMObject(), AssetNode::assetPath);
-        MDataHandle h = data.inputValue(p);
-        MString filePath = h.asString();
+	// load otl
+	if ( myAssetChanged )
+	{
+	    MPlug p(thisMObject(), AssetNode::assetPath);
+	    MDataHandle h = data.inputValue(p);
+	    MString filePath = h.asString();
 
-        try
-        {
-            myAsset = new Asset(filePath, thisMObject());
-            myAssetChanged = false;
-        }
-        catch (HAPIError& e)
-        {
-            cerr << e.what() << endl;
-            return MS::kFailure;
-        }
-    }    
+	    try
+	    {
+		myAsset = new Asset(filePath, thisMObject());
+		myAssetChanged = false;
+	    }
+	    catch (HAPIError& e)
+	    {
+		cerr << e.what() << endl;
+		return MS::kFailure;
+	    }
+	}    
 
-    if (!myBuiltParms)
+	if (!myBuiltParms)
+	{
+	    // add ALL the parms
+
+	    //These are dynamic input attributes.  These represent
+	    // the parms of the asset, which we only know after we have
+	    // loaded the asset.
+	    MObjectArray parmAttributes = myAsset->getParmAttributes();
+	    MFnDependencyNode fnDN(thisMObject());
+	    int size = parmAttributes.length();
+	    for (int i=0; i<size; i++)
+	    {
+		MFnAttribute attr(parmAttributes[i]);
+		fnDN.addAttribute(parmAttributes[i]);
+	    }
+
+	    myBuiltParms = true;
+
+	}
+
+	//check if the user has manipulated this node, if so, then push modified
+	//parms into Houdini
+	MPlug parmsModifiedPlug(thisMObject(), AssetNode::parmsModified);
+	MDataHandle parmsModifiedHandle = data.inputValue(parmsModifiedPlug);
+	if (parmsModifiedHandle.asBool())
+	    setParmValues(data);
+
+	//updates Maya attrs from Houdini
+	updateAttrValues(data);
+
+	MPlug outputPlug(thisMObject(), AssetNode::output);
+	myAsset->compute(outputPlug, data);
+
+	return MStatus::kSuccess;
+    }
+    else
     {
-        // add ALL the parms
-
-	//These are dynamic input attributes.  These represent
-	// the parms of the asset, which we only know after we have
-	// loaded the asset.
-        MObjectArray parmAttributes = myAsset->getParmAttributes();
-        MFnDependencyNode fnDN(thisMObject());
-        int size = parmAttributes.length();
-        for (int i=0; i<size; i++)
-        {
-            MFnAttribute attr(parmAttributes[i]);
-            fnDN.addAttribute(parmAttributes[i]);
-        }
-
-        myBuiltParms = true;
-
+	return MStatus::kUnknownParameter;
     }
 
-    //check if the user has manipulated this node, if so, then push modified
-    //parms into Houdini
-    MPlug parmsModifiedPlug(thisMObject(), AssetNode::parmsModified);
-    MDataHandle parmsModifiedHandle = data.inputValue(parmsModifiedPlug);
-    if (parmsModifiedHandle.asBool())
-        setParmValues(data);
-
-    //updates Maya attrs from Houdini
-    updateAttrValues(data);
-
-    MPlug outputPlug(thisMObject(), AssetNode::output);
-    myAsset->compute(outputPlug, data);
-
-    return MS::kSuccess;
+    return MStatus::kSuccess;
 }
 

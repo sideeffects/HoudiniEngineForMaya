@@ -57,7 +57,14 @@ initializePlugin(MObject obj)
     status = plugin.registerUI("houdiniEngineCreateUI", "houdiniEngineDeleteUI");
     Util::printMayaStatus(status);
 
-    status = plugin.registerNode("houdiniAsset", AssetNode::id, AssetNode::creator, AssetNode::initialize);
+    status = plugin.registerTransform(
+	    "houdiniAsset",
+	    AssetNode::id,
+	    AssetNode::creator,
+	    AssetNode::initialize,
+	    MPxTransformationMatrix::creator,
+	    MPxTransformationMatrix::baseTransformationMatrixId
+	    );
     Util::printMayaStatus(status);
 
     status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);

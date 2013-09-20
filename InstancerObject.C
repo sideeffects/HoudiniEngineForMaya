@@ -154,8 +154,8 @@ InstancerObject::compute(MDataHandle& handle)
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged )
     {
-        MDataHandle instancerDataHandle = handle.child(AssetNode::instancerData);
-        MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::instancedObjectNames);
+        MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
+        MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);
 
         //MDataHandle instHandle = data.outputValue(instancerDataPlug);
         MFnArrayAttrsData fnAAD;

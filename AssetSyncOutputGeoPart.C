@@ -30,7 +30,7 @@ AssetSyncOutputGeoPart::doIt()
     MString objectName;
     MString partName;
     {
-	MString outputObjectName = myOutputPlug.child(AssetNode::objectName).asString();
+	MString outputObjectName = myOutputPlug.child(AssetNode::outputObjectName).asString();
 	int separatorIndex = outputObjectName.rindexW('/');
 	objectName = outputObjectName.substringW(0, separatorIndex-1);
 	partName = outputObjectName.substringW(separatorIndex + 1, outputObjectName.numChars() - 1);
@@ -62,8 +62,8 @@ AssetSyncOutputGeoPart::doIt()
     }
 
     // create material
-    MPlug materialPlug = myOutputPlug.child(AssetNode::material);
-    MPlug materialExistsPlug = materialPlug.child(AssetNode::materialExists);
+    MPlug materialPlug = myOutputPlug.child(AssetNode::outputObjectMaterial);
+    MPlug materialExistsPlug = materialPlug.child(AssetNode::outputObjectMaterialExists);
     if(materialExistsPlug.asBool())
     {
 	//TODO: check if material already exists
@@ -129,22 +129,22 @@ AssetSyncOutputGeoPart::createOutputPart(
 
     // connect partTransform attributes
     {
-	MPlug transformPlug = myOutputPlug.child(AssetNode::transform);
+	MPlug transformPlug = myOutputPlug.child(AssetNode::outputObjectTransform);
 
 	MPlug srcPlug;
 	MPlug dstPlug;
 
-	srcPlug = transformPlug.child(AssetNode::translateAttr);
+	srcPlug = transformPlug.child(AssetNode::outputObjectTranslate);
 	dstPlug = partTransformFn.findPlug("translate");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	srcPlug = transformPlug.child(AssetNode::rotateAttr);
+	srcPlug = transformPlug.child(AssetNode::outputObjectRotate);
 	dstPlug = partTransformFn.findPlug("rotate");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	srcPlug = transformPlug.child(AssetNode::scaleAttr);
+	srcPlug = transformPlug.child(AssetNode::outputObjectScale);
 	dstPlug = partTransformFn.findPlug("scale");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -155,7 +155,7 @@ AssetSyncOutputGeoPart::createOutputPart(
 	MPlug srcPlug;
 	MPlug dstPlug;
 
-	srcPlug = myOutputPlug.child(AssetNode::mesh);
+	srcPlug = myOutputPlug.child(AssetNode::outputObjectMesh);
 	dstPlug = partMeshFn.findPlug("inMesh");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -215,7 +215,7 @@ AssetSyncOutputGeoPart::createOutputMaterial(
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // create file node if texture exists
-    MPlug texturePathPlug = materialPlug.child(AssetNode::texturePath);
+    MPlug texturePathPlug = materialPlug.child(AssetNode::outputObjectTexturePath);
     MString texturePath = texturePathPlug.asString();
     MFnDependencyNode textureFileFn;
     if(texturePath.length())
@@ -240,7 +240,7 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 	// color
 	if(textureFileFn.object().isNull())
 	{
-	    srcPlug = materialPlug.child(AssetNode::diffuseAttr);
+	    srcPlug = materialPlug.child(AssetNode::outputObjectDiffuseColor);
 	    dstPlug = shaderFn.findPlug("color");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -258,19 +258,19 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 	}
 
 	// specularColor
-	srcPlug = materialPlug.child(AssetNode::specularAttr);
+	srcPlug = materialPlug.child(AssetNode::outputObjectSpecularColor);
 	dstPlug = shaderFn.findPlug("specularColor");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	// ambientColor
-	srcPlug = materialPlug.child(AssetNode::ambientAttr);
+	srcPlug = materialPlug.child(AssetNode::outputObjectAmbientColor);
 	dstPlug = shaderFn.findPlug("ambientColor");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	// transparency
-	srcPlug = materialPlug.child(AssetNode::alphaAttr);
+	srcPlug = materialPlug.child(AssetNode::outputObjectAlphaColor);
 	dstPlug = shaderFn.findPlug("transparency");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);

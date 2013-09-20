@@ -77,13 +77,13 @@ AssetSyncOutputInstance::createOutput()
 	MPlug dstPlug;
 
 	// inputPoints
-	srcPlug = myOutputPlug.child(AssetNode::instancerData);
+	srcPlug = myOutputPlug.child(AssetNode::outputInstancerData);
 	dstPlug = instancerFn.findPlug("inputPoints");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	// go through every instanced objects
-	MPlug instancedNamesPlug = myOutputPlug.child(AssetNode::instancedObjectNames);
+	MPlug instancedNamesPlug = myOutputPlug.child(AssetNode::outputInstancedObjectNames);
 	MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy");
 	for(unsigned int i = 0; i < instancedNamesPlug.numElements(); i++)
 	{

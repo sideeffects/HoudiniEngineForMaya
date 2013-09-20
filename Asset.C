@@ -176,7 +176,7 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
 {
     MStatus stat;
 
-    MPlug instancersPlug = plug.child(AssetNode::instancers);
+    MPlug instancersPlug = plug.child(AssetNode::outputInstancers);
 
     int instancerIndex = 0;
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
@@ -239,7 +239,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 {
     MStatus stat;
 
-    MPlug objectsPlug = plug.child(AssetNode::objects);
+    MPlug objectsPlug = plug.child(AssetNode::outputObjects);
 
     int objectIndex = 0;
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
@@ -297,7 +297,7 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     typeHandle.set( myAssetInfo.type);
 
     // Set the time
-    MPlug timePlug( myNode, AssetNode::timeInput);
+    MPlug timePlug( myNode, AssetNode::inTime);
     MDataHandle timeHandle = data.inputValue(timePlug);
     MTime currentTime = timeHandle.asTime();
     float time = (float)currentTime.as(MTime::kSeconds);

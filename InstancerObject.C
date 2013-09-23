@@ -75,22 +75,28 @@ InstancerObject::update()
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
-        // TODO: assume only one part for instancers
-        //try
-        //{
-            HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-            hstat = HAPI_GetPartInfo( myAssetId, myObjectId, 0, 0, &myPartInfo);
-            Util::checkHAPIStatus(hstat);
-        //}
-        //catch (HAPIError& e)
-        //{
-            //cerr << e.what() << endl;
-        //}
-
-        // clear the arrays
+        
+	// clear the arrays
         myInstancedObjectNames.clear();
         myInstancedObjectIndices.clear();
         myUniqueInstObjNames.clear();
+
+        try
+        {
+
+	    if( myGeoInfo.partCount <= 0 )
+		return;
+
+            HAPI_Result hstat = HAPI_RESULT_SUCCESS;
+            hstat = HAPI_GetPartInfo( myAssetId, myObjectId, 0, 0, &myPartInfo);
+            Util::checkHAPIStatus(hstat);
+        }
+        catch (HAPIError& e)
+        {
+            cerr << e.what() << endl;
+        }
+
+        
 
         if ( myObjectInfo.objectToInstanceId >= 0)
         {
@@ -151,6 +157,9 @@ MStatus
 InstancerObject::compute(MDataHandle& handle)
 {
     update();
+
+    if( myGeoInfo.partCount <= 0 )
+	return MS::kFailure;
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged )
     {

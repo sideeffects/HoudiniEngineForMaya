@@ -40,6 +40,15 @@ AssetSubCommandSync::doIt()
     unsigned int objCount = objectsPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    
+    MFnDagNode fnDagNode( myAssetNodeObj );
+    for(unsigned int ii = 0; ii < fnDagNode.childCount(); ii++ )
+    {
+	MObject childNode = fnDagNode.child( ii );
+	myDagModifier.deleteNode( childNode );
+    }
+    
+
     for(unsigned int i=0; i < objCount; i++)
     {
 	MPlug elemPlug = objectsPlug[i];
@@ -71,6 +80,7 @@ AssetSubCommandSync::doIt()
 MStatus
 AssetSubCommandSync::redoIt()
 {
+    myDagModifier.doIt();
     for(AssetSyncs::iterator iter = myAssetSyncs.begin();
 	    iter != myAssetSyncs.end();
 	    iter++)
@@ -90,6 +100,7 @@ AssetSubCommandSync::undoIt()
     {
 	(*iter)->undoIt();
     }
+    myDagModifier.undoIt();
 
     return MStatus::kSuccess;
 }

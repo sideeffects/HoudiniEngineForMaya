@@ -4,6 +4,7 @@
 #include "AssetSubCommand.h"
 
 #include <maya/MObject.h>
+#include <maya/MDagModifier.h>
 
 #include <vector>
 
@@ -24,6 +25,7 @@ class AssetSubCommandSync : public AssetSubCommand
 
     protected:
 	MObject myAssetNodeObj;
+	MDagModifier myDagModifier;
 
 	typedef std::vector<AssetSync*> AssetSyncs;
 	AssetSyncs myAssetSyncs;

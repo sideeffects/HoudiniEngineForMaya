@@ -385,11 +385,21 @@ GeometryPart::updateMaterial(MDataHandle& handle)
 	    MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
 		    destinationFolderPath);
 
+	    HAPI_RenderTextureToImage(
+		    myAssetId,
+		    myMaterialInfo.id,
+		    texturePathSHParmIndex
+		    );
+
 	    int filePathSH;
-	    HAPI_ExtractTextureToFile(myMaterialInfo.nodeId,
-		    parms[texturePathSHParmIndex].id,
+	    HAPI_ExtractImageToFile(
+		    myAssetId,
+		    myMaterialInfo.id,
+		    "C A",
 		    destinationFolderPath.asChar(),
-		    NULL, &filePathSH);
+		    NULL,
+		    &filePathSH
+		    );
 	    MString texturePath = Util::getString(filePathSH);
 	    texturePathHandle.set(texturePath);
 	}

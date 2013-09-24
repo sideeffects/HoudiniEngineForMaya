@@ -329,6 +329,7 @@ AssetNode::AssetNode()
 
     myBuiltParms = false;
     myAssetChanged = true;
+    myResultsClean = false;
 
 }
 
@@ -365,6 +366,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     if (plugBeingDirtied == AssetNode::assetPath)
         return MS::kSuccess;
 
+    myResultsClean = false;
     myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
     
     affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
@@ -655,9 +657,9 @@ AssetNode::setParmValues(MDataBlock& data)
 
 MStatus
 AssetNode::compute(const MPlug& plug, MDataBlock& data)
-{
+{    
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
-	!= computeAttributes.end())
+	!= computeAttributes.end() && !myResultsClean )
     {
 	// load otl
 	if ( myAssetChanged )
@@ -711,13 +713,15 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	MPlug outputPlug(thisMObject(), AssetNode::output);
 	myAsset->compute(outputPlug, data);
 
+	myResultsClean = true;
+
+	data.setClean( plug );
 	return MStatus::kSuccess;
     }
     else
-    {
+    {		
 	return MStatus::kUnknownParameter;
     }
-
-    return MStatus::kSuccess;
+    
 }
 

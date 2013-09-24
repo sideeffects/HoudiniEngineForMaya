@@ -73,6 +73,7 @@ class AssetNode: public MPxTransform
         Asset* myAsset;
         bool myBuiltParms;
         bool myAssetChanged;
+	bool myResultsClean;
 
 	typedef std::vector<MObject> MObjectVector;
 	MObjectVector myDirtyParmAttributes;

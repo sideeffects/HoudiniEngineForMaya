@@ -63,6 +63,8 @@ class AssetNode: public MPxTransform
         virtual MStatus setDependentsDirty(const MPlug& plugBeingDirtied,
                 MPlugArray& affectedPlugs);
 
+	Asset* getAsset();
+
         static void* creator();
         static MStatus initialize();
 

@@ -48,6 +48,18 @@ class AssetNode: public MPxTransform
         virtual void postConstructor();
 
         virtual MStatus compute( const MPlug& plug, MDataBlock& data );
+
+	virtual bool getInternalValueInContext(
+		const MPlug &plug,
+		MDataHandle &dataHandle,
+		MDGContext &ctx);
+	virtual bool setInternalValueInContext(
+		const MPlug &plug,
+		const MDataHandle &dataHandle,
+		MDGContext &ctx
+		);
+	virtual void copyInternalData(MPxNode* node);
+
         virtual MStatus setDependentsDirty(const MPlug& plugBeingDirtied,
                 MPlugArray& affectedPlugs);
 
@@ -72,7 +84,9 @@ class AssetNode: public MPxTransform
     private:
         Asset* myAsset;
         bool myBuiltParms;
-        bool myAssetChanged;
+
+	MString myAssetPath;
+	bool myAssetPathChanged;
 	bool myResultsClean;
 
 	typedef std::vector<MObject> MObjectVector;

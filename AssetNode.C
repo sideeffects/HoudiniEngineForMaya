@@ -99,8 +99,8 @@ AssetNode::initialize()
     // file name
     // The name of the otl file we loaded.
     AssetNode::assetPath = tAttr.create("assetPath", "assetPath", MFnData::kString);
+    tAttr.setInternal(true);
     tAttr.setUsedAsFilename(true);
-    tAttr.setStorable(true);
 
     // parms modified
     // This is initially false, and whenever a user touches a parm, this will get set to true
@@ -328,9 +328,8 @@ AssetNode::AssetNode()
     myAsset = NULL;
 
     myBuiltParms = false;
-    myAssetChanged = true;
+    myAssetPathChanged = true;
     myResultsClean = false;
-
 }
 
 
@@ -662,16 +661,12 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	!= computeAttributes.end() && !myResultsClean )
     {
 	// load otl
-	if ( myAssetChanged )
+	if (myAssetPathChanged)
 	{
-	    MPlug p(thisMObject(), AssetNode::assetPath);
-	    MDataHandle h = data.inputValue(p);
-	    MString filePath = h.asString();
-
 	    try
 	    {
-		myAsset = new Asset(filePath, thisMObject());
-		myAssetChanged = false;
+		myAsset = new Asset(myAssetPath, thisMObject());
+		myAssetPathChanged = false;
 	    }
 	    catch (HAPIError& e)
 	    {
@@ -725,3 +720,47 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     
 }
 
+bool
+AssetNode::getInternalValueInContext(
+	const MPlug &plug,
+	MDataHandle &dataHandle,
+	MDGContext &ctx)
+{
+    if(plug == assetPath)
+    {
+	dataHandle.setString(myAssetPath);
+
+	return true;
+    }
+
+    return MPxTransform::getInternalValueInContext(plug, dataHandle, ctx);
+}
+
+bool
+AssetNode::setInternalValueInContext(
+	const MPlug &plug,
+	const MDataHandle &dataHandle,
+	MDGContext &ctx
+	)
+{
+    if(plug == assetPath)
+    {
+	myAssetPath = dataHandle.asString();
+	myAssetPathChanged = true;
+
+	return true;
+    }
+
+    return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);
+}
+
+void
+AssetNode::copyInternalData(MPxNode* node)
+{
+    AssetNode* assetNode = dynamic_cast<AssetNode*>(node);
+
+    myAssetPath = assetNode->myAssetPath;
+    myAssetPathChanged = true;
+
+    MPxTransform::copyInternalData(node);
+}

@@ -335,10 +335,7 @@ AssetNode::AssetNode()
 
 AssetNode::~AssetNode()
 {
-    if(myAsset)
-    {
-	delete myAsset;
-    }
+    destroyAsset();
 }
 
 
@@ -650,20 +647,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
 	!= computeAttributes.end() && !myResultsClean )
     {
-	// load otl
-	if (myAssetPathChanged)
-	{
-	    try
-	    {
-		myAsset = new Asset(myAssetPath, thisMObject());
-		myAssetPathChanged = false;
-	    }
-	    catch (HAPIError& e)
-	    {
-		cerr << e.what() << endl;
-		return MS::kFailure;
-	    }
-	}    
+	// make sure Asset is created
+	createAsset();
 
 	if (!myBuiltParms)
 	{
@@ -753,4 +738,29 @@ AssetNode::copyInternalData(MPxNode* node)
     myAssetPathChanged = true;
 
     MPxTransform::copyInternalData(node);
+}
+
+void
+AssetNode::createAsset()
+{
+    if(!myAssetPathChanged)
+    {
+	return;
+    }
+
+    destroyAsset();
+
+    myAsset = new Asset(myAssetPath, thisMObject());
+
+    myAssetPathChanged = false;
+}
+
+void
+AssetNode::destroyAsset()
+{
+    if(myAsset)
+    {
+	delete myAsset;
+	myAsset = NULL;
+    }
 }

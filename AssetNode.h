@@ -84,6 +84,8 @@ class AssetNode: public MPxTransform
     private:
         Asset* myAsset;
         bool myBuiltParms;
+	void createAsset();
+	void destroyAsset();
 
 	MString myAssetPath;
 	bool myAssetPathChanged;

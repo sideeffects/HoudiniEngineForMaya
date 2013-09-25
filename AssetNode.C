@@ -740,6 +740,14 @@ AssetNode::copyInternalData(MPxNode* node)
     MPxTransform::copyInternalData(node);
 }
 
+Asset*
+AssetNode::getAsset()
+{
+    createAsset();
+
+    return myAsset;
+}
+
 void
 AssetNode::createAsset()
 {

@@ -13,6 +13,32 @@ houdiniEngine_loadOTLMenuClick()
 	houdiniAsset -loadOTL $results[0];
 }
 
+
+global proc
+houdiniEngine_syncAssetOutputMenuClick()
+{
+    string $currSels[] = `ls -sl`;
+	if( size($currSels) < 1 )
+	{
+		error("Please select a houdiniAsset node to sync the output!");
+	}
+	string $currSel = $currSels[0];
+	string $nodeTypeOfSel = `nodeType $currSel`;
+	if( $nodeTypeOfSel == "houdiniAsset" )
+	{
+		string $children[] = `listRelatives -c -pa $currSel`;
+		for( $ii = 0; $ii < size($children); $ii++ )
+		{
+			delete $children[$ii];
+		}		
+		houdiniAsset -sync $currSel;
+	}
+	else
+	{
+		error("Please select a houdiniAsset node to sync the output!");
+	}
+}
+
 global proc
 houdiniEngineCreateUI()
 {
@@ -27,6 +53,8 @@ houdiniEngineCreateUI()
 	houdiniEngineMenu;
 	menuItem -label "Load Houdini Asset..."
 	    -command "houdiniEngine_loadOTLMenuClick";
+	menuItem -label "Sync Asset Output"
+	    -command "houdiniEngine_syncAssetOutputMenuClick";
 	menuItem -label "HAPI Debug Window"
 	    -command "houdiniEngine_debugWindowMenuClick";
 }

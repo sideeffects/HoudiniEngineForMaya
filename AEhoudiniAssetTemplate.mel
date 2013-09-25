@@ -183,10 +183,12 @@ global proc AEhoudiniAssetInputsReplace(string $attrFullName)
 
 global proc AEhoudiniAssetTemplate( string $nodeName )
 {
-    editorTemplate -addControl "assetPath";
-
-    //Put our attributes into a scrolled layout field
+    
     editorTemplate -beginScrollLayout;
+    editorTemplate -addExtraControls;
+    
+
+    editorTemplate -addControl "assetPath";
 
     // special ui for inputs
     string $inputAttrArray[] = `listAttr -st "inputs" $nodeName`;

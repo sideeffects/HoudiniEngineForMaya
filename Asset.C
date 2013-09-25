@@ -97,11 +97,16 @@ Asset::init()
 
 Asset::~Asset()
 {
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
+
     for (int i=0; i< myNumObjects; i++)
         delete myObjects[i];
     delete[] myObjects;
     delete[] myObjectInfos;    
     delete myAssetInputs;
+
+    hstat = HAPI_UnloadOTLFile(myAssetInfo.id);
+    Util::checkHAPIStatus(hstat);
 }
 
 

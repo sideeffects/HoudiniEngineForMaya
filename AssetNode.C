@@ -333,22 +333,12 @@ AssetNode::AssetNode()
 }
 
 
-AssetNode::~AssetNode() {
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    try
+AssetNode::~AssetNode()
+{
+    if(myAsset)
     {
-        if ( myAsset != NULL )
-        {
-            hstat = HAPI_UnloadOTLFile( myAsset->myAssetInfo.id);
-            Util::checkHAPIStatus(hstat);
-        }
+	delete myAsset;
     }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-    }
-
-    delete myAsset;
 }
 
 

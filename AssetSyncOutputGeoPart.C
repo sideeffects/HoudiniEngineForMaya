@@ -70,6 +70,12 @@ AssetSyncOutputGeoPart::doIt()
 	status = createOutputMaterial(materialPlug, partTransform);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
+    else
+    {
+	MFnDagNode partTransformFn(partTransform);
+	status = myDagModifier.commandToExecute("assignSG \"lambert1\" \"" + partTransformFn.fullPathName() + "\";");
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
     return redoIt();
 }

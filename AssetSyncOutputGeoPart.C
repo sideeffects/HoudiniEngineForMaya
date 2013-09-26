@@ -176,16 +176,7 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 {
     MStatus status;
 
-    // can't use partTransform directly to select, need to use MDagPath
-    MDagPath partTransformDag;
-    status = MDagPath::getAPathTo(partTransform, partTransformDag);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // save current selection
-    MSelectionList oldSelection;
-    MGlobal::getActiveSelectionList(oldSelection);
-
-    MSelectionList selection;
+    MFnDagNode partTransformFn(partTransform, &status);
 
     // create shader
     MFnDependencyNode shaderFn;
@@ -202,16 +193,10 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
-    // select partTransform
-    status = selection.add(partTransformDag);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    MGlobal::setActiveSelectionList(selection);
-    selection.clear();
-
     // assign shader
-    status = myDagModifier.commandToExecute("hyperShade -assign " + shaderFn.name());
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    status = myDagModifier.doIt();
+    status = myDagModifier.commandToExecute(
+	    "assignSG " + shaderFn.name() + " " + partTransformFn.fullPathName()
+	    );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // create file node if texture exists
@@ -275,9 +260,6 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
-
-    // restore old selection
-    MGlobal::setActiveSelectionList(oldSelection);
 
     // doIt
     status = myDagModifier.doIt();

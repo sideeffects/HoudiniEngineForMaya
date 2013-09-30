@@ -61,11 +61,23 @@ Asset::init()
         {
             MString attrName = MString("input") + (i+1);
 
-	    MObject inputAttrObj = AssetInputs::createInputAttribute(attrName);
-
-            cAttr.addChild(inputAttrObj);
+	    MObject inputAttrObj = AssetInputs::createInputAttribute(attrName);	    
+            cAttr.addChild(inputAttrObj);	    
         }
         addAttrTo(myMayaInputs, NULL);
+
+	myMayaInputTransforms = cAttr.create("inputTransforms", "ixforms");
+
+        for (int i=0; i<inputCount; i++)
+        {
+            MString attrName = MString("input") + (i+1);
+	    MString attrTransformName = attrName + "Transform";
+
+	    MObject inputTransformAttrObj = AssetInputs::createInputAttributeTransform( attrTransformName );
+
+	    cAttr.addChild(inputTransformAttrObj);
+        }
+        addAttrTo(myMayaInputTransforms, NULL);
     }
 
     // get the infos

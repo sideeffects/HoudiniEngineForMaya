@@ -1,6 +1,7 @@
 #include "AssetInput.h"
 
 #include <maya/MFnGenericAttribute.h>
+#include <maya/MFnMatrixAttribute.h>
 
 #include "AssetInputAsset.h"
 #include "AssetInputMesh.h"
@@ -17,6 +18,17 @@ AssetInputs::createInputAttribute(const MString &attrName)
     gAttr.addDataAccept(MFnData::kNurbsCurve);
 
     return inputAttrObj;
+}
+
+
+MObject
+AssetInputs::createInputAttributeTransform(const MString &attrName)
+{
+    MFnMatrixAttribute mAttr;
+
+    MObject inputAttrTransformObj = mAttr.create(attrName, attrName);    
+
+    return inputAttrTransformObj;
 }
 
 AssetInputs::AssetInputs(int assetId) :

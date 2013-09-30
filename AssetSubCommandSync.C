@@ -7,6 +7,7 @@
 #include <maya/MFnDagNode.h>
 
 #include "AssetNode.h"
+#include "AssetSyncAttribute.h"
 #include "AssetSyncOutputGeoPart.h"
 #include "AssetSyncOutputInstance.h"
 
@@ -32,6 +33,14 @@ MStatus
 AssetSubCommandSync::doIt()
 {
     MStatus status;
+
+    // attributes
+    {
+	AssetSync* syncOutput = new AssetSyncAttribute(myAssetNodeObj);
+	syncOutput->doIt();
+
+	myAssetSyncs.push_back(syncOutput);
+    }
 
     MFnDependencyNode assetNodeFn(myAssetNodeObj, &status);
 

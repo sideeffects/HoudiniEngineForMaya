@@ -44,7 +44,6 @@ AssetSyncOutputObject::doIt()
     for (int i=0; i<partCount; i++)
     {
 	AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[i], myAssetNodeObj);
-	cerr << "Creating an output part." << endl;
 	sync->doIt();
 	myAssetSyncs.push_back(sync);
     }

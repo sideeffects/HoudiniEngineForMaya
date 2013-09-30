@@ -106,10 +106,6 @@ class AssetNode: public MPxTransform
         static MObject output;
 
         static MObject outputObjects;
-        static MObject outputObjectName;
-        static MObject outputObjectMetaData;
-        static MObject outputObjectMesh;
-        
         static MObject outputObjectTransform;
         static MObject outputObjectTranslate;
         static MObject outputObjectTranslateX;
@@ -124,13 +120,17 @@ class AssetNode: public MPxTransform
         static MObject outputObjectScaleY;
         static MObject outputObjectScaleZ;
 
-        static MObject outputObjectMaterial;
-        static MObject outputObjectMaterialExists;
-        static MObject outputObjectTexturePath;
-        static MObject outputObjectAmbientColor;
-        static MObject outputObjectDiffuseColor;
-        static MObject outputObjectSpecularColor;
-        static MObject outputObjectAlphaColor;
+	static MObject outputParts;
+        static MObject outputPartName;
+        static MObject outputPartMetaData;
+        static MObject outputPartMesh;
+        static MObject outputPartMaterial;
+        static MObject outputPartMaterialExists;
+        static MObject outputPartTexturePath;
+        static MObject outputPartAmbientColor;
+        static MObject outputPartDiffuseColor;
+        static MObject outputPartSpecularColor;
+        static MObject outputPartAlphaColor;
 
         //static MObject numObjects;
         static MObject outputInstancers;

@@ -87,7 +87,7 @@ GeometryObject::compute(MDataHandle& handle)
 
 
 MStatus
-GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
+GeometryObject::computeParts(MDataHandle& obj, MArrayDataBuilder* builder)
 {
     update();
 
@@ -103,17 +103,16 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
         // TODO: right now assume one geo
         for (int i=0; i< myGeoInfo.partCount; i++)
         {
-            MDataHandle h = builder->addElement(*index);
+            MDataHandle h = builder->addElement(i);
             stat = myParts[i].compute(h);
 
             if (MS::kSuccess == stat)
             {
                 if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
                 {
-                    MDataHandle t = h.child(AssetNode::outputObjectTransform);
+                    MDataHandle t = obj.child(AssetNode::outputObjectTransform);
                     updateTransform(t);
                 }
-                (*index)++;
             }
         }
 
@@ -121,17 +120,17 @@ GeometryObject::computeParts(MArrayDataBuilder* builder, int* index)
     }
     else
     {
+	// TODO: !
         for (int i=0; i< myGeoInfo.partCount; i++)
         {
             if ( myParts[i].hasMesh() )
             {
-                MDataHandle h = builder->addElement(*index);
+                MDataHandle h = builder->addElement(i);
                 if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
                 {
-                    MDataHandle t = h.child(AssetNode::outputObjectTransform);
+                    MDataHandle t = obj.child(AssetNode::outputObjectTransform);
                     updateTransform(t);
                 }
-                (*index)++;
             }
         }
     }
@@ -144,20 +143,28 @@ MStatus
 GeometryObject::setClean(MPlug& plug, MDataBlock& data)
 {
     data.setClean(plug);
-    data.setClean(plug.child(AssetNode::outputObjectMesh));
-    data.setClean(plug.child(AssetNode::outputObjectName));
 
     MPlug transformPlug = plug.child(AssetNode::outputObjectTransform);
     data.setClean(transformPlug.child(AssetNode::outputObjectTranslate));
     data.setClean(transformPlug.child(AssetNode::outputObjectRotate));
     data.setClean(transformPlug.child(AssetNode::outputObjectScale));
 
-    MPlug materialPlug = plug.child(AssetNode::outputObjectMaterial);
-    data.setClean(materialPlug.child(AssetNode::outputObjectMaterialExists));
-    data.setClean(materialPlug.child(AssetNode::outputObjectAmbientColor));
-    data.setClean(materialPlug.child(AssetNode::outputObjectDiffuseColor));
-    data.setClean(materialPlug.child(AssetNode::outputObjectSpecularColor));
-    data.setClean(materialPlug.child(AssetNode::outputObjectTexturePath));
+    MPlug partsPlug = plug.child(AssetNode::outputParts);
+    for (int i=0; i<myGeoInfo.partCount; i++)
+    {
+	MPlug partPlug = partsPlug[i];
+	data.setClean(partPlug.child(AssetNode::outputPartName));
+	data.setClean(partPlug.child(AssetNode::outputPartMetaData));
+	data.setClean(partPlug.child(AssetNode::outputPartMesh));
+
+	data.setClean(partPlug.child(AssetNode::outputPartMaterial));
+	data.setClean(partPlug.child(AssetNode::outputPartMaterialExists));
+	data.setClean(partPlug.child(AssetNode::outputPartTexturePath));
+	data.setClean(partPlug.child(AssetNode::outputPartAmbientColor));
+	data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor));
+	data.setClean(partPlug.child(AssetNode::outputPartSpecularColor));
+	data.setClean(partPlug.child(AssetNode::outputPartAlphaColor));
+    }
 
     return MS::kSuccess;
 }

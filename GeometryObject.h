@@ -18,7 +18,7 @@ class GeometryObject: public Object
         virtual MStatus compute(MDataHandle& handle);
 
         //*************** function until groups are fully supported **************
-        MStatus computeParts(MArrayDataBuilder* builder, int* index);
+        MStatus computeParts(MDataHandle& obj, MArrayDataBuilder* builder);
         //************************************************************************
 
         virtual MStatus setClean(MPlug& plug, MDataBlock& data);

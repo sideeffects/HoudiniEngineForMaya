@@ -235,11 +235,11 @@ GeometryPart::compute(MDataHandle& handle)
     update();
 
     // Get plugs
-    MDataHandle objectNameHandle = handle.child(AssetNode::outputObjectName);
-    MDataHandle metaDataHandle = handle.child(AssetNode::outputObjectMetaData);
-    MDataHandle meshHandle = handle.child(AssetNode::outputObjectMesh);
+    MDataHandle partNameHandle = handle.child(AssetNode::outputPartName);
+    MDataHandle metaDataHandle = handle.child(AssetNode::outputPartMetaData);
+    MDataHandle meshHandle = handle.child(AssetNode::outputPartMesh);
     //MDataHandle transformHandle = handle.child(AssetNode::transform);
-    MDataHandle materialHandle = handle.child(AssetNode::outputObjectMaterial);
+    MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
 
     // Don't output mesh for degenerate geos
     if ( myPartInfo.pointCount == 0 || myPartInfo.faceCount == 0|| myPartInfo.vertexCount == 0)
@@ -248,8 +248,8 @@ GeometryPart::compute(MDataHandle& handle)
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
         // Object name
-	MString objectName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
-        objectNameHandle.set(objectName);
+	MString partName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
+        partNameHandle.set(partName);
 
         // Meta data
         MFnIntArrayData ffIAD;
@@ -271,7 +271,7 @@ GeometryPart::compute(MDataHandle& handle)
         updateMaterial(materialHandle);
     }
 
-    objectNameHandle.setClean();
+    partNameHandle.setClean();
     meshHandle.setClean();
     handle.setClean();
 
@@ -320,12 +320,12 @@ GeometryPart::createMesh()
 void
 GeometryPart::updateMaterial(MDataHandle& handle)
 {
-    MDataHandle matExistsHandle = handle.child(AssetNode::outputObjectMaterialExists);
-    MDataHandle ambientHandle = handle.child(AssetNode::outputObjectAmbientColor);
-    MDataHandle diffuseHandle = handle.child(AssetNode::outputObjectDiffuseColor);
-    MDataHandle specularHandle = handle.child(AssetNode::outputObjectSpecularColor);
-    MDataHandle alphaHandle = handle.child(AssetNode::outputObjectAlphaColor);
-    MDataHandle texturePathHandle = handle.child(AssetNode::outputObjectTexturePath);
+    MDataHandle matExistsHandle = handle.child(AssetNode::outputPartMaterialExists);
+    MDataHandle ambientHandle = handle.child(AssetNode::outputPartAmbientColor);
+    MDataHandle diffuseHandle = handle.child(AssetNode::outputPartDiffuseColor);
+    MDataHandle specularHandle = handle.child(AssetNode::outputPartSpecularColor);
+    MDataHandle alphaHandle = handle.child(AssetNode::outputPartAlphaColor);
+    MDataHandle texturePathHandle = handle.child(AssetNode::outputPartTexturePath);
 
     if ( myPartInfo.materialId < 0)
     {

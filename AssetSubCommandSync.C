@@ -8,7 +8,7 @@
 
 #include "AssetNode.h"
 #include "AssetSyncAttribute.h"
-#include "AssetSyncOutputGeoPart.h"
+#include "AssetSyncOutputObject.h"
 #include "AssetSyncOutputInstance.h"
 
 AssetSubCommandSync::AssetSubCommandSync(
@@ -44,7 +44,7 @@ AssetSubCommandSync::doIt()
 
     MFnDependencyNode assetNodeFn(myAssetNodeObj, &status);
 
-    // geo parts
+    // Objects
     MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
     unsigned int objCount = objectsPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -56,13 +56,12 @@ AssetSubCommandSync::doIt()
 	MObject childNode = fnDagNode.child( ii );
 	myDagModifier.deleteNode( childNode );
     }
-    
 
     for(unsigned int i=0; i < objCount; i++)
     {
 	MPlug elemPlug = objectsPlug[i];
 
-        AssetSync* syncOutput = new AssetSyncOutputGeoPart(elemPlug, myAssetNodeObj);
+        AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj);
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);

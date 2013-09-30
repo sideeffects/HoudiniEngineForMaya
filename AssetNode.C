@@ -48,10 +48,6 @@ MObject AssetNode::assetType;
 MObject AssetNode::output;
 MObject AssetNode::outputObjects;
 
-MObject AssetNode::outputObjectName;
-MObject AssetNode::outputObjectMetaData;
-MObject AssetNode::outputObjectMesh;
-
 MObject AssetNode::outputObjectTransform;
 MObject AssetNode::outputObjectTranslate;
 MObject AssetNode::outputObjectTranslateX;
@@ -66,13 +62,17 @@ MObject AssetNode::outputObjectScaleX;
 MObject AssetNode::outputObjectScaleY;
 MObject AssetNode::outputObjectScaleZ;
 
-MObject AssetNode::outputObjectMaterial;
-MObject AssetNode::outputObjectMaterialExists;
-MObject AssetNode::outputObjectTexturePath;
-MObject AssetNode::outputObjectAmbientColor;
-MObject AssetNode::outputObjectDiffuseColor;
-MObject AssetNode::outputObjectSpecularColor;
-MObject AssetNode::outputObjectAlphaColor;
+MObject AssetNode::outputParts;
+MObject AssetNode::outputPartName;
+MObject AssetNode::outputPartMetaData;
+MObject AssetNode::outputPartMesh;
+MObject AssetNode::outputPartMaterial;
+MObject AssetNode::outputPartMaterialExists;
+MObject AssetNode::outputPartTexturePath;
+MObject AssetNode::outputPartAmbientColor;
+MObject AssetNode::outputPartDiffuseColor;
+MObject AssetNode::outputPartSpecularColor;
+MObject AssetNode::outputPartAlphaColor;
 
 MObject AssetNode::outputInstancers;
 MObject AssetNode::outputInstancerData;
@@ -155,22 +155,22 @@ AssetNode::initialize()
     //----------------------------------  objects compound multi------------------------------------------------
 
     // object name
-    AssetNode::outputObjectName = tAttr.create("outputObjectName", "outputObjectName", MFnData::kString);
+    AssetNode::outputPartName = tAttr.create("outputPartName", "outputPartName", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectName);
+    computeAttributes.push_back(AssetNode::outputPartName);
 
     // meta data
-    AssetNode::outputObjectMetaData = tAttr.create("outputObjectMetaData", "outputObjectMetaData", MFnData::kIntArray);
+    AssetNode::outputPartMetaData = tAttr.create("outputPartMetaData", "outputPartMetaData", MFnData::kIntArray);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectMetaData);
+    computeAttributes.push_back(AssetNode::outputPartMetaData);
 
     // mesh
-    AssetNode::outputObjectMesh = tAttr.create("outputObjectMesh", "outputObjectMesh", MFnData::kMesh);
+    AssetNode::outputPartMesh = tAttr.create("outputPartMesh", "outputPartMesh", MFnData::kMesh);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputObjectMesh);
+    computeAttributes.push_back(AssetNode::outputPartMesh);
 
     // translate
     AssetNode::outputObjectTranslateX = uAttr.create("outputObjectTranslateX", "outputObjectTranslateX", MFnUnitAttribute::kDistance);
@@ -239,56 +239,65 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::outputObjectTransform);
 
     // material exists
-    AssetNode::outputObjectMaterialExists = nAttr.create("outputObjectMaterialExists", "outputObjectMaterialExists", MFnNumericData::kBoolean, false);
+    AssetNode::outputPartMaterialExists = nAttr.create("outputPartMaterialExists", "outputPartMaterialExists", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
-    computeAttributes.push_back(AssetNode::outputObjectMaterialExists);
+    computeAttributes.push_back(AssetNode::outputPartMaterialExists);
     // material ambient
-    AssetNode::outputObjectAmbientColor = nAttr.createColor("outputObjectAmbientColor", "outputObjectAmbientColor");
+    AssetNode::outputPartAmbientColor = nAttr.createColor("outputPartAmbientColor", "outputPartAmbientColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectAmbientColor);
+    computeAttributes.push_back(AssetNode::outputPartAmbientColor);
     // material diffuse
-    AssetNode::outputObjectDiffuseColor = nAttr.createColor("outputObjectDiffuseColor", "outputObjectDiffuseColor");
+    AssetNode::outputPartDiffuseColor = nAttr.createColor("outputPartDiffuseColor", "outputPartDiffuseColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectDiffuseColor);
+    computeAttributes.push_back(AssetNode::outputPartDiffuseColor);
     // material specular
-    AssetNode::outputObjectSpecularColor = nAttr.createColor("outputObjectSpecularColor", "outputObjectSpecularColor");
+    AssetNode::outputPartSpecularColor = nAttr.createColor("outputPartSpecularColor", "outputPartSpecularColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectSpecularColor);
+    computeAttributes.push_back(AssetNode::outputPartSpecularColor);
     // material alpha
-    AssetNode::outputObjectAlphaColor = nAttr.createColor("outputObjectAlphaColor", "outputObjectAlphaColor");
+    AssetNode::outputPartAlphaColor = nAttr.createColor("outputPartAlphaColor", "outputPartAlphaColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectAlphaColor);
+    computeAttributes.push_back(AssetNode::outputPartAlphaColor);
     // texture path
-    AssetNode::outputObjectTexturePath = tAttr.create("outputObjectTexturePath", "outputObjectTexturePath", MFnData::kString);
+    AssetNode::outputPartTexturePath = tAttr.create("outputPartTexturePath", "outputPartTexturePath", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectTexturePath);
+    computeAttributes.push_back(AssetNode::outputPartTexturePath);
 
     // material
-    AssetNode::outputObjectMaterial = cAttr.create("outputObjectMaterial", "outputObjectMaterial");
-    cAttr.addChild(AssetNode::outputObjectMaterialExists);
-    cAttr.addChild(AssetNode::outputObjectAmbientColor);
-    cAttr.addChild(AssetNode::outputObjectDiffuseColor);
-    cAttr.addChild(AssetNode::outputObjectSpecularColor);
-    cAttr.addChild(AssetNode::outputObjectAlphaColor);
-    cAttr.addChild(AssetNode::outputObjectTexturePath);
+    AssetNode::outputPartMaterial = cAttr.create("outputPartMaterial", "outputPartMaterial");
+    cAttr.addChild(AssetNode::outputPartMaterialExists);
+    cAttr.addChild(AssetNode::outputPartAmbientColor);
+    cAttr.addChild(AssetNode::outputPartDiffuseColor);
+    cAttr.addChild(AssetNode::outputPartSpecularColor);
+    cAttr.addChild(AssetNode::outputPartAlphaColor);
+    cAttr.addChild(AssetNode::outputPartTexturePath);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputObjectMaterial);
+    computeAttributes.push_back(AssetNode::outputPartMaterial);
+
+    AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
+    cAttr.addChild(AssetNode::outputPartName);
+    cAttr.addChild(AssetNode::outputPartMetaData);
+    cAttr.addChild(AssetNode::outputPartMesh);
+    cAttr.addChild(AssetNode::outputPartMaterial);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    cAttr.setArray(true);
+    cAttr.setIndexMatters(true);
+    cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputParts);
 
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
-    cAttr.addChild(AssetNode::outputObjectName);
-    cAttr.addChild(AssetNode::outputObjectMetaData);
-    cAttr.addChild(AssetNode::outputObjectMesh);
+    cAttr.addChild(AssetNode::outputParts);
     cAttr.addChild(AssetNode::outputObjectTransform);
-    cAttr.addChild(AssetNode::outputObjectMaterial);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
@@ -358,38 +367,44 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
 
     MPlug outputObjectsPlug(thisMObject(), AssetNode::outputObjects);
-    MPlug outputInstancersPlug(thisMObject(), AssetNode::outputInstancers);
-
     for ( unsigned int i = 0; i < outputObjectsPlug.numElements(); ++i )
     {
-        MPlug elemPlug = outputObjectsPlug[ i ];
+        MPlug objPlug = outputObjectsPlug[ i ];
+	MPlug outputObjectTransformPlug = objPlug.child(AssetNode::outputObjectTransform);
+	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectTranslate));
+	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectRotate));
+	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectScale));
+	MPlug outputPartsPlug = objPlug.child(AssetNode::outputParts);
+	for ( unsigned int j = 0; j < outputPartsPlug.numElements(); ++j )
+	{
+	    MPlug elemPlug = outputPartsPlug[ j ];
 
-        MPlug outputObjectNamePlug = elemPlug.child(AssetNode::outputObjectName);
-        MPlug outputObjectMetaDataPlug = elemPlug.child(AssetNode::outputObjectMetaData);
-        MPlug meshPlug = elemPlug.child(AssetNode::outputObjectMesh);
-        MPlug outputObjectTransformPlug = elemPlug.child(AssetNode::outputObjectTransform);
-        MPlug outputObjectMaterialPlug = elemPlug.child(AssetNode::outputObjectMaterial);
+	    MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
+	    MPlug outputPartMetaDataPlug = elemPlug.child(AssetNode::outputPartMetaData);
+	    MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
+	    MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
 
 
-        affectedPlugs.append(outputObjectNamePlug);
-        affectedPlugs.append(outputObjectMetaDataPlug);
-        affectedPlugs.append(meshPlug);
+	    affectedPlugs.append(outputPartNamePlug);
+	    affectedPlugs.append(outputPartMetaDataPlug);
+	    affectedPlugs.append(meshPlug);
 
-        affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectTranslate));
-        affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectRotate));
-        affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectScale));
 
-        affectedPlugs.append(outputObjectMaterialPlug.child(AssetNode::outputObjectMaterialExists));
-        affectedPlugs.append(outputObjectMaterialPlug.child(AssetNode::outputObjectTexturePath));
-        affectedPlugs.append(outputObjectMaterialPlug.child(AssetNode::outputObjectAmbientColor));
-        affectedPlugs.append(outputObjectMaterialPlug.child(AssetNode::outputObjectDiffuseColor));
-        affectedPlugs.append(outputObjectMaterialPlug.child(AssetNode::outputObjectSpecularColor));
-	affectedPlugs.append(outputObjectMaterialPlug.child(AssetNode::outputObjectAlphaColor));
+	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialExists));
+	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartTexturePath));
+	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAmbientColor));
+	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
+	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
+	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
+	}
+
     }
 
+    MPlug outputInstancersPlug(thisMObject(), AssetNode::outputInstancers);
     for ( unsigned int i = 0; i < outputInstancersPlug.numElements(); ++i )
     {
 	MPlug elemPlug = outputInstancersPlug[ i ];
+
 	MPlug outputInstancerDataPlug = elemPlug.child( AssetNode::outputInstancerData );
 	MPlug outputInstancedObjectNamesPlug = elemPlug.child( AssetNode::outputInstancedObjectNames );
 
@@ -398,6 +413,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	for ( unsigned int j = 0; j < outputInstancedObjectNamesPlug.numElements(); ++j )
 	    affectedPlugs.append(outputInstancedObjectNamesPlug[ j ] );
     }
+
     return MS::kSuccess;
 }
 

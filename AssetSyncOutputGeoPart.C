@@ -30,10 +30,10 @@ AssetSyncOutputGeoPart::doIt()
     MString objectName;
     MString partName;
     {
-	MString outputObjectName = myOutputPlug.child(AssetNode::outputObjectName).asString();
-	int separatorIndex = outputObjectName.rindexW('/');
-	objectName = outputObjectName.substringW(0, separatorIndex-1);
-	partName = outputObjectName.substringW(separatorIndex + 1, outputObjectName.numChars() - 1);
+	MString outputPartName = myOutputPlug.child(AssetNode::outputPartName).asString();
+	int separatorIndex = outputPartName.rindexW('/');
+	objectName = outputPartName.substringW(0, separatorIndex-1);
+	partName = outputPartName.substringW(separatorIndex + 1, outputPartName.numChars() - 1);
     }
 
     MFnDagNode assetNodeFn(myAssetNodeObj);
@@ -62,8 +62,8 @@ AssetSyncOutputGeoPart::doIt()
     }
 
     // create material
-    MPlug materialPlug = myOutputPlug.child(AssetNode::outputObjectMaterial);
-    MPlug materialExistsPlug = materialPlug.child(AssetNode::outputObjectMaterialExists);
+    MPlug materialPlug = myOutputPlug.child(AssetNode::outputPartMaterial);
+    MPlug materialExistsPlug = materialPlug.child(AssetNode::outputPartMaterialExists);
     if(materialExistsPlug.asBool())
     {
 	//TODO: check if material already exists
@@ -135,7 +135,7 @@ AssetSyncOutputGeoPart::createOutputPart(
 
     // connect partTransform attributes
     {
-	MPlug transformPlug = myOutputPlug.child(AssetNode::outputObjectTransform);
+	MPlug transformPlug = myOutputPlug.array().parent().child(AssetNode::outputObjectTransform);
 
 	MPlug srcPlug;
 	MPlug dstPlug;
@@ -161,7 +161,7 @@ AssetSyncOutputGeoPart::createOutputPart(
 	MPlug srcPlug;
 	MPlug dstPlug;
 
-	srcPlug = myOutputPlug.child(AssetNode::outputObjectMesh);
+	srcPlug = myOutputPlug.child(AssetNode::outputPartMesh);
 	dstPlug = partMeshFn.findPlug("inMesh");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -206,7 +206,7 @@ AssetSyncOutputGeoPart::createOutputMaterial(
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // create file node if texture exists
-    MPlug texturePathPlug = materialPlug.child(AssetNode::outputObjectTexturePath);
+    MPlug texturePathPlug = materialPlug.child(AssetNode::outputPartTexturePath);
     MString texturePath = texturePathPlug.asString();
     MFnDependencyNode textureFileFn;
     if(texturePath.length())
@@ -231,7 +231,7 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 	// color
 	if(textureFileFn.object().isNull())
 	{
-	    srcPlug = materialPlug.child(AssetNode::outputObjectDiffuseColor);
+	    srcPlug = materialPlug.child(AssetNode::outputPartDiffuseColor);
 	    dstPlug = shaderFn.findPlug("color");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -249,19 +249,19 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 	}
 
 	// specularColor
-	srcPlug = materialPlug.child(AssetNode::outputObjectSpecularColor);
+	srcPlug = materialPlug.child(AssetNode::outputPartSpecularColor);
 	dstPlug = shaderFn.findPlug("specularColor");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	// ambientColor
-	srcPlug = materialPlug.child(AssetNode::outputObjectAmbientColor);
+	srcPlug = materialPlug.child(AssetNode::outputPartAmbientColor);
 	dstPlug = shaderFn.findPlug("ambientColor");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	// transparency
-	srcPlug = materialPlug.child(AssetNode::outputObjectAlphaColor);
+	srcPlug = materialPlug.child(AssetNode::outputPartAlphaColor);
 	dstPlug = shaderFn.findPlug("transparency");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);

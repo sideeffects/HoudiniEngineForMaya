@@ -167,6 +167,7 @@ CXXFILES = \
 	   GeometryPart.C \
 	   AssetSync.C \
 	   AssetSyncAttribute.C \
+	   AssetSyncOutputObject.C \
 	   AssetSyncOutputGeoPart.C \
 	   AssetSyncOutputInstance.C \
 	   plugin.C

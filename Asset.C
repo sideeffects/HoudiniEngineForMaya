@@ -61,8 +61,9 @@ Asset::init()
         {
             MString attrName = MString("input") + (i+1);
 
-	    MObject inputAttrObj = AssetInputs::createInputAttribute(attrName);	    
-            cAttr.addChild(inputAttrObj);	    
+	    MObject inputAttrObj = AssetInputs::createInputAttribute(attrName);
+
+            cAttr.addChild(inputAttrObj);
         }
         addAttrTo(myMayaInputs, NULL);
 
@@ -255,29 +256,31 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 
     MPlug objectsPlug = plug.child(AssetNode::outputObjects);
 
-    int objectIndex = 0;
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
     for (int i=0; i< myNumObjects; i++)
     {
-
-
         Object * obj = myObjects[i];        
 
+	MDataHandle h = objectsBuilder.addElement(i);
+
+	MDataHandle partsPlugTemp = h.child(AssetNode::outputParts);
+	MArrayDataHandle partsHandle(partsPlugTemp);
+	MArrayDataBuilder partsBuilder = partsHandle.builder();
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
 	    GeometryObject * geoObj = dynamic_cast<GeometryObject *>(obj);
-            stat = geoObj->computeParts(&objectsBuilder, &objectIndex);
-            
+            stat = geoObj->computeParts(h, &partsBuilder);
+	    partsHandle.set(partsBuilder);
         }
     }
 
     // clean up extra elements
     // in case the number of objects shrinks
     int objBuilderSizeCheck = objectsBuilder.elementCount();
-    if (objBuilderSizeCheck > objectIndex)
+    if (objBuilderSizeCheck > myNumObjects)
     {
-        for (int i=objectIndex; i<objBuilderSizeCheck; i++)
+        for (int i=myNumObjects; i<objBuilderSizeCheck; i++)
         {
             try
             {

@@ -44,12 +44,6 @@ class Asset {
         void update();
 
         void addAttrTo(MObject& child, MObject* parent);
-        void buildParms();
-        int buildAttrTree(HAPI_ParmInfo* myParmInfos, MObject* parent, int current, int start);
-
-        MObject createAttr(HAPI_ParmInfo& parm);
-        MObject createStringAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
-        MObject createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
 
         void computeAssetInputs(const MPlug& plug, MDataBlock& data);
         void computeInstancerObjects(const MPlug& plug, MDataBlock& data);

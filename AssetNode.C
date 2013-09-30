@@ -417,6 +417,12 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
 {    
     // get attribute
     MObject attr = getAttrFromParm(parm);
+    // The attribute might not actually exist on the node if the asset has
+    // changed since last sync.
+    if(attr.isNull())
+    {
+	return;
+    }
 
     // create plug to the attribute
     MPlug plug(thisMObject(), attr);
@@ -515,6 +521,13 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 {    
 
     MObject attr = getAttrFromParm(parm);
+    // The attribute might not actually exist on the node if the asset has
+    // changed since last sync.
+    if(attr.isNull())
+    {
+	return;
+    }
+
     MPlug plug(thisMObject(), attr);
 
     //Only push into Houdini the minimum changes necessary.

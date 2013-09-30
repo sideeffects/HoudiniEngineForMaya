@@ -11,6 +11,7 @@ class AssetInputs
 {
     public:
 	static MObject createInputAttribute(const MString &attrName);
+	static MObject createInputAttributeTransform(const MString &attrName);
 
     public:
 	AssetInputs(int assetId);

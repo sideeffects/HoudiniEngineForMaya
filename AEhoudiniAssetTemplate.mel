@@ -41,7 +41,8 @@ global proc AEhoudiniAssetSetInputToSelection(string $textField, string $inputAt
 
     if (size($buf) == 1)
     {
-        if (`objExists $buf[0]` && `nodeType $buf[0]` == "mesh")
+        if (`objExists $buf[0]` && (`nodeType $buf[0]` == "mesh" || 
+                                    `nodeType $buf[0]` == "houdiniAsset") )
         {
             AEhoudiniAssetSetInput($textField, $inputAttr, $buf[0]);
             return;
@@ -67,7 +68,7 @@ global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
         return;
     }
 
-    if (`nodeType $str` == "mesh")
+    if (`nodeType $str` == "mesh" || `nodeType $str` == "houdiniAsset")
     {
         AEhoudiniAssetSetInput($textField, $inputAttr, $str);
         return;
@@ -87,39 +88,76 @@ global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
 
 global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string $str)
 {
+    string $inputTransformAttr = $inputAttr + "Transform";
     if ($str == "")
     {
         // remove input if cleared
         string $inPlug = `connectionInfo -sfd $inputAttr`;
+        string $inTransformPlug = `connectionInfo -sfd $inputTransformAttr`;
         if ($inPlug != "")
         {
             disconnectAttr $inPlug $inputAttr;
-            string $inMesh = plugNode($inPlug);
+            disconnectAttr $inTransformPlug $inputTransformAttr;
+            //string $inMesh = plugNode($inPlug);
             //showHidden $inMesh;
         }
     } else
-    {
+    {       
+        
         // connect new input
         if (`objExists $str`)
-	{
-	    string $histPlug = `connectionInfo -sfd ($str + ".inMesh")`;
-	    string $histNode = plugNode($histPlug);
-	    if ($histNode != ""
-		    && `nodeType $histNode` == "houdiniAsset")
-	    {
-		// TODO: Assume that assets with inputs are SOPs
-		// *** A bit of a hack, plugNode just takes a substring of 
-		// everything before the first '.', even if the substring is
-		// not a node.
-		string $obj = plugNode(plugAttr($histPlug));
-		connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputAttr;
-	    }
-	    else if (`nodeType $str` == "mesh")
-	    {
-		connectAttr -force ($str + ".outMesh") $inputAttr;
-		//hide $str;
-	    }
+	{            
+            if(`nodeType $str` == "houdiniAsset")
+            {                
+                //If they just type the name of a houdini asset, we'll hook it up assuming the 1st output
+                string $outputMeshPlug = $str + ".output.outputObjects[0].outputObjectMesh";
+                string $outputMeshConn[] = `listConnections -s 0 -d 1 $outputMeshPlug`;
+                if( size($outputMeshConn) > 0 )
+                {
+                    connectAttr -force ($str + ".output.outputObjects[0].outputObjectMetaData") $inputAttr;
+                    connectAttr -force ($str + ".wm[0]") $inputTransformAttr;
+                }
+                else
+                {
+                    error("Couldn't find mesh output on the asset.\n");
+                }
+            }
+            else if (`nodeType $str` == "mesh")
+            {
+
+	        string $histPlug = `connectionInfo -sfd ($str + ".inMesh")`;
+	        string $histNode = plugNode($histPlug);
+            
+	        if ($histNode != ""
+		        && `nodeType $histNode` == "houdiniAsset")
+	        {
+		    // TODO: Assume that assets with inputs are SOPs
+		    // *** A bit of a hack, plugNode just takes a substring of 
+		    // everything before the first '.', even if the substring is
+		    // not a node.
+		    string $obj = plugNode(plugAttr($histPlug));                    
+
+		    connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputAttr;
+                    connectAttr -force ($histNode + ".wm[0]") $inputTransformAttr;
+	        }
+	        else 
+	        {
+		    connectAttr -force ($str + ".outMesh") $inputAttr;
+                    string $parent[] = `listRelatives -parent $str`;
+                    if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
+                    {
+                        string $parentWorldMatrixPlug = $parent[0] + ".wm[0]";
+                        connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
+                    }
+		    //hide $str;
+	        }            
+            }
+            else
+            {
+                error("Please input the name of a mesh or houdini asset.\n");
+            }
 	}
+        
     }
 
     // set the appropriate text
@@ -151,6 +189,7 @@ global proc AEhoudiniAssetInputsNew(string $attrFullName)
     {
         string $child = $children[$i];
         string $niceName = `attributeQuery -n $nodeName -nn $child`;
+
 
         rowLayout -numberOfColumns 3
             -columnWidth3 50 150 50

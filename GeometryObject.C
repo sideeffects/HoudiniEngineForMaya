@@ -91,13 +91,15 @@ GeometryObject::computeParts(MDataHandle& obj, MArrayDataBuilder* builder)
 {
     update();
 
+    MStatus stat;
     // TODO: this may be temporary until HAPI supports actual groups
     if ( myNeverBuilt || myObjectInfo.haveGeosChanged)
     {
-        MStatus stat;
-
-        // Don't output mesh for invisible geos
-        if (! myObjectInfo.isVisible && ! myIsInstanced)
+         
+	//We still need to bring in invisible objects, as some of these may be
+	//the base objects used to create instances.  However, we should make
+	//sure they are also hidden in Maya.
+        if ( /*!myObjectInfo.isVisible ||*/ myIsInstanced)
             return MS::kFailure;
 
         // TODO: right now assume one geo
@@ -126,11 +128,28 @@ GeometryObject::computeParts(MDataHandle& obj, MArrayDataBuilder* builder)
             if ( myParts[i].hasMesh() )
             {
                 MDataHandle h = builder->addElement(i);
+		stat = myParts[i].compute(h);
                 if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
                 {
                     MDataHandle t = obj.child(AssetNode::outputObjectTransform);
                     updateTransform(t);
                 }
+            }
+        }
+    }
+
+    int partBuilderSizeCheck = builder->elementCount();
+    if (partBuilderSizeCheck > myGeoInfo.partCount)
+    {
+        for (int i = myGeoInfo.partCount; i< partBuilderSizeCheck; i++)
+        {
+            try
+            {
+                stat = builder->removeElement(i);
+                Util::checkMayaStatus(stat);
+            } catch (MayaError& e)
+            {
+                cerr << e.what() << endl;
             }
         }
     }

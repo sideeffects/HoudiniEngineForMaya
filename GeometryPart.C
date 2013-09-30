@@ -266,7 +266,9 @@ GeometryPart::compute(MDataHandle& handle)
         meshHandle.set(newMeshData);
     }
 
-    if ( myNeverBuilt || myGeoInfo.hasMaterialChanged)
+    //TODO: FIXME: The myGeoInfo.hasMaterialChanged is not yet working properly.  It is always true.
+    //This causes many material updates, which is very slow.  For now, extract the texture only once
+    if ( myNeverBuilt /*|| myGeoInfo.hasMaterialChanged*/)
     {
         updateMaterial(materialHandle);
     }

@@ -52,8 +52,6 @@ class Asset {
 
     private:
         MObject myNode;		    //The Maya asset node
-        MObject myMayaInputs;	    //The input attributes on the asset node (added dynamically)
-	MObject myMayaInputTransforms;	//The transform on the input attributes on the asset node (added dynamically)
 
 	AssetInputs* myAssetInputs;
 	//TODO: make this a vector.  The double pointer assumes the number of objects is static

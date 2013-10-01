@@ -11,7 +11,8 @@ class AssetInputAsset : public AssetInput
 
 	virtual AssetInputType assetInputType() const;
 
-	virtual void setInput(MDataHandle &dataHandle, MDataHandle &dataTransformHandle );
+	virtual void setInputTransform(MDataHandle &dataHandle);
+	virtual void setInputGeo(MDataHandle &dataHandle);
 };
 
 #endif

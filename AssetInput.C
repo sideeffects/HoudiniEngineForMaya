@@ -1,34 +1,44 @@
 #include "AssetInput.h"
 
+#include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
+
+#include <maya/MMatrix.h>
+#include <maya/MString.h>
+
+#include <HAPI/HAPI.h>
 
 #include "AssetInputAsset.h"
 #include "AssetInputMesh.h"
 #include "AssetInputCurve.h"
 
+MObject AssetInputs::input;
+MObject AssetInputs::inputTransform;
+MObject AssetInputs::inputGeo;
+
 MObject
-AssetInputs::createInputAttribute(const MString &attrName)
+AssetInputs::createInputAttribute()
 {
+    MFnCompoundAttribute cAttr;
+    MFnMatrixAttribute mAttr;
     MFnGenericAttribute gAttr;
 
-    MObject inputAttrObj = gAttr.create(attrName, attrName);
+    AssetInputs::inputTransform = mAttr.create("inputTransform", "inputTransform");
+
+    AssetInputs::inputGeo = gAttr.create("inputGeo", "inputGeo");
     gAttr.addDataAccept(MFnData::kIntArray);
     gAttr.addDataAccept(MFnData::kMesh);
     gAttr.addDataAccept(MFnData::kNurbsCurve);
 
-    return inputAttrObj;
-}
+    AssetInputs::input = cAttr.create("input", "input");
+    cAttr.addChild(AssetInputs::inputTransform);
+    cAttr.addChild(AssetInputs::inputGeo);
+    cAttr.setDisconnectBehavior(MFnAttribute::kReset);
+    cAttr.setInternal(true);
+    cAttr.setArray(true);
 
-
-MObject
-AssetInputs::createInputAttributeTransform(const MString &attrName)
-{
-    MFnMatrixAttribute mAttr;
-
-    MObject inputAttrTransformObj = mAttr.create(attrName, attrName);    
-
-    return inputAttrTransformObj;
+    return AssetInputs::input;
 }
 
 AssetInputs::AssetInputs(int assetId) :
@@ -66,11 +76,12 @@ void AssetInputs::setNumInputs(int numInputs)
 }
 
 void
-AssetInputs::setInput(int inputIdx, 
-		      MDataHandle &dataHandle,
-		      MDataHandle &dataTransformHandle )
+AssetInputs::setInput(int inputIdx, MDataHandle &dataHandle)
 {
     prepareAssetInput(inputIdx, dataHandle);
+
+    MDataHandle transformDataHandle = dataHandle.child(AssetInputs::inputTransform);
+    MDataHandle geoDataHandle = dataHandle.child(AssetInputs::inputGeo);
 
     AssetInput* &assetInput = myAssetInputs[inputIdx];
     if(!assetInput)
@@ -78,25 +89,34 @@ AssetInputs::setInput(int inputIdx,
 	return;
     }
 
-    assetInput->setInput( dataHandle, dataTransformHandle );
+    assetInput->setInputTransform(transformDataHandle);
+    assetInput->setInputGeo(geoDataHandle);
+}
+
+void
+AssetInputs::clearInput(int i)
+{
+    HAPI_DisconnectAssetGeometry(myAssetId, i);
 }
 
 void
 AssetInputs::prepareAssetInput(int inputIdx, MDataHandle &dataHandle)
 {
+    MDataHandle geoDataHandle = dataHandle.child(AssetInputs::inputGeo);
+
     AssetInput* &assetInput = myAssetInputs[inputIdx];
 
     // determine the new input type
     AssetInput::AssetInputType newAssetInputType = AssetInput::AssetInputType_Invalid;
-    if(dataHandle.type() == MFnData::kIntArray)
+    if(geoDataHandle.type() == MFnData::kIntArray)
     {
 	newAssetInputType = AssetInput::AssetInputType_Asset;
     }
-    else if(dataHandle.type() == MFnData::kMesh)
+    else if(geoDataHandle.type() == MFnData::kMesh)
     {
 	newAssetInputType = AssetInput::AssetInputType_Mesh;
     }
-    else if(dataHandle.type() == MFnData::kNurbsCurve)
+    else if(geoDataHandle.type() == MFnData::kNurbsCurve)
     {
 	newAssetInputType = AssetInput::AssetInputType_Curve;
     }

@@ -21,7 +21,12 @@ AssetInputAsset::assetInputType() const
 }
 
 void
-AssetInputAsset::setInput( MDataHandle &dataHandle, MDataHandle & dataTransformHandle )
+AssetInputAsset::setInputTransform(MDataHandle &dataHandle)
+{
+}
+
+void
+AssetInputAsset::setInputGeo(MDataHandle &dataHandle)
 {
     MFnIntArrayData fnIAD(dataHandle.data());
     MIntArray metaData = fnIAD.array();

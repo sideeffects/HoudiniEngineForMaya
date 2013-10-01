@@ -10,15 +10,15 @@ class AssetInput;
 class AssetInputs
 {
     public:
-	static MObject createInputAttribute(const MString &attrName);
-	static MObject createInputAttributeTransform(const MString &attrName);
+	static MObject createInputAttribute();
 
     public:
 	AssetInputs(int assetId);
 	~AssetInputs();
 
 	void setNumInputs(int numInputs);
-	void setInput( int i, MDataHandle &dataHandle, MDataHandle &dataTransformHandle );
+	void setInput(int i, MDataHandle &dataHandle);
+	void clearInput(int i);
 
     private:
 	void prepareAssetInput(int inputIdx, MDataHandle &dataHandle);
@@ -28,6 +28,11 @@ class AssetInputs
 
 	typedef std::vector<AssetInput*> AssetInputVector;
 	AssetInputVector myAssetInputs;
+
+    public:
+	static MObject input;
+	static MObject inputTransform;
+	static MObject inputGeo;
 };
 
 class AssetInput
@@ -49,7 +54,8 @@ class AssetInput
 
 	virtual AssetInputType assetInputType() const = 0;
 
-	virtual void setInput(MDataHandle &dataHandle, MDataHandle &dataTransformHandle ) = 0;
+	virtual void setInputTransform(MDataHandle &dataHandle) = 0;
+	virtual void setInputGeo(MDataHandle &dataHandle) = 0;
 
     protected:
 	int myAssetId;

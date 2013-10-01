@@ -66,7 +66,9 @@ void AssetInputs::setNumInputs(int numInputs)
 }
 
 void
-AssetInputs::setInput(int inputIdx, MDataHandle &dataHandle)
+AssetInputs::setInput(int inputIdx, 
+		      MDataHandle &dataHandle,
+		      MDataHandle &dataTransformHandle )
 {
     prepareAssetInput(inputIdx, dataHandle);
 
@@ -76,7 +78,7 @@ AssetInputs::setInput(int inputIdx, MDataHandle &dataHandle)
 	return;
     }
 
-    assetInput->setInput(dataHandle);
+    assetInput->setInput( dataHandle, dataTransformHandle );
 }
 
 void

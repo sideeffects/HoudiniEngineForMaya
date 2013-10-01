@@ -172,7 +172,10 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
     for (int i=0; i< myAssetInfo.maxGeoInputCount; i++)
     {
         MPlug inputPlug(myNode, myMayaInputs);
+	MPlug inputTransformPlug( myNode, myMayaInputTransforms );
+
         MPlug elemInputPlug = inputPlug.child(i);
+	MPlug elemTransformInputPlug = inputTransformPlug.child( i );
 
         if (!elemInputPlug.isConnected())
         {
@@ -181,7 +184,8 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
         }
 
         MDataHandle elemInputHandle = data.inputValue(elemInputPlug);
-	myAssetInputs->setInput(i, elemInputHandle);
+	MDataHandle elemTransformInputHandle = data.inputValue( elemTransformInputPlug );
+	myAssetInputs->setInput( i, elemInputHandle, elemTransformInputHandle );
     }
 }
 

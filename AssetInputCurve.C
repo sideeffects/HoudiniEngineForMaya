@@ -35,7 +35,7 @@ AssetInputCurve::assetInputType() const
 }
 
 void
-AssetInputCurve::setInput(MDataHandle &dataHandle)
+AssetInputCurve::setInput(MDataHandle &dataHandle, MDataHandle & dataTransformHandle )
 {
     MObject inputMesh = dataHandle.asNurbsCurve();
     if(inputMesh.isNull())

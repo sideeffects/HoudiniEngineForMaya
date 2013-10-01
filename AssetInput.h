@@ -18,7 +18,7 @@ class AssetInputs
 	~AssetInputs();
 
 	void setNumInputs(int numInputs);
-	void setInput(int i, MDataHandle &dataHandle);
+	void setInput( int i, MDataHandle &dataHandle, MDataHandle &dataTransformHandle );
 
     private:
 	void prepareAssetInput(int inputIdx, MDataHandle &dataHandle);
@@ -49,7 +49,7 @@ class AssetInput
 
 	virtual AssetInputType assetInputType() const = 0;
 
-	virtual void setInput(MDataHandle &dataHandle) = 0;
+	virtual void setInput(MDataHandle &dataHandle, MDataHandle &dataTransformHandle ) = 0;
 
     protected:
 	int myAssetId;

@@ -4,6 +4,7 @@
 #include <maya/MFloatPointArray.h>
 #include <maya/MIntArray.h>
 #include <maya/MItMeshPolygon.h>
+#include <maya/MMatrix.h>
 
 #include "util.h"
 
@@ -23,10 +24,11 @@ AssetInputMesh::assetInputType() const
 }
 
 void
-AssetInputMesh::setInput(MDataHandle &dataHandle)
+AssetInputMesh::setInput(MDataHandle &dataHandle, MDataHandle & dataTransformHandle )
 {
     // extract mesh data from Maya
     MObject inputMesh = dataHandle.asMesh();
+    
     MFnMesh fnMesh(inputMesh);
     MItMeshPolygon itMeshPoly(inputMesh);
 
@@ -76,6 +78,24 @@ AssetInputMesh::setInput(MDataHandle &dataHandle)
     for ( int i = 0; i < partInfo->pointCount; ++i )
 	for ( int j = 0; j < 3; ++j )
 	    pos_attr[ i * 3 + j ] = points[ i ][ j ];
+
+    // Set the transform
+    MMatrix transformMat = dataTransformHandle.asMatrix();    
+
+    float inputMat[ 16 ];
+
+    for( int ii = 0; ii < 4; ii++ )
+    {
+	for( int jj = 0; jj < 4; jj++ )
+	{
+	    inputMat[ii*4 + jj] = transformMat.matrix[ii][jj];
+	}
+    }
+
+    HAPI_TransformEuler transformEuler;
+    HAPI_ConvertMatrixToEuler( inputMat, 0, 0, &transformEuler );
+    HAPI_SetObjectTransform( inputAssetId, inputInfo.objectId, transformEuler );
+
 
     // Set the data
     //HAPI_SetGeoInfo(inputAssetId, inputInfo.objectId, inputInfo.geoId, inputGeoInfo);

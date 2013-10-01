@@ -13,7 +13,7 @@ class AssetInputCurve : public AssetInput
 
 	virtual AssetInputType assetInputType() const;
 
-	virtual void setInput(MDataHandle &dataHandle);
+	virtual void setInput(MDataHandle &dataHandle, MDataHandle &dataTransformHandle );
 
     protected:
 	HAPI_AssetInfo myCurveAssetInfo;

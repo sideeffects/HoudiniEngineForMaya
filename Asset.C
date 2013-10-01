@@ -315,14 +315,6 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     return stat;
 }
 
-
-MObjectArray
-Asset::getParmAttributes()
-{
-    return myParmAttributes;
-}
-
-
 Object**
 Asset::getObjects()
 {
@@ -331,19 +323,6 @@ Asset::getObjects()
 
 
 // Parms ---------------------------------------------------
-void
-Asset::addAttrTo(MObject& child, MObject* parent)
-{
-    if (NULL == parent)
-    {
-        myParmAttributes.append(child);
-        return;
-    }
-
-    MFnCompoundAttribute cAttr(*parent);
-    cAttr.addChild(child);
-}
-
 MIntArray
 Asset::getParmIntValues(HAPI_ParmInfo& parm)
 {

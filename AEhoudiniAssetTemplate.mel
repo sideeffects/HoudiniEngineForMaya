@@ -71,7 +71,7 @@ proc string[] getValidAssetInputs(string $objects[])
     return $validAssetInputs;
 }
 
-global proc AEhoudiniAssetSetInputToSelection(string $textField, string $inputAttr)
+global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 {
     string $validInputs[];
     
@@ -110,7 +110,7 @@ global proc AEhoudiniAssetSetInputToSelection(string $textField, string $inputAt
 	$validInputs[0] = "";
     }
 
-    AEhoudiniAssetSetInput($textField, $inputAttr, $validInputs[0]);
+    AEhoudiniAssetSetInput($inputAttr, $validInputs[0]);
 }
 
 global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
@@ -141,10 +141,10 @@ global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
 	$validInputs[0] = "";
     }
 
-    AEhoudiniAssetSetInput($textField, $inputAttr, $validInputs[0]);
+    AEhoudiniAssetSetInput($inputAttr, $validInputs[0]);
 }
 
-global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string $str)
+global proc AEhoudiniAssetSetInput(string $inputAttr, string $str)
 {
     string $inputTransformAttr = $inputAttr + ".inputTransform";
     string $inputGeoAttr = $inputAttr + ".inputGeo";
@@ -271,8 +271,7 @@ global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
 		"inputTextField";
             button
 		-label "Set to Selection"
-                -command ("AEhoudiniAssetSetInputToSelection \"" + $inputTextFieldFull + "\" \""
-                + $inputAttribute + "\"");
+                -command ("AEhoudiniAssetSetInputToSelection \"" + $inputAttribute + "\"");
 
 	setParent ..;
 

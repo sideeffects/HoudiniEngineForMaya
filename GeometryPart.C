@@ -383,27 +383,63 @@ GeometryPart::updateMaterial(MDataHandle& handle)
         
 	if(texturePathSHParmIndex >= 0)
 	{
-	    MString destinationFolderPath;
-	    MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
-		    destinationFolderPath);
-
-	    HAPI_RenderTextureToImage(
-		    myAssetId,
-		    myMaterialInfo.id,
-		    texturePathSHParmIndex
+	    HAPI_ParmInfo texturePathParm;
+	    HAPI_GetParameters(
+		    myMaterialInfo.nodeId,
+		    &texturePathParm,
+		    texturePathSHParmIndex,
+		    1
 		    );
 
-	    int filePathSH;
-	    HAPI_ExtractImageToFile(
-		    myAssetId,
-		    myMaterialInfo.id,
-		    "C A",
-		    destinationFolderPath.asChar(),
-		    NULL,
-		    &filePathSH
+	    int texturePathSH;
+	    HAPI_GetParmStringValues(
+		    myMaterialInfo.nodeId,
+		    &texturePathSH,
+		    texturePathParm.stringValuesIndex,
+		    1
 		    );
-	    MString texturePath = Util::getString(filePathSH);
-	    texturePathHandle.set(texturePath);
+
+	    bool hasTextureSource = Util::getString(texturePathSH).length();
+	    bool canRenderTexture = false;
+	    if(hasTextureSource)
+	    {
+		HAPI_Result hapiResult;
+
+		// this could fail if texture parameter is empty
+		hapiResult = HAPI_RenderTextureToImage(
+			myAssetId,
+			myMaterialInfo.id,
+			texturePathSHParmIndex
+			);
+
+		canRenderTexture = hapiResult == HAPI_RESULT_SUCCESS;
+	    }
+
+	    int destinationFilePathSH = 0;
+	    if(canRenderTexture)
+	    {
+		HAPI_Result hapiResult;
+
+		MString destinationFolderPath;
+		MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
+			destinationFolderPath);
+
+		// this could fail if the image planes don't exist
+		hapiResult = HAPI_ExtractImageToFile(
+			myAssetId,
+			myMaterialInfo.id,
+			"C A",
+			destinationFolderPath.asChar(),
+			NULL,
+			&destinationFilePathSH
+			);
+	    }
+
+	    if(destinationFilePathSH > 0)
+	    {
+		MString texturePath = Util::getString(destinationFilePathSH);
+		texturePathHandle.set(texturePath);
+	    }
 	}
     }
 

@@ -34,57 +34,115 @@ proc buildAttrTree(string $nodeName, string $attr)
     editorTemplate -endLayout;
 }
 
+proc string[] getValidAssetInputs(string $objects[])
+{
+    int $validInputsCount = 0;
+    string $validAssetInputs[];
+
+    for($object in $objects)
+    {
+	int $found = 0;
+
+	// check if the object is a supported node
+	if(!$found)
+	{
+	    if(`nodeType $object` == "mesh")
+	    {
+		$validAssetInputs[$validInputsCount++] = $object;
+		$found = 1;
+	    }
+	}
+
+	// check if there are any supported nodes in immediate children
+	if(!$found)
+	{
+	    string $tempObjects[] = `listRelatives -shapes -type "mesh" $object`;
+	    if(size($tempObjects))
+	    {
+		for($tempObject in $tempObjects)
+		{
+		    $validAssetInputs[$validInputsCount++] = $tempObject;
+		}
+		$found = 1;
+	    }
+	}
+    }
+
+    return $validAssetInputs;
+}
 
 global proc AEhoudiniAssetSetInputToSelection(string $textField, string $inputAttr)
 {
-    string $buf[] = `ls -sl`;
+    string $validInputs[];
+    
+    string $selection[] = `ls -selection`;
 
-    if (size($buf) == 1)
+    // make sure we don't include the houdiniAsset node itself if it's selected last
+    if(size($selection))
     {
-        if (`objExists $buf[0]` && (`nodeType $buf[0]` == "mesh" || 
-                                    `nodeType $buf[0]` == "houdiniAsset") )
-        {
-            AEhoudiniAssetSetInput($textField, $inputAttr, $buf[0]);
-            return;
-        }
+	int $lastSelectionIndex = size($selection) - 1;
+	if(plugNode($inputAttr) == $selection[$lastSelectionIndex])
+	{
+	    stringArrayRemoveAtIndex($lastSelectionIndex, $selection);
+	}
     }
 
-    string $buf2[] = `listRelatives -ad $buf`;
-    string $sel[] = `ls -typ mesh $buf2`;
-    string $meshes[] = `ls -sl -typ mesh`;
- 
-    if (size($sel) == 1)
-        AEhoudiniAssetSetInput($textField, $inputAttr, $sel[0]);
-}
+    if(size($selection) > 0)
+    {
+	if(size($selection) > 1)
+	{
+	    error("Please select exactly one object to be used for input.");
+	}
 
+	$validInputs = getValidAssetInputs($selection);
+	if(size($validInputs) > 1)
+	{
+	    error("Selection contains multiple supported objects. Please select exactly one object to be used for input.");
+	}
+	else if(size($validInputs) == 0)
+	{
+	    error("Selection has no supported object that can be used for input.");
+	}
+    }
+    else
+    {
+	// AEhoudiniAssetSetInput is also used for disconnecting when string is empty
+	$validInputs[0] = "";
+    }
+
+    AEhoudiniAssetSetInput($textField, $inputAttr, $validInputs[0]);
+}
 
 global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
 {    
+    string $validInputs[];
+
     string $str = `textField -q -text $textField`;
-
-    if (!`objExists $str`)
+    if($str != "")
     {
-        AEhoudiniAssetSetInput($textField, $inputAttr, $str);
-        return;
+	if(`objExists $str`)
+	{
+	    error("Entered object doesn't exist.");
+	}
+
+	$validInputs = getValidAssetInputs({$str});
+	if(size($validInputs) > 1)
+	{
+	    error("Entered object contains multiple supported objects. Please enter the exact object to be used for input.");
+	}
+	else if(size($validInputs) == 0)
+	{
+	    error("Entered object has no supported object that can be used for input.");
+	}
+    }
+    else
+    {
+	// AEhoudiniAssetSetInput is also used for disconnecting when string is empty
+	$validInputs[0] = "";
     }
 
-    if (`nodeType $str` == "mesh" || `nodeType $str` == "houdiniAsset")
-    {
-        AEhoudiniAssetSetInput($textField, $inputAttr, $str);
-        return;
-    }
-
-    string $buf2[] = `listRelatives -ad $str`;
-    string $sel[] = `ls -typ mesh $buf2`;
-    if (size($sel) == 1)
-    {
-        AEhoudiniAssetSetInput($textField, $inputAttr, $sel[0]);
-        return;
-    }
-
-    
+    AEhoudiniAssetSetInput($textField, $inputAttr, $validInputs[0]);
 }
-
 
 global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string $str)
 {

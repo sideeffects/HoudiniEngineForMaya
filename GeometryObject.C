@@ -99,7 +99,7 @@ GeometryObject::computeParts(MDataHandle& obj, MArrayDataBuilder* builder)
 	//We still need to bring in invisible objects, as some of these may be
 	//the base objects used to create instances.  However, we should make
 	//sure they are also hidden in Maya.
-        if ( /*!myObjectInfo.isVisible ||*/ myIsInstanced)
+        if (! myObjectInfo.isVisible && ! myIsInstanced)
             return MS::kFailure;
 
         // TODO: right now assume one geo

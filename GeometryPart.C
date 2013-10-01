@@ -241,9 +241,6 @@ GeometryPart::compute(MDataHandle& handle)
     //MDataHandle transformHandle = handle.child(AssetNode::transform);
     MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
 
-    // Don't output mesh for degenerate geos
-    if ( myPartInfo.pointCount == 0 || myPartInfo.faceCount == 0|| myPartInfo.vertexCount == 0)
-        return MS::kFailure;
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
@@ -295,6 +292,11 @@ GeometryPart::createMesh()
     MObject newMesh = meshFS.create( myPoints.length(), myFaceCounts.length(),
 				     myPoints, myFaceCounts, myVertexList, 
 				     outData );
+
+    if(myFaceCounts.length() == 0)
+    {
+        return outData;
+    }
 
     // Set normals.
     if ( myNormals.length() > 0)

@@ -224,7 +224,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 {
     MStatus stat;
 
-    MPlug objectsPlug = plug.child(AssetNode::outputObjects);
+    MPlug objectsPlug = plug.child(AssetNode::outputObjects);    
 
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
@@ -242,6 +242,15 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 	    GeometryObject * geoObj = dynamic_cast<GeometryObject *>(obj);
             stat = geoObj->computeParts(h, &partsBuilder);
 	    partsHandle.set(partsBuilder);
+
+	    MDataHandle visibilityHandle = h.child( AssetNode::outputVisibility );
+	    visibilityHandle.setBool( obj->isVisible() );
+	    visibilityHandle.setClean();
+
+	    MDataHandle isInstancedHandle = h.child( AssetNode::outputIsInstanced );
+	    isInstancedHandle.setBool( obj->isInstanced() );
+	    isInstancedHandle.setClean();
+
         }
     }
 

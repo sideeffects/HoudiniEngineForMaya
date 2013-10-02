@@ -107,3 +107,17 @@ Object::update()
     }
     
 }
+
+
+bool	
+Object::isVisible() const
+{
+    return myObjectInfo.isVisible;
+}
+
+
+bool	
+Object::isInstanced() const
+{
+    return myIsInstanced;
+}

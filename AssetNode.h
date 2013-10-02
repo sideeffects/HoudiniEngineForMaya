@@ -135,6 +135,9 @@ class AssetNode: public MPxTransform
         static MObject outputPartSpecularColor;
         static MObject outputPartAlphaColor;
 
+	static MObject outputVisibility;
+	static MObject outputIsInstanced;
+
         //static MObject numObjects;
         static MObject outputInstancers;
         static MObject outputInstancerData;

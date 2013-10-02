@@ -120,7 +120,7 @@ global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
     string $str = `textField -q -text $textField`;
     if($str != "")
     {
-	if(`objExists $str`)
+	if(!`objExists $str`)
 	{
 	    error("Entered object doesn't exist.");
 	}

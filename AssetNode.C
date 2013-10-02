@@ -77,6 +77,9 @@ MObject AssetNode::outputPartDiffuseColor;
 MObject AssetNode::outputPartSpecularColor;
 MObject AssetNode::outputPartAlphaColor;
 
+MObject AssetNode::outputVisibility;
+MObject AssetNode::outputIsInstanced;
+
 MObject AssetNode::outputInstancers;
 MObject AssetNode::outputInstancerData;
 MObject AssetNode::outputInstancedObjectNames;
@@ -302,9 +305,21 @@ AssetNode::initialize()
     cAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputParts);
 
+    AssetNode::outputVisibility = nAttr.create("outputVisibility", "outputVisibility", MFnNumericData::kBoolean, false);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+
+    AssetNode::outputIsInstanced = nAttr.create("outputIsInstanced", "outputIsInstanced", MFnNumericData::kBoolean, false);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);    
+
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputParts);
     cAttr.addChild(AssetNode::outputObjectTransform);
+    cAttr.addChild(AssetNode::outputVisibility);
+    cAttr.addChild(AssetNode::outputIsInstanced);
+
+
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
@@ -680,7 +695,7 @@ AssetNode::setParmValues(MDataBlock& data)
 
 MStatus
 AssetNode::compute(const MPlug& plug, MDataBlock& data)
-{    
+{
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
 	!= computeAttributes.end() && !myResultsClean )
     {

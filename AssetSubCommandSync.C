@@ -61,10 +61,19 @@ AssetSubCommandSync::doIt()
     {
 	MPlug elemPlug = objectsPlug[i];
 
-        AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj);
-	syncOutput->doIt();
+	MPlug visibilityPlug = elemPlug.child( AssetNode::outputVisibility );
+	bool visible = visibilityPlug.asBool();
 
-	myAssetSyncs.push_back(syncOutput);
+	MPlug instancedPlug = elemPlug.child( AssetNode::outputIsInstanced );
+	bool instanced = instancedPlug.asBool();
+
+	if( visible || instanced )
+	{
+	    AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj);
+	    syncOutput->doIt();
+
+	    myAssetSyncs.push_back(syncOutput);
+	}
     }
 
     // instancers

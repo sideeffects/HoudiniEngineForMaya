@@ -95,12 +95,6 @@ GeometryObject::computeParts(MDataHandle& obj, MArrayDataBuilder* builder)
     // TODO: this may be temporary until HAPI supports actual groups
     if ( myNeverBuilt || myObjectInfo.haveGeosChanged)
     {
-         
-	//We still need to bring in invisible objects, as some of these may be
-	//the base objects used to create instances.  However, we should make
-	//sure they are also hidden in Maya.
-        if (! myObjectInfo.isVisible && ! myIsInstanced)
-            return MS::kFailure;
 
         // TODO: right now assume one geo
         for (int i=0; i< myGeoInfo.partCount; i++)

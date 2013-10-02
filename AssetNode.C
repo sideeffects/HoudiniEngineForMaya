@@ -687,26 +687,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	// make sure Asset is created
 	createAsset();
 
-	if (!myBuiltParms)
-	{
-	    // add ALL the parms
-
-	    //These are dynamic input attributes.  These represent
-	    // the parms of the asset, which we only know after we have
-	    // loaded the asset.
-	    MObjectArray parmAttributes = myAsset->getParmAttributes();
-	    MFnDependencyNode fnDN(thisMObject());
-	    int size = parmAttributes.length();
-	    for (int i=0; i<size; i++)
-	    {
-		MFnAttribute attr(parmAttributes[i]);
-		fnDN.addAttribute(parmAttributes[i]);
-	    }
-
-	    myBuiltParms = true;
-
-	}
-
 	//check if the user has manipulated this node, if so, then push modified
 	//parms into Houdini
 	MPlug parmsModifiedPlug(thisMObject(), AssetNode::parmsModified);

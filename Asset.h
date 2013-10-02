@@ -18,7 +18,6 @@ class Asset {
 
         void init();
 
-        MObjectArray getParmAttributes();
         Object** getObjects();
         Object* findObjectByName(MString name);
         Object* findObjectById(int id);
@@ -43,8 +42,6 @@ class Asset {
 
         void update();
 
-        void addAttrTo(MObject& child, MObject* parent);
-
         void computeAssetInputs(const MPlug& plug, MDataBlock& data);
         void computeInstancerObjects(const MPlug& plug, MDataBlock& data);
         void computeGeometryObjects(const MPlug& plug, MDataBlock& data);
@@ -60,10 +57,6 @@ class Asset {
         // Arrays of infos that can be accessed when updating objects,
         // keeping them here avoids getting them for individual object.
         HAPI_ObjectInfo* myObjectInfos;       
-
-        //Object* visibleObjects;
-        MObjectArray myParmAttributes;
-
 };
 
 #endif

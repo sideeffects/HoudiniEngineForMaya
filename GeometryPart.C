@@ -4,7 +4,6 @@
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
-#include <maya/MFnIntArrayData.h>
 
 #include <vector>
 
@@ -236,7 +235,6 @@ GeometryPart::compute(MDataHandle& handle)
 
     // Get plugs
     MDataHandle partNameHandle = handle.child(AssetNode::outputPartName);
-    MDataHandle metaDataHandle = handle.child(AssetNode::outputPartMetaData);
     MDataHandle meshHandle = handle.child(AssetNode::outputPartMesh);
     //MDataHandle transformHandle = handle.child(AssetNode::transform);
     MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
@@ -247,16 +245,6 @@ GeometryPart::compute(MDataHandle& handle)
         // Object name
 	MString partName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
         partNameHandle.set(partName);
-
-        // Meta data
-        MFnIntArrayData ffIAD;
-        MIntArray metaDataArray;
-        metaDataArray.append( myAssetId );
-        metaDataArray.append( myObjectId );
-        metaDataArray.append( myGeoId );
-        metaDataArray.append( myPartId );
-        MObject newMetaData = ffIAD.create(metaDataArray);
-        metaDataHandle.set(newMetaData);
 
         // Mesh
         MObject newMeshData = createMesh();

@@ -64,10 +64,10 @@ MObject AssetNode::outputObjectScale;
 MObject AssetNode::outputObjectScaleX;
 MObject AssetNode::outputObjectScaleY;
 MObject AssetNode::outputObjectScaleZ;
+MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
-MObject AssetNode::outputPartMetaData;
 MObject AssetNode::outputPartMesh;
 MObject AssetNode::outputPartMaterial;
 MObject AssetNode::outputPartMaterialExists;
@@ -170,12 +170,6 @@ AssetNode::initialize()
     tAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputPartName);
 
-    // meta data
-    AssetNode::outputPartMetaData = tAttr.create("outputPartMetaData", "outputPartMetaData", MFnData::kIntArray);
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartMetaData);
-
     // mesh
     AssetNode::outputPartMesh = tAttr.create("outputPartMesh", "outputPartMesh", MFnData::kMesh);
     tAttr.setWritable(false);
@@ -248,6 +242,12 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputObjectTransform);
 
+    // meta data
+    AssetNode::outputObjectMetaData = tAttr.create("outputObjectMetaData", "outputObjectMetaData", MFnData::kIntArray);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectMetaData);
+
     // material exists
     AssetNode::outputPartMaterialExists = nAttr.create("outputPartMaterialExists", "outputPartMaterialExists", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
@@ -295,7 +295,6 @@ AssetNode::initialize()
 
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
-    cAttr.addChild(AssetNode::outputPartMetaData);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
     cAttr.setWritable(false);
@@ -316,6 +315,7 @@ AssetNode::initialize()
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputParts);
     cAttr.addChild(AssetNode::outputObjectTransform);
+    cAttr.addChild(AssetNode::outputObjectMetaData);
     cAttr.addChild(AssetNode::outputVisibility);
     cAttr.addChild(AssetNode::outputIsInstanced);
 
@@ -397,19 +397,18 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectTranslate));
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectRotate));
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectScale));
+	affectedPlugs.append(objPlug.child(AssetNode::outputObjectMetaData));
 	MPlug outputPartsPlug = objPlug.child(AssetNode::outputParts);
 	for ( unsigned int j = 0; j < outputPartsPlug.numElements(); ++j )
 	{
 	    MPlug elemPlug = outputPartsPlug[ j ];
 
 	    MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
-	    MPlug outputPartMetaDataPlug = elemPlug.child(AssetNode::outputPartMetaData);
 	    MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
 	    MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
 
 
 	    affectedPlugs.append(outputPartNamePlug);
-	    affectedPlugs.append(outputPartMetaDataPlug);
 	    affectedPlugs.append(meshPlug);
 
 

@@ -164,18 +164,6 @@ AssetNode::initialize()
 
     //----------------------------------  objects compound multi------------------------------------------------
 
-    // object name
-    AssetNode::outputPartName = tAttr.create("outputPartName", "outputPartName", MFnData::kString);
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartName);
-
-    // mesh
-    AssetNode::outputPartMesh = tAttr.create("outputPartMesh", "outputPartMesh", MFnData::kMesh);
-    tAttr.setWritable(false);
-    tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartMesh);
-
     // translate
     AssetNode::outputObjectTranslateX = uAttr.create("outputObjectTranslateX", "outputObjectTranslateX", MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
@@ -247,6 +235,18 @@ AssetNode::initialize()
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputObjectMetaData);
+
+    // part name
+    AssetNode::outputPartName = tAttr.create("outputPartName", "outputPartName", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartName);
+
+    // mesh
+    AssetNode::outputPartMesh = tAttr.create("outputPartMesh", "outputPartMesh", MFnData::kMesh);
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartMesh);
 
     // material exists
     AssetNode::outputPartMaterialExists = nAttr.create("outputPartMaterialExists", "outputPartMaterialExists", MFnNumericData::kBoolean, false);

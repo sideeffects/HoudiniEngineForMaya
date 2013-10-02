@@ -26,7 +26,28 @@ AssetInputMesh::assetInputType() const
 }
 
 void
-AssetInputMesh::setInput(MDataHandle &dataHandle, MDataHandle & dataTransformHandle )
+AssetInputMesh::setInputTransform(MDataHandle &dataHandle)
+{
+    // Set the transform
+    MMatrix transformMat = dataHandle.asMatrix();
+
+    float inputMat[ 16 ];
+
+    for( int ii = 0; ii < 4; ii++ )
+    {
+	for( int jj = 0; jj < 4; jj++ )
+	{
+	    inputMat[ii*4 + jj] = transformMat.matrix[ii][jj];
+	}
+    }
+
+    HAPI_TransformEuler transformEuler;
+    HAPI_ConvertMatrixToEuler( inputMat, 0, 0, &transformEuler );
+    HAPI_SetObjectTransform( myInputAssetId, myInputInfo.objectId, transformEuler );
+}
+
+void
+AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
 {
     // extract mesh data from Maya
     MObject inputMesh = dataHandle.asMesh();
@@ -76,24 +97,6 @@ AssetInputMesh::setInput(MDataHandle &dataHandle, MDataHandle & dataTransformHan
     for ( int i = 0; i < partInfo->pointCount; ++i )
 	for ( int j = 0; j < 3; ++j )
 	    pos_attr[ i * 3 + j ] = points[ i ][ j ];
-
-    // Set the transform
-    MMatrix transformMat = dataTransformHandle.asMatrix();    
-
-    float inputMat[ 16 ];
-
-    for( int ii = 0; ii < 4; ii++ )
-    {
-	for( int jj = 0; jj < 4; jj++ )
-	{
-	    inputMat[ii*4 + jj] = transformMat.matrix[ii][jj];
-	}
-    }
-
-    HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler( inputMat, 0, 0, &transformEuler );
-    HAPI_SetObjectTransform( myInputAssetId, myInputInfo.objectId, transformEuler );
-
 
     // Set the data
     //HAPI_SetGeoInfo(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, inputGeoInfo);

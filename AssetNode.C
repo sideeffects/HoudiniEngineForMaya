@@ -20,6 +20,7 @@
 
 #include <algorithm>
 
+#include "AssetInput.h"
 #include "AssetNode.h"
 #include "MayaTypeID.h"
 #include "util.h"
@@ -44,6 +45,8 @@ MObject AssetNode::parmsModified;
 MObject AssetNode::inTime;
 
 MObject AssetNode::assetType;
+
+MObject AssetNode::input;
 
 MObject AssetNode::output;
 MObject AssetNode::outputObjects;
@@ -91,6 +94,7 @@ MStatus
 AssetNode::initialize()
 {
     // maya plugin stuff
+    MFnGenericAttribute gAttr;
     MFnNumericAttribute nAttr;
     MFnTypedAttribute tAttr;
     MFnCompoundAttribute cAttr;
@@ -125,6 +129,9 @@ AssetNode::initialize()
     nAttr.setWritable(false);    
     computeAttributes.push_back(AssetNode::assetType);
         
+    // input
+    AssetNode::input = AssetInputs::createInputAttribute();
+
     //----------------------------------  instancer compound multi----------------------------------------------
     // instancer data
     AssetNode::outputInstancerData = tAttr.create("outputInstancerData", "outputInstancerData", MFnData::kDynArrayAttrs);
@@ -320,6 +327,7 @@ AssetNode::initialize()
     addAttribute(AssetNode::parmsModified);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::assetType);
+    addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
 
     
@@ -756,6 +764,22 @@ AssetNode::setInternalValueInContext(
     }
 
     return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);
+}
+
+int
+AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
+{
+    if(plug == AssetNode::input)
+    {
+	if(!myAsset)
+	{
+	    return 0;
+	}
+
+	return myAsset->myAssetInfo.maxGeoInputCount;
+    }
+
+    return MPxTransform::internalArrayCount(plug, ctx);
 }
 
 void

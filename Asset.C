@@ -48,39 +48,6 @@ Asset::init()
 {
     myAssetInputs->setNumInputs( myAssetInfo.maxGeoInputCount);
 
-    // input geos
-    if ( myAssetInfo.maxGeoInputCount > 0)
-    {
-        MFnCompoundAttribute cAttr;
-
-        int inputCount = myAssetInfo.maxGeoInputCount;
-
-        myMayaInputs= cAttr.create("inputs", "ins");
-
-        for (int i=0; i<inputCount; i++)
-        {
-            MString attrName = MString("input") + (i+1);
-
-	    MObject inputAttrObj = AssetInputs::createInputAttribute(attrName);
-
-            cAttr.addChild(inputAttrObj);
-        }
-        addAttrTo(myMayaInputs, NULL);
-
-	myMayaInputTransforms = cAttr.create("inputTransforms", "ixforms");
-
-        for (int i=0; i<inputCount; i++)
-        {
-            MString attrName = MString("input") + (i+1);
-	    MString attrTransformName = attrName + "Transform";
-
-	    MObject inputTransformAttrObj = AssetInputs::createInputAttributeTransform( attrTransformName );
-
-	    cAttr.addChild(inputTransformAttrObj);
-        }
-        addAttrTo(myMayaInputTransforms, NULL);
-    }
-
     // get the infos
     update();   
 
@@ -168,24 +135,23 @@ Asset::update()
 void
 Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 {
-    // Geo inputs
+    MStatus status;
+
+    MPlug inputsPlug(myNode, AssetNode::input);
+    MArrayDataHandle inputArrayHandle = data.inputArrayValue(AssetNode::input);
+
     for (int i=0; i< myAssetInfo.maxGeoInputCount; i++)
     {
-        MPlug inputPlug(myNode, myMayaInputs);
-	MPlug inputTransformPlug( myNode, myMayaInputTransforms );
-
-        MPlug elemInputPlug = inputPlug.child(i);
-	MPlug elemTransformInputPlug = inputTransformPlug.child( i );
-
-        if (!elemInputPlug.isConnected())
-        {
-            HAPI_DisconnectAssetGeometry( myAssetInfo.id, i);
-            return;
-        }
-
-        MDataHandle elemInputHandle = data.inputValue(elemInputPlug);
-	MDataHandle elemTransformInputHandle = data.inputValue( elemTransformInputPlug );
-	myAssetInputs->setInput( i, elemInputHandle, elemTransformInputHandle );
+	status = inputArrayHandle.jumpToElement(i);
+	if(status)
+	{
+	    MDataHandle inputHandle = inputArrayHandle.inputValue();
+	    myAssetInputs->setInput(i, inputHandle);
+	}
+	else
+	{
+	    myAssetInputs->clearInput(i);
+	}
     }
 }
 

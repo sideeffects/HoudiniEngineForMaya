@@ -58,6 +58,7 @@ class AssetNode: public MPxTransform
 		const MDataHandle &dataHandle,
 		MDGContext &ctx
 		);
+	virtual int internalArrayCount(const MPlug &plug, const MDGContext &ctx) const;
 	virtual void copyInternalData(MPxNode* node);
 
         virtual MStatus setDependentsDirty(const MPlug& plugBeingDirtied,
@@ -102,6 +103,8 @@ class AssetNode: public MPxTransform
         static MObject inTime;
 
         static MObject assetType;
+
+        static MObject input;
 
         static MObject output;
 

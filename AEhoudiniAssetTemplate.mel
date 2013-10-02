@@ -88,15 +88,16 @@ global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
 
 global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string $str)
 {
-    string $inputTransformAttr = $inputAttr + "Transform";
+    string $inputTransformAttr = $inputAttr + ".inputTransform";
+    string $inputGeoAttr = $inputAttr + ".inputGeo";
     if ($str == "")
     {
         // remove input if cleared
-        string $inPlug = `connectionInfo -sfd $inputAttr`;
+        string $inPlug = `connectionInfo -sfd $inputGeoAttr`;
         string $inTransformPlug = `connectionInfo -sfd $inputTransformAttr`;
         if ($inPlug != "")
         {
-            disconnectAttr $inPlug $inputAttr;
+            disconnectAttr $inPlug $inputGeoAttr;
             disconnectAttr $inTransformPlug $inputTransformAttr;
             //string $inMesh = plugNode($inPlug);
             //showHidden $inMesh;
@@ -114,7 +115,7 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
                 string $outputMeshConn[] = `listConnections -s 0 -d 1 $outputMeshPlug`;
                 if( size($outputMeshConn) > 0 )
                 {
-                    connectAttr -force ($str + ".output.outputObjects[0].outputObjectMetaData") $inputAttr;
+                    connectAttr -force ($str + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
                     connectAttr -force ($str + ".wm[0]") $inputTransformAttr;
                 }
                 else
@@ -137,12 +138,12 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
 		    // not a node.
 		    string $obj = plugNode(plugAttr($histPlug));                    
 
-		    connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputAttr;
+		    connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputGeoAttr;
                     connectAttr -force ($histNode + ".wm[0]") $inputTransformAttr;
 	        }
 	        else 
 	        {
-		    connectAttr -force ($str + ".outMesh") $inputAttr;
+		    connectAttr -force ($str + ".outMesh") $inputGeoAttr;
                     string $parent[] = `listRelatives -parent $str`;
                     if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
                     {
@@ -161,7 +162,7 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
     }
 
     // set the appropriate text
-    string $connectedMeshAttr = `connectionInfo -sfd $inputAttr`;
+    string $connectedMeshAttr = `connectionInfo -sfd $inputGeoAttr`;
     string $connectedMesh = plugNode($connectedMeshAttr);
     textField -edit -text $connectedMesh $textField;
 }
@@ -169,26 +170,13 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
 
 global proc AEhoudiniAssetInputsNew(string $attrFullName)
 {
-
-    string $buffer[];
-    tokenize($attrFullName, ".", $buffer);
-    string $nodeName = $buffer[0];
-    string $attrName = $buffer[1];
-
-    if( `attributeExists $attrName $nodeName` == 0)
-    {
-        print("Warning: nodename= " + $nodeName + " attrName=" + $attrName + " Not found in AEhoudiniAssetInputsNew\n");
-        return;
-    }
-
-    string $children[] = `attributeQuery -n $nodeName -lc $attrName`;
+    int $multiIndices[] = `getAttr -multiIndices $attrFullName`;
 
     //editorTemplate -beginLayout "Inputs" -collapse false;
     columnLayout -adj true "inputsLayout";
-    for ($i=0; $i<size($children); $i++)
+    for($i=0; $i < size($multiIndices); $i++)
     {
-        string $child = $children[$i];
-        string $niceName = `attributeQuery -n $nodeName -nn $child`;
+        int $index = $multiIndices[$i];
 
 
         rowLayout -numberOfColumns 3
@@ -199,15 +187,15 @@ global proc AEhoudiniAssetInputsNew(string $attrFullName)
             -columnAttach 1 "both"     2
             -columnAttach 2 "both"  2
             -columnAttach 3 "left"  2;
-            text -label $niceName;
+            text -label ("Input " + ($index + 1));
             string $inputTextField = `textField -aie true`;
-            AEhoudiniAssetSetInput $inputTextField ($nodeName + "." + $child) " ";
+            AEhoudiniAssetSetInput $inputTextField ($attrFullName + "[" + $index + "]") " ";
             textField -edit -enterCommand
                 ("AEhoudiniAssetSetInputToText \"" + $inputTextField + "\" \"" 
-                + ($nodeName + "." + $child) + "\"") $inputTextField;
+                + ($attrFullName + "[" + $index + "]") + "\"") $inputTextField;
             button -label "Set to Selection" 
                 -c ("AEhoudiniAssetSetInputToSelection \"" + $inputTextField + "\" \"" 
-                + ($nodeName + "." + $child) + "\"");
+                + ($attrFullName + "[" + $index + "]") + "\"");
     }
 
 }
@@ -230,7 +218,7 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
     editorTemplate -addControl "assetPath";
 
     // special ui for inputs
-    string $inputAttrArray[] = `listAttr -st "inputs" $nodeName`;
+    string $inputAttrArray[] = `listAttr -st "input" $nodeName`;
     string $inputAttr = $inputAttrArray[0];
     if ($inputAttr != "")
     {
@@ -249,7 +237,7 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
     {
         string $attr = $attrs[$i];
         string $parents[] = `attributeQuery -n $nodeName -lp $attr`;
-        if ((0 == size($parents)) && $attr != "inputs")
+        if ((0 == size($parents)) && $attr != "input")
         {
             buildAttrTree($nodeName, $attr);
         }

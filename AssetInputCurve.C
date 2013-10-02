@@ -18,7 +18,7 @@ AssetInputCurve::AssetInputCurve(int assetId, int inputIdx) :
     HAPI_GetAssetInfo(curveAssetId, &myCurveAssetInfo);
     HAPI_GetNodeInfo(myCurveAssetInfo.nodeId, &myCurveNodeInfo);
 
-    HAPI_ConnectAssetGeometry(myCurveAssetInfo.id, 0, 0, myAssetId, myInputIdx);
+    HAPI_ConnectAssetGeometry(myCurveAssetInfo.id, 0, myAssetId, myInputIdx);
 }
 
 AssetInputCurve::~AssetInputCurve()

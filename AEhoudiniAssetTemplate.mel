@@ -218,53 +218,91 @@ global proc AEhoudiniAssetSetInput(string $textField, string $inputAttr, string 
 	}
         
     }
+}
 
-    // set the appropriate text
-    string $connectedMeshAttr = `connectionInfo -sfd $inputGeoAttr`;
-    string $connectedMesh = plugNode($connectedMeshAttr);
-    textField -edit -text $connectedMesh $textField;
+global proc AEhoudiniAssetInputsNew(string $inputsAttribute)
+{
+    columnLayout -adj true "inputsLayout";
+    setParent ..;
+
+    AEhoudiniAssetInputsReplace $inputsAttribute;
 }
 
 
-global proc AEhoudiniAssetInputsNew(string $attrFullName)
+global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
 {
-    int $multiIndices[] = `getAttr -multiIndices $attrFullName`;
+    string $parent = `setParent -q`;
+    string $inputsLayoutFull = $parent + "|inputsLayout";
 
-    //editorTemplate -beginLayout "Inputs" -collapse false;
-    columnLayout -adj true "inputsLayout";
+    if(`layout -q -numberOfChildren $inputsLayoutFull`)
+    {
+	for($child in `layout -q -childArray $inputsLayoutFull`)
+	{
+	    deleteUI ($inputsLayoutFull + "|" + $child);
+	}
+    }
+
+    setParent $inputsLayoutFull;
+
+    int $multiIndices[] = `getAttr -multiIndices $inputsAttribute`;
     for($i=0; $i < size($multiIndices); $i++)
     {
         int $index = $multiIndices[$i];
+	string $inputAttribute = $inputsAttribute + "[" + $index + "]";
 
-
-        rowLayout -numberOfColumns 3
+        string $inputLayout = "input" + ($index + 1) + "Layout";
+	string $inputLayoutFull = $inputsLayoutFull + "|" + $inputLayout;
+	rowLayout
+	    -numberOfColumns 3
             -columnWidth3 50 150 50
             -adjustableColumn 2
-            -parent "inputsLayout"
             -columnAlign  1 "right"
             -columnAttach 1 "both"     2
             -columnAttach 2 "both"  2
-            -columnAttach 3 "left"  2;
+            -columnAttach 3 "left"  2
+	    $inputLayout;
+
             text -label ("Input " + ($index + 1));
-            string $inputTextField = `textField -aie true`;
-            AEhoudiniAssetSetInput $inputTextField ($attrFullName + "[" + $index + "]") " ";
-            textField -edit -enterCommand
-                ("AEhoudiniAssetSetInputToText \"" + $inputTextField + "\" \"" 
-                + ($attrFullName + "[" + $index + "]") + "\"") $inputTextField;
-            button -label "Set to Selection" 
-                -c ("AEhoudiniAssetSetInputToSelection \"" + $inputTextField + "\" \"" 
-                + ($attrFullName + "[" + $index + "]") + "\"");
+            string $inputTextFieldFull = ($inputLayoutFull + "|inputTextField");
+	    textField
+		-alwaysInvokeEnterCommandOnReturn true
+		-enterCommand ("AEhoudiniAssetSetInputToText \"" + $inputTextFieldFull + "\" \""
+		 + $inputAttribute + "\"")
+		"inputTextField";
+            button
+		-label "Set to Selection"
+                -command ("AEhoudiniAssetSetInputToSelection \"" + $inputTextFieldFull + "\" \""
+                + $inputAttribute + "\"");
+
+	setParent ..;
+
+	scriptJob
+	    -parent $inputLayoutFull
+	    -replacePrevious
+	    -attributeChange ($inputAttribute + ".inputGeo")
+	    ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
+
+	scriptJob
+	    -parent $inputLayoutFull
+	    -replacePrevious
+	    -attributeChange ($inputAttribute + ".inputTransform")
+	    ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
+
+	AEhoudiniAssetUpdateInput $inputLayoutFull $inputAttribute;
     }
 
+    setParent ..;
 }
 
-
-global proc AEhoudiniAssetInputsReplace(string $attrFullName)
+global proc AEhoudiniAssetUpdateInput(string $inputLayout, string $inputAttribute)
 {
-    deleteUI "inputsLayout";
-    AEhoudiniAssetInputsNew($attrFullName);
-}
+    string $inputTextField = $inputLayout + "|inputTextField";
 
+    // set the appropriate text
+    string $connectedMeshAttr = `connectionInfo -sourceFromDestination ($inputAttribute + ".inputGeo")`;
+    string $connectedMesh = plugNode($connectedMeshAttr);
+    textField -edit -text $connectedMesh $inputTextField;
+}
 
 global proc AEhoudiniAssetTemplate( string $nodeName )
 {

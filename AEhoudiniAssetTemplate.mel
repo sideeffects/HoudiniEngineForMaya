@@ -71,6 +71,78 @@ proc string[] getValidAssetInputs(string $objects[])
     return $validAssetInputs;
 }
 
+proc clearInput(string $inputAttr)
+{
+    string $inputTransformAttr = $inputAttr + ".inputTransform";
+    string $inputGeoAttr = $inputAttr + ".inputGeo";
+
+    // remove input if cleared
+    string $inPlug = `connectionInfo -sfd $inputGeoAttr`;
+    string $inTransformPlug = `connectionInfo -sfd $inputTransformAttr`;
+    if ($inPlug != "")
+    {
+	disconnectAttr $inPlug $inputGeoAttr;
+	disconnectAttr $inTransformPlug $inputTransformAttr;
+	//string $inMesh = plugNode($inPlug);
+	//showHidden $inMesh;
+    }
+}
+
+proc setInput(string $inputAttr, string $object)
+{
+    string $inputTransformAttr = $inputAttr + ".inputTransform";
+    string $inputGeoAttr = $inputAttr + ".inputGeo";
+
+    if(`nodeType $object` == "houdiniAsset")
+    {
+	//If they just type the name of a houdini asset, we'll hook it up assuming the 1st output
+	string $outputMeshPlug = $object + ".output.outputObjects[0].outputObjectMesh";
+	string $outputMeshConn[] = `listConnections -s 0 -d 1 $outputMeshPlug`;
+	if( size($outputMeshConn) > 0 )
+	{
+	    connectAttr -force ($object + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
+	    connectAttr -force ($object + ".wm[0]") $inputTransformAttr;
+	}
+	else
+	{
+	    error("Couldn't find mesh output on the asset.\n");
+	}
+    }
+    else if (`nodeType $object` == "mesh")
+    {
+	string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
+	string $histNode = plugNode($histPlug);
+
+	if ($histNode != ""
+		&& `nodeType $histNode` == "houdiniAsset")
+	{
+	    // TODO: Assume that assets with inputs are SOPs
+	    // *** A bit of a hack, plugNode just takes a substring of
+	    // everything before the first '.', even if the substring is
+	    // not a node.
+	    string $obj = plugNode(plugAttr($histPlug));
+
+	    connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputGeoAttr;
+	    connectAttr -force ($histNode + ".wm[0]") $inputTransformAttr;
+	}
+	else
+	{
+	    connectAttr -force ($object + ".outMesh") $inputGeoAttr;
+	    string $parent[] = `listRelatives -parent $object`;
+	    if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
+	    {
+		string $parentWorldMatrixPlug = $parent[0] + ".wm[0]";
+		connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
+	    }
+	    //hide $str;
+	}
+    }
+    else
+    {
+	error("Please input the name of a mesh or houdini asset.\n");
+    }
+}
+
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 {
     string $validInputs[];
@@ -87,30 +159,27 @@ global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 	}
     }
 
-    if(size($selection) > 0)
+    if(size($selection) == 0)
     {
-	if(size($selection) > 1)
-	{
-	    error("Please select exactly one object to be used for input.");
-	}
-
-	$validInputs = getValidAssetInputs($selection);
-	if(size($validInputs) > 1)
-	{
-	    error("Selection contains multiple supported objects. Please select exactly one object to be used for input.");
-	}
-	else if(size($validInputs) == 0)
-	{
-	    error("Selection has no supported object that can be used for input.");
-	}
+	clearInput($inputAttr);
+	return;
     }
-    else
+    else if(size($selection) > 1)
     {
-	// AEhoudiniAssetSetInput is also used for disconnecting when string is empty
-	$validInputs[0] = "";
+	error("Please select exactly one object to be used for input.");
     }
 
-    AEhoudiniAssetSetInput($inputAttr, $validInputs[0]);
+    $validInputs = getValidAssetInputs($selection);
+    if(size($validInputs) > 1)
+    {
+	error("Selection contains multiple supported objects. Please select exactly one object to be used for input.");
+    }
+    else if(size($validInputs) == 0)
+    {
+	error("Selection has no supported object that can be used for input.");
+    }
+
+    setInput($inputAttr, $validInputs[0]);
 }
 
 global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
@@ -118,106 +187,27 @@ global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
     string $validInputs[];
 
     string $str = `textField -q -text $textField`;
-    if($str != "")
+    if($str == "")
     {
-	if(!`objExists $str`)
-	{
-	    error("Entered object doesn't exist.");
-	}
-
-	$validInputs = getValidAssetInputs({$str});
-	if(size($validInputs) > 1)
-	{
-	    error("Entered object contains multiple supported objects. Please enter the exact object to be used for input.");
-	}
-	else if(size($validInputs) == 0)
-	{
-	    error("Entered object has no supported object that can be used for input.");
-	}
+	clearInput($inputAttr);
+	return;
     }
-    else
+    else if(!`objExists $str`)
     {
-	// AEhoudiniAssetSetInput is also used for disconnecting when string is empty
-	$validInputs[0] = "";
+	error("Entered object doesn't exist.");
     }
 
-    AEhoudiniAssetSetInput($inputAttr, $validInputs[0]);
-}
-
-global proc AEhoudiniAssetSetInput(string $inputAttr, string $str)
-{
-    string $inputTransformAttr = $inputAttr + ".inputTransform";
-    string $inputGeoAttr = $inputAttr + ".inputGeo";
-    if ($str == "")
+    $validInputs = getValidAssetInputs({$str});
+    if(size($validInputs) > 1)
     {
-        // remove input if cleared
-        string $inPlug = `connectionInfo -sfd $inputGeoAttr`;
-        string $inTransformPlug = `connectionInfo -sfd $inputTransformAttr`;
-        if ($inPlug != "")
-        {
-            disconnectAttr $inPlug $inputGeoAttr;
-            disconnectAttr $inTransformPlug $inputTransformAttr;
-            //string $inMesh = plugNode($inPlug);
-            //showHidden $inMesh;
-        }
-    } else
-    {       
-        
-        // connect new input
-        if (`objExists $str`)
-	{            
-            if(`nodeType $str` == "houdiniAsset")
-            {                
-                //If they just type the name of a houdini asset, we'll hook it up assuming the 1st output
-                string $outputMeshPlug = $str + ".output.outputObjects[0].outputObjectMesh";
-                string $outputMeshConn[] = `listConnections -s 0 -d 1 $outputMeshPlug`;
-                if( size($outputMeshConn) > 0 )
-                {
-                    connectAttr -force ($str + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
-                    connectAttr -force ($str + ".wm[0]") $inputTransformAttr;
-                }
-                else
-                {
-                    error("Couldn't find mesh output on the asset.\n");
-                }
-            }
-            else if (`nodeType $str` == "mesh")
-            {
-
-	        string $histPlug = `connectionInfo -sfd ($str + ".inMesh")`;
-	        string $histNode = plugNode($histPlug);
-            
-	        if ($histNode != ""
-		        && `nodeType $histNode` == "houdiniAsset")
-	        {
-		    // TODO: Assume that assets with inputs are SOPs
-		    // *** A bit of a hack, plugNode just takes a substring of 
-		    // everything before the first '.', even if the substring is
-		    // not a node.
-		    string $obj = plugNode(plugAttr($histPlug));                    
-
-		    connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputGeoAttr;
-                    connectAttr -force ($histNode + ".wm[0]") $inputTransformAttr;
-	        }
-	        else 
-	        {
-		    connectAttr -force ($str + ".outMesh") $inputGeoAttr;
-                    string $parent[] = `listRelatives -parent $str`;
-                    if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
-                    {
-                        string $parentWorldMatrixPlug = $parent[0] + ".wm[0]";
-                        connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
-                    }
-		    //hide $str;
-	        }            
-            }
-            else
-            {
-                error("Please input the name of a mesh or houdini asset.\n");
-            }
-	}
-        
+	error("Entered object contains multiple supported objects. Please enter the exact object to be used for input.");
     }
+    else if(size($validInputs) == 0)
+    {
+	error("Entered object has no supported object that can be used for input.");
+    }
+
+    setInput($inputAttr, $validInputs[0]);
 }
 
 global proc AEhoudiniAssetInputsNew(string $inputsAttribute)

@@ -3,6 +3,8 @@
 
 #include "AssetInput.h"
 
+#include <HAPI/HAPI.h>
+
 class AssetInputMesh : public AssetInput
 {
     public:
@@ -12,6 +14,10 @@ class AssetInputMesh : public AssetInput
 	virtual AssetInputType assetInputType() const;
 
 	virtual void setInput(MDataHandle &dataHandle, MDataHandle &dataTransformHandle );
+
+    protected:
+	const int myInputAssetId;
+	HAPI_GeoInputInfo myInputInfo;
 };
 
 #endif

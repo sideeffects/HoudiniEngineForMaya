@@ -6,7 +6,9 @@
 #include <maya/MMatrix.h>
 #include <maya/MFnArrayAttrsData.h>
 #include <maya/MFnDoubleArrayData.h>
-#include <maya/MFnFloatArrayData.h>
+#if MAYA_API_VERSION >= 201400
+	#include <maya/MFnFloatArrayData.h>
+#endif
 
 #include <vector>
 #include <limits>
@@ -314,6 +316,7 @@ GeometryPart::compute(MDataHandle& handle)
         MObject newMeshData = createMesh();
         meshHandle.set(newMeshData);
 
+#if MAYA_API_VERSION >= 201400
 	// Volume
 	if (myPartInfo.hasVolume)
 	{
@@ -339,6 +342,7 @@ GeometryPart::compute(MDataHandle& handle)
 	    partVolumeResHandle.setClean();
 	    partVolumeNameHandle.setClean();
 	}
+#endif
     }
 
     if ( myNeverBuilt || myGeoInfo.hasMaterialChanged)
@@ -355,6 +359,7 @@ GeometryPart::compute(MDataHandle& handle)
     return MS::kSuccess;
 }
 
+#if MAYA_API_VERSION >= 201400
 MObject
 GeometryPart::createVolume()
 {
@@ -408,6 +413,7 @@ GeometryPart::createVolume()
     MFnFloatArrayData volumeCreator;
     return volumeCreator.create(grid);
 }
+#endif
 
 MObject
 GeometryPart::createMesh()

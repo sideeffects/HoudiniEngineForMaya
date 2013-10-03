@@ -320,6 +320,7 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartMaterial);
 
+#if MAYA_API_VERSION >= 201400
     // Volumes ---------
     AssetNode::outputPartVolumeName = tAttr.create("outputPartVolumeName", "outputPartVolumeName", MFnData::kString);
     tAttr.setStorable(false);
@@ -351,6 +352,7 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolumeRes);
+#endif
 
     // volume transform
     // translate

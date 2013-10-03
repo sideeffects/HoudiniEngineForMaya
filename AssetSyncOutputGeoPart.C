@@ -167,6 +167,17 @@ AssetSyncOutputGeoPart::createOutputPart(
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
+    // create particle
+    MPlug particleExistsPlug = myOutputPlug.child(AssetNode::outputPartHasParticles);
+    if(particleExistsPlug.asBool())
+    {
+	status = createOutputParticle(
+		partTransform,
+		myOutputPlug.child(AssetNode::outputPartParticle)
+		);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
     // doIt
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -269,6 +280,61 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 
     // doIt
     status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
+}
+
+MStatus
+AssetSyncOutputGeoPart::createOutputParticle(
+	const MObject &partTransform,
+	const MPlug &particlePlug
+	)
+{
+    MStatus status;
+
+    // create nParticle
+    MObject particleTransformObj;
+    status = Util::createNodeByModifierCommand(
+	    myDagModifier,
+	    "nParticle",
+	    particleTransformObj
+	    );
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // reparent it under partTransform
+    myDagModifier.reparentNode(particleTransformObj, partTransform);
+
+    // get nParticleShape
+    MObject particleShapeObj;
+    {
+	MDagPath particleTrasnformDag;
+	status = MDagPath::getAPathTo(particleTransformObj, particleTrasnformDag);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+	particleShapeObj = particleTrasnformDag.child(0, &status);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    MPlug srcPlug;
+    MPlug dstPlug;
+
+    MFnDependencyNode particleShapeFn(particleShapeObj);
+
+    // connect nParticleShape attributes
+    srcPlug = particlePlug.child(AssetNode::outputPartParticlePositions);
+    dstPlug = particleShapeFn.findPlug("positions");
+    status = myDagModifier.connect(srcPlug, dstPlug);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    srcPlug = particlePlug.child(AssetNode::outputPartParticleArrayData);
+    dstPlug = particleShapeFn.findPlug("cacheArrayData");
+    status = myDagModifier.connect(srcPlug, dstPlug);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // set playFromCache to true
+    status = myDagModifier.newPlugValueBool(
+	    particleShapeFn.findPlug("playFromCache"),
+	    true);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return MStatus::kSuccess;

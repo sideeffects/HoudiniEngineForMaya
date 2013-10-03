@@ -185,9 +185,9 @@ GeometryPart::updateVolumeTransform(MDataHandle& handle)
 				  transform.position[1],
 				  transform.position[2]), MSpace::kTransform);
 
-    int xoffset = myVolumeInfo.xLength*0.5 + myVolumeInfo.minX;
-    int yoffset = myVolumeInfo.yLength*0.5 + myVolumeInfo.minY;
-    int zoffset = myVolumeInfo.zLength*0.5 + myVolumeInfo.minZ;
+    int xoffset = myVolumeInfo.xLength/2 + myVolumeInfo.minX;
+    int yoffset = myVolumeInfo.yLength/2 + myVolumeInfo.minY;
+    int zoffset = myVolumeInfo.zLength/2 + myVolumeInfo.minZ;
 
     const double scale2[3] = {2, 2, 2};
     matrix.addScale(scale2, MSpace::kPreTransform);
@@ -372,12 +372,17 @@ GeometryPart::createVolume()
     grid.setLength(xres * yres * zres);
 
     float* tileValues = new float[tileSize * tileSize * tileSize];
-    std::fill(tileValues, tileValues + tileSize * tileSize * tileSize - 1, 0);
+    std::fill(tileValues, tileValues + tileSize * tileSize * tileSize - 1, 0.0f);
     for (unsigned int i=0; i<grid.length(); i++)
-	grid[i] = 0;
+	grid[i] = 0.0f;
 
     HAPI_VolumeTileInfo tile;
     HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
+
+#ifdef max
+#undef max
+#endif
+
     while (tile.minX != std::numeric_limits<int>::max() &&
 	   tile.minY != std::numeric_limits<int>::max() &&
 	   tile.minZ != std::numeric_limits<int>::max())
@@ -536,7 +541,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
 		    1
 		    );
 
-	    bool hasTextureSource = Util::getString(texturePathSH).length();
+	    bool hasTextureSource = Util::getString(texturePathSH).length() > 0;
 	    bool canRenderTexture = false;
 	    if(hasTextureSource)
 	    {

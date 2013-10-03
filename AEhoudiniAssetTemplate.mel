@@ -36,6 +36,11 @@ proc buildAttrTree(string $nodeName, string $attr)
 
 proc string[] getValidAssetInputs(string $objects[])
 {
+    string $supportedTypes[] = {
+	"houdiniAsset",
+	"mesh"
+    };
+
     int $validInputsCount = 0;
     string $validAssetInputs[];
 
@@ -46,7 +51,18 @@ proc string[] getValidAssetInputs(string $objects[])
 	// check if the object is a supported node
 	if(!$found)
 	{
-	    if(`nodeType $object` == "mesh")
+	    int $isSupported = 0;
+
+	    for($supportedType in $supportedTypes)
+	    {
+		if(`objectType -isAType $supportedType $object`)
+		{
+		    $isSupported = 1;
+		    break;
+		}
+	    }
+
+	    if($isSupported)
 	    {
 		$validAssetInputs[$validInputsCount++] = $object;
 		$found = 1;
@@ -56,7 +72,7 @@ proc string[] getValidAssetInputs(string $objects[])
 	// check if there are any supported nodes in immediate children
 	if(!$found)
 	{
-	    string $tempObjects[] = `listRelatives -shapes -type "mesh" $object`;
+	    string $tempObjects[] = `listRelatives -fullPath -shapes -type "mesh" $object`;
 	    if(size($tempObjects))
 	    {
 		for($tempObject in $tempObjects)
@@ -93,22 +109,13 @@ proc setInput(string $inputAttr, string $object)
     string $inputTransformAttr = $inputAttr + ".inputTransform";
     string $inputGeoAttr = $inputAttr + ".inputGeo";
 
-    if(`nodeType $object` == "houdiniAsset")
+    if(`objectType -isAType "houdiniAsset" $object`)
     {
-	//If they just type the name of a houdini asset, we'll hook it up assuming the 1st output
-	string $outputMeshPlug = $object + ".output.outputObjects[0].outputObjectMesh";
-	string $outputMeshConn[] = `listConnections -s 0 -d 1 $outputMeshPlug`;
-	if( size($outputMeshConn) > 0 )
-	{
-	    connectAttr -force ($object + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
-	    connectAttr -force ($object + ".wm[0]") $inputTransformAttr;
-	}
-	else
-	{
-	    error("Couldn't find mesh output on the asset.\n");
-	}
+	// if we just got the houdiniAsset, just assume the first output
+	connectAttr -force ($object + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
+	connectAttr -force ($object + ".worldMatrix") $inputTransformAttr;
     }
-    else if (`nodeType $object` == "mesh")
+    else if(`objectType -isAType "mesh" $object`)
     {
 	string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
 	string $histNode = plugNode($histPlug);
@@ -123,23 +130,22 @@ proc setInput(string $inputAttr, string $object)
 	    string $obj = plugNode(plugAttr($histPlug));
 
 	    connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputGeoAttr;
-	    connectAttr -force ($histNode + ".wm[0]") $inputTransformAttr;
+	    connectAttr -force ($histNode + ".worldMatrix") $inputTransformAttr;
 	}
 	else
 	{
 	    connectAttr -force ($object + ".outMesh") $inputGeoAttr;
-	    string $parent[] = `listRelatives -parent $object`;
+	    string $parent[] = `listRelatives -fullPath -parent $object`;
 	    if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
 	    {
-		string $parentWorldMatrixPlug = $parent[0] + ".wm[0]";
+		string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
 		connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
 	    }
-	    //hide $str;
 	}
     }
     else
     {
-	error("Please input the name of a mesh or houdini asset.\n");
+	error("Cannot handle object:" + $object + "\n");
     }
 }
 

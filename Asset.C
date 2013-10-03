@@ -239,6 +239,8 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 	MArrayDataBuilder partsBuilder = partsHandle.builder();
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
+	    obj->compute(h);
+
 	    GeometryObject * geoObj = dynamic_cast<GeometryObject *>(obj);
             stat = geoObj->computeParts(h, &partsBuilder);
 	    partsHandle.set(partsBuilder);

@@ -3,6 +3,7 @@
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
+#include <maya/MFnIntArrayData.h>
 
 #include "Asset.h"
 #include "AssetNode.h"
@@ -81,6 +82,15 @@ GeometryObject::update()
 MStatus
 GeometryObject::compute(MDataHandle& handle)
 {
+    MDataHandle metaDataHandle = handle.child(AssetNode::outputObjectMetaData);
+
+    // Meta data
+    MFnIntArrayData ffIAD;
+    MIntArray metaDataArray;
+    metaDataArray.append( myAssetId );
+    metaDataArray.append( myObjectId );
+    MObject newMetaData = ffIAD.create(metaDataArray);
+    metaDataHandle.set(newMetaData);
 
     return MS::kSuccess;
 }
@@ -161,13 +171,13 @@ GeometryObject::setClean(MPlug& plug, MDataBlock& data)
     data.setClean(transformPlug.child(AssetNode::outputObjectTranslate));
     data.setClean(transformPlug.child(AssetNode::outputObjectRotate));
     data.setClean(transformPlug.child(AssetNode::outputObjectScale));
+    data.setClean(plug.child(AssetNode::outputObjectMetaData));
 
     MPlug partsPlug = plug.child(AssetNode::outputParts);
     for (int i=0; i<myGeoInfo.partCount; i++)
     {
 	MPlug partPlug = partsPlug[i];
 	data.setClean(partPlug.child(AssetNode::outputPartName));
-	data.setClean(partPlug.child(AssetNode::outputPartMetaData));
 	data.setClean(partPlug.child(AssetNode::outputPartMesh));
 
 	data.setClean(partPlug.child(AssetNode::outputPartMaterial));

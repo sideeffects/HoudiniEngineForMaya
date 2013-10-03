@@ -122,10 +122,10 @@ class AssetNode: public MPxTransform
         static MObject outputObjectScaleX;
         static MObject outputObjectScaleY;
         static MObject outputObjectScaleZ;
+        static MObject outputObjectMetaData;
 
 	static MObject outputParts;
         static MObject outputPartName;
-        static MObject outputPartMetaData;
         static MObject outputPartMesh;
         static MObject outputPartMaterial;
         static MObject outputPartMaterialExists;

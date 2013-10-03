@@ -31,6 +31,7 @@ AssetSyncAttribute::doIt()
 {
     MStatus status;
 
+    removeAllParameterAttributes();
     buildParms();
 
     return redoIt();
@@ -69,6 +70,36 @@ AssetSyncAttribute::addAttrTo(MObject& child, MObject* parent)
 
     MFnCompoundAttribute cAttr(*parent);
     cAttr.addChild(child);
+}
+
+void
+AssetSyncAttribute::removeAllParameterAttributes()
+{
+    MFnDependencyNode fnNode( myAssetNodeObj );
+    int numAttrs = fnNode.attributeCount();
+    MObjectArray attrsToRemove;
+    for( int ii = 0; ii < numAttrs; ii++ )
+    {
+		MObject attr = fnNode.attribute( ii );
+		MFnAttribute fnAttr( attr );
+		MString attrName = fnAttr.name();
+		if( attrName.length() < Util::getParmAttrPrefix().length() )
+			continue;
+
+		if( attrName.substring( 0, Util::getParmAttrPrefix().length() - 1 ) == Util::getParmAttrPrefix() )
+		{
+			if( fnAttr.parent() == MObject::kNullObj )
+				attrsToRemove.append( attr );
+		}
+    }
+
+    int numAttrsToRemove = attrsToRemove.length();
+    for( int ii = 0; ii < numAttrsToRemove; ii++ )
+    {
+		MObject attr = attrsToRemove[ ii ];
+		//myDGModifier.removeAttribute( myAssetNodeObj, attr );	
+		fnNode.removeAttribute( attr );
+    }
 }
 
 MObject

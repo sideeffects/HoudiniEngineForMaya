@@ -96,8 +96,16 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
     MString parmName = Util::getString(parm.nameSH);
     // folder parameters can return names witih spaces
     parmName = Util::replaceString(parmName, " ", "_");
-    MString name = "houdiniAssetParm_" + parmName;
+    MString name = getParmAttrPrefix() + parmName;
     return name;
+}
+
+
+MString 
+Util::getParmAttrPrefix()
+{
+    MString ret = "houdiniAssetParm_";
+    return ret;
 }
 
 void

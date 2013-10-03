@@ -29,7 +29,7 @@ class AssetSyncAttribute : public AssetSync
 
         void buildParms();
         int buildAttrTree(HAPI_ParmInfo* myParmInfos, MObject* parent, int current, int start);
-
+	void removeAllParameterAttributes();
     protected:
 	const MObject myAssetNodeObj;
 

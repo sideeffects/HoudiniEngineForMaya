@@ -161,6 +161,7 @@ GeometryPart::updateUVs()
     myVs = Vs;
 }
 
+#if MAYA_API_VERSION >= 201400
 void
 GeometryPart::updateVolumeTransform(MDataHandle& handle)
 {
@@ -208,7 +209,7 @@ GeometryPart::updateVolumeTransform(MDataHandle& handle)
     scaleHandle.setClean();
     handle.setClean();
 }
-
+#endif
 
 void
 GeometryPart::update()

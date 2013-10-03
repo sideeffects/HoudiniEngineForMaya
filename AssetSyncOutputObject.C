@@ -48,11 +48,14 @@ AssetSyncOutputObject::doIt()
 	myAssetSyncs.push_back(sync);
     }
 
+#if MAYA_API_VERSION >= 201400
     createFluidShape();
+#endif
 
     return MStatus::kSuccess;
 }
 
+#if MAYA_API_VERSION >= 201400
 MStatus
 AssetSyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
 {
@@ -68,6 +71,7 @@ AssetSyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
 
     return status;
 }
+
 
 MStatus
 AssetSyncOutputObject::createFluidShape()
@@ -184,6 +188,7 @@ AssetSyncOutputObject::createFluidShape()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 }
+#endif
 
 MStatus
 AssetSyncOutputObject::undoIt()

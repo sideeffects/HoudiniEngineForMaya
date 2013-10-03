@@ -64,7 +64,9 @@ MObject AssetNode::outputObjectScale;
 MObject AssetNode::outputObjectScaleX;
 MObject AssetNode::outputObjectScaleY;
 MObject AssetNode::outputObjectScaleZ;
+#if MAYA_API_VERSION >= 201400
 MObject AssetNode::outputObjectFluidFromAsset;
+#endif
 MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputParts;
@@ -77,6 +79,8 @@ MObject AssetNode::outputPartAmbientColor;
 MObject AssetNode::outputPartDiffuseColor;
 MObject AssetNode::outputPartSpecularColor;
 MObject AssetNode::outputPartAlphaColor;
+
+#if MAYA_API_VERSION >= 201400
 
 MObject AssetNode::outputPartVolume;
 MObject AssetNode::outputPartVolumeName;
@@ -98,6 +102,8 @@ MObject AssetNode::outputPartVolumeScale;
 MObject AssetNode::outputPartVolumeScaleX;
 MObject AssetNode::outputPartVolumeScaleY;
 MObject AssetNode::outputPartVolumeScaleZ;
+
+#endif
 
 MObject AssetNode::outputVisibility;
 MObject AssetNode::outputIsInstanced;
@@ -251,11 +257,13 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputObjectTransform);
 
+#if MAYA_API_VERSION >= 201400
     // object fluid from asset
     AssetNode::outputObjectFluidFromAsset = nAttr.create("outputObjectFluidFromAsset", "outputObjectFluidFromAsset", MFnNumericData::kBoolean, true);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputObjectFluidFromAsset);
+#endif
 
     // meta data
     AssetNode::outputObjectMetaData = tAttr.create("outputObjectMetaData", "outputObjectMetaData", MFnData::kIntArray);
@@ -352,7 +360,7 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolumeRes);
-#endif
+
 
     // volume transform
     // translate
@@ -428,12 +436,16 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputObjectTransform);
+#endif
 
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
+
+#if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
+#endif
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
@@ -452,7 +464,9 @@ AssetNode::initialize()
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputParts);
     cAttr.addChild(AssetNode::outputObjectTransform);
+#if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputObjectFluidFromAsset);
+#endif
     cAttr.addChild(AssetNode::outputObjectMetaData);
     cAttr.addChild(AssetNode::outputVisibility);
     cAttr.addChild(AssetNode::outputIsInstanced);
@@ -557,6 +571,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
 
+#if MAYA_API_VERSION >= 201400
 	    // Volume
 	    MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
 	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
@@ -566,6 +581,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTranslate));
 	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRotate));
 	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeScale));
+#endif
 	}
 
     }

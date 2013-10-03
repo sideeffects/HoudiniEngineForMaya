@@ -122,7 +122,9 @@ class AssetNode: public MPxTransform
         static MObject outputObjectScaleX;
         static MObject outputObjectScaleY;
         static MObject outputObjectScaleZ;
+#if MAYA_API_VERSION >= 201400
 	static MObject outputObjectFluidFromAsset;
+#endif
         static MObject outputObjectMetaData;
 
 	static MObject outputParts;
@@ -136,6 +138,7 @@ class AssetNode: public MPxTransform
         static MObject outputPartSpecularColor;
         static MObject outputPartAlphaColor;
 
+#if MAYA_API_VERSION >= 201400
 	static MObject outputPartVolume;
 	static MObject outputPartVolumeName;
 	static MObject outputPartVolumeGrid;
@@ -156,6 +159,7 @@ class AssetNode: public MPxTransform
         static MObject outputPartVolumeScaleX;
         static MObject outputPartVolumeScaleY;
         static MObject outputPartVolumeScaleZ;
+#endif
 
 	static MObject outputVisibility;
 	static MObject outputIsInstanced;

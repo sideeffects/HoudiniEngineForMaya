@@ -38,7 +38,8 @@ proc string[] getValidAssetInputs(string $objects[])
 {
     string $supportedTypes[] = {
 	"houdiniAsset",
-	"mesh"
+	"mesh",
+	"nurbsCurve"
     };
 
     int $validInputsCount = 0;
@@ -72,7 +73,7 @@ proc string[] getValidAssetInputs(string $objects[])
 	// check if there are any supported nodes in immediate children
 	if(!$found)
 	{
-	    string $tempObjects[] = `listRelatives -fullPath -shapes -type "mesh" $object`;
+	    string $tempObjects[] = `listRelatives -fullPath -shapes -type "mesh" -type "nurbsCurve" $object`;
 	    if(size($tempObjects))
 	    {
 		for($tempObject in $tempObjects)
@@ -141,6 +142,16 @@ proc setInput(string $inputAttr, string $object)
 		string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
 		connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
 	    }
+	}
+    }
+    else if(`objectType -isAType "nurbsCurve" $object`)
+    {
+	connectAttr -force ($object + ".local") $inputGeoAttr;
+	string $parent[] = `listRelatives -fullPath -parent $object`;
+	if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
+	{
+	    string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
+	    connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
 	}
     }
     else

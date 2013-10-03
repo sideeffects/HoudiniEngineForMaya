@@ -435,7 +435,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartVolumeRes);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputObjectTransform);
+    computeAttributes.push_back(AssetNode::outputPartVolume);
 #endif
 
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");

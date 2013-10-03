@@ -48,7 +48,141 @@ AssetSyncOutputObject::doIt()
 	myAssetSyncs.push_back(sync);
     }
 
+    createFluidShape();
+
     return MStatus::kSuccess;
+}
+
+MStatus
+AssetSyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
+{
+    MStatus status;
+    transform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    // TODO: name
+    status  = myDagModifier.renameNode(transform, "fluid_transform");
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    fluid = myDagModifier.createNode("fluidShape", transform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return status;
+}
+
+MStatus
+AssetSyncOutputObject::createFluidShape()
+{
+    MStatus status;
+
+    // Look for density.
+    // Once we've found the first density, look again through everything
+    // for any volumes which share a transform with the first density, 
+    // and add them to the fluidShape.
+    MPlug partsPlug = myOutputPlug.child(AssetNode::outputParts);
+    int partCount = partsPlug.evaluateNumElements(&status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // Find density
+    bool hasDensity = false;
+    MPlug densityVolume;
+    for (int i=0; i<partCount; i++)
+    {
+	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
+	MPlug outputPartName = partsPlug[i].child(AssetNode::outputPartName);
+	MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
+
+	MString name = outputVolumeName.asString();
+
+	if (name == "density")
+	{
+	    hasDensity = true;
+	    densityVolume = outputVolume;
+	    break;
+	}
+    }
+
+    if (!hasDensity)
+	return MStatus::kSuccess;
+
+    MObject transform, fluid;
+    createFluidShapeNode(transform, fluid);
+
+    MPlug densityTransform = densityVolume.child(AssetNode::outputPartVolumeTransform);
+
+    MFnDependencyNode partVolumeFn(fluid, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    MFnDependencyNode partFluidTransformFn(transform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    bool doneDensity = false;
+    bool doneTemperature = false;
+    for (int i=0; i<partCount; i++)
+    {
+	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
+	MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
+	MPlug outputVolumeTransform = outputVolume.child(AssetNode::outputPartVolumeTransform);
+
+	// If the transform of the volumes are different, we don't want
+	// to group them together.
+	if (outputVolumeTransform != densityTransform.attribute())
+	    continue;
+
+	MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);
+	MString name = outputVolumeName.asString();
+	if (name == "density" && !doneDensity)
+	{
+	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inDensity"));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    doneDensity = true;
+	}
+	else if (name == "temperature" && !doneTemperature)
+	{
+	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inTemperature"));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    doneTemperature = true;
+	}
+    }
+
+    // Connect the transform, resolution, dimensions, and playFromCache
+    {
+	MPlug srcPlug;
+	MPlug dstPlug;
+
+	MPlug densityTransform = densityVolume.child(AssetNode::outputPartVolumeTransform);
+
+	srcPlug = densityTransform.child(AssetNode::outputPartVolumeTranslate);
+	dstPlug = partFluidTransformFn.findPlug("translate");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	srcPlug = densityTransform.child(AssetNode::outputPartVolumeRotate);
+	dstPlug = partFluidTransformFn.findPlug("rotate");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	srcPlug = densityTransform.child(AssetNode::outputPartVolumeScale);
+	dstPlug = partFluidTransformFn.findPlug("scale");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	srcPlug = densityVolume.child(AssetNode::outputPartVolumeRes);
+	dstPlug = partVolumeFn.findPlug("resolution");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	// Connect the dimensions and resolution
+	dstPlug = partVolumeFn.findPlug("dimensions");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
+	dstPlug = partVolumeFn.findPlug("playFromCache");
+	status = myDagModifier.connect(srcPlug, dstPlug);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 }
 
 MStatus

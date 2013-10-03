@@ -69,6 +69,7 @@ class AssetNode: public MPxTransform
         static void* creator();
         static MStatus initialize();
 
+	void rebuildAsset();
 
     public:
         static MTypeId id;

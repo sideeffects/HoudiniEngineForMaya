@@ -3,6 +3,7 @@
 #include <maya/MSelectionList.h>
 #include <maya/MStatus.h>
 
+#include "AssetNode.h"
 #include "AssetCommand.h"
 #include "AssetSubCommand.h"
 #include "AssetSubCommandLoadOTL.h"
@@ -17,6 +18,8 @@
 #define kSaveHIPFlagLong "-saveHIP"
 #define kResetSimulationFlag "-rs"
 #define kResetSimulationFlagLong "-resetSimulation"
+#define kReloadAssetFlag "-rl"
+#define kReloadAssetFlagLong "-reloadAsset"
 
 void* AssetCommand::creator()
 {
@@ -51,6 +54,15 @@ AssetCommand::newSyntax()
 				 kResetSimulationFlagLong, 
 				 MSyntax::kLong));
 
+
+    // -reloadAsset will unload and immediate reload the asset.  If an otl file
+    // has changed due to an edit in Houdini, this should pick up the change    
+	// Note that this won't refresh the AE, you need to that separately after
+	// running this, with refreshEditorTemplates
+    CHECK_MSTATUS(syntax.addFlag(kReloadAssetFlag, 
+				 kReloadAssetFlagLong, 
+				 MSyntax::kString));
+
     return syntax;
 }
 
@@ -83,13 +95,15 @@ AssetCommand::parseArgs(const MArgList &args)
     if(!(argData.isFlagSet(kLoadOTLFlag)
 		^ argData.isFlagSet(kSyncFlag)
 		^ argData.isFlagSet(kSaveHIPFlag)
-		^ argData.isFlagSet(kResetSimulationFlag)))
+		^ argData.isFlagSet(kResetSimulationFlag)
+		^ argData.isFlagSet(kReloadAssetFlag)))
     {
 	displayError("Exactly one of these flags must be specified:\n"
 		kLoadOTLFlagLong "\n"
 		kSyncFlagLong "\n"
 		kSaveHIPFlagLong "\n"
-		kResetSimulationFlagLong "\n");
+		kResetSimulationFlagLong "\n"
+		kReloadAssetFlagLong "\n");
         return MStatus::kInvalidParameter;
     }
 
@@ -111,6 +125,35 @@ AssetCommand::parseArgs(const MArgList &args)
 		otlPath
 		);
     }
+
+    if(argData.isFlagSet(kReloadAssetFlag))
+    {
+		myOperationType = kOperationSubCommand;
+
+		MString assetPath;
+		{
+			status = argData.getFlagArgument(kReloadAssetFlag, 0, assetPath);
+			if(!status)
+			{
+			displayError("Invalid argument for \"" kReloadAssetFlagLong "\".");
+			return status;
+			}
+		}
+
+		MSelectionList selList;
+		MObject assetNodeObj;
+
+		selList.add( assetPath );
+		selList.getDependNode(0, assetNodeObj);
+		CHECK_MSTATUS_AND_RETURN_IT(status);
+
+		MFnDependencyNode assetNodeFn(assetNodeObj);
+		AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+		assetNode->rebuildAsset();
+
+		myAssetSubCommand = new AssetSubCommandSync( assetNodeObj );
+
+    }    
 
     if(argData.isFlagSet(kSyncFlag))
     {

@@ -603,6 +603,15 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     return MS::kSuccess;
 }
 
+void
+AssetNode::rebuildAsset()
+{
+    destroyAsset();
+    myAsset = new Asset(myAssetPath, thisMObject());
+    myResultsClean = false;
+
+}
+
 
 MObject
 AssetNode::getAttrFromParm(HAPI_ParmInfo& parm)

@@ -20,7 +20,7 @@ houdiniEngine_syncAssetOutputMenuClick()
     string $currSels[] = `ls -sl`;
 	if( size($currSels) < 1 )
 	{
-		error("Please select a houdiniAsset node to sync the output!");
+		error("Please select a houdiniAsset node to sync the output.");
 	}
 	string $currSel = $currSels[0];
 	string $nodeTypeOfSel = `nodeType $currSel`;
@@ -35,8 +35,31 @@ houdiniEngine_syncAssetOutputMenuClick()
 	}
 	else
 	{
-		error("Please select a houdiniAsset node to sync the output!");
+		error("Please select a houdiniAsset node to sync the output.");
 	}
+}
+
+global proc
+houdiniEngine_rebuildAssetOutputMenuClick()
+{
+    string $currSels[] = `ls -sl`;
+	if( size($currSels) < 1 )
+	{
+		error("Please select a houdiniAsset node to reload.");
+	}
+	string $currSel = $currSels[0];
+	string $nodeTypeOfSel = `nodeType $currSel`;
+	if( $nodeTypeOfSel == "houdiniAsset" )
+	{
+			
+		houdiniAsset -reloadAsset $currSel;
+		refreshEditorTemplates;
+	}
+	else
+	{
+		error("Please select a houdiniAsset node to reload.");
+	}
+
 }
 
 global proc
@@ -55,6 +78,8 @@ houdiniEngineCreateUI()
 	    -command "houdiniEngine_loadOTLMenuClick";
 	menuItem -label "Sync Asset Output"
 	    -command "houdiniEngine_syncAssetOutputMenuClick";
+    menuItem -label "Rebuild Asset"
+	    -command "houdiniEngine_rebuildAssetOutputMenuClick";
 	menuItem -label "HAPI Debug Window"
 	    -command "houdiniEngine_debugWindowMenuClick";
 }

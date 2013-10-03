@@ -362,13 +362,11 @@ GeometryPart::createVolume()
     int yres = myVolumeInfo.yLength;
     int zres = myVolumeInfo.zLength;
     int tileSize = myVolumeInfo.tileSize;
-    if (tileSize > 16)
-	return MObject();
 
     MFloatArray grid;
     grid.setLength(xres * yres * zres);
 
-    float tileValues[tileSize * tileSize * tileSize];
+    float* tileValues = new float[tileSize * tileSize * tileSize];
     std::fill(tileValues, tileValues + tileSize * tileSize * tileSize - 1, 0);
     for (unsigned int i=0; i<grid.length(); i++)
 	grid[i] = 0;
@@ -404,6 +402,8 @@ GeometryPart::createVolume()
 
 	HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
     }
+
+    delete[] tileValues;
 
     MFnFloatArrayData volumeCreator;
     return volumeCreator.create(grid);

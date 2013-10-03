@@ -31,6 +31,9 @@ class GeometryPart
 
         MObject createMesh();
 
+	MObject createVolume();
+	void    updateVolumeTransform(MDataHandle& handle);
+
         // Utility
         virtual MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, MString name);
 
@@ -45,6 +48,7 @@ class GeometryPart
         HAPI_ObjectInfo myObjectInfo;
         HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
+	HAPI_VolumeInfo myVolumeInfo;
         HAPI_MaterialInfo myMaterialInfo;
 
         MIntArray myFaceCounts;

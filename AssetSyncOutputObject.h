@@ -23,6 +23,8 @@ class AssetSyncOutputObject : public AssetSync
 
     protected:
 	MStatus createOutputObject();
+	MStatus createFluidShape();
+	MStatus createFluidShapeNode(MObject& transform, MObject& fluid);
 
 	const MPlug myOutputPlug;
 	const MObject myAssetNodeObj;

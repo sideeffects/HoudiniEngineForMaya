@@ -64,6 +64,7 @@ MObject AssetNode::outputObjectScale;
 MObject AssetNode::outputObjectScaleX;
 MObject AssetNode::outputObjectScaleY;
 MObject AssetNode::outputObjectScaleZ;
+MObject AssetNode::outputObjectFluidFromAsset;
 MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputParts;
@@ -77,9 +78,29 @@ MObject AssetNode::outputPartDiffuseColor;
 MObject AssetNode::outputPartSpecularColor;
 MObject AssetNode::outputPartAlphaColor;
 
+MObject AssetNode::outputPartVolume;
+MObject AssetNode::outputPartVolumeName;
+MObject AssetNode::outputPartVolumeGrid;
+MObject AssetNode::outputPartVolumeRes;
+MObject AssetNode::outputPartVolumeResW;
+MObject AssetNode::outputPartVolumeResH;
+MObject AssetNode::outputPartVolumeResD;
+MObject AssetNode::outputPartVolumeTransform;
+MObject AssetNode::outputPartVolumeTranslate;
+MObject AssetNode::outputPartVolumeTranslateX;
+MObject AssetNode::outputPartVolumeTranslateY;
+MObject AssetNode::outputPartVolumeTranslateZ;
+MObject AssetNode::outputPartVolumeRotate;
+MObject AssetNode::outputPartVolumeRotateX;
+MObject AssetNode::outputPartVolumeRotateY;
+MObject AssetNode::outputPartVolumeRotateZ;
+MObject AssetNode::outputPartVolumeScale;
+MObject AssetNode::outputPartVolumeScaleX;
+MObject AssetNode::outputPartVolumeScaleY;
+MObject AssetNode::outputPartVolumeScaleZ;
+
 MObject AssetNode::outputVisibility;
 MObject AssetNode::outputIsInstanced;
-
 MObject AssetNode::outputInstancers;
 MObject AssetNode::outputInstancerData;
 MObject AssetNode::outputInstancedObjectNames;
@@ -230,6 +251,12 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputObjectTransform);
 
+    // object fluid from asset
+    AssetNode::outputObjectFluidFromAsset = nAttr.create("outputObjectFluidFromAsset", "outputObjectFluidFromAsset", MFnNumericData::kBoolean, true);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectFluidFromAsset);
+
     // meta data
     AssetNode::outputObjectMetaData = tAttr.create("outputObjectMetaData", "outputObjectMetaData", MFnData::kIntArray);
     tAttr.setStorable(false);
@@ -293,10 +320,118 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartMaterial);
 
+    // Volumes ---------
+    AssetNode::outputPartVolumeName = tAttr.create("outputPartVolumeName", "outputPartVolumeName", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeName);
+
+    AssetNode::outputPartVolumeGrid = tAttr.create("outputPartVolumeGrid", "outputPartVolumeGrid", MFnData::kFloatArray);
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeGrid);
+
+    // Volume resolution
+    AssetNode::outputPartVolumeResW = nAttr.create("outputPartVolumeResW", "outputPartVolumeResW", MFnNumericData::kInt);
+    nAttr.setWritable(false);
+    nAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeResW);
+    AssetNode::outputPartVolumeResH = nAttr.create("outputPartVolumeResH", "outputPartVolumeResH", MFnNumericData::kInt);
+    nAttr.setWritable(false);
+    nAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeResH);
+    AssetNode::outputPartVolumeResD = nAttr.create("outputPartVolumeResD", "outputPartVolumeResD", MFnNumericData::kInt);
+    nAttr.setWritable(false);
+    nAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeResD);
+    AssetNode::outputPartVolumeRes = cAttr.create("outputPartVolumeRes", "outputPartVolumeRes");
+    cAttr.addChild(AssetNode::outputPartVolumeResW);
+    cAttr.addChild(AssetNode::outputPartVolumeResH);
+    cAttr.addChild(AssetNode::outputPartVolumeResD);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeRes);
+
+    // volume transform
+    // translate
+    AssetNode::outputPartVolumeTranslateX = uAttr.create("outputPartVolumeTranslateX", "outputPartVolumeTranslateX", MFnUnitAttribute::kDistance);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeTranslateX);
+    AssetNode::outputPartVolumeTranslateY = uAttr.create("outputPartVolumeTranslateY", "outputPartVolumeTranslateY", MFnUnitAttribute::kDistance);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeTranslateY);
+    AssetNode::outputPartVolumeTranslateZ = uAttr.create("outputPartVolumeTranslateZ", "outputPartVolumeTranslateZ", MFnUnitAttribute::kDistance);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeTranslateZ);
+    AssetNode::outputPartVolumeTranslate = nAttr.create("outputPartVolumeTranslate", "outputPartVolumeTranslate", AssetNode::outputPartVolumeTranslateX,
+            AssetNode::outputPartVolumeTranslateY, AssetNode::outputPartVolumeTranslateZ);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeTranslate);
+
+    // rotate
+    AssetNode::outputPartVolumeRotateX = uAttr.create("outputPartVolumeRotateX", "outputPartVolumeRotateX", MFnUnitAttribute::kAngle);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeRotateX);
+    AssetNode::outputPartVolumeRotateY = uAttr.create("outputPartVolumeRotateY", "outputPartVolumeRotateY", MFnUnitAttribute::kAngle);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeRotateY);
+    AssetNode::outputPartVolumeRotateZ = uAttr.create("outputPartVolumeRotateZ", "outputPartVolumeRotateZ", MFnUnitAttribute::kAngle);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeRotateZ);
+    AssetNode::outputPartVolumeRotate = nAttr.create("outputPartVolumeRotate", "outputPartVolumeRotate", AssetNode::outputPartVolumeRotateX,
+            AssetNode::outputPartVolumeRotateY, AssetNode::outputPartVolumeRotateZ);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeRotate);
+
+    // scale
+    AssetNode::outputPartVolumeScaleX = nAttr.create("outputPartVolumeScaleX", "outputPartVolumeScaleX", MFnNumericData::kDouble, 1.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeScaleX);
+    AssetNode::outputPartVolumeScaleY = nAttr.create("outputPartVolumeScaleY", "outputPartVolumeScaleY", MFnNumericData::kDouble, 1.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeScaleY);
+    AssetNode::outputPartVolumeScaleZ = nAttr.create("outputPartVolumeScaleZ", "outputPartVolumeScaleZ", MFnNumericData::kDouble, 1.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeScaleZ);
+    AssetNode::outputPartVolumeScale = nAttr.create("outputPartVolumeScale", "outputPartVolumeScale", AssetNode::outputPartVolumeScaleX,
+            AssetNode::outputPartVolumeScaleY, AssetNode::outputPartVolumeScaleZ);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectScale);
+    AssetNode::outputPartVolumeTransform = cAttr.create("outputPartVolumeTransform", "outputPartVolumeTransform");
+    cAttr.addChild(AssetNode::outputPartVolumeTranslate);
+    cAttr.addChild(AssetNode::outputPartVolumeRotate);
+    cAttr.addChild(AssetNode::outputPartVolumeScale);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeTransform);
+
+    // volume
+    AssetNode::outputPartVolume = cAttr.create("outputPartVolume", "outputPartVolume");
+    cAttr.addChild(AssetNode::outputPartVolumeName);
+    cAttr.addChild(AssetNode::outputPartVolumeGrid);
+    cAttr.addChild(AssetNode::outputPartVolumeTransform);
+    cAttr.addChild(AssetNode::outputPartVolumeRes);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputObjectTransform);
+
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
+    cAttr.addChild(AssetNode::outputPartVolume);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
@@ -315,10 +450,10 @@ AssetNode::initialize()
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputParts);
     cAttr.addChild(AssetNode::outputObjectTransform);
+    cAttr.addChild(AssetNode::outputObjectFluidFromAsset);
     cAttr.addChild(AssetNode::outputObjectMetaData);
     cAttr.addChild(AssetNode::outputVisibility);
     cAttr.addChild(AssetNode::outputIsInstanced);
-
 
     cAttr.setWritable(false);
     cAttr.setStorable(false);
@@ -403,14 +538,15 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	{
 	    MPlug elemPlug = outputPartsPlug[ j ];
 
-	    MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
+	    // Mesh
 	    MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
-	    MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
-
-
-	    affectedPlugs.append(outputPartNamePlug);
 	    affectedPlugs.append(meshPlug);
 
+	    // General part attributes
+	    MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
+	    MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
+
+	    affectedPlugs.append(outputPartNamePlug);
 
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialExists));
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartTexturePath));
@@ -418,6 +554,16 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
+
+	    // Volume
+	    MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
+	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
+	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
+	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
+	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
+	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTranslate));
+	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRotate));
+	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeScale));
 	}
 
     }

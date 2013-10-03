@@ -122,6 +122,7 @@ class AssetNode: public MPxTransform
         static MObject outputObjectScaleX;
         static MObject outputObjectScaleY;
         static MObject outputObjectScaleZ;
+	static MObject outputObjectFluidFromAsset;
         static MObject outputObjectMetaData;
 
 	static MObject outputParts;
@@ -134,6 +135,27 @@ class AssetNode: public MPxTransform
         static MObject outputPartDiffuseColor;
         static MObject outputPartSpecularColor;
         static MObject outputPartAlphaColor;
+
+	static MObject outputPartVolume;
+	static MObject outputPartVolumeName;
+	static MObject outputPartVolumeGrid;
+	static MObject outputPartVolumeRes;
+	static MObject outputPartVolumeResW;
+	static MObject outputPartVolumeResH;
+	static MObject outputPartVolumeResD;
+        static MObject outputPartVolumeTransform;
+        static MObject outputPartVolumeTranslate;
+        static MObject outputPartVolumeTranslateX;
+        static MObject outputPartVolumeTranslateY;
+        static MObject outputPartVolumeTranslateZ;
+        static MObject outputPartVolumeRotate;
+        static MObject outputPartVolumeRotateX;
+        static MObject outputPartVolumeRotateY;
+        static MObject outputPartVolumeRotateZ;
+        static MObject outputPartVolumeScale;
+        static MObject outputPartVolumeScaleX;
+        static MObject outputPartVolumeScaleY;
+        static MObject outputPartVolumeScaleZ;
 
 	static MObject outputVisibility;
 	static MObject outputIsInstanced;

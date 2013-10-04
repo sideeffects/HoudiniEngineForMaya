@@ -174,6 +174,24 @@ class AssetNode: public MPxTransform
         static MObject outputInstancers;
         static MObject outputInstancerData;
         static MObject outputInstancedObjectNames;
+	static MObject outputHoudiniInstanceAttribute;
+	static MObject outputHoudiniNameAttribute;
+
+	static MObject outputInstanceTransform;
+        static MObject outputInstanceTranslate;
+        static MObject outputInstanceTranslateX;
+        static MObject outputInstanceTranslateY;
+        static MObject outputInstanceTranslateZ;
+        static MObject outputInstanceRotate;
+        static MObject outputInstanceRotateX;
+        static MObject outputInstanceRotateY;
+        static MObject outputInstanceRotateZ;
+        static MObject outputInstanceScale;
+        static MObject outputInstanceScaleX;
+        static MObject outputInstanceScaleY;
+        static MObject outputInstanceScaleZ;
+
+	static MObject useInstancerNode;
 };
 
 #endif

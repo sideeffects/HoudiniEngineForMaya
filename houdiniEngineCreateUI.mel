@@ -40,7 +40,7 @@ houdiniEngine_syncAssetOutputMenuClick()
 }
 
 global proc
-houdiniEngine_rebuildAssetOutputMenuClick()
+houdiniEngine_reloadAssetOutputMenuClick()
 {
     string $currSels[] = `ls -sl`;
 	if( size($currSels) < 1 )
@@ -78,8 +78,8 @@ houdiniEngineCreateUI()
 	    -command "houdiniEngine_loadOTLMenuClick";
 	menuItem -label "Sync Asset Output"
 	    -command "houdiniEngine_syncAssetOutputMenuClick";
-    menuItem -label "Rebuild Asset"
-	    -command "houdiniEngine_rebuildAssetOutputMenuClick";
+    menuItem -label "Reload Asset"
+	    -command "houdiniEngine_reloadAssetOutputMenuClick";
 	menuItem -label "HAPI Debug Window"
 	    -command "houdiniEngine_debugWindowMenuClick";
 }

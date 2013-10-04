@@ -176,7 +176,13 @@ AssetSyncOutputObject::createFluidShape()
 
 	// Connect the dimensions and resolution
 	dstPlug = partVolumeFn.findPlug("dimensions");
-	status = myDagModifier.connect(srcPlug, dstPlug);
+	// Connecting compound attribute to fluidShape.dimensions causes
+	// infinite recursion. Probably a Maya bug. Workaround it by connecting
+	// individual child attributes instead.
+	//status = myDagModifier.connect(srcPlug, dstPlug);
+	status = myDagModifier.connect(srcPlug.child(0), dstPlug.child(0));
+	status = myDagModifier.connect(srcPlug.child(1), dstPlug.child(1));
+	status = myDagModifier.connect(srcPlug.child(2), dstPlug.child(2));
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);

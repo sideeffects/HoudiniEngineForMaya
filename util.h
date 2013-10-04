@@ -53,6 +53,10 @@ class Util {
     public:
         static MString getString(int handle);
 	static MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
+	static MStringArray getAttributeStringData(int assetId, int objectId,
+						    int geoId, int partId,
+						    HAPI_AttributeOwner owner,
+						    const MString & name);
 	static MString getParmAttrPrefix();
         static void reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts);
         static void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts);

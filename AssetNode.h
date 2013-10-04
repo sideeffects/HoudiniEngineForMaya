@@ -131,6 +131,7 @@ class AssetNode: public MPxTransform
 	static MObject outputParts;
         static MObject outputPartName;
         static MObject outputPartMesh;
+        static MObject outputPartHasParticles;
         static MObject outputPartMaterial;
         static MObject outputPartMaterialExists;
         static MObject outputPartTexturePath;
@@ -138,6 +139,10 @@ class AssetNode: public MPxTransform
         static MObject outputPartDiffuseColor;
         static MObject outputPartSpecularColor;
         static MObject outputPartAlphaColor;
+
+	static MObject outputPartParticle;
+	static MObject outputPartParticlePositions;
+	static MObject outputPartParticleArrayData;
 
 #if MAYA_API_VERSION >= 201400
 	static MObject outputPartVolume;

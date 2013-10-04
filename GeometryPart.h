@@ -30,6 +30,7 @@ class GeometryPart
         void updateUVs();
 
         MObject createMesh();
+	void createParticle(MDataHandle &dataHandle);
 
 	MObject createVolume();
 	void    updateVolumeTransform(MDataHandle& handle);

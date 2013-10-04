@@ -72,6 +72,7 @@ MObject AssetNode::outputObjectMetaData;
 MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
 MObject AssetNode::outputPartMesh;
+MObject AssetNode::outputPartHasParticles;
 MObject AssetNode::outputPartMaterial;
 MObject AssetNode::outputPartMaterialExists;
 MObject AssetNode::outputPartTexturePath;
@@ -79,6 +80,10 @@ MObject AssetNode::outputPartAmbientColor;
 MObject AssetNode::outputPartDiffuseColor;
 MObject AssetNode::outputPartSpecularColor;
 MObject AssetNode::outputPartAlphaColor;
+
+MObject AssetNode::outputPartParticle;
+MObject AssetNode::outputPartParticlePositions;
+MObject AssetNode::outputPartParticleArrayData;
 
 #if MAYA_API_VERSION >= 201400
 
@@ -277,6 +282,9 @@ AssetNode::initialize()
     tAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputPartName);
 
+    AssetNode::outputPartHasParticles = nAttr.create("outputPartHasParticles", "outputPartHasParticles", MFnNumericData::kBoolean, false);
+    computeAttributes.push_back(AssetNode::outputPartHasParticles);
+
     // mesh
     AssetNode::outputPartMesh = tAttr.create("outputPartMesh", "outputPartMesh", MFnData::kMesh);
     tAttr.setWritable(false);
@@ -327,6 +335,32 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartMaterial);
+
+    // particle
+    AssetNode::outputPartParticlePositions = tAttr.create(
+	    "outputPartParticlePositions",
+	    "outputPartParticlePositions",
+	    MFnData::kVectorArray
+	    );
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartParticlePositions);
+
+    AssetNode::outputPartParticleArrayData = tAttr.create(
+	    "outputPartParticleArrayData",
+	    "outputPartParticleArrayData",
+	    MFnData::kDynArrayAttrs
+	    );
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartParticleArrayData);
+
+    AssetNode::outputPartParticle = cAttr.create("outputPartParticle", "outputPartParticle");
+    cAttr.addChild(AssetNode::outputPartParticlePositions);
+    cAttr.addChild(AssetNode::outputPartParticleArrayData);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartParticle);
 
 #if MAYA_API_VERSION >= 201400
     // Volumes ---------
@@ -440,8 +474,10 @@ AssetNode::initialize()
 
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
+    cAttr.addChild(AssetNode::outputPartHasParticles);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
+    cAttr.addChild(AssetNode::outputPartParticle);
 
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
@@ -554,6 +590,8 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	{
 	    MPlug elemPlug = outputPartsPlug[ j ];
 
+	    affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
+
 	    // Mesh
 	    MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
 	    affectedPlugs.append(meshPlug);
@@ -570,6 +608,11 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
 	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
+
+	    // Particle
+	    MPlug outputPartParticle = elemPlug.child(AssetNode::outputPartParticle);
+	    affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticlePositions));
+	    affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleArrayData));
 
 #if MAYA_API_VERSION >= 201400
 	    // Volume

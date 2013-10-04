@@ -9,6 +9,7 @@
 #if MAYA_API_VERSION >= 201400
 	#include <maya/MFnFloatArrayData.h>
 #endif
+#include <maya/MFnVectorArrayData.h>
 
 #include <vector>
 #include <limits>
@@ -317,6 +318,18 @@ GeometryPart::compute(MDataHandle& handle)
         MObject newMeshData = createMesh();
         meshHandle.set(newMeshData);
 
+	// Particle
+	if(myPartInfo.pointCount != 0
+		&& myPartInfo.vertexCount == 0
+		&& myPartInfo.faceCount == 0)
+	{
+	    MDataHandle partHasParticlesHandle = handle.child(AssetNode::outputPartHasParticles);
+	    partHasParticlesHandle.setBool(true);
+
+	    MDataHandle partParticleHandle = handle.child(AssetNode::outputPartParticle);
+	    createParticle(partParticleHandle);
+	}
+
 #if MAYA_API_VERSION >= 201400
 	// Volume
 	if (myPartInfo.hasVolume)
@@ -358,6 +371,78 @@ GeometryPart::compute(MDataHandle& handle)
     myNeverBuilt = false;
 
     return MS::kSuccess;
+}
+
+void
+GeometryPart::createParticle(MDataHandle &dataHandle)
+{
+    MDataHandle positionsHandle = dataHandle.child(AssetNode::outputPartParticlePositions);
+    MDataHandle arrayDataHandle = dataHandle.child(AssetNode::outputPartParticleArrayData);
+
+    // positions
+    MObject positionsObj = positionsHandle.data();
+    MFnVectorArrayData positionDataFn(positionsObj);
+    if(positionsObj.isNull())
+    {
+	positionsObj = positionDataFn.create();
+	positionsHandle.setMObject(positionsObj);
+    }
+
+    MVectorArray positions = positionDataFn.array();
+    {
+	MFloatArray attributeP = getAttributeFloatData(HAPI_ATTROWNER_POINT, "P");
+	positions.setLength(attributeP.length()/3);
+	for(int i = 0; i < positions.length(); i++)
+	{
+	    positions[i].x = attributeP[i * 3 + 0];
+	    positions[i].y = attributeP[i * 3 + 1];
+	    positions[i].z = attributeP[i * 3 + 2];
+	}
+    }
+
+    // array data
+    MObject arrayDataObj = arrayDataHandle.data();
+    MFnArrayAttrsData arrayDataFn(arrayDataObj);
+    if(arrayDataObj.isNull())
+    {
+	arrayDataObj = arrayDataFn.create();
+	arrayDataHandle.setMObject(arrayDataObj);
+    }
+
+    // count
+    MDoubleArray countArray = arrayDataFn.doubleArray("count");
+    countArray.setLength(1);
+    countArray[0] = positions.length();
+
+    // position
+    arrayDataFn.vectorArray("position").copy(positions);
+
+    // velocity
+    MVectorArray velocityArray = arrayDataFn.vectorArray("velocity");
+    {
+	MFloatArray v = getAttributeFloatData(HAPI_ATTROWNER_POINT, "v");
+	velocityArray.setLength(v.length()/3);
+	for(int i = 0; i < velocityArray.length(); i++)
+	{
+	    velocityArray[i].x = v[i * 3 + 0];
+	    velocityArray[i].y = v[i * 3 + 1];
+	    velocityArray[i].z = v[i * 3 + 2];
+	}
+    }
+
+    // age
+    MDoubleArray ageArray = arrayDataFn.doubleArray("age");
+    {
+	MFloatArray age = getAttributeFloatData(HAPI_ATTROWNER_POINT, "age");
+	ageArray.setLength(age.length());
+	for(int i = 0; i < ageArray.length(); i++)
+	{
+	    ageArray[i] = age[i];
+	}
+    }
+
+    positionsHandle.setClean();
+    arrayDataHandle.setClean();
 }
 
 #if MAYA_API_VERSION >= 201400

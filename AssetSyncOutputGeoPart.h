@@ -29,6 +29,10 @@ class AssetSyncOutputGeoPart : public AssetSync
 		const MPlug &materialPlug,
 		const MObject &partTransform
 		);
+	MStatus createOutputParticle(
+		const MObject &partTransform,
+		const MPlug &particlePlug
+		);
 
     protected:
 	//This is the output plug from the asset node that represents an object

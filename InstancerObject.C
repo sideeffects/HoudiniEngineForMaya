@@ -40,31 +40,7 @@ InstancerObject::type()
 MStringArray
 InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
 {
-    HAPI_AttributeInfo attr_info;
-    attr_info.exists = false;
-    attr_info.owner = owner;
-    HAPI_GetAttributeInfo( myAssetId, myObjectId, 0, 0, name.asChar(), &attr_info);
-
-    MStringArray ret;
-    if (!attr_info.exists)
-        return ret;
-
-    int size = attr_info.count * attr_info.tupleSize;
-    int * data = new int[size];
-    // zero the array
-    for (int j=0; j<size; j++){
-        data[j] = 0;
-    }
-    HAPI_GetAttributeStrData( myAssetId, myObjectId, 0, 0, name.asChar(),
-            &attr_info, data, 0, attr_info.count);
-
-    for (int j=0; j<size; j++){
-        ret.append(Util::getString(data[j]));
-    }
-
-    delete[] data;
-
-    return ret;
+    return Util::getAttributeStringData( myAssetId, myObjectId, 0, 0, owner, name );
 }
 
 

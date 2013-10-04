@@ -447,6 +447,42 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
     return result;
 }
 
+
+MStringArray
+Util::getAttributeStringData(int assetId, 
+			    int objectId,
+			    int geoId,
+			    int partId,
+			    HAPI_AttributeOwner owner, 
+			    const MString & name)
+{
+    HAPI_AttributeInfo attr_info;
+    attr_info.exists = false;
+    attr_info.owner = owner;
+    HAPI_GetAttributeInfo( assetId, objectId, geoId, partId, name.asChar(), &attr_info);
+
+    MStringArray ret;
+    if (!attr_info.exists)
+        return ret;
+
+    int size = attr_info.count * attr_info.tupleSize;
+    int * data = new int[size];
+    // zero the array
+    for (int j=0; j<size; j++){
+        data[j] = 0;
+    }
+    HAPI_GetAttributeStrData( assetId, objectId, geoId, partId, name.asChar(),
+            &attr_info, data, 0, attr_info.count);
+
+    for (int j=0; j<size; j++){
+        ret.append(Util::getString(data[j]));
+    }
+
+    delete[] data;
+
+    return ret;
+}
+
 int
 Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name)
 {

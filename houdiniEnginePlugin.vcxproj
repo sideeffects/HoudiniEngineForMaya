@@ -46,8 +46,10 @@
     <ClCompile Include="AssetSubCommandLoadOTL.C" />
     <ClCompile Include="AssetSubCommandSync.C" />
     <ClCompile Include="AssetSync.C" />
+    <ClCompile Include="AssetSyncAttribute.C" />
     <ClCompile Include="AssetSyncOutputGeoPart.C" />
     <ClCompile Include="AssetSyncOutputInstance.C" />
+    <ClCompile Include="AssetSyncOutputObject.C" />
     <ClCompile Include="GeometryObject.C" />
     <ClCompile Include="GeometryPart.C" />
     <ClCompile Include="InstancerObject.C" />
@@ -67,8 +69,10 @@
     <ClInclude Include="AssetSubCommandLoadOTL.h" />
     <ClInclude Include="AssetSubCommandSync.h" />
     <ClInclude Include="AssetSync.h" />
+    <ClInclude Include="AssetSyncAttribute.h" />
     <ClInclude Include="AssetSyncOutputGeoPart.h" />
     <ClInclude Include="AssetSyncOutputInstance.h" />
+    <ClInclude Include="AssetSyncOutputObject.h" />
     <ClInclude Include="GeometryObject.h" />
     <ClInclude Include="GeometryPart.h" />
     <ClInclude Include="InstancerObject.h" />
@@ -132,6 +136,8 @@
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
     <TargetExt>.mll</TargetExt>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <IncludePath>C:\cygwin\home\damian\houdini\dev_d_x86\src\houdini\lib\H_HAPI;C:\Program Files %28x86%29\Autodesk\Maya2013\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\dsolib;C:\Program Files %28x86%29\Autodesk\Maya2013\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

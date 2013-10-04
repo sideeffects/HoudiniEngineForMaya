@@ -37,7 +37,7 @@ AssetInputMesh::setInputTransform(MDataHandle &dataHandle)
     {
 	for( int jj = 0; jj < 4; jj++ )
 	{
-	    inputMat[ii*4 + jj] = transformMat.matrix[ii][jj];
+	    inputMat[ii*4 + jj] = (float) transformMat.matrix[ii][jj];
 	}
     }
 

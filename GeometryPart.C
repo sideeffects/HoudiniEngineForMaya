@@ -392,7 +392,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     {
 	MFloatArray attributeP = getAttributeFloatData(HAPI_ATTROWNER_POINT, "P");
 	positions.setLength(attributeP.length()/3);
-	for(int i = 0; i < positions.length(); i++)
+	for(unsigned int i = 0; i < positions.length(); i++)
 	{
 	    positions[i].x = attributeP[i * 3 + 0];
 	    positions[i].y = attributeP[i * 3 + 1];
@@ -422,7 +422,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     {
 	MFloatArray v = getAttributeFloatData(HAPI_ATTROWNER_POINT, "v");
 	velocityArray.setLength(v.length()/3);
-	for(int i = 0; i < velocityArray.length(); i++)
+	for ( unsigned int i = 0; i < velocityArray.length(); i++ )
 	{
 	    velocityArray[i].x = v[i * 3 + 0];
 	    velocityArray[i].y = v[i * 3 + 1];
@@ -435,7 +435,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     {
 	MFloatArray age = getAttributeFloatData(HAPI_ATTROWNER_POINT, "age");
 	ageArray.setLength(age.length());
-	for(int i = 0; i < ageArray.length(); i++)
+	for ( unsigned int i = 0; i < ageArray.length(); i++ )
 	{
 	    ageArray[i] = age[i];
 	}
@@ -656,6 +656,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
 		hapiResult = HAPI_ExtractImageToFile(
 			myAssetId,
 			myMaterialInfo.id,
+			HAPI_PNG_FORMAT_NAME,
 			"C A",
 			destinationFolderPath.asChar(),
 			NULL,

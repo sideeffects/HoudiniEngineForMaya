@@ -115,6 +115,24 @@ MObject AssetNode::outputIsInstanced;
 MObject AssetNode::outputInstancers;
 MObject AssetNode::outputInstancerData;
 MObject AssetNode::outputInstancedObjectNames;
+MObject AssetNode::outputHoudiniInstanceAttribute;
+MObject AssetNode::outputHoudiniNameAttribute;
+
+MObject AssetNode::outputInstanceTransform;
+MObject AssetNode::outputInstanceTranslate;
+MObject AssetNode::outputInstanceTranslateX;
+MObject AssetNode::outputInstanceTranslateY;
+MObject AssetNode::outputInstanceTranslateZ;
+MObject AssetNode::outputInstanceRotate;
+MObject AssetNode::outputInstanceRotateX;
+MObject AssetNode::outputInstanceRotateY;
+MObject AssetNode::outputInstanceRotateZ;
+MObject AssetNode::outputInstanceScale;
+MObject AssetNode::outputInstanceScaleX;
+MObject AssetNode::outputInstanceScaleY;
+MObject AssetNode::outputInstanceScaleZ;
+
+MObject AssetNode::useInstancerNode;
 
 std::vector<MObject> computeAttributes;
 
@@ -183,15 +201,106 @@ AssetNode::initialize()
     cAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputInstancedObjectNames);
 
+    // houdini instance attribute
+    AssetNode::outputHoudiniInstanceAttribute = tAttr.create("outputHoudiniInstanceAttribute", "outputHoudiniInstanceAttribute", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    tAttr.setArray(true);
+    tAttr.setIndexMatters(true);
+    cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputHoudiniInstanceAttribute);
+
+    // houdini name attribute
+    AssetNode::outputHoudiniNameAttribute = tAttr.create("outputHoudiniNameAttribute", "outputHoudiniNameAttribute", MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    tAttr.setArray(true);
+    tAttr.setIndexMatters(true);
+    cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputHoudiniNameAttribute);
+
+    // translate
+    AssetNode::outputInstanceTranslateX = uAttr.create("outputInstanceTranslateX", "outputInstanceTranslateX", MFnUnitAttribute::kDistance);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceTranslateX);
+    AssetNode::outputInstanceTranslateY = uAttr.create("outputInstanceTranslateY", "outputInstanceTranslateY", MFnUnitAttribute::kDistance);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceTranslateY);
+    AssetNode::outputInstanceTranslateZ = uAttr.create("outputInstanceTranslateZ", "outputInstanceTranslateZ", MFnUnitAttribute::kDistance);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceTranslateZ);
+    AssetNode::outputInstanceTranslate = nAttr.create("outputInstanceTranslate", "outputInstanceTranslate", AssetNode::outputInstanceTranslateX,
+            AssetNode::outputInstanceTranslateY, AssetNode::outputInstanceTranslateZ);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceTranslate);
+
+    // rotate
+    AssetNode::outputInstanceRotateX = uAttr.create("outputInstanceRotateX", "outputInstanceRotateX", MFnUnitAttribute::kAngle);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceRotateX);
+    AssetNode::outputInstanceRotateY = uAttr.create("outputInstanceRotateY", "outputInstanceRotateY", MFnUnitAttribute::kAngle);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceRotateY);
+    AssetNode::outputInstanceRotateZ = uAttr.create("outputInstanceRotateZ", "outputInstanceRotateZ", MFnUnitAttribute::kAngle);
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceRotateZ);
+    AssetNode::outputInstanceRotate = nAttr.create("outputInstanceRotate", "outputInstanceRotate", AssetNode::outputInstanceRotateX,
+            AssetNode::outputInstanceRotateY, AssetNode::outputInstanceRotateZ);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceRotate);
+
+    // scale
+    AssetNode::outputInstanceScaleX = nAttr.create("outputInstanceScaleX", "outputInstanceScaleX", MFnNumericData::kDouble, 1.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceScaleX);
+    AssetNode::outputInstanceScaleY = nAttr.create("outputInstanceScaleY", "outputInstanceScaleY", MFnNumericData::kDouble, 1.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceScaleY);
+    AssetNode::outputInstanceScaleZ = nAttr.create("outputInstanceScaleZ", "outputInstanceScaleZ", MFnNumericData::kDouble, 1.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceScaleZ);
+    AssetNode::outputInstanceScale = nAttr.create("outputInstanceScale", "outputInstanceScale", AssetNode::outputInstanceScaleX,
+            AssetNode::outputInstanceScaleY, AssetNode::outputInstanceScaleZ);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceScale);
+
+    // transform
+    AssetNode::outputInstanceTransform = cAttr.create("outputInstanceTransform", "outputInstanceTransform");
+    cAttr.addChild(AssetNode::outputInstanceTranslate);
+    cAttr.addChild(AssetNode::outputInstanceRotate);
+    cAttr.addChild(AssetNode::outputInstanceScale);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputInstanceTransform);
+
+    
     // instancers
     AssetNode::outputInstancers = cAttr.create("outputInstancers", "outputInstancers");
     cAttr.addChild(AssetNode::outputInstancerData);
     cAttr.addChild(AssetNode::outputInstancedObjectNames);
+    cAttr.addChild(AssetNode::outputHoudiniInstanceAttribute);
+    cAttr.addChild(AssetNode::outputHoudiniNameAttribute);
+    cAttr.addChild(AssetNode::outputInstanceTransform);
     cAttr.setStorable(false);
     cAttr.setWritable(false);
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputInstancers);
+
+
+
     //--------------------------------End instancer compound multi----------------------------------------------
 
     //----------------------------------  objects compound multi------------------------------------------------
@@ -524,6 +633,10 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::output);
     
+    AssetNode::useInstancerNode = nAttr.create("useInstancerNode", "useInstancerNode", MFnNumericData::kBoolean, false);
+    nAttr.setStorable(true);
+    nAttr.setWritable(true);
+
     // add the static attributes to the node
     addAttribute(AssetNode::assetPath);
     addAttribute(AssetNode::parmsModified);
@@ -531,6 +644,7 @@ AssetNode::initialize()
     addAttribute(AssetNode::assetType);
     addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
+    addAttribute(AssetNode::useInstancerNode);
 
     
     //most of the dependencies between attrs are set via the AssetNode::setDependentsDirty() call

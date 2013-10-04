@@ -97,9 +97,10 @@ AssetSyncAttribute::removeAllParameterAttributes()
     for( int ii = 0; ii < numAttrsToRemove; ii++ )
     {
 		MObject attr = attrsToRemove[ ii ];
-		//myDGModifier.removeAttribute( myAssetNodeObj, attr );	
-		fnNode.removeAttribute( attr );
+		myDGModifier.removeAttribute( myAssetNodeObj, attr );	
+		
     }
+    myDGModifier.doIt();
 }
 
 MObject

@@ -78,17 +78,16 @@ AssetSyncOutputObject::createFluidShape()
 {
     MStatus status;
 
-    // Look for density.
-    // Once we've found the first density, look again through everything
-    // for any volumes which share a transform with the first density, 
-    // and add them to the fluidShape.
     MPlug partsPlug = myOutputPlug.child(AssetNode::outputParts);
     int partCount = partsPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    // Find density
-    bool hasDensity = false;
-    MPlug densityVolume;
+    // Look for specific volume names. Once we've found the first reference
+    // volume, look again through everything for any volumes which share a
+    // transform with the first reference volume, and add them to the
+    // fluidShape.
+    bool hasFluid = false;
+    MPlug referenceVolume;
     for (int i=0; i<partCount; i++)
     {
 	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
@@ -97,21 +96,23 @@ AssetSyncOutputObject::createFluidShape()
 
 	MString name = outputVolumeName.asString();
 
-	if (name == "density")
+	if (name == "density"
+		|| name == "temperature"
+		|| name == "fuel")
 	{
-	    hasDensity = true;
-	    densityVolume = outputVolume;
+	    hasFluid = true;
+	    referenceVolume = outputVolume;
 	    break;
 	}
     }
 
-    if (!hasDensity)
+    if (!hasFluid)
 	return MStatus::kSuccess;
 
     MObject transform, fluid;
     createFluidShapeNode(transform, fluid);
 
-    MPlug densityTransform = densityVolume.child(AssetNode::outputPartVolumeTransform);
+    MPlug referenceTransform = referenceVolume.child(AssetNode::outputPartVolumeTransform);
 
     MFnDependencyNode partVolumeFn(fluid, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -120,6 +121,7 @@ AssetSyncOutputObject::createFluidShape()
 
     bool doneDensity = false;
     bool doneTemperature = false;
+    bool doneFuel = false;
     for (int i=0; i<partCount; i++)
     {
 	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
@@ -128,7 +130,7 @@ AssetSyncOutputObject::createFluidShape()
 
 	// If the transform of the volumes are different, we don't want
 	// to group them together.
-	if (outputVolumeTransform != densityTransform.attribute())
+	if (outputVolumeTransform != referenceTransform.attribute())
 	    continue;
 
 	MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);
@@ -137,11 +139,32 @@ AssetSyncOutputObject::createFluidShape()
 	{
 	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inDensity"));
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    status = myDagModifier.newPlugValueInt(
+		    partVolumeFn.findPlug("densityMethod"),
+		    2
+		    );
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
 	    doneDensity = true;
 	}
 	else if (name == "temperature" && !doneTemperature)
 	{
 	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inTemperature"));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    status = myDagModifier.newPlugValueInt(
+		    partVolumeFn.findPlug("temperatureMethod"),
+		    2
+		    );
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    doneTemperature = true;
+	}
+	else if (name == "fuel" && !doneFuel)
+	{
+	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inReaction"));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    status = myDagModifier.newPlugValueInt(
+		    partVolumeFn.findPlug("fuelMethod"),
+		    2
+		    );
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 	    doneTemperature = true;
 	}
@@ -152,7 +175,7 @@ AssetSyncOutputObject::createFluidShape()
 	MPlug srcPlug;
 	MPlug dstPlug;
 
-	MPlug densityTransform = densityVolume.child(AssetNode::outputPartVolumeTransform);
+	MPlug densityTransform = referenceVolume.child(AssetNode::outputPartVolumeTransform);
 
 	srcPlug = densityTransform.child(AssetNode::outputPartVolumeTranslate);
 	dstPlug = partFluidTransformFn.findPlug("translate");
@@ -169,7 +192,7 @@ AssetSyncOutputObject::createFluidShape()
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	srcPlug = densityVolume.child(AssetNode::outputPartVolumeRes);
+	srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
 	dstPlug = partVolumeFn.findPlug("resolution");
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);

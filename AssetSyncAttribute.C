@@ -12,9 +12,11 @@
 #include "util.h"
 
 AssetSyncAttribute::AssetSyncAttribute(
-	const MObject &assetNodeObj
+	const MObject &assetNodeObj,
+	bool removeExistingAttributes
 	) :
-    myAssetNodeObj(assetNodeObj)
+    myAssetNodeObj(assetNodeObj),
+    myRemoveExistingAttributes( removeExistingAttributes )
 {
     MFnDependencyNode assetNodeFn(myAssetNodeObj);
 
@@ -31,7 +33,8 @@ AssetSyncAttribute::doIt()
 {
     MStatus status;
 
-    removeAllParameterAttributes();
+    if( myRemoveExistingAttributes )
+	removeAllParameterAttributes();
     buildParms();
 
     return redoIt();
@@ -80,24 +83,24 @@ AssetSyncAttribute::removeAllParameterAttributes()
     MObjectArray attrsToRemove;
     for( int ii = 0; ii < numAttrs; ii++ )
     {
-		MObject attr = fnNode.attribute( ii );
-		MFnAttribute fnAttr( attr );
-		MString attrName = fnAttr.name();
-		if( attrName.length() < Util::getParmAttrPrefix().length() )
-			continue;
+	MObject attr = fnNode.attribute( ii );
+	MFnAttribute fnAttr( attr );
+	MString attrName = fnAttr.name();
+	if( attrName.length() < Util::getParmAttrPrefix().length() )
+		continue;
 
-		if( attrName.substring( 0, Util::getParmAttrPrefix().length() - 1 ) == Util::getParmAttrPrefix() )
-		{
-			if( fnAttr.parent() == MObject::kNullObj )
-				attrsToRemove.append( attr );
-		}
+	if( attrName.substring( 0, Util::getParmAttrPrefix().length() - 1 ) == Util::getParmAttrPrefix() )
+	{
+	    if( fnAttr.parent() == MObject::kNullObj )
+		attrsToRemove.append( attr );
+	}
     }
 
     int numAttrsToRemove = attrsToRemove.length();
     for( int ii = 0; ii < numAttrsToRemove; ii++ )
     {
-		MObject attr = attrsToRemove[ ii ];
-		myDGModifier.removeAttribute( myAssetNodeObj, attr );	
+	MObject attr = attrsToRemove[ ii ];
+	myDGModifier.removeAttribute( myAssetNodeObj, attr );	
 		
     }
     myDGModifier.doIt();

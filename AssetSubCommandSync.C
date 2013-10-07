@@ -12,9 +12,11 @@
 #include "AssetSyncOutputInstance.h"
 
 AssetSubCommandSync::AssetSubCommandSync(
-	const MObject &assetNodeObj
+	const MObject &assetNodeObj,
+	const bool removeExistingParmAttributes
 	) :
-    myAssetNodeObj(assetNodeObj)
+    myAssetNodeObj(assetNodeObj),
+    myRemoveExistingParmAttributes( removeExistingParmAttributes )
 {
 }
 
@@ -36,7 +38,7 @@ AssetSubCommandSync::doIt()
 
     // attributes
     {
-	AssetSync* syncOutput = new AssetSyncAttribute(myAssetNodeObj);
+	AssetSync* syncOutput = new AssetSyncAttribute( myAssetNodeObj, myRemoveExistingParmAttributes );
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);

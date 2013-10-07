@@ -187,11 +187,17 @@ InstancerObject::compute(MDataHandle& handle)
             scales.append(s);
             objectIndices.append(objIndex);
 
-	    MDataHandle intanceAttributeHandle = houdiniInstanceAttributeBuilder.addElement( j );
-	    intanceAttributeHandle.set( myHoudiniInstanceAttribute[ j ] );
+	    if( myHoudiniInstanceAttribute.length() == size )
+	    {
+		MDataHandle intanceAttributeHandle = houdiniInstanceAttributeBuilder.addElement( j );
+		intanceAttributeHandle.set( myHoudiniInstanceAttribute[ j ] );
+	    }
 
-	    MDataHandle nameAttributeHandle = houdiniNameAttributeBuilder.addElement( j );
-	    nameAttributeHandle.set( myHoudiniNameAttribute[ j ] );
+	    if( myHoudiniNameAttribute.length() == size )
+	    {
+		MDataHandle nameAttributeHandle = houdiniNameAttributeBuilder.addElement( j );
+		nameAttributeHandle.set( myHoudiniNameAttribute[ j ] );
+	    }
 
 	    MDataHandle transformHandle = instanceTransformBuilder.addElement( j );
 	    MDataHandle translateHandle = transformHandle.child( AssetNode::outputInstanceTranslate );

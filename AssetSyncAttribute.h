@@ -12,7 +12,8 @@ class AssetSyncAttribute : public AssetSync
 {
     public:
 	AssetSyncAttribute(
-		const MObject &assetNodeObj
+		const MObject &assetNodeObj,
+		bool removeExistingAttributes
 		);
 	virtual ~AssetSyncAttribute();
 
@@ -32,6 +33,7 @@ class AssetSyncAttribute : public AssetSync
 	void removeAllParameterAttributes();
     protected:
 	const MObject myAssetNodeObj;
+	const bool myRemoveExistingAttributes;
 
 	HAPI_NodeInfo myNodeInfo;
 

@@ -14,7 +14,8 @@ class AssetSubCommandSync : public AssetSubCommand
 {
     public:
 	AssetSubCommandSync(
-		const MObject &assetNodeObj
+		const MObject &assetNodeObj,
+		const bool removeExistingParmAttributes
 		);
 	virtual ~AssetSubCommandSync();
 
@@ -25,6 +26,7 @@ class AssetSubCommandSync : public AssetSubCommand
 
     protected:
 	MObject myAssetNodeObj;
+	const bool myRemoveExistingParmAttributes;
 	MDagModifier myDagModifier;
 
 	typedef std::vector<AssetSync*> AssetSyncs;

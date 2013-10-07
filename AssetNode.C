@@ -283,6 +283,8 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputInstanceScale);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
+    cAttr.setArray( true );
+    cAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputInstanceTransform);
 
     

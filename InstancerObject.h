@@ -36,6 +36,9 @@ class InstancerObject: public Object
         MStringArray myInstancedObjectNames;
         MStringArray myUniqueInstObjNames;
         MIntArray myInstancedObjectIndices;
+
+	MStringArray myHoudiniInstanceAttribute;
+	MStringArray myHoudiniNameAttribute;
 };
 
 #endif

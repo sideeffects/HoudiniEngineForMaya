@@ -56,6 +56,8 @@ InstancerObject::update()
         myInstancedObjectNames.clear();
         myInstancedObjectIndices.clear();
         myUniqueInstObjNames.clear();
+	myHoudiniInstanceAttribute.clear();
+	myHoudiniNameAttribute.clear();
 
         try
         {
@@ -71,7 +73,6 @@ InstancerObject::update()
         {
             cerr << e.what() << endl;
         }
-
         
 
         if ( myObjectInfo.objectToInstanceId >= 0)
@@ -81,13 +82,22 @@ InstancerObject::update()
         }
 
         // fill array of size pointCount of instanced names
-        MStringArray fullObjNames = getAttributeStringData(HAPI_ATTROWNER_POINT, "instance");
-        for (unsigned int i=0; i<fullObjNames.length(); i++)
+        MStringArray instanceAttrs = getAttributeStringData(HAPI_ATTROWNER_POINT, "instance");
+        for (unsigned int i=0; i<instanceAttrs.length(); i++)
         {
             MStringArray splitObjName;
-            fullObjNames[i].split('/', splitObjName);
+            instanceAttrs[i].split('/', splitObjName);
             myInstancedObjectNames.append(splitObjName[splitObjName.length()-1]);
+	    myHoudiniInstanceAttribute.append( instanceAttrs[i] );
+
         }
+
+	MStringArray nameAttrs = getAttributeStringData(HAPI_ATTROWNER_POINT, "name");
+	for (unsigned int ii = 0; ii < nameAttrs.length(); ii++)
+        {                        
+	    myHoudiniNameAttribute.append( nameAttrs[ ii ] );
+        }
+
 
         // get a list of unique instanced names, and compute the object indices that would
         // be passed to Maya instancer
@@ -141,6 +151,9 @@ InstancerObject::compute(MDataHandle& handle)
     {
         MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);
+	MArrayDataHandle houdiniInstanceAttributeHandle = handle.child(AssetNode::outputHoudiniInstanceAttribute);
+	MArrayDataHandle houdiniNameAttributeHandle = handle.child(AssetNode::outputHoudiniNameAttribute);
+	MArrayDataHandle instanceTransformHandle = handle.child(AssetNode::outputInstanceTransform);	
 
         //MDataHandle instHandle = data.outputValue(instancerDataPlug);
         MFnArrayAttrsData fnAAD;
@@ -153,6 +166,10 @@ InstancerObject::compute(MDataHandle& handle)
         int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
         HAPI_GetInstanceTransforms( myAssetId, myObjectInfo.id, 0, 5, instTransforms, 0, size );
+
+	MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
+	MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
+	MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
 
         for (int j=0; j<size; j++)
         {
@@ -169,7 +186,50 @@ InstancerObject::compute(MDataHandle& handle)
             rotations.append(r);
             scales.append(s);
             objectIndices.append(objIndex);
+
+	    MDataHandle intanceAttributeHandle = houdiniInstanceAttributeBuilder.addElement( j );
+	    intanceAttributeHandle.set( myHoudiniInstanceAttribute[ j ] );
+
+	    MDataHandle nameAttributeHandle = houdiniNameAttributeBuilder.addElement( j );
+	    nameAttributeHandle.set( myHoudiniNameAttribute[ j ] );
+
+	    MDataHandle transformHandle = instanceTransformBuilder.addElement( j );
+	    MDataHandle translateHandle = transformHandle.child( AssetNode::outputInstanceTranslate );
+	    MDataHandle rotateHandle = transformHandle.child( AssetNode::outputInstanceRotate );
+	    MDataHandle scaleHandle = transformHandle.child( AssetNode::outputInstanceScale );
+
+	    MDataHandle txHandle = translateHandle.child( AssetNode::outputInstanceTranslateX );
+	    txHandle.set( p.x );
+	    MDataHandle tyHandle = translateHandle.child( AssetNode::outputInstanceTranslateY );
+	    tyHandle.set( p.y );
+	    MDataHandle tzHandle = translateHandle.child( AssetNode::outputInstanceTranslateZ );
+	    tzHandle.set( p.z );
+	    
+	    MDataHandle rxHandle = rotateHandle.child( AssetNode::outputInstanceRotateX );
+	    rxHandle.set( r.x );
+	    MDataHandle ryHandle = rotateHandle.child( AssetNode::outputInstanceRotateY );
+	    ryHandle.set( r.y );
+	    MDataHandle rzHandle = rotateHandle.child( AssetNode::outputInstanceRotateZ );
+	    rzHandle.set( r.z );
+	    
+	    MDataHandle sxHandle = scaleHandle.child( AssetNode::outputInstanceScaleX );
+	    sxHandle.set( s.x );
+	    MDataHandle syHandle = scaleHandle.child( AssetNode::outputInstanceScaleY );
+	    syHandle.set( s.y );
+	    MDataHandle szHandle = scaleHandle.child( AssetNode::outputInstanceScaleZ );
+	    szHandle.set( s.z );
+	    
         }
+
+	houdiniInstanceAttributeHandle.set( houdiniInstanceAttributeBuilder );
+	houdiniInstanceAttributeHandle.setAllClean();
+
+	houdiniNameAttributeHandle.set( houdiniNameAttributeBuilder );
+	houdiniNameAttributeHandle.setAllClean();
+
+	instanceTransformHandle.set( instanceTransformBuilder );
+	instanceTransformHandle.setAllClean();
+
 
 	delete[] instTransforms;
 

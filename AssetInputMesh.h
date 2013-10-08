@@ -17,7 +17,7 @@ class AssetInputMesh : public AssetInput
 	virtual void setInputGeo(MDataHandle &dataHandle);
 
     protected:
-	const int myInputAssetId;
+	int myInputAssetId;
 	HAPI_GeoInputInfo myInputInfo;
 };
 

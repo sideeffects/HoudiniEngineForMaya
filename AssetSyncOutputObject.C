@@ -216,6 +216,8 @@ AssetSyncOutputObject::createFluidShape()
 
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
 }
 #endif
 

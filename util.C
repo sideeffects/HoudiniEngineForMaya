@@ -424,7 +424,7 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
     MString remaining = str;
     MString result;
 
-    while(true)
+    for(;;)
     {
 	int length = remaining.numChars();
 	int index = remaining.indexW(searchStr);

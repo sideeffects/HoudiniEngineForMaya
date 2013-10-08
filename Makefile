@@ -124,7 +124,23 @@ else ifeq ($(OS), Cygwin)
     CXXFLAGS += -nologo
     LDFLAGS += -nologo
 
-    CXXFLAGS += -W4
+    # -- ENABLED WARNINGS --
+    # 4101: unreferenced local variable
+    # 4996: Deprecation usage
+    WARNINGENABLE = -w14101 -w14996
+    # -- WARNINGS TREATED AS ERRORS --
+    # 4265: 'class' has virtual functions but destructor is not virtual 
+    # 4700: uninitialized local variable used
+    # 4715: not all control paths return a value
+    # 4717: recursive on all control paths, function will cause runtime stack overflow
+    # 4263: member func does not override any base class virt member func
+    # 4266: no override for virt member func from base 'type'; func is hidden
+    # 4390: empty controlled statement found; is this the intent?
+    # 4407: cast between different pointer to member representations, compiler may generate incorrect code
+    WARNINGERROR = -we4265 -we4700 -we4715 -we4717 -we4263 -we4266 -we4390 \
+		   -we4407
+
+    CXXFLAGS += -W4 $(WARNINGENABLE) $(WARNINGERROR)
     CXXFLAGS += -D_CRT_SECURE_NO_WARNINGS
 
     CPPFLAGS += -I$(MSVC_SDK_INCLUDE) -I$(WIN32_SDK_INCLUDE)

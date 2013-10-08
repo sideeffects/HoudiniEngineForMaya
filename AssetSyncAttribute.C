@@ -87,7 +87,7 @@ AssetSyncAttribute::removeAllParameterAttributes()
 	MFnAttribute fnAttr( attr );
 	MString attrName = fnAttr.name();
 	if( attrName.length() < Util::getParmAttrPrefix().length() )
-		continue;
+	    continue;
 
 	if( attrName.substring( 0, Util::getParmAttrPrefix().length() - 1 ) == Util::getParmAttrPrefix() )
 	{

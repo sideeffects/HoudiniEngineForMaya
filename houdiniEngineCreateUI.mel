@@ -18,25 +18,25 @@ global proc
 houdiniEngine_syncAssetOutputMenuClick()
 {
     string $currSels[] = `ls -sl`;
-	if( size($currSels) < 1 )
+    if( size($currSels) < 1 )
+    {
+	error("Please select a houdiniAsset node to sync the output.");
+    }
+    string $currSel = $currSels[0];
+    string $nodeTypeOfSel = `nodeType $currSel`;
+    if( $nodeTypeOfSel == "houdiniAsset" )
+    {
+	string $children[] = `listRelatives -c -pa $currSel`;
+	for( $ii = 0; $ii < size($children); $ii++ )
 	{
-		error("Please select a houdiniAsset node to sync the output.");
-	}
-	string $currSel = $currSels[0];
-	string $nodeTypeOfSel = `nodeType $currSel`;
-	if( $nodeTypeOfSel == "houdiniAsset" )
-	{
-		string $children[] = `listRelatives -c -pa $currSel`;
-		for( $ii = 0; $ii < size($children); $ii++ )
-		{
-			delete $children[$ii];
-		}		
-		houdiniAsset -sync $currSel;
-	}
-	else
-	{
-		error("Please select a houdiniAsset node to sync the output.");
-	}
+	    delete $children[$ii];
+	}		
+	houdiniAsset -sync $currSel;
+    }
+    else
+    {
+	error("Please select a houdiniAsset node to sync the output.");
+    }
 }
 
 global proc

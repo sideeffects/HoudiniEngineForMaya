@@ -128,30 +128,30 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kReloadAssetFlag))
     {
-		myOperationType = kOperationSubCommand;
+	myOperationType = kOperationSubCommand;
 
-		MString assetPath;
-		{
-			status = argData.getFlagArgument(kReloadAssetFlag, 0, assetPath);
-			if(!status)
-			{
-			displayError("Invalid argument for \"" kReloadAssetFlagLong "\".");
-			return status;
-			}
-		}
+	MString assetPath;
+	{
+	    status = argData.getFlagArgument(kReloadAssetFlag, 0, assetPath);
+	    if(!status)
+	    {
+		displayError("Invalid argument for \"" kReloadAssetFlagLong "\".");
+		return status;
+	    }
+	}
 
-		MSelectionList selList;
-		MObject assetNodeObj;
+	MSelectionList selList;
+	MObject assetNodeObj;
 
-		selList.add( assetPath );
-		selList.getDependNode(0, assetNodeObj);
-		CHECK_MSTATUS_AND_RETURN_IT(status);
+	selList.add( assetPath );
+	selList.getDependNode(0, assetNodeObj);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-		MFnDependencyNode assetNodeFn(assetNodeObj);
-		AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
-		assetNode->rebuildAsset();
+	MFnDependencyNode assetNodeFn(assetNodeObj);
+	AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+	assetNode->rebuildAsset();
 
-		myAssetSubCommand = new AssetSubCommandSync( assetNodeObj, true );
+	myAssetSubCommand = new AssetSubCommandSync( assetNodeObj, true );
 
     }    
 

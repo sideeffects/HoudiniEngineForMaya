@@ -87,7 +87,7 @@ AssetSubCommandSync::doIt()
     {
 	MPlug elemPlug = instancersPlug[i];
 
-        AssetSync* syncOutput = new AssetSyncOutputInstance(elemPlug, myAssetNodeObj);
+        AssetSync* syncOutput = new AssetSyncOutputInstance(elemPlug, i, myAssetNodeObj);
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);

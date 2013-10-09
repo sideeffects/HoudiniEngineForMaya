@@ -638,6 +638,7 @@ AssetNode::initialize()
     AssetNode::useInstancerNode = nAttr.create("useInstancerNode", "useInstancerNode", MFnNumericData::kBoolean, false);
     nAttr.setStorable(true);
     nAttr.setWritable(true);
+    //nAttr.setDefault( false );
 
     // add the static attributes to the node
     addAttribute(AssetNode::assetPath);
@@ -757,6 +758,62 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
 	for ( unsigned int j = 0; j < outputInstancedObjectNamesPlug.numElements(); ++j )
 	    affectedPlugs.append(outputInstancedObjectNamesPlug[ j ] );
+
+	
+	MPlug outputHoudiniInstancePlug = elemPlug.child( AssetNode::outputHoudiniInstanceAttribute );
+	for ( unsigned int jj = 0; jj < outputHoudiniInstancePlug.numElements(); ++jj )
+	    affectedPlugs.append( outputHoudiniInstancePlug[ jj ] );
+
+	MPlug outputHoudiniNamePlug = elemPlug.child( AssetNode::outputHoudiniNameAttribute );
+	for ( unsigned int jj = 0; jj < outputHoudiniNamePlug.numElements(); ++jj )
+	    affectedPlugs.append( outputHoudiniNamePlug[ jj ] );
+
+	MPlug outputInstanceTransformPlug = elemPlug.child( AssetNode::outputInstanceTransform );
+	for ( unsigned int jj = 0; jj < outputInstanceTransformPlug.numElements(); ++jj )
+	{
+	    MPlug transformPlug = outputInstanceTransformPlug[ jj ];
+
+	    //translation
+	    MPlug outputInstanceTranslatePlug = transformPlug.child( AssetNode::outputInstanceTranslate );
+	    affectedPlugs.append( outputInstanceTranslatePlug );
+
+	    MPlug outputInstanceTxPlug = outputInstanceTranslatePlug.child( AssetNode::outputInstanceTranslateX );
+	    affectedPlugs.append( outputInstanceTxPlug );
+
+	    MPlug outputInstanceTyPlug = outputInstanceTranslatePlug.child( AssetNode::outputInstanceTranslateY );
+	    affectedPlugs.append( outputInstanceTyPlug );
+
+	    MPlug outputInstanceTzPlug = outputInstanceTranslatePlug.child( AssetNode::outputInstanceTranslateZ );
+	    affectedPlugs.append( outputInstanceTzPlug );
+
+	    //rotation
+	    MPlug outputInstanceRotatePlug = transformPlug.child( AssetNode::outputInstanceRotate );
+	    affectedPlugs.append( outputInstanceRotatePlug );
+
+	    MPlug outputInstanceRxPlug = outputInstanceRotatePlug.child( AssetNode::outputInstanceRotateX );
+	    affectedPlugs.append( outputInstanceRxPlug );
+
+	    MPlug outputInstanceRyPlug = outputInstanceRotatePlug.child( AssetNode::outputInstanceRotateY );
+	    affectedPlugs.append( outputInstanceRyPlug );
+
+	    MPlug outputInstanceRzPlug = outputInstanceRotatePlug.child( AssetNode::outputInstanceRotateZ );
+	    affectedPlugs.append( outputInstanceRzPlug );
+
+	    //scale
+	    MPlug outputInstanceScalePlug = transformPlug.child( AssetNode::outputInstanceScale );
+	    affectedPlugs.append( outputInstanceScalePlug );
+
+	    MPlug outputInstanceSxPlug = outputInstanceScalePlug.child( AssetNode::outputInstanceScaleX );
+	    affectedPlugs.append( outputInstanceSxPlug );
+
+	    MPlug outputInstanceSyPlug = outputInstanceScalePlug.child( AssetNode::outputInstanceScaleY );
+	    affectedPlugs.append( outputInstanceSyPlug );
+
+	    MPlug outputInstanceSzPlug = outputInstanceScalePlug.child( AssetNode::outputInstanceScaleZ );
+	    affectedPlugs.append( outputInstanceSzPlug );
+
+	}
+
     }
 
     return MS::kSuccess;

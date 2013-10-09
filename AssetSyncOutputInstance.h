@@ -6,11 +6,14 @@
 
 #include "AssetSync.h"
 
+class MDagPath;
+
 class AssetSyncOutputInstance : public AssetSync
 {
     public:
 	AssetSyncOutputInstance(
 		const MPlug &outputPlug,
+		const int parentMultiIndex,
 		const MObject &assetNodeObj
 		);
 	virtual ~AssetSyncOutputInstance();
@@ -22,6 +25,19 @@ class AssetSyncOutputInstance : public AssetSync
     protected:
 	MStatus createOutput();
 
+	bool instanceObjects(	MObject searchRoot,
+				MObject instancerTransform,
+				 int pointIndex,
+				 const MString & objectToInstanceName,
+				 const MString & houdiniInstanceAttr,
+				 const MString & houdiniNameAttr );
+
+	void  instanceObject(	MDagPath & objToInstance,
+				MObject instancerTransform,
+				int pointIndex);
+
+	bool stringStartsWith( const MString & string, const MString & startsWith );
+
     protected:
 	//This is the output plug from the asset node that is connected
 	//to the instancer node (eg. assetNode.instancers[0])
@@ -29,6 +45,10 @@ class AssetSyncOutputInstance : public AssetSync
 
 	//the transform of the HAPI Asset
 	const MObject myAssetNodeObj;
+
+	//the multi-index of the parent attribute.  We'll need this 
+	//to effectively evaluate any of the multi-attributes
+	const int myParentMultiIndex;
 
 	MDagModifier myDagModifier;
 };

@@ -153,6 +153,41 @@ houdiniEngine_reloadAssetOutputMenuClick()
 }
 
 global proc
+houdiniEngine_createInstance( string $assetNode, 
+			      string $objToInstancePath,
+			      string $parent, 
+			      int $instancerIndex, 
+			      int $instanceIndex )
+{
+    
+    string $array[] = stringToStringArray($objToInstancePath, "|");
+    string $objToInstanceName = $array[ size($array) - 1 ];
+    string $newInstanceName = $objToInstanceName + "_instance" + $instanceIndex;
+    string $newInstance[] = `instance -name $newInstanceName $objToInstancePath`;
+
+    if( $parent != "" )
+    {
+	parent $newInstance[0] $parent;
+    }
+    
+
+    string $outputTransformPlug = $assetNode + ".outputInstancers[" + $instancerIndex + "]" + ".outputInstanceTransform[" + $instanceIndex + "]";    
+    string $outputTranslatePlug = $outputTransformPlug + ".outputInstanceTranslate";
+    string $newInstanceTranslatePlug = $newInstance[0] + ".t";
+    connectAttr $outputTranslatePlug $newInstanceTranslatePlug;
+
+    string $outputRotatePlug = $outputTransformPlug + ".outputInstanceRotate";
+    string $newInstanceRotatePlug = $newInstance[0] + ".r";
+    connectAttr $outputRotatePlug $newInstanceRotatePlug;
+
+    string $outputScalePlug = $outputTransformPlug + ".outputInstanceScale";
+    string $newInstanceScalePlug = $newInstance[0] + ".s";
+    connectAttr $outputScalePlug $newInstanceScalePlug;
+    
+
+}
+
+global proc
 houdiniEngineCreateUI()
 {
     //cleanup UI

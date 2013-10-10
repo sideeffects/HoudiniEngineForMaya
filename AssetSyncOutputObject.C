@@ -74,6 +74,30 @@ AssetSyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
     return status;
 }
 
+bool
+AssetSyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
+{
+    MPlug resAWidth = resA.child(AssetNode::outputPartVolumeResW);
+    MPlug resAHeight = resA.child(AssetNode::outputPartVolumeResH);
+    MPlug resADepth = resA.child(AssetNode::outputPartVolumeResD);
+
+    MPlug resBWidth = resB.child(AssetNode::outputPartVolumeResW);
+    MPlug resBHeight = resB.child(AssetNode::outputPartVolumeResH);
+    MPlug resBDepth = resB.child(AssetNode::outputPartVolumeResD);
+
+    int resAWidthValue, resAHeightValue, resADepthValue;
+    int resBWidthValue, resBHeightValue, resBDepthValue;
+    resAWidth.getValue(resAWidthValue);
+    resAHeight.getValue(resAHeightValue);
+    resADepth.getValue(resADepthValue);
+    resBWidth.getValue(resBWidthValue);
+    resBHeight.getValue(resBHeightValue);
+    resBDepth.getValue(resBDepthValue);
+    return resAWidthValue == resBWidthValue &&
+	   resAHeightValue == resBHeightValue &&
+	   resADepthValue == resBDepthValue;
+}
+
 
 MStatus
 AssetSyncOutputObject::createFluidShape()
@@ -114,7 +138,7 @@ AssetSyncOutputObject::createFluidShape()
     MObject transform, fluid;
     createFluidShapeNode(transform, fluid);
 
-    MPlug referenceTransform = referenceVolume.child(AssetNode::outputPartVolumeTransform);
+    MPlug referenceRes = referenceVolume.child(AssetNode::outputPartVolumeRes);
 
     MFnDependencyNode partVolumeFn(fluid, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -128,11 +152,11 @@ AssetSyncOutputObject::createFluidShape()
     {
 	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
 	MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
-	MPlug outputVolumeTransform = outputVolume.child(AssetNode::outputPartVolumeTransform);
+	MPlug outputVolumeRes= outputVolume.child(AssetNode::outputPartVolumeRes);
 
 	// If the transform of the volumes are different, we don't want
 	// to group them together.
-	if (outputVolumeTransform != referenceTransform.attribute())
+	if (!resolutionsEqual(outputVolumeRes, referenceRes))
 	    continue;
 
 	MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);

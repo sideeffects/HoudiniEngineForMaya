@@ -430,6 +430,36 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
 	}
     }
 
+    // rgbPP
+    {
+	MFloatArray Cd = getAttributeFloatData(HAPI_ATTROWNER_POINT, "Cd");
+	if(Cd.length()/3 == positions.length())
+	{
+	    MVectorArray rgbPPArray = arrayDataFn.vectorArray("rgbPP");
+	    rgbPPArray.setLength(Cd.length()/3);
+	    for ( unsigned int i = 0; i < rgbPPArray.length(); i++ )
+	    {
+		rgbPPArray[i].x = Cd[i * 3 + 0];
+		rgbPPArray[i].y = Cd[i * 3 + 1];
+		rgbPPArray[i].z = Cd[i * 3 + 2];
+	    }
+	}
+    }
+
+    // radiusPP
+    {
+	MFloatArray pscale = getAttributeFloatData(HAPI_ATTROWNER_POINT, "pscale");
+	if(pscale.length() == positions.length())
+	{
+	    MDoubleArray radiusPPArray = arrayDataFn.doubleArray("radiusPP");
+	    radiusPPArray.setLength(pscale.length());
+	    for ( unsigned int i = 0; i < radiusPPArray.length(); i++ )
+	    {
+		radiusPPArray[i] = pscale[i];
+	    }
+	}
+    }
+
     // age
     MDoubleArray ageArray = arrayDataFn.doubleArray("age");
     {

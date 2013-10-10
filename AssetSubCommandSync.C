@@ -13,10 +13,12 @@
 
 AssetSubCommandSync::AssetSubCommandSync(
 	const MObject &assetNodeObj,
-	const bool removeExistingParmAttributes
+	const bool removeExistingParmAttributes,
+	const bool syncOnlyVisible
 	) :
     myAssetNodeObj(assetNodeObj),
-    myRemoveExistingParmAttributes( removeExistingParmAttributes )
+    myRemoveExistingParmAttributes( removeExistingParmAttributes ),
+    mySyncOnlyVisible( syncOnlyVisible )
 {
 }
 
@@ -69,9 +71,9 @@ AssetSubCommandSync::doIt()
 	MPlug instancedPlug = elemPlug.child( AssetNode::outputIsInstanced );
 	bool instanced = instancedPlug.asBool();
 
-	if( visible || instanced )
+	if( !mySyncOnlyVisible || visible || instanced )
 	{
-	    AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj);
+	    AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj, visible );
 	    syncOutput->doIt();
 
 	    myAssetSyncs.push_back(syncOutput);

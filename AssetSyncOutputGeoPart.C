@@ -11,10 +11,12 @@
 
 AssetSyncOutputGeoPart::AssetSyncOutputGeoPart(
 	const MPlug &outputPlug,
-	const MObject &assetNodeObj
+	const MObject &assetNodeObj,
+	const bool visible
 	) :
     myOutputPlug(outputPlug),
-    myAssetNodeObj(assetNodeObj)
+    myAssetNodeObj(assetNodeObj),
+    myVisible( visible )
 {
 }
 
@@ -50,6 +52,18 @@ AssetSyncOutputGeoPart::doIt()
 	// rename objectTransform
 	status = myDagModifier.renameNode(objectTransform, objectName);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	if( !myVisible )
+	{
+	    myDagModifier.doIt();
+	    MFnDagNode fnDag( objectTransform );
+	    MDagPath transformPath;
+	    fnDag.getPath( transformPath );
+	    MString cmd = "hide ";
+	    cmd += fnDag.partialPathName();
+	    MGlobal::executeCommand( cmd );
+	}
+	    
     }
 
     MFnDagNode objectTransformFn(objectTransform);
@@ -179,6 +193,8 @@ AssetSyncOutputGeoPart::createOutputPart(
     }
 
     // doIt
+    // Need to do it here right away because otherwise the top level 
+    // transform won't be shared.
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 

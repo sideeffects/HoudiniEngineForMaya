@@ -20,6 +20,8 @@
 #define kResetSimulationFlagLong "-resetSimulation"
 #define kReloadAssetFlag "-rl"
 #define kReloadAssetFlagLong "-reloadAsset"
+#define kSyncOnlyVisibleFlag "-sov"
+#define kSyncOnlyVisibleFlagLong "-syncOnlyVisible"
 
 void* AssetCommand::creator()
 {
@@ -62,6 +64,12 @@ AssetCommand::newSyntax()
     CHECK_MSTATUS(syntax.addFlag(kReloadAssetFlag, 
 				 kReloadAssetFlagLong, 
 				 MSyntax::kString));
+
+
+    // -syncOnlyVisible will cause only those objects that are visible to be sync'ed
+    CHECK_MSTATUS(syntax.addFlag(kSyncOnlyVisibleFlag, 
+				 kSyncOnlyVisibleFlagLong, 
+				 MSyntax::kNoArg));
 
     return syntax;
 }
@@ -151,7 +159,7 @@ AssetCommand::parseArgs(const MArgList &args)
 	AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
 	assetNode->rebuildAsset();
 
-	myAssetSubCommand = new AssetSubCommandSync( assetNodeObj, true );
+	myAssetSubCommand = new AssetSubCommandSync( assetNodeObj, true, false );
 
     }    
 
@@ -174,8 +182,12 @@ AssetCommand::parseArgs(const MArgList &args)
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 	}
 
+	bool syncOnlyVisible = false;
+	if( argData.isFlagSet( kSyncOnlyVisibleFlag ) )
+	    syncOnlyVisible = true;
+
 	myAssetSubCommand = new AssetSubCommandSync(
-		assetNodeObj, false
+		assetNodeObj, false, syncOnlyVisible
 		);
     }
 

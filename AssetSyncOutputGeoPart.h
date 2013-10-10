@@ -11,7 +11,8 @@ class AssetSyncOutputGeoPart : public AssetSync
     public:
 	AssetSyncOutputGeoPart(
 		const MPlug &outputPlug,
-		const MObject &assetNodeObj
+		const MObject &assetNodeObj,
+		const bool visible
 		);
 	virtual ~AssetSyncOutputGeoPart();
 
@@ -41,6 +42,9 @@ class AssetSyncOutputGeoPart : public AssetSync
 
 	//the transform of the HAPI Asset
 	const MObject myAssetNodeObj;
+
+	//the visibility of the object in houdini
+	const bool myVisible;
 
 	MDagModifier myDagModifier;
 };

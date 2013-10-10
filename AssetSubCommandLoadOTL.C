@@ -68,7 +68,7 @@ AssetSubCommandLoadOTL::doIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    myAssetSubCommandSync = new AssetSubCommandSync( assetNode, false );
+    myAssetSubCommandSync = new AssetSubCommandSync( assetNode, false, false );
     myAssetSubCommandSync->doIt();
 
     return MStatus::kSuccess;

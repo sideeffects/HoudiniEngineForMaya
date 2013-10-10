@@ -15,7 +15,7 @@ houdiniEngine_loadOTLMenuClick()
 
 
 global proc
-houdiniEngine_syncAssetOutputMenuClick()
+houdiniEngine_syncAssetOutput(int $syncOnlyVisible)
 {
     string $currSels[] = `ls -sl`;
     if( size($currSels) < 1 )
@@ -30,8 +30,14 @@ houdiniEngine_syncAssetOutputMenuClick()
 	for( $ii = 0; $ii < size($children); $ii++ )
 	{
 	    delete $children[$ii];
-	}		
-	houdiniAsset -sync $currSel;
+	}
+	string $cmd = "houdiniAsset";
+	if( $syncOnlyVisible )
+	    $cmd = $cmd + " -syncOnlyVisible";
+			
+	$cmd = $cmd + " -sync ";
+	$cmd = $cmd + $currSel;
+	evalEcho($cmd);
     }
     else
     {
@@ -170,6 +176,7 @@ houdiniEngine_createInstance( string $assetNode,
 	parent $newInstance[0] $parent;
     }
     
+    showHidden $newInstance[0];
 
     string $outputTransformPlug = $assetNode + ".outputInstancers[" + $instancerIndex + "]" + ".outputInstanceTransform[" + $instanceIndex + "]";    
     string $outputTranslatePlug = $outputTransformPlug + ".outputInstanceTranslate";
@@ -199,12 +206,14 @@ houdiniEngineCreateUI()
     menu -label "Houdini Engine"
 	-tearOff true
 	houdiniEngineMenu;
-	menuItem -label "Load Houdini Asset..."
-	    -command "houdiniEngine_loadOTLMenuClick";
-	menuItem -label "Sync Asset Output"
-	    -command "houdiniEngine_syncAssetOutputMenuClick";
+    menuItem -label "Load Houdini Asset..."
+	-command "houdiniEngine_loadOTLMenuClick";
+    menuItem -label "Sync Asset Output"
+	-command "performAssetSync 0";
+    menuItem -optionBox true
+	-command "performAssetSync 1";
     menuItem -label "Reload Asset"
-	    -command "houdiniEngine_reloadAssetOutputMenuClick";
-	menuItem -label "HAPI Debug Window"
-	    -command "houdiniEngine_debugWindowMenuClick";
+	-command "houdiniEngine_reloadAssetOutputMenuClick";
+    menuItem -label "HAPI Debug Window"
+	-command "houdiniEngine_debugWindowMenuClick";
 }

@@ -12,9 +12,11 @@
 
 AssetSyncOutputObject::AssetSyncOutputObject(
 	const MPlug &outputPlug,
-	const MObject &assetNodeObj )
+	const MObject &assetNodeObj,
+	bool visible )
     : myOutputPlug(outputPlug),
-      myAssetNodeObj(assetNodeObj)
+      myAssetNodeObj(assetNodeObj),
+      myVisible( visible )
 {}
 
 AssetSyncOutputObject::~AssetSyncOutputObject()
@@ -43,7 +45,7 @@ AssetSyncOutputObject::doIt()
     CHECK_MSTATUS_AND_RETURN_IT(status);
     for (int i=0; i<partCount; i++)
     {
-	AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[i], myAssetNodeObj);
+	AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[i], myAssetNodeObj, myVisible );
 	sync->doIt();
 	myAssetSyncs.push_back(sync);
     }

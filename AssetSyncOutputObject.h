@@ -13,7 +13,8 @@ class AssetSyncOutputObject : public AssetSync
     public:
 	AssetSyncOutputObject(
 		const MPlug &outputPlug,
-		const MObject &assetNodeObj
+		const MObject &assetNodeObj,
+		const bool visible
 		);
 	virtual ~AssetSyncOutputObject();
 
@@ -28,6 +29,7 @@ class AssetSyncOutputObject : public AssetSync
 
 	const MPlug myOutputPlug;
 	const MObject myAssetNodeObj;
+	const bool myVisible;
 
 	MDagModifier myDagModifier;
 

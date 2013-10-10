@@ -191,7 +191,8 @@ CXXFILES = \
 MELFILES = AEhoudiniAssetTemplate.mel \
 	   hapiDebugWindow.mel \
 	   houdiniEngineCreateUI.mel \
-	   houdiniEngineDeleteUI.mel
+	   houdiniEngineDeleteUI.mel \
+	   performAssetSync.mel
 
 OBJ_DIR = .obj/maya$(MAYA_VERSION)
 

@@ -347,6 +347,12 @@ AssetSyncOutputGeoPart::createOutputParticle(
     status = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    // set particleRenderType to points
+    status = myDagModifier.newPlugValueInt(
+	    particleShapeFn.findPlug("particleRenderType"),
+	    3);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     // set playFromCache to true
     status = myDagModifier.newPlugValueBool(
 	    particleShapeFn.findPlug("playFromCache"),

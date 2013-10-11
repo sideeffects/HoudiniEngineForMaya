@@ -21,14 +21,17 @@ class AssetSyncAttribute : public AssetSync
 	virtual MStatus redoIt();
 
     protected:
-	void addAttrTo(MObject& child, MObject* parent);
-
         MObject createAttr(HAPI_ParmInfo& parm);
         MObject createStringAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
         MObject createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
 
         void buildParms();
-        int buildAttrTree(HAPI_ParmInfo* myParmInfos, MObject* parent, int current, int start);
+	int buildAttrTree(
+		HAPI_ParmInfo* myParmInfos,
+		const MObject &parent,
+		int current,
+		int start
+		);
 
     protected:
 	const MObject myAssetNodeObj;

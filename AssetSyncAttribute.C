@@ -58,19 +58,6 @@ AssetSyncAttribute::redoIt()
     return MStatus::kSuccess;
 }
 
-void
-AssetSyncAttribute::addAttrTo(MObject& child, MObject* parent)
-{
-    if (NULL == parent)
-    {
-        myDGModifier.addAttribute(myAssetNodeObj, child);
-        return;
-    }
-
-    MFnCompoundAttribute cAttr(*parent);
-    cAttr.addChild(child);
-}
-
 MObject
 AssetSyncAttribute::createAttr(HAPI_ParmInfo& parm)
 {
@@ -256,8 +243,6 @@ AssetSyncAttribute::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MS
 void
 AssetSyncAttribute::buildParms()
 {
-
-    // PARMS
     MFnDependencyNode assetNodeFn(myAssetNodeObj);
     MObject houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
     if(!houdiniAssetParmObj.isNull())
@@ -273,15 +258,13 @@ AssetSyncAttribute::buildParms()
 	    );
 
     int parmCount = myNodeInfo.parmCount;
-    if (parmCount <= 0)
-        return;
     HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
     HAPI_GetParameters(myNodeInfo.id, parmInfos, 0, parmCount);
 
     int index = 0;
     while (index < parmCount)
     {
-        int consumed = buildAttrTree(parmInfos, &houdiniAssetParmObj, index, index+1);
+        int consumed = buildAttrTree(parmInfos, houdiniAssetParmObj, index, index+1);
         index += consumed;
     }
 
@@ -291,7 +274,12 @@ AssetSyncAttribute::buildParms()
 }
 
 int
-AssetSyncAttribute::buildAttrTree(HAPI_ParmInfo* parmInfos, MObject* parent, int current, int start)
+AssetSyncAttribute::buildAttrTree(
+	HAPI_ParmInfo* parmInfos,
+	const MObject &parent,
+	int current,
+	int start
+	)
 {
     HAPI_ParmInfo parm = parmInfos[current];
 
@@ -306,20 +294,22 @@ AssetSyncAttribute::buildAttrTree(HAPI_ParmInfo* parmInfos, MObject* parent, int
         return offset + 1;
     }
 
+    MFnCompoundAttribute cAttr(parent);
+
     if (parm.type == HAPI_PARMTYPE_FOLDER)
     {
         MObject result = createAttr(parm);
         int offset = 0;
         for (int i = start; i < start+parm.size; i++)
         {
-            int count = buildAttrTree(parmInfos, &result, start + offset, start + offset + 1);
+            int count = buildAttrTree(parmInfos, result, start + offset, start + offset + 1);
             offset += count;
         }
-        addAttrTo(result, parent);
+	cAttr.addChild(result);
         return offset;
     }
 
     MObject result = createAttr(parm);
-    addAttrTo(result, parent);
+    cAttr.addChild(result);
     return 1;
 }

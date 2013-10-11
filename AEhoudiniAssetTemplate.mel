@@ -314,8 +314,6 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
 {
     
     editorTemplate -beginScrollLayout;
-    editorTemplate -addExtraControls;
-    
 
     editorTemplate -addControl "assetPath";
 
@@ -346,12 +344,11 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
         editorTemplate -suppress $attr;
     }
 
+    AEtransformMain $nodeName;
+    AEtransformNoScroll $nodeName;
+
+    editorTemplate -addExtraControls;
+
     editorTemplate -endLayout;
-
-    editorTemplate -suppress "caching";
-    editorTemplate -suppress "nodeState";
-
-
-
 }
 

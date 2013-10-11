@@ -135,7 +135,7 @@ AssetSyncAttribute::createAttr(HAPI_ParmInfo& parm)
             gAttr.setReadable(false);
             gAttr.setWritable(false);
             gAttr.setConnectable(false);
-            gAttr.setNiceNameOverride(label);
+            gAttr.setNiceNameOverride("Separator");
             break;
         case HAPI_PARMTYPE_INT:
         case HAPI_PARMTYPE_FLOAT:

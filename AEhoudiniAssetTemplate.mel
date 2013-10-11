@@ -1,37 +1,39 @@
-
 proc buildAttrTree(string $nodeName, string $attr)
 {
-    if ($attr == "input")
-        return;
-
     string $fullAttrName = $nodeName + "." + $attr;
-    string $type = `getAttr -type $fullAttrName`;
-    string $children[] = `attributeQuery -n $nodeName -lc $attr`;
-    string $niceName = `attributeQuery -n $nodeName -nn $attr`;
+    string $type = `attributeQuery -node $nodeName -attributeType $attr`;
+    string $niceName = `attributeQuery -node $nodeName -niceName $attr`;
 
-    if ("TdataCompound" != $type)
+    // separator
+    if($type == "generic" && $niceName == "Separator")
     {
-		if ($type == "" )
-		{
-			editorTemplate -suppress $attr;
-		}
-        else if ("Separator" == $niceName)
-        {
-            editorTemplate -addSeparator;
-        } else
-        {
-            editorTemplate -addDynamicControl $attr;
-        }
+	separator;
+	return;
+    }
+
+    // simple attributes
+    if($type != "compound")
+    {
+	attrControlGrp -attribute $fullAttrName;
         return;
     }
 
-    editorTemplate -beginLayout $niceName -collapse true;
-    for ($i=0; $i<size($children); $i++)
+    // compound attributes
+    frameLayout
+	-collapsable true
+	-label $niceName;
+    columnLayout
+	-adjustableColumn true;
+
+    for($child in `attributeQuery
+	    -node $nodeName
+	    -listChildren $attr`)
     {
-        string $child = $children[$i];
         buildAttrTree($nodeName, $child);
     }
-    editorTemplate -endLayout;
+
+    setParent ..;
+    setParent ..;
 }
 
 proc string[] getValidAssetInputs(string $objects[])
@@ -310,9 +312,40 @@ global proc AEhoudiniAssetUpdateInput(string $inputLayout, string $inputAttribut
     textField -edit -text $connectedMesh $inputTextField;
 }
 
+global proc AEhoudiniAssetParmNew(string $houdiniAssetParmAttribute)
+{
+    columnLayout -adjustableColumn true "parmLayout";
+    setParent ..;
+
+    AEhoudiniAssetParmReplace $houdiniAssetParmAttribute;
+}
+
+global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
+{
+    string $parent = `setParent -q`;
+    string $parmLayoutFull = $parent + "|parmLayout";
+
+    if(`layout -q -numberOfChildren $parmLayoutFull`)
+    {
+	for($child in `layout -q -childArray $parmLayoutFull`)
+	{
+	    deleteUI ($parmLayoutFull + "|" + $child);
+	}
+    }
+
+    setParent $parmLayoutFull;
+
+    string $nodeName = plugNode($houdiniAssetParmAttribute);
+    string $attrName = plugAttr($houdiniAssetParmAttribute);
+
+    for($attr in `attributeQuery -node $nodeName -listChildren $attrName`)
+    {
+	buildAttrTree($nodeName, $attr);
+    }
+}
+
 global proc AEhoudiniAssetTemplate( string $nodeName )
 {
-    
     editorTemplate -beginScrollLayout;
 
     editorTemplate -addControl "assetPath";
@@ -329,20 +362,7 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
         editorTemplate -endLayout;
     }
 
-
-    // get list of attributes
-    string $attrs[] = `listAttr -ud $nodeName`;
-
-    for ($i=0; $i<size($attrs); $i++)
-    {
-        string $attr = $attrs[$i];
-        string $parents[] = `attributeQuery -n $nodeName -lp $attr`;
-        if ((0 == size($parents)) && $attr != "input")
-        {
-            buildAttrTree($nodeName, $attr);
-        }
-        editorTemplate -suppress $attr;
-    }
+    editorTemplate -callCustom "AEhoudiniAssetParmNew" "AEhoudiniAssetParmReplace" "houdiniAssetParm";
 
     editorTemplate -beginLayout "Maya Transform Attributes";
 

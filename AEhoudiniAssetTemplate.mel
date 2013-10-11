@@ -344,8 +344,12 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
         editorTemplate -suppress $attr;
     }
 
+    editorTemplate -beginLayout "Maya Transform Attributes";
+
     AEtransformMain $nodeName;
     AEtransformNoScroll $nodeName;
+
+    editorTemplate -endLayout;
 
     editorTemplate -addExtraControls;
 

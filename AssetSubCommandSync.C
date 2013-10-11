@@ -13,11 +13,9 @@
 
 AssetSubCommandSync::AssetSubCommandSync(
 	const MObject &assetNodeObj,
-	const bool removeExistingParmAttributes,
 	const bool syncOnlyVisible
 	) :
     myAssetNodeObj(assetNodeObj),
-    myRemoveExistingParmAttributes( removeExistingParmAttributes ),
     mySyncOnlyVisible( syncOnlyVisible )
 {
 }
@@ -40,7 +38,7 @@ AssetSubCommandSync::doIt()
 
     // attributes
     {
-	AssetSync* syncOutput = new AssetSyncAttribute( myAssetNodeObj, myRemoveExistingParmAttributes );
+	AssetSync* syncOutput = new AssetSyncAttribute(myAssetNodeObj);
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);

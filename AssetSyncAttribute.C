@@ -78,32 +78,13 @@ AssetSyncAttribute::addAttrTo(MObject& child, MObject* parent)
 void
 AssetSyncAttribute::removeAllParameterAttributes()
 {
-    MFnDependencyNode fnNode( myAssetNodeObj );
-    int numAttrs = fnNode.attributeCount();
-    MObjectArray attrsToRemove;
-    for( int ii = 0; ii < numAttrs; ii++ )
+    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+    MObject houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+    if(!houdiniAssetParmObj.isNull())
     {
-	MObject attr = fnNode.attribute( ii );
-	MFnAttribute fnAttr( attr );
-	MString attrName = fnAttr.name();
-	if( attrName.length() < Util::getParmAttrPrefix().length() )
-	    continue;
-
-	if( attrName.substring( 0, Util::getParmAttrPrefix().length() - 1 ) == Util::getParmAttrPrefix() )
-	{
-	    if( fnAttr.parent() == MObject::kNullObj )
-		attrsToRemove.append( attr );
-	}
+	myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
+	myDGModifier.doIt();
     }
-
-    int numAttrsToRemove = attrsToRemove.length();
-    for( int ii = 0; ii < numAttrsToRemove; ii++ )
-    {
-	MObject attr = attrsToRemove[ ii ];
-	myDGModifier.removeAttribute( myAssetNodeObj, attr );	
-		
-    }
-    myDGModifier.doIt();
 }
 
 MObject
@@ -294,7 +275,10 @@ AssetSyncAttribute::buildParms()
 
     // PARMS
     MFnCompoundAttribute cAttr;
-    MObject houdiniAssetParmObj = cAttr.create("houdiniAssetParm", "houdiniAssetParm");
+    MObject houdiniAssetParmObj = cAttr.create(
+	    Util::getParmAttrPrefix(),
+	    Util::getParmAttrPrefix()
+	    );
 
     int parmCount = myNodeInfo.parmCount;
     if (parmCount <= 0)

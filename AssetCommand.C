@@ -159,7 +159,7 @@ AssetCommand::parseArgs(const MArgList &args)
 	AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
 	assetNode->rebuildAsset();
 
-	myAssetSubCommand = new AssetSubCommandSync( assetNodeObj, true, false );
+	myAssetSubCommand = new AssetSubCommandSync( assetNodeObj, false );
 
     }    
 
@@ -187,7 +187,7 @@ AssetCommand::parseArgs(const MArgList &args)
 	    syncOnlyVisible = true;
 
 	myAssetSubCommand = new AssetSubCommandSync(
-		assetNodeObj, false, syncOnlyVisible
+		assetNodeObj, syncOnlyVisible
 		);
     }
 

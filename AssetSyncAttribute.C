@@ -12,11 +12,9 @@
 #include "util.h"
 
 AssetSyncAttribute::AssetSyncAttribute(
-	const MObject &assetNodeObj,
-	bool removeExistingAttributes
+	const MObject &assetNodeObj
 	) :
-    myAssetNodeObj(assetNodeObj),
-    myRemoveExistingAttributes( removeExistingAttributes )
+    myAssetNodeObj(assetNodeObj)
 {
     MFnDependencyNode assetNodeFn(myAssetNodeObj);
 
@@ -33,8 +31,6 @@ AssetSyncAttribute::doIt()
 {
     MStatus status;
 
-    if( myRemoveExistingAttributes )
-	removeAllParameterAttributes();
     buildParms();
 
     return redoIt();
@@ -73,18 +69,6 @@ AssetSyncAttribute::addAttrTo(MObject& child, MObject* parent)
 
     MFnCompoundAttribute cAttr(*parent);
     cAttr.addChild(child);
-}
-
-void
-AssetSyncAttribute::removeAllParameterAttributes()
-{
-    MFnDependencyNode assetNodeFn(myAssetNodeObj);
-    MObject houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
-    if(!houdiniAssetParmObj.isNull())
-    {
-	myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
-	myDGModifier.doIt();
-    }
 }
 
 MObject
@@ -274,8 +258,16 @@ AssetSyncAttribute::buildParms()
 {
 
     // PARMS
+    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+    MObject houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+    if(!houdiniAssetParmObj.isNull())
+    {
+	myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
+	myDGModifier.doIt();
+    }
+
     MFnCompoundAttribute cAttr;
-    MObject houdiniAssetParmObj = cAttr.create(
+    houdiniAssetParmObj = cAttr.create(
 	    Util::getParmAttrPrefix(),
 	    Util::getParmAttrPrefix()
 	    );

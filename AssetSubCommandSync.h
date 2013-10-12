@@ -15,7 +15,6 @@ class AssetSubCommandSync : public AssetSubCommand
     public:
 	AssetSubCommandSync(
 		const MObject &assetNodeObj,
-		const bool removeExistingParmAttributes,
 		const bool syncOnlyVisible
 		);
 	virtual ~AssetSubCommandSync();
@@ -27,7 +26,6 @@ class AssetSubCommandSync : public AssetSubCommand
 
     protected:
 	MObject myAssetNodeObj;
-	const bool myRemoveExistingParmAttributes;
 	const bool mySyncOnlyVisible;
 	MDagModifier myDagModifier;
 

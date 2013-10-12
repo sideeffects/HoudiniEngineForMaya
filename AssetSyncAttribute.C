@@ -293,6 +293,9 @@ AssetSyncAttribute::buildParms()
 {
 
     // PARMS
+    MFnCompoundAttribute cAttr;
+    MObject houdiniAssetParmObj = cAttr.create("houdiniAssetParm", "houdiniAssetParm");
+
     int parmCount = myNodeInfo.parmCount;
     if (parmCount <= 0)
         return;
@@ -302,12 +305,13 @@ AssetSyncAttribute::buildParms()
     int index = 0;
     while (index < parmCount)
     {
-        int consumed = buildAttrTree(parmInfos, NULL, index, index+1);
+        int consumed = buildAttrTree(parmInfos, &houdiniAssetParmObj, index, index+1);
         index += consumed;
     }
 
     delete[] parmInfos;
 
+    myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
 }
 
 int

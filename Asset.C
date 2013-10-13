@@ -262,16 +262,10 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     if (objBuilderSizeCheck > myNumObjects)
     {
         for (int i=myNumObjects; i<objBuilderSizeCheck; i++)
-        {
-            try
-            {
-                stat = objectsBuilder.removeElement(i);
-                Util::checkMayaStatus(stat);
-            } catch (MayaError& e)
-            {
-                cerr << e.what() << endl;
-            }
-        }
+	{
+	    stat = objectsBuilder.removeElement(i);
+	    CHECK_MSTATUS(stat);
+	}
     }
     objectsHandle.set(objectsBuilder);
 

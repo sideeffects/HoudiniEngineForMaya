@@ -29,26 +29,6 @@ class HAPIError: public std::exception
         MString myMessage;
 };
 
-
-class MayaError: public std::exception
-{
-    public:
-        MayaError() throw();
-        MayaError( const MayaError & error ) throw();
-        MayaError( MStatus stat ) throw();
-
-        virtual	   ~MayaError() throw() {}
-
-        virtual const char* what() const throw();
-
-        virtual MStatus status();
-
-    protected:
-        mutable MString myBuffer;
-        MStatus myStat;
-};
-
-
 class Util {
     public:
         static MString getString(int handle);
@@ -64,15 +44,10 @@ class Util {
 
         // Throws an exception if an error occurred
         static void checkHAPIStatus(HAPI_Result stat);
-        static void checkMayaStatus(MStatus stat);
 	static void statusCheckLoop();
 	static void showProgressWindow(const MString & title, const MString & status, int progress);
 	static void updateProgressWindow(const MString & status, int progress);
 	static void hideProgressWindow();
-
-        // Prints the error message if an error occurred.
-        static void printHAPIStatus(HAPI_Result stat);
-        static void printMayaStatus(MStatus stat);
 
         static MObject findNodeByName(const MString &name);
 	static MObject findDagChild(const MFnDagNode &dag, const MString &name);

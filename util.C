@@ -41,37 +41,6 @@ HAPIError::what() const throw()
     return myBuffer.asChar();
 }
 
-
-//=============================================================================
-// MayaError
-//=============================================================================
-MayaError::MayaError() throw()
-    : exception()
-{}
-
-MayaError::MayaError( const MayaError & error ) throw()
-    : exception()
-    , myStat(error.myStat)
-{}
-
-MayaError::MayaError( MStatus stat ) throw()
-    : exception()
-    , myStat(stat)
-{}
-
-const char *
-MayaError::what() const throw()
-{
-    myBuffer = "******************** Maya Error ********************\n";
-    myBuffer += myStat.errorString();
-    myBuffer += "\n****************************************************";
-    return myBuffer.asChar();
-}
-
-MStatus
-MayaError::status() { return myStat; }
-
-
 //=============================================================================
 // Util
 //=============================================================================
@@ -310,46 +279,6 @@ Util::statusCheckLoop()
 
     if( showProgressWindow )
 	Util::hideProgressWindow();    
-}
-
-
-void
-Util::checkMayaStatus(MStatus stat)
-{
-    if (stat.error())
-    {
-        throw MayaError(stat);
-    }
-}
-
-
-void
-Util::printHAPIStatus(HAPI_Result stat)
-{
-    if (hasHAPICallFailed(stat))
-    {
-        int bufLen;
-        HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufLen);
-        char * buffer = new char[bufLen];
-        HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer);
-
-        MString str;
-        str += "******************** Maya Error ********************\n";
-        str += buffer;
-        str += "\n****************************************************";
-
-        cerr << str << endl;
-    }
-}
-
-
-void
-Util::printMayaStatus(MStatus stat)
-{
-    if (stat.error())
-    {
-        cerr << stat << endl;
-    }
 }
 
 MObject

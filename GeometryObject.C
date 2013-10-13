@@ -146,16 +146,10 @@ GeometryObject::computeParts(MDataHandle& obj, MArrayDataBuilder* builder)
     if (partBuilderSizeCheck > myGeoInfo.partCount)
     {
         for (int i = myGeoInfo.partCount; i< partBuilderSizeCheck; i++)
-        {
-            try
-            {
-                stat = builder->removeElement(i);
-                Util::checkMayaStatus(stat);
-            } catch (MayaError& e)
-            {
-                cerr << e.what() << endl;
-            }
-        }
+	{
+	    stat = builder->removeElement(i);
+	    CHECK_MSTATUS(stat);
+	}
     }
 
     return MS::kSuccess;

@@ -55,7 +55,7 @@ initializePlugin(MObject obj)
     }
 
     status = plugin.registerUI("houdiniEngineCreateUI", "houdiniEngineDeleteUI");
-    Util::printMayaStatus(status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerTransform(
 	    "houdiniAsset",
@@ -65,10 +65,10 @@ initializePlugin(MObject obj)
 	    MPxTransformationMatrix::creator,
 	    MPxTransformationMatrix::baseTransformationMatrixId
 	    );
-    Util::printMayaStatus(status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);
-    Util::printMayaStatus(status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return status;
 }
@@ -81,10 +81,10 @@ uninitializePlugin(MObject obj)
     MFnPlugin plugin(obj);
     
     status = plugin.deregisterNode(AssetNode::id);
-    Util::printMayaStatus(status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.deregisterCommand("houdiniAsset");
-    Util::printMayaStatus(status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return status;
 }

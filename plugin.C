@@ -32,6 +32,7 @@ initializeHAPI()
 	    dso_dir.asChar(), true, -1);
     if(hstat != HAPI_RESULT_SUCCESS)
     {
+	CHECK_HAPI(hstat);
 	return false;
     }
 

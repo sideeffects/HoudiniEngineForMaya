@@ -29,6 +29,22 @@ class HAPIError: public std::exception
         MString myMessage;
 };
 
+#define CHECK_HAPI(r) \
+{ \
+    HAPI_Result hapi_result = (r); \
+    if(hapi_result != HAPI_RESULT_SUCCESS) \
+    { \
+	std::cerr << "HAPI error in " __FILE__ " at line " << __LINE__ << std::endl; \
+	\
+        int bufferLength; \
+        HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufferLength); \
+        char * buffer = new char[bufferLength]; \
+        HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer); \
+	std::cerr << buffer << std::endl; \
+	delete [] buffer; \
+    } \
+}
+
 class Util {
     public:
         static MString getString(int handle);

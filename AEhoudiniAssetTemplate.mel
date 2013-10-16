@@ -25,9 +25,15 @@ proc buildAttrTree(string $nodeName, string $attr)
     columnLayout
 	-adjustableColumn true;
 
-    for($child in `attributeQuery
-	    -node $nodeName
-	    -listChildren $attr`)
+
+    // Using for-in loop with the attributeQuery result directly crashes Maya.
+    // This is most likely a MEL bug. Workaround it by first storing the result
+    // into a string array.
+    //for($child in `attributeQuery
+    //    -node $nodeName
+    //    -listChildren $attr`)
+    string $children[] = `attributeQuery -node $nodeName -listChildren $attr`;
+    for($child in $children)
     {
         buildAttrTree($nodeName, $child);
     }

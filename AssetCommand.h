@@ -13,7 +13,6 @@ class AssetCommand: public MPxCommand
     {
 	kOperationSubCommand,
 	kOperationSaveHip,
-	kOperationResetSimulation,
 	kOperationInvalid
     };
 

@@ -44,18 +44,16 @@ AssetSubCommandSync::doIt()
 	myAssetSyncs.push_back(syncOutput);
     }
 
-    MFnDependencyNode assetNodeFn(myAssetNodeObj, &status);
+    MFnDagNode assetNodeFn(myAssetNodeObj, &status);
 
     // Objects
     MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
     unsigned int objCount = objectsPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    
-    MFnDagNode fnDagNode( myAssetNodeObj );
-    for(unsigned int ii = 0; ii < fnDagNode.childCount(); ii++ )
+    for(unsigned int ii = 0; ii < assetNodeFn.childCount(); ii++ )
     {
-	MObject childNode = fnDagNode.child( ii );
+	MObject childNode = assetNodeFn.child( ii );
 	myDagModifier.deleteNode( childNode );
     }
 

@@ -25,6 +25,8 @@ class Asset {
         // Getters for infos
         HAPI_ObjectInfo getObjectInfo(int id);        
 
+	void resetSimulation();
+
         MStatus compute(const MPlug& plug, MDataBlock& data);
 
         MIntArray getParmIntValues(HAPI_ParmInfo& parm);

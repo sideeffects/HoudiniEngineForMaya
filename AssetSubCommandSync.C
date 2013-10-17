@@ -15,7 +15,7 @@ AssetSubCommandSync::AssetSubCommandSync(
 	const MObject &assetNodeObj,
 	const bool syncOnlyVisible
 	) :
-    myAssetNodeObj(assetNodeObj),
+    AssetSubCommandAsset(assetNodeObj),
     mySyncOnlyVisible( syncOnlyVisible )
 {
 }

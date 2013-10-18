@@ -111,6 +111,11 @@ Asset::findObjectById(int id)
 HAPI_ObjectInfo
 Asset::getObjectInfo(int id) { return myObjectInfos[id]; }
 
+void
+Asset::resetSimulation()
+{
+    HAPI_ResetSimulation(myAssetInfo.id);
+}
 
 void
 Asset::update()

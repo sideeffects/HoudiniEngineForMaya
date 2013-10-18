@@ -23,6 +23,22 @@
 #define kSyncOnlyVisibleFlag "-sov"
 #define kSyncOnlyVisibleFlagLong "-syncOnlyVisible"
 
+class AssetSubCommandResetSimulation : public AssetSubCommandAsset
+{
+    public:
+	AssetSubCommandResetSimulation(const MObject &assetNodeObj) :
+	    AssetSubCommandAsset(assetNodeObj)
+	{
+	}
+
+	virtual MStatus doIt()
+	{
+	    getAsset()->resetSimulation();
+
+	    return MStatus::kSuccess;
+	}
+};
+
 void* AssetCommand::creator()
 {
     return new AssetCommand();
@@ -50,11 +66,9 @@ AssetCommand::newSyntax()
 
     // -resetSimulation resets the simulation state for an asset.  This will clear
     // the DOPs cache for the asset.
-    // TODO: FIXME: this should be the asset name, not the id
-    // expected arguments: the asset id
     CHECK_MSTATUS(syntax.addFlag(kResetSimulationFlag, 
 				 kResetSimulationFlagLong, 
-				 MSyntax::kLong));
+				 MSyntax::kSelectionItem));
 
 
     // -reloadAsset will unload and immediate reload the asset.  If an otl file
@@ -205,16 +219,24 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kResetSimulationFlag))
     {
-	myOperationType = kOperationResetSimulation;
+	myOperationType = kOperationSubCommand;
 
-	//TODO: FIXME: this should be a string argument and not an asset id.  We should
-	//use the name of the asset node to lookup the proper asset id.
-	status = argData.getFlagArgument(kResetSimulationFlag, 0, myResetSimulationAssetId);
-	if(!status)
+	MObject assetNodeObj;
 	{
-	    displayError("Invalid argument for \"" kResetSimulationFlagLong "\".");
-	    return status;
+	    MSelectionList selection;
+
+	    status = argData.getFlagArgument(kResetSimulationFlag, 0, selection);
+	    if(!status)
+	    {
+		displayError("Invalid first argument for \"" kResetSimulationFlagLong "\".");
+		return status;
+	    }
+
+	    selection.getDependNode(0, assetNodeObj);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
 	}
+
+	myAssetSubCommand = new AssetSubCommandResetSimulation(assetNodeObj);
     }
 
     return MStatus::kSuccess;
@@ -250,12 +272,6 @@ MStatus AssetCommand::redoIt()
     {
 	HAPI_SaveHIPFile( myHIPFilePath.asChar() );
 	return MS::kSuccess;            
-    }
-
-    if ( myOperationType == kOperationResetSimulation )
-    {
-	HAPI_ResetSimulation( myResetSimulationAssetId );
-	return MS::kSuccess;
     }
 
     return MS::kFailure;

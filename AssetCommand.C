@@ -294,5 +294,5 @@ bool AssetCommand::isUndoable() const
 	return myAssetSubCommand->isUndoable();
     }
 
-    return true;
+    return false;
 }

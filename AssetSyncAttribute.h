@@ -30,7 +30,8 @@ class AssetSyncAttribute : public AssetSync
 		HAPI_ParmInfo* myParmInfos,
 		const MObject &parent,
 		int current,
-		int start
+		int start,
+		bool invisible = false
 		);
 
     protected:

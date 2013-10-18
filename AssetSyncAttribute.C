@@ -278,27 +278,57 @@ AssetSyncAttribute::buildAttrTree(
 	HAPI_ParmInfo* parmInfos,
 	const MObject &parent,
 	int current,
-	int start
+	int start,
+	bool invisible
 	)
 {
     HAPI_ParmInfo parm = parmInfos[current];
 
+    if(parm.invisible)
+    {
+	invisible = true;
+    }
+
+    // We can do this even if invisible, since this doesn't actually create any new
+    // attributes
     if (parm.type == HAPI_PARMTYPE_FOLDERLIST)
     {
         int offset = parm.size;
         for (int i = start; i < start+parm.size; i++)
         {
-            int count = buildAttrTree(parmInfos, parent, i, start + offset);
+            int count = buildAttrTree(parmInfos, parent, i, start + offset, invisible);
             offset += count;
         }
         return offset + 1;
+    }
+
+    // If invisible, we still need to traverse the parameters to figure out the
+    // offset.
+    if(invisible)
+    {
+	if (parm.type == HAPI_PARMTYPE_FOLDER)
+	{
+	    MObject result;
+	    int offset = 0;
+	    for (int i = start; i < start+parm.size; i++)
+	    {
+		int count = buildAttrTree(parmInfos, result, start + offset, start + offset + 1, true);
+		offset += count;
+	    }
+	    return offset;
+	}
+	else
+	{
+	    return 1;
+	}
     }
 
     MFnCompoundAttribute cAttr(parent);
 
     if (parm.type == HAPI_PARMTYPE_FOLDER)
     {
-        MObject result = createAttr(parm);
+        MObject result;
+	result = createAttr(parm);
         int offset = 0;
         for (int i = start; i < start+parm.size; i++)
         {

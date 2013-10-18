@@ -46,16 +46,29 @@ AssetSubCommandSync::doIt()
 
     MFnDagNode assetNodeFn(myAssetNodeObj, &status);
 
+    // Delete all children nodes. This way the sync will completely recreate
+    // the connections. Otherwise, output connections may not be connected to
+    // the right output node. For example, if parts were inserted in the
+    // middle.
+    {
+	for(unsigned int i = 0; i < assetNodeFn.childCount(); i++)
+	{
+	    MObject childNode = assetNodeFn.child(i);
+	    // Can't use deleteNode() here, because it could delete the parent
+	    // node as well.
+	    MFnDagNode childFnDag(childNode);
+	    myDagModifier.commandToExecute("delete " + childFnDag.fullPathName());
+	}
+
+	// Call doIt() here so that the delete commands are actually executed.
+	status = myDagModifier.doIt();
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
     // Objects
     MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
     unsigned int objCount = objectsPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    for(unsigned int ii = 0; ii < assetNodeFn.childCount(); ii++ )
-    {
-	MObject childNode = assetNodeFn.child( ii );
-	myDagModifier.deleteNode( childNode );
-    }
 
     for(unsigned int i=0; i < objCount; i++)
     {

@@ -1,5 +1,9 @@
 #include "AssetSubCommand.h"
 
+#include <maya/MFnDependencyNode.h>
+
+#include "AssetNode.h"
+
 AssetSubCommand::AssetSubCommand()
 {
 }
@@ -30,4 +34,27 @@ bool
 AssetSubCommand::isUndoable() const
 {
     return false;
+}
+
+AssetSubCommandAsset::AssetSubCommandAsset(const MObject &assetNodeObj) :
+    myAssetNodeObj(assetNodeObj)
+{
+}
+
+AssetNode*
+AssetSubCommandAsset::getAssetNode() const
+{
+    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+
+    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+
+    return assetNode;
+}
+
+Asset*
+AssetSubCommandAsset::getAsset() const
+{
+    Asset* asset = getAssetNode()->getAsset();
+
+    return asset;
 }

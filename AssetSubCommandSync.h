@@ -10,7 +10,7 @@
 
 class AssetSync;
 
-class AssetSubCommandSync : public AssetSubCommand
+class AssetSubCommandSync : public AssetSubCommandAsset
 {
     public:
 	AssetSubCommandSync(
@@ -25,7 +25,6 @@ class AssetSubCommandSync : public AssetSubCommand
 	virtual bool isUndoable() const;
 
     protected:
-	MObject myAssetNodeObj;
 	const bool mySyncOnlyVisible;
 	MDagModifier myDagModifier;
 

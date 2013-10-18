@@ -23,7 +23,7 @@ proc buildAttrTree(string $nodeName, string $attr)
 	-collapsable true
 	-label $niceName;
     columnLayout
-	-adjustableColumn true;
+	-adjustableColumn 1;
 
 
     // Using for-in loop with the attributeQuery result directly crashes Maya.
@@ -320,7 +320,7 @@ global proc AEhoudiniAssetUpdateInput(string $inputLayout, string $inputAttribut
 
 global proc AEhoudiniAssetParmNew(string $houdiniAssetParmAttribute)
 {
-    columnLayout -adjustableColumn true "parmLayout";
+    columnLayout -adjustableColumn 1 "parmLayout";
     setParent ..;
 
     AEhoudiniAssetParmReplace $houdiniAssetParmAttribute;

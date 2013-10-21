@@ -944,7 +944,7 @@ AssetNode::updateAttrValues(MDataBlock& data)
 
 // This function takes Maya attr values and pushes it into Houdini
 void
-AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
+AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data, bool dirtyOnly)
 {    
 
     MObject attr = getAttrFromParm(parm);
@@ -959,7 +959,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     //Only push into Houdini the minimum changes necessary.
     //Only push what has been dirtied.
-    if (!isPlugDirty(plug, parm))
+    if (dirtyOnly && !isPlugDirty(plug, parm))
     {
 	return;
     }
@@ -1032,7 +1032,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
 // This function takes Maya attr values and pushes it into Houdini
 void
-AssetNode::setParmValues(MDataBlock& data)
+AssetNode::setParmValues(MDataBlock& data, bool dirtyOnly)
 {
     int parmCount = myAsset->myNodeInfo.parmCount;
     if (parmCount <= 0)
@@ -1044,7 +1044,7 @@ AssetNode::setParmValues(MDataBlock& data)
     {
 
         HAPI_ParmInfo& parm = parmInfos[i];
-        setParmValue(parm, data);
+        setParmValue(parm, data, dirtyOnly);
     }
 
     delete[] parmInfos;
@@ -1209,6 +1209,10 @@ AssetNode::createAsset()
     myAsset = new Asset(myAssetPath, thisMObject());
 
     myAssetPathChanged = false;
+
+    // Restore all the asset's parameter values
+    MDataBlock dataBlock = forceCache();
+    setParmValues(dataBlock, false);
 }
 
 void

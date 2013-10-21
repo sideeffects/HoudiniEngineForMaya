@@ -102,7 +102,6 @@ class AssetNode: public MPxTransform
 
     public:
         static MObject assetPath;
-        static MObject parmsModified;
         static MObject inTime;
 
         static MObject assetType;

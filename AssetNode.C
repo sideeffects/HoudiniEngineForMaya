@@ -41,7 +41,6 @@
 
 MTypeId AssetNode::id(MayaTypeID_HoudiniAssetNode);
 MObject AssetNode::assetPath;
-MObject AssetNode::parmsModified;
 MObject AssetNode::inTime;
 
 MObject AssetNode::assetType;
@@ -158,16 +157,6 @@ AssetNode::initialize()
     AssetNode::assetPath = tAttr.create("assetPath", "assetPath", MFnData::kString);
     tAttr.setInternal(true);
     tAttr.setUsedAsFilename(true);
-
-    // parms modified
-    // This is initially false, and whenever a user touches a parm, this will get set to true
-    // and because it's a Maya attr, it will get saved.  When we load back the file, 
-    // if this attr is true, we know we are loading a previously modified asset as opposed
-    // to instantiating a new asset.
-    AssetNode::parmsModified = nAttr.create("parmsModified", "parmsModified", MFnNumericData::kBoolean, false);
-    nAttr.setStorable(true);
-    nAttr.setConnectable(false);
-    nAttr.setHidden(true);
 
     // time input
     // For time dpendence.
@@ -642,7 +631,6 @@ AssetNode::initialize()
 
     // add the static attributes to the node
     addAttribute(AssetNode::assetPath);
-    addAttribute(AssetNode::parmsModified);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::assetType);
     addAttribute(AssetNode::input);
@@ -933,12 +921,6 @@ AssetNode::updateAttrValues(MDataBlock& data)
         updateAttrValue(parm, data);
     }
 
-    // mark parms as modified, so that if scene is saved we know to
-    // use the maya attributes to set parm values in Houdini
-    MPlug p(thisMObject(), AssetNode::parmsModified);
-    MDataHandle h = data.outputValue(p);
-    h.set(true);
-
     delete[] parmInfos;
 }
 
@@ -1102,12 +1084,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	// make sure Asset is created
 	createAsset();
 
-	//check if the user has manipulated this node, if so, then push modified
-	//parms into Houdini
-	MPlug parmsModifiedPlug(thisMObject(), AssetNode::parmsModified);
-	MDataHandle parmsModifiedHandle = data.inputValue(parmsModifiedPlug);
-	if (parmsModifiedHandle.asBool())
-	    setParmValues(data);
+	//push parms into Houdini
+	setParmValues(data);
 
 	//updates Maya attrs from Houdini
 	updateAttrValues(data);

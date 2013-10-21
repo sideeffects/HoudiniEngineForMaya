@@ -84,6 +84,8 @@ class AssetNode: public MPxTransform
         void setParmValues(MDataBlock& data);
         void setParmValue(HAPI_ParmInfo& parm, MDataBlock& data);
 
+	bool isPlugDirty(const MPlug &plug, const HAPI_ParmInfo &parm);
+	void setPlugDirty(const MPlug &plug);
 
     private:
         Asset* myAsset;

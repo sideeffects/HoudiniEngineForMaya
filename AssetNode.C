@@ -689,7 +689,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         return MS::kSuccess;
 
     myResultsClean = false;
-    myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
+    setPlugDirty(plugBeingDirtied);
     
     affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
 
@@ -959,37 +959,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data)
 
     //Only push into Houdini the minimum changes necessary.
     //Only push what has been dirtied.
-    bool isDirty = false;
-    for(MObjectVector::iterator iter = myDirtyParmAttributes.begin();
-	    iter != myDirtyParmAttributes.end();
-	    iter++)
-    {
-	MPlug dirtyParmPlug(thisMObject(), *iter);
-
-	// If the dirtied plug matches the parm
-	if(plug == dirtyParmPlug)
-	{
-	    isDirty = true;
-	}
-
-	// If the parm is a tuple, then we also need to check the parent plug.
-	// We need to check if it's int, float, or string, because non-values
-	// like folders also use parm.size.
-	if((parm.isInt() || parm.isFloat() || parm.isString())
-		&& parm.size > 1
-		&& dirtyParmPlug.isChild() && dirtyParmPlug.parent() == plug)
-	{
-	    isDirty = true;
-	}
-
-	if(isDirty)
-	{
-	    myDirtyParmAttributes.erase(iter);
-	    break;
-	}
-    }
-    // if the parm didn't match any dirty attributes, then skip this parm
-    if (!isDirty)
+    if (!isPlugDirty(plug, parm))
     {
 	return;
     }
@@ -1080,6 +1050,48 @@ AssetNode::setParmValues(MDataBlock& data)
     delete[] parmInfos;
 }
 
+bool
+AssetNode::isPlugDirty(const MPlug &plug, const HAPI_ParmInfo &parm)
+{
+    bool isDirty = false;
+
+    for(MObjectVector::iterator iter = myDirtyParmAttributes.begin();
+	    iter != myDirtyParmAttributes.end();
+	    iter++)
+    {
+	MPlug dirtyParmPlug(thisMObject(), *iter);
+
+	// If the dirtied plug matches the parm
+	if(plug == dirtyParmPlug)
+	{
+	    isDirty = true;
+	}
+
+	// If the parm is a tuple, then we also need to check the parent plug.
+	// We need to check if it's int, float, or string, because non-values
+	// like folders also use parm.size.
+	if((parm.isInt() || parm.isFloat() || parm.isString())
+		&& parm.size > 1
+		&& dirtyParmPlug.isChild() && dirtyParmPlug.parent() == plug)
+	{
+	    isDirty = true;
+	}
+
+	if(isDirty)
+	{
+	    myDirtyParmAttributes.erase(iter);
+	    break;
+	}
+    }
+
+    return isDirty;
+}
+
+void
+AssetNode::setPlugDirty(const MPlug &plug)
+{
+    myDirtyParmAttributes.push_back(plug.attribute());
+}
 
 MStatus
 AssetNode::compute(const MPlug& plug, MDataBlock& data)

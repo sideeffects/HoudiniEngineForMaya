@@ -31,7 +31,26 @@ AssetSyncAttribute::doIt()
 {
     MStatus status;
 
+    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+
+    // save the existing parameter values
+    MStringArray setAttrCmds;
+    {
+	MPlug houdiniAssetParmPlug = assetNodeFn.findPlug(Util::getParmAttrPrefix(), &status);
+	if(status)
+	{
+	    houdiniAssetParmPlug.getSetAttrCmds(setAttrCmds, MPlug::kAll, true);
+	}
+    }
+
     buildParms();
+
+    // restore old parameter values
+    for(unsigned int i = 0; i< setAttrCmds.length(); i++)
+    {
+	status = myDGModifier.commandToExecute(setAttrCmds[i]);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
     return redoIt();
 }

@@ -1,5 +1,4 @@
 #include <maya/MFnNumericAttribute.h>
-#include <maya/MFnGenericAttribute.h>
 #include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnEnumAttribute.h>
@@ -146,7 +145,6 @@ MStatus
 AssetNode::initialize()
 {
     // maya plugin stuff
-    MFnGenericAttribute gAttr;
     MFnNumericAttribute nAttr;
     MFnTypedAttribute tAttr;
     MFnCompoundAttribute cAttr;

@@ -74,6 +74,18 @@ AssetSyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
     return status;
 }
 
+MStatus
+AssetSyncOutputObject::createVelocityConverter(MObject& velocityConverter)
+{
+    if (!velocityConverter.isNull())
+	return MS::kSuccess;
+
+    MStatus status;
+    velocityConverter = ((MDGModifier&)myDagModifier).createNode("fluidVelocityConvert", &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    return status;
+}
+
 bool
 AssetSyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
 {
@@ -124,7 +136,10 @@ AssetSyncOutputObject::createFluidShape()
 
 	if (name == "density"
 		|| name == "temperature"
-		|| name == "fuel")
+		|| name == "fuel"
+		|| name == "vel.x"
+		|| name == "vel.y"
+		|| name == "vel.z")
 	{
 	    hasFluid = true;
 	    referenceVolume = outputVolume;
@@ -145,9 +160,14 @@ AssetSyncOutputObject::createFluidShape()
     MFnDependencyNode partFluidTransformFn(transform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    MObject velConverter;
+
     bool doneDensity = false;
     bool doneTemperature = false;
     bool doneFuel = false;
+    bool doneVelX = false;
+    bool doneVelY = false;
+    bool doneVelZ = false;
     for (int i=0; i<partCount; i++)
     {
 	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
@@ -192,7 +212,34 @@ AssetSyncOutputObject::createFluidShape()
 		    2
 		    );
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    doneTemperature = true;
+	    doneFuel = true;
+	}
+	else if (name == "vel.x" && !doneVelX)
+	{
+	    createVelocityConverter(velConverter);
+	    MFnDependencyNode velConverterFn(velConverter, &status);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridX"));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    doneVelX = true;
+	}
+	else if (name == "vel.y" && !doneVelY)
+	{
+	    createVelocityConverter(velConverter);
+	    MFnDependencyNode velConverterFn(velConverter, &status);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridY"));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    doneVelY = true;
+	}
+	else if (name == "vel.z" && !doneVelZ)
+	{
+	    createVelocityConverter(velConverter);
+	    MFnDependencyNode velConverterFn(velConverter, &status);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridZ"));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	    doneVelZ = true;
 	}
     }
 
@@ -223,7 +270,26 @@ AssetSyncOutputObject::createFluidShape()
 	status = myDagModifier.connect(srcPlug, dstPlug);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
+	// Velocity needs an additional step: since houdini may output
+	// individual grids for each component, we use a dependency node
+	// to interleave the components into one grid
+	if (!velConverter.isNull())
+	{
+	    MFnDependencyNode velConverterFn(velConverter, &status);
+
+	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
+	    dstPlug = velConverterFn.findPlug("resolution");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	    srcPlug = velConverterFn.findPlug("outGrid");
+	    dstPlug = partVolumeFn.findPlug("inVelocity");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+	}
+
 	// Connect the dimensions and resolution
+	srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
 	dstPlug = partVolumeFn.findPlug("dimensions");
 	// Connecting compound attribute to fluidShape.dimensions causes
 	// infinite recursion. Probably a Maya bug. Workaround it by connecting

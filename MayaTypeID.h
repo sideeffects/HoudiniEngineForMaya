@@ -35,6 +35,7 @@
 enum MayaTypeID
 {
     MayaTypeID_HoudiniAssetNode = 0x0011E240,
+    MayaTypeID_HoudiniFluidVelocityConvert = 0x0011E241,
 };
 
 #endif

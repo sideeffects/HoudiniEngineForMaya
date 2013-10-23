@@ -186,6 +186,7 @@ CXXFILES = \
 	   AssetSyncOutputObject.C \
 	   AssetSyncOutputGeoPart.C \
 	   AssetSyncOutputInstance.C \
+	   FluidVelocityConvert.C \
 	   plugin.C
 
 MELFILES = AEhoudiniAssetTemplate.mel \

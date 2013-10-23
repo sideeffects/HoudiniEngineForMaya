@@ -1,4 +1,7 @@
 #include "FluidVelocityConvert.h"
+
+#if MAYA_API_VERSION >= 201400
+
 #include "MayaTypeID.h"
 #include "util.h"
 
@@ -9,7 +12,6 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MObject.h>
 
-#if MAYA_API_VERSION >= 201400
 
 MTypeId FluidVelocityConvert::id = MayaTypeID_HoudiniFluidVelocityConvert;
 

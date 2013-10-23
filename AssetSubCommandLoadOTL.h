@@ -1,5 +1,5 @@
-#ifndef ASSETSUBCOMMANDLOADOTL_H
-#define ASSETSUBCOMMANDLOADOTL_H
+#ifndef __AssetSubCommandLoadOTL_h__
+#define __AssetSubCommandLoadOTL_h__
 
 #include "AssetSubCommand.h"
 

@@ -1,5 +1,5 @@
-#ifndef _AssetSyncOutputObject_h__
-#define _AssetSyncOutputObject_h__
+#ifndef __AssetSyncOutputObject_h__
+#define __AssetSyncOutputObject_h__
 
 #include <vector>
 

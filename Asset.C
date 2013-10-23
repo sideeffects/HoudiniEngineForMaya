@@ -297,6 +297,11 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     MPlug timePlug( myNode, AssetNode::inTime);
     MDataHandle timeHandle = data.inputValue(timePlug);
     MTime currentTime = timeHandle.asTime();
+    // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
+    // So we need to offset the time by 1. We cannot use -= because we can't
+    // modify the MTime returned by asTime. So we need to construct a new
+    // MTime.
+    currentTime = currentTime - MTime(1, MTime::uiUnit());
     float time = (float)currentTime.as(MTime::kSeconds);
     HAPI_SetTime(time);
 

@@ -4,6 +4,7 @@
 
 #include "AssetCommand.h"
 #include "AssetNode.h"
+#include "FluidVelocityConvert.h"
 #include "util.h"
 
 #include <cstdlib>
@@ -68,6 +69,15 @@ initializePlugin(MObject obj)
 	    );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+#if MAYA_API_VERSION >= 201400
+    status = plugin.registerNode(
+	    "fluidVelocityConvert",
+	    FluidVelocityConvert::id,
+	    FluidVelocityConvert::creator,
+	    FluidVelocityConvert::initialize
+	    );
+#endif
+
     status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -83,6 +93,11 @@ uninitializePlugin(MObject obj)
     
     status = plugin.deregisterNode(AssetNode::id);
     CHECK_MSTATUS_AND_RETURN_IT(status);
+
+#if MAYA_API_VERSION >= 201400
+    status = plugin.deregisterNode(FluidVelocityConvert::id);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+#endif
 
     status = plugin.deregisterCommand("houdiniAsset");
     CHECK_MSTATUS_AND_RETURN_IT(status);

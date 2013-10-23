@@ -26,6 +26,7 @@ class AssetSyncOutputObject : public AssetSync
 	MStatus createOutputObject();
 	MStatus createFluidShape();
 	MStatus createFluidShapeNode(MObject& transform, MObject& fluid);
+	MStatus createVelocityConverter(MObject& gridInterleaver);
 	bool resolutionsEqual(MPlug resA, MPlug resB);
 
 	const MPlug myOutputPlug;

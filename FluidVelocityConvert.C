@@ -219,6 +219,9 @@ FluidVelocityConvert::extrapolateX(const MFloatArray& vel,
 MStatus
 FluidVelocityConvert::compute(const MPlug& plug, MDataBlock& data)
 {
+    if (plug != MPlug(thisMObject(), outGrid))
+	return MS::kSuccess;
+
     MStatus status;
     // Extract our grids as float arrays
     MDataHandle gridXHandle = data.inputValue(inGridX, &status);

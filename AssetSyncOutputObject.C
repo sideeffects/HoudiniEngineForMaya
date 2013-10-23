@@ -81,7 +81,7 @@ AssetSyncOutputObject::createVelocityConverter(MObject& velocityConverter)
 	return MS::kSuccess;
 
     MStatus status;
-    velocityConverter = ((MDGModifier&)myDagModifier).createNode("fluidVelocityConvert", &status);
+    velocityConverter = ((MDGModifier&)myDagModifier).createNode("houdiniFluidVelocityConvert", &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
     return status;
 }

@@ -71,7 +71,7 @@ initializePlugin(MObject obj)
 
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
-	    "fluidVelocityConvert",
+	    "houdiniFluidVelocityConvert",
 	    FluidVelocityConvert::id,
 	    FluidVelocityConvert::creator,
 	    FluidVelocityConvert::initialize

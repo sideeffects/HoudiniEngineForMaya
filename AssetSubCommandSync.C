@@ -2,6 +2,7 @@
 
 #include <maya/MGlobal.h>
 #include <maya/MPlug.h>
+#include <maya/MSelectionList.h>
 
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnDagNode.h>
@@ -35,6 +36,10 @@ MStatus
 AssetSubCommandSync::doIt()
 {
     MStatus status;
+
+    // save selection
+    MSelectionList oldSelection;
+    MGlobal::getActiveSelectionList(oldSelection);
 
     // attributes
     {
@@ -103,6 +108,9 @@ AssetSubCommandSync::doIt()
 
 	myAssetSyncs.push_back(syncOutput);
     }
+
+    // restore old selection
+    MGlobal::setActiveSelectionList(oldSelection);
 
     return MStatus::kSuccess;
 }

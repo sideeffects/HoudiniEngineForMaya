@@ -1,7 +1,9 @@
 #include "AssetSubCommandLoadOTL.h"
 
 #include <maya/MFileObject.h>
+#include <maya/MGlobal.h>
 #include <maya/MPlug.h>
+#include <maya/MPxCommand.h>
 
 #include "AssetNode.h"
 #include "AssetSubCommandSync.h"
@@ -70,6 +72,14 @@ AssetSubCommandLoadOTL::doIt()
 
     myAssetSubCommandSync = new AssetSubCommandSync( assetNode, false );
     myAssetSubCommandSync->doIt();
+
+    MFnDependencyNode assetNodeFn(assetNode);
+
+    // select the node
+    MGlobal::select(assetNode);
+
+    // set result
+    MPxCommand::setResult(assetNodeFn.name());
 
     return MStatus::kSuccess;
 }

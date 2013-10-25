@@ -46,6 +46,7 @@ AssetSyncAttribute::doIt()
     buildParms();
 
     // restore old parameter values
+    status = myDGModifier.commandToExecute("select " + assetNodeFn.name());
     for(unsigned int i = 0; i< setAttrCmds.length(); i++)
     {
 	status = myDGModifier.commandToExecute(setAttrCmds[i]);

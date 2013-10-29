@@ -167,20 +167,25 @@ GeometryObject::setClean(MPlug& plug, MDataBlock& data)
     data.setClean(transformPlug.child(AssetNode::outputObjectScale));
     data.setClean(plug.child(AssetNode::outputObjectMetaData));
 
-    MPlug partsPlug = plug.child(AssetNode::outputParts);
-    for (int i=0; i<myGeoInfo.partCount; i++)
+    MPlug geosPlug = plug.child( AssetNode::outputGeos );
+    for( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
     {
-	MPlug partPlug = partsPlug[i];
-	data.setClean(partPlug.child(AssetNode::outputPartName));
-	data.setClean(partPlug.child(AssetNode::outputPartMesh));
+        MPlug geoPlug = geosPlug[ ii ];
+        MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
+        for (int jj=0; jj<myGeoInfo.partCount; jj++)
+        {
+	    MPlug partPlug = partsPlug[jj];
+	    data.setClean(partPlug.child(AssetNode::outputPartName));
+	    data.setClean(partPlug.child(AssetNode::outputPartMesh));
 
-	data.setClean(partPlug.child(AssetNode::outputPartMaterial));
-	data.setClean(partPlug.child(AssetNode::outputPartMaterialExists));
-	data.setClean(partPlug.child(AssetNode::outputPartTexturePath));
-	data.setClean(partPlug.child(AssetNode::outputPartAmbientColor));
-	data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor));
-	data.setClean(partPlug.child(AssetNode::outputPartSpecularColor));
-	data.setClean(partPlug.child(AssetNode::outputPartAlphaColor));
+	    data.setClean(partPlug.child(AssetNode::outputPartMaterial));
+	    data.setClean(partPlug.child(AssetNode::outputPartMaterialExists));
+	    data.setClean(partPlug.child(AssetNode::outputPartTexturePath));
+	    data.setClean(partPlug.child(AssetNode::outputPartAmbientColor));
+	    data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor));
+	    data.setClean(partPlug.child(AssetNode::outputPartSpecularColor));
+	    data.setClean(partPlug.child(AssetNode::outputPartAlphaColor));
+        }
     }
 
     return MS::kSuccess;

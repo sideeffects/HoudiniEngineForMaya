@@ -67,6 +67,16 @@ MObject AssetNode::outputObjectFluidFromAsset;
 #endif
 MObject AssetNode::outputObjectMetaData;
 
+MObject AssetNode::outputGeos;
+MObject AssetNode::outputGeoType;
+MObject AssetNode::outputGeoCurveType;
+MObject AssetNode::outputGeoCurveOrder;
+MObject AssetNode::outputGeoCurveCVX;
+MObject AssetNode::outputGeoCurveCVY;
+MObject AssetNode::outputGeoCurveCVZ;
+MObject AssetNode::outputGeoCurveCVs;
+
+
 MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
 MObject AssetNode::outputPartMesh;
@@ -568,14 +578,14 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolume);
-#endif
+#endif   
 
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
     cAttr.addChild(AssetNode::outputPartHasParticles);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
-    cAttr.addChild(AssetNode::outputPartParticle);
+    cAttr.addChild(AssetNode::outputPartParticle);    
 
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
@@ -587,16 +597,69 @@ AssetNode::initialize()
     cAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputParts);
 
+    // output geos
+    AssetNode::outputGeoType = tAttr.create("outputGeoType", "outputGeoType", MFnData::kString);
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputGeoType);
+
+    AssetNode::outputGeoCurveType = tAttr.create("outputGeoCurveType", "outputGeoCurveType", MFnData::kString);
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputGeoCurveType);
+
+    AssetNode::outputGeoCurveOrder = nAttr.create("outputGeoCurveOrder", "outputGeoCurveOrder", MFnNumericData::kInt, 0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputGeoCurveOrder);
+
+    AssetNode::outputGeoCurveCVX = nAttr.create("outputGeoCurveCVX", "outputGeoCurveCVX", MFnNumericData::kDouble, 0.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputGeoCurveCVX);
+
+    AssetNode::outputGeoCurveCVY = nAttr.create("outputGeoCurveCVY", "outputGeoCurveCVY", MFnNumericData::kDouble, 0.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputGeoCurveCVY);
+    
+    AssetNode::outputGeoCurveCVZ = nAttr.create("outputGeoCurveCVZ", "outputGeoCurveCVZ", MFnNumericData::kDouble, 0.0);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputGeoCurveCVZ);
+
+    AssetNode::outputGeoCurveCVs = nAttr.create("outputGeoCurveCVs", "outputGeoCurveCVs", AssetNode::outputGeoCurveCVX,
+            AssetNode::outputGeoCurveCVY, AssetNode::outputGeoCurveCVZ);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    nAttr.setArray( true );
+    nAttr.setIndexMatters( true );
+    nAttr.setUsesArrayDataBuilder( true );
+    computeAttributes.push_back(AssetNode::outputGeoCurveCVs);
+
+    AssetNode::outputGeos = cAttr.create("outputGeos", "outputGeos");
+    cAttr.addChild( AssetNode::outputGeoType );
+    cAttr.addChild( AssetNode::outputGeoCurveType );
+    cAttr.addChild( AssetNode::outputGeoCurveOrder );
+    cAttr.addChild( AssetNode::outputGeoCurveCVs );
+    cAttr.addChild( AssetNode::outputParts );
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    cAttr.setArray(true);
+    cAttr.setIndexMatters(true);
+    cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputGeos);
+
     AssetNode::outputVisibility = nAttr.create("outputVisibility", "outputVisibility", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     AssetNode::outputIsInstanced = nAttr.create("outputIsInstanced", "outputIsInstanced", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
-    nAttr.setWritable(false);    
+    nAttr.setWritable(false);     
 
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
-    cAttr.addChild(AssetNode::outputParts);
+    cAttr.addChild(AssetNode::outputGeos);
     cAttr.addChild(AssetNode::outputObjectTransform);
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputObjectFluidFromAsset);
@@ -688,48 +751,54 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectRotate));
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectScale));
 	affectedPlugs.append(objPlug.child(AssetNode::outputObjectMetaData));
-	MPlug outputPartsPlug = objPlug.child(AssetNode::outputParts);
-	for ( unsigned int j = 0; j < outputPartsPlug.numElements(); ++j )
+
+        MPlug outputGeosPlug = objPlug.child( AssetNode::outputGeos );
+        for ( unsigned int jj = 0; jj < outputGeosPlug.numElements(); ++jj )
 	{
-	    MPlug elemPlug = outputPartsPlug[ j ];
+            MPlug geoPlug = outputGeosPlug[ jj ];
 
-	    affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
+	    MPlug outputPartsPlug = geoPlug.child(AssetNode::outputParts);
+	    for ( unsigned int kk = 0; kk < outputPartsPlug.numElements(); ++kk )
+	    {
+	        MPlug elemPlug = outputPartsPlug[ kk ];
 
-	    // Mesh
-	    MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
-	    affectedPlugs.append(meshPlug);
+	        affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
 
-	    // General part attributes
-	    MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
-	    MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
+	        // Mesh
+	        MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
+	        affectedPlugs.append(meshPlug);
 
-	    affectedPlugs.append(outputPartNamePlug);
+	        // General part attributes
+	        MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
+	        MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
 
-	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialExists));
-	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartTexturePath));
-	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAmbientColor));
-	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
-	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
-	    affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
+	        affectedPlugs.append(outputPartNamePlug);
 
-	    // Particle
-	    MPlug outputPartParticle = elemPlug.child(AssetNode::outputPartParticle);
-	    affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticlePositions));
-	    affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleArrayData));
+	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialExists));
+	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartTexturePath));
+	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAmbientColor));
+	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
+	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
+	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
 
-#if MAYA_API_VERSION >= 201400
-	    // Volume
-	    MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
-	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
-	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
-	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
-	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
-	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTranslate));
-	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRotate));
-	    affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeScale));
-#endif
-	}
+	        // Particle
+	        MPlug outputPartParticle = elemPlug.child(AssetNode::outputPartParticle);
+	        affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticlePositions));
+	        affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleArrayData));
 
+    #if MAYA_API_VERSION >= 201400
+	        // Volume
+	        MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
+	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
+	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
+	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
+	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
+	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTranslate));
+	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRotate));
+	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeScale));
+    #endif
+	    }
+        }
     }
 
     MPlug outputInstancersPlug(thisMObject(), AssetNode::outputInstancers);

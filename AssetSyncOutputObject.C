@@ -40,14 +40,23 @@ AssetSyncOutputObject::doIt()
     MFnDependencyNode assetNodeFn(myAssetNodeObj, &status);
 
     // Parts
-    MPlug partsPlug = myOutputPlug.child(AssetNode::outputParts);
-    int partCount = partsPlug.evaluateNumElements(&status);
+    // TODO: FIXME: each geo should have its own transform
+    MPlug geosPlug = myOutputPlug.child( AssetNode::outputGeos );
+    int geoCount = geosPlug.evaluateNumElements( &status );
     CHECK_MSTATUS_AND_RETURN_IT(status);
-    for (int i=0; i<partCount; i++)
+    for( int ii = 0; ii < geoCount; ii++ )
     {
-	AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[i], myAssetNodeObj, myVisible );
-	sync->doIt();
-	myAssetSyncs.push_back(sync);
+        MPlug geoPlug = geosPlug[ ii ];
+
+        MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
+        int partCount = partsPlug.evaluateNumElements(&status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        for (int jj=0; jj<partCount; jj++)
+        {
+	    AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[jj], myAssetNodeObj, myVisible );
+	    sync->doIt();
+	    myAssetSyncs.push_back(sync);
+        }
     }
 
 #if MAYA_API_VERSION >= 201400
@@ -116,194 +125,202 @@ AssetSyncOutputObject::createFluidShape()
 {
     MStatus status;
 
-    MPlug partsPlug = myOutputPlug.child(AssetNode::outputParts);
-    int partCount = partsPlug.evaluateNumElements(&status);
+    MPlug geosPlug = myOutputPlug.child( AssetNode::outputGeos );
+    int geoCount = geosPlug.evaluateNumElements( &status );
     CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // Look for specific volume names. Once we've found the first reference
-    // volume, look again through everything for any volumes which share a
-    // transform with the first reference volume, and add them to the
-    // fluidShape.
-    bool hasFluid = false;
-    MPlug referenceVolume;
-    for (int i=0; i<partCount; i++)
+    for( int ii = 0; ii < geoCount; ii++ )
     {
-	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
-	MPlug outputPartName = partsPlug[i].child(AssetNode::outputPartName);
-	MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
+        MPlug geoPlug = geosPlug[ ii ];
 
-	MString name = outputVolumeName.asString();
+        MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
+        int partCount = partsPlug.evaluateNumElements(&status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	if (name == "density"
-		|| name == "temperature"
-		|| name == "fuel"
-		|| name == "vel.x"
-		|| name == "vel.y"
-		|| name == "vel.z")
-	{
-	    hasFluid = true;
-	    referenceVolume = outputVolume;
-	    break;
-	}
-    }
+        // Look for specific volume names. Once we've found the first reference
+        // volume, look again through everything for any volumes which share a
+        // transform with the first reference volume, and add them to the
+        // fluidShape.
+        bool hasFluid = false;
+        MPlug referenceVolume;
+        for (int jj=0; jj<partCount; jj++)
+        {
+	    MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
+	    MPlug outputPartName = partsPlug[jj].child(AssetNode::outputPartName);
+	    MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
 
-    if (!hasFluid)
-	return MStatus::kSuccess;
+	    MString name = outputVolumeName.asString();
 
-    MObject transform, fluid;
-    createFluidShapeNode(transform, fluid);
+	    if (name == "density"
+		    || name == "temperature"
+		    || name == "fuel"
+		    || name == "vel.x"
+		    || name == "vel.y"
+		    || name == "vel.z")
+	    {
+	        hasFluid = true;
+	        referenceVolume = outputVolume;
+	        break;
+	    }
+        }
 
-    MPlug referenceRes = referenceVolume.child(AssetNode::outputPartVolumeRes);
+        if (!hasFluid)
+	    return MStatus::kSuccess;
 
-    MFnDependencyNode partVolumeFn(fluid, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    MFnDependencyNode partFluidTransformFn(transform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+        MObject transform, fluid;
+        createFluidShapeNode(transform, fluid);
 
-    MObject velConverter;
+        MPlug referenceRes = referenceVolume.child(AssetNode::outputPartVolumeRes);
 
-    bool doneDensity = false;
-    bool doneTemperature = false;
-    bool doneFuel = false;
-    bool doneVelX = false;
-    bool doneVelY = false;
-    bool doneVelZ = false;
-    for (int i=0; i<partCount; i++)
-    {
-	MPlug outputVolume = partsPlug[i].child(AssetNode::outputPartVolume);
-	MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
-	MPlug outputVolumeRes= outputVolume.child(AssetNode::outputPartVolumeRes);
+        MFnDependencyNode partVolumeFn(fluid, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        MFnDependencyNode partFluidTransformFn(transform, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	// If the transform of the volumes are different, we don't want
-	// to group them together.
-	if (!resolutionsEqual(outputVolumeRes, referenceRes))
-	    continue;
+        MObject velConverter;
 
-	MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);
-	MString name = outputVolumeName.asString();
-	if (name == "density" && !doneDensity)
-	{
-	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inDensity"));
+        bool doneDensity = false;
+        bool doneTemperature = false;
+        bool doneFuel = false;
+        bool doneVelX = false;
+        bool doneVelY = false;
+        bool doneVelZ = false;
+        for (int jj=0; jj<partCount; jj++)
+        {
+	    MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
+	    MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
+	    MPlug outputVolumeRes= outputVolume.child(AssetNode::outputPartVolumeRes);
+
+	    // If the transform of the volumes are different, we don't want
+	    // to group them together.
+	    if (!resolutionsEqual(outputVolumeRes, referenceRes))
+	        continue;
+
+	    MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);
+	    MString name = outputVolumeName.asString();
+	    if (name == "density" && !doneDensity)
+	    {
+	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inDensity"));
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        status = myDagModifier.newPlugValueInt(
+		        partVolumeFn.findPlug("densityMethod"),
+		        2
+		        );
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        doneDensity = true;
+	    }
+	    else if (name == "temperature" && !doneTemperature)
+	    {
+	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inTemperature"));
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        status = myDagModifier.newPlugValueInt(
+		        partVolumeFn.findPlug("temperatureMethod"),
+		        2
+		        );
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        doneTemperature = true;
+	    }
+	    else if (name == "fuel" && !doneFuel)
+	    {
+	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inReaction"));
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        status = myDagModifier.newPlugValueInt(
+		        partVolumeFn.findPlug("fuelMethod"),
+		        2
+		        );
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        doneFuel = true;
+	    }
+	    else if (name == "vel.x" && !doneVelX)
+	    {
+	        createVelocityConverter(velConverter);
+	        MFnDependencyNode velConverterFn(velConverter, &status);
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridX"));
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        doneVelX = true;
+	    }
+	    else if (name == "vel.y" && !doneVelY)
+	    {
+	        createVelocityConverter(velConverter);
+	        MFnDependencyNode velConverterFn(velConverter, &status);
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridY"));
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        doneVelY = true;
+	    }
+	    else if (name == "vel.z" && !doneVelZ)
+	    {
+	        createVelocityConverter(velConverter);
+	        MFnDependencyNode velConverterFn(velConverter, &status);
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridZ"));
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	        doneVelZ = true;
+	    }
+        }
+
+        // Connect the transform, resolution, dimensions, and playFromCache
+        {
+	    MPlug srcPlug;
+	    MPlug dstPlug;
+
+	    MPlug densityTransform = referenceVolume.child(AssetNode::outputPartVolumeTransform);
+
+	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeTranslate);
+	    dstPlug = partFluidTransformFn.findPlug("translate");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    status = myDagModifier.newPlugValueInt(
-		    partVolumeFn.findPlug("densityMethod"),
-		    2
-		    );
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    doneDensity = true;
-	}
-	else if (name == "temperature" && !doneTemperature)
-	{
-	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inTemperature"));
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    status = myDagModifier.newPlugValueInt(
-		    partVolumeFn.findPlug("temperatureMethod"),
-		    2
-		    );
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    doneTemperature = true;
-	}
-	else if (name == "fuel" && !doneFuel)
-	{
-	    status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inReaction"));
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    status = myDagModifier.newPlugValueInt(
-		    partVolumeFn.findPlug("fuelMethod"),
-		    2
-		    );
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    doneFuel = true;
-	}
-	else if (name == "vel.x" && !doneVelX)
-	{
-	    createVelocityConverter(velConverter);
-	    MFnDependencyNode velConverterFn(velConverter, &status);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridX"));
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    doneVelX = true;
-	}
-	else if (name == "vel.y" && !doneVelY)
-	{
-	    createVelocityConverter(velConverter);
-	    MFnDependencyNode velConverterFn(velConverter, &status);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridY"));
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    doneVelY = true;
-	}
-	else if (name == "vel.z" && !doneVelZ)
-	{
-	    createVelocityConverter(velConverter);
-	    MFnDependencyNode velConverterFn(velConverter, &status);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridZ"));
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	    doneVelZ = true;
-	}
-    }
 
-    // Connect the transform, resolution, dimensions, and playFromCache
-    {
-	MPlug srcPlug;
-	MPlug dstPlug;
+	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeRotate);
+	    dstPlug = partFluidTransformFn.findPlug("rotate");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	MPlug densityTransform = referenceVolume.child(AssetNode::outputPartVolumeTransform);
-
-	srcPlug = densityTransform.child(AssetNode::outputPartVolumeTranslate);
-	dstPlug = partFluidTransformFn.findPlug("translate");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = densityTransform.child(AssetNode::outputPartVolumeRotate);
-	dstPlug = partFluidTransformFn.findPlug("rotate");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = densityTransform.child(AssetNode::outputPartVolumeScale);
-	dstPlug = partFluidTransformFn.findPlug("scale");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
-	dstPlug = partVolumeFn.findPlug("resolution");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	// Velocity needs an additional step: since houdini may output
-	// individual grids for each component, we use a dependency node
-	// to interleave the components into one grid
-	if (!velConverter.isNull())
-	{
-	    MFnDependencyNode velConverterFn(velConverter, &status);
+	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeScale);
+	    dstPlug = partFluidTransformFn.findPlug("scale");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
-	    dstPlug = velConverterFn.findPlug("resolution");
+	    dstPlug = partVolumeFn.findPlug("resolution");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    srcPlug = velConverterFn.findPlug("outGrid");
-	    dstPlug = partVolumeFn.findPlug("inVelocity");
+	    // Velocity needs an additional step: since houdini may output
+	    // individual grids for each component, we use a dependency node
+	    // to interleave the components into one grid
+	    if (!velConverter.isNull())
+	    {
+	        MFnDependencyNode velConverterFn(velConverter, &status);
+
+	        srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
+	        dstPlug = velConverterFn.findPlug("resolution");
+	        status = myDagModifier.connect(srcPlug, dstPlug);
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	        srcPlug = velConverterFn.findPlug("outGrid");
+	        dstPlug = partVolumeFn.findPlug("inVelocity");
+	        status = myDagModifier.connect(srcPlug, dstPlug);
+	        CHECK_MSTATUS_AND_RETURN_IT(status);
+	    }
+
+	    // Connect the dimensions and resolution
+	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
+	    dstPlug = partVolumeFn.findPlug("dimensions");
+	    // Connecting compound attribute to fluidShape.dimensions causes
+	    // infinite recursion. Probably a Maya bug. Workaround it by connecting
+	    // individual child attributes instead.
+	    //status = myDagModifier.connect(srcPlug, dstPlug);
+	    status = myDagModifier.connect(srcPlug.child(0), dstPlug.child(0));
+	    status = myDagModifier.connect(srcPlug.child(1), dstPlug.child(1));
+	    status = myDagModifier.connect(srcPlug.child(2), dstPlug.child(2));
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	    srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
+	    dstPlug = partVolumeFn.findPlug("playFromCache");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	}
-
-	// Connect the dimensions and resolution
-	srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
-	dstPlug = partVolumeFn.findPlug("dimensions");
-	// Connecting compound attribute to fluidShape.dimensions causes
-	// infinite recursion. Probably a Maya bug. Workaround it by connecting
-	// individual child attributes instead.
-	//status = myDagModifier.connect(srcPlug, dstPlug);
-	status = myDagModifier.connect(srcPlug.child(0), dstPlug.child(0));
-	status = myDagModifier.connect(srcPlug.child(1), dstPlug.child(1));
-	status = myDagModifier.connect(srcPlug.child(2), dstPlug.child(2));
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
-	dstPlug = partVolumeFn.findPlug("playFromCache");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
     }
 
     status = myDagModifier.doIt();

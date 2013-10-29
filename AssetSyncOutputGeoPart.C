@@ -149,7 +149,12 @@ AssetSyncOutputGeoPart::createOutputPart(
 
     // connect partTransform attributes
     {
-	MPlug transformPlug = myOutputPlug.array().parent().child(AssetNode::outputObjectTransform);
+        //We're at the level of the part, 1 level up is the geo, and another level up is the object,
+        //from which we can get the transform.
+        MPlug geoPlug = myOutputPlug.array().parent();
+        MPlug objPlug = geoPlug.array().parent();
+
+	MPlug transformPlug = objPlug.child(AssetNode::outputObjectTransform);        
 
 	MPlug srcPlug;
 	MPlug dstPlug;

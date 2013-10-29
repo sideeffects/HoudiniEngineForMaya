@@ -910,7 +910,7 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
     MPlug plug(thisMObject(), attr);
 
     int size = parm.size;
-    if(parm.isInt())
+    if( HAPI_ParmInfo_IsInt( &parm ) )
     {
         MIntArray values = myAsset->getParmIntValues(parm);
         if (size == 1)
@@ -930,7 +930,7 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
         return;
     }
 
-    if(parm.isFloat())
+    if( HAPI_ParmInfo_IsFloat( &parm ) )
     {
         MFloatArray values = myAsset->getParmFloatValues(parm);
         if (size == 1)
@@ -950,7 +950,7 @@ AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
         return;
     }
 
-    if(parm.isString())
+    if( HAPI_ParmInfo_IsString( &parm ) )
     {
         MStringArray values = myAsset->getParmStringValues(parm);
         if (size == 1)
@@ -1016,7 +1016,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data, bool dirtyOnly)
 	// this is the tuple size
     int size = parm.size;
 
-    if (parm.isInt())
+    if ( HAPI_ParmInfo_IsInt( &parm ) )
     {
         int * values = new int[size];
         if (size == 1)
@@ -1037,7 +1037,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data, bool dirtyOnly)
         delete[] values;
     }
 
-    if (parm.isFloat())
+    if ( HAPI_ParmInfo_IsFloat( &parm ) )
     {
         float * values = new float[size];
         if (size == 1)
@@ -1058,7 +1058,7 @@ AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data, bool dirtyOnly)
         delete[] values;
     }
 
-    if (parm.isString())
+    if ( HAPI_ParmInfo_IsString( &parm ) )
     {
         if (size == 1)
         {
@@ -1119,7 +1119,7 @@ AssetNode::isPlugDirty(const MPlug &plug, const HAPI_ParmInfo &parm)
 	// If the parm is a tuple, then we also need to check the parent plug.
 	// We need to check if it's int, float, or string, because non-values
 	// like folders also use parm.size.
-	if((parm.isInt() || parm.isFloat() || parm.isString())
+	if(( HAPI_ParmInfo_IsInt( &parm ) || HAPI_ParmInfo_IsFloat( &parm ) || HAPI_ParmInfo_IsString( &parm ) )
 		&& parm.size > 1
 		&& dirtyParmPlug.isChild() && dirtyParmPlug.parent() == plug)
 	{

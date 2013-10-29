@@ -33,7 +33,10 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
 }
 
 
-Object::Object() {}
+Object::Object()
+    : myObjectInfo( HAPI_ObjectInfo_Create() )
+    , myGeoInfo( HAPI_GeoInfo_Create() )
+{}
 
 
 Object::~Object() {}
@@ -43,7 +46,9 @@ Object::Object(int assetId, int objectId) :
     myIsInstanced(false),
     myAssetId(assetId),
     myObjectId(objectId),
-    myNeverBuilt(true)
+    myNeverBuilt(true),
+    myObjectInfo( HAPI_ObjectInfo_Create() ),
+    myGeoInfo( HAPI_GeoInfo_Create() )
 {
     myObjectControl = NULL;
 
@@ -103,7 +108,7 @@ Object::update()
     catch (HAPIError& e)
     {
         cerr << e.what() << endl;
-        myGeoInfo.clear();
+        HAPI_GeoInfo_Init( &myGeoInfo );
     }
     
 }

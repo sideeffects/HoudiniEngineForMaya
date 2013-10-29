@@ -17,7 +17,9 @@
 #include "util.h"
 
 Asset::Asset(MString otlFilePath, MObject node)
-    :myNode(node)
+    : myNode(node)
+    , myAssetInfo( HAPI_AssetInfo_Create() )
+    , myNodeInfo( HAPI_NodeInfo_Create() )
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 

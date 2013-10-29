@@ -14,7 +14,8 @@
 AssetSyncAttribute::AssetSyncAttribute(
 	const MObject &assetNodeObj
 	) :
-    myAssetNodeObj(assetNodeObj)
+    myAssetNodeObj(assetNodeObj),
+    myNodeInfo( HAPI_NodeInfo_Create() )
 {
     MFnDependencyNode assetNodeFn(myAssetNodeObj);
 

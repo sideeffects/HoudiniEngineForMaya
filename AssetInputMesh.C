@@ -8,9 +8,10 @@
 
 #include "util.h"
 
-AssetInputMesh::AssetInputMesh(int assetId, int inputIdx) :
-    AssetInput(assetId, inputIdx),
-    myInputAssetId(0)
+AssetInputMesh::AssetInputMesh(int assetId, int inputIdx)
+    : AssetInput(assetId, inputIdx)
+    , myInputAssetId(0)
+    , myInputInfo( HAPI_GeoInputInfo_Create() )
 {
     HAPI_CreateGeoInput(myAssetId, myInputIdx, &myInputInfo);
 }

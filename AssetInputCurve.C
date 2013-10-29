@@ -9,8 +9,10 @@
 
 #include "util.h"
 
-AssetInputCurve::AssetInputCurve(int assetId, int inputIdx) :
-    AssetInput(assetId, inputIdx)
+AssetInputCurve::AssetInputCurve(int assetId, int inputIdx)
+    : AssetInput( assetId, inputIdx )
+    , myCurveAssetInfo( HAPI_AssetInfo_Create() )
+    , myCurveNodeInfo( HAPI_NodeInfo_Create() )
 {
     int curveAssetId;
     HAPI_CreateCurve(&curveAssetId);

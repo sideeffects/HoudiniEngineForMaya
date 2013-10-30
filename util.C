@@ -383,8 +383,7 @@ Util::getAttributeStringData(int assetId,
 {
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
-    attr_info.owner = owner;
-    HAPI_GetAttributeInfo( assetId, objectId, geoId, partId, name.asChar(), &attr_info);
+    HAPI_GetAttributeInfo( assetId, objectId, geoId, partId, name.asChar(), owner, &attr_info);
 
     MStringArray ret;
     if (!attr_info.exists)

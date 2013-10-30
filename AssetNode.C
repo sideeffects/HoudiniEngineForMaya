@@ -24,20 +24,6 @@
 #include "MayaTypeID.h"
 #include "util.h"
 
-// MCheckStatus (Debugging tool)
-//
-#   define MCheckStatus(status,message)         \
-        if( MS::kSuccess != status ) {          \
-            MString error("Status failed: ");   \
-            error += status.errorString();      \
-            MGlobal::displayError(error);       \
-            MGlobal::displayError(message);       \
-        } else {                                \
-            MString str("Success: ");           \
-            str += message;                     \
-            MGlobal::displayInfo(str);          \
-        }
-
 MTypeId AssetNode::id(MayaTypeID_HoudiniAssetNode);
 MObject AssetNode::assetPath;
 MObject AssetNode::inTime;

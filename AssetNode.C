@@ -88,6 +88,7 @@ MObject AssetNode::outputPartVolumeRes;
 MObject AssetNode::outputPartVolumeResW;
 MObject AssetNode::outputPartVolumeResH;
 MObject AssetNode::outputPartVolumeResD;
+MObject AssetNode::outputPartVolumeResArray;
 MObject AssetNode::outputPartVolumeTransform;
 MObject AssetNode::outputPartVolumeTranslate;
 MObject AssetNode::outputPartVolumeTranslateX;
@@ -488,7 +489,10 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolumeRes);
-
+    AssetNode::outputPartVolumeResArray = tAttr.create("outputPartVolumeResArray", "outputPartVolumeResArray", MFnData::kFloatArray);
+    nAttr.setWritable(false);
+    nAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolumeResArray);
 
     // volume transform
     // translate
@@ -561,6 +565,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartVolumeGrid);
     cAttr.addChild(AssetNode::outputPartVolumeTransform);
     cAttr.addChild(AssetNode::outputPartVolumeRes);
+    cAttr.addChild(AssetNode::outputPartVolumeResArray);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolume);
@@ -772,17 +777,21 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	        affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticlePositions));
 	        affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleArrayData));
 
-    #if MAYA_API_VERSION >= 201400
+#if MAYA_API_VERSION >= 201400
 	        // Volume
-	        MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
-	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
-	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
-	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
-	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
-	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTranslate));
-	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRotate));
-	        affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeScale));
-    #endif
+		MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
+		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
+		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
+		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
+		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeResArray));
+		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
+
+		MPlug outputPartVolumeTransform = outputPartVolume.child(AssetNode::outputPartVolumeTransform);
+	        affectedPlugs.append(outputPartVolumeTransform);
+		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeTranslate));
+		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeRotate));
+		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeScale));
+#endif
 	    }
         }
     }

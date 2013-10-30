@@ -163,6 +163,7 @@ class AssetNode: public MPxTransform
 	static MObject outputPartVolumeResW;
 	static MObject outputPartVolumeResH;
 	static MObject outputPartVolumeResD;
+	static MObject outputPartVolumeResArray;
         static MObject outputPartVolumeTransform;
         static MObject outputPartVolumeTranslate;
         static MObject outputPartVolumeTranslateX;

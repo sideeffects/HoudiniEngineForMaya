@@ -46,9 +46,7 @@ Object::Object(int assetId, int objectId) :
     myIsInstanced(false),
     myAssetId(assetId),
     myObjectId(objectId),
-    myNeverBuilt(true),
-    myObjectInfo( HAPI_ObjectInfo_Create() ),
-    myGeoInfo( HAPI_GeoInfo_Create() )
+    myNeverBuilt(true)
 {
     myObjectControl = NULL;
 

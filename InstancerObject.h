@@ -9,7 +9,6 @@
 class InstancerObject: public Object
 {
     public:
-        InstancerObject();
         InstancerObject(int assetId, int objectId);
         virtual ~InstancerObject();
 

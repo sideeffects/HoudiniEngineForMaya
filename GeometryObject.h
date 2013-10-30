@@ -9,7 +9,6 @@
 class GeometryObject: public Object
 {
     public:
-        GeometryObject();
         GeometryObject(int assetId, int objectId);
         virtual ~GeometryObject();
 

@@ -204,6 +204,13 @@ GeometryPart::updateVolumeTransform(MDataHandle& handle)
     matrix.addTranslation(MVector(-0.5, -0.5, -0.5), MSpace::kPreTransform);
     matrix.addTranslation(MVector(xoffset, yoffset, zoffset), MSpace::kPreTransform);
 
+    const double scale3[3] = {
+	static_cast<double>(myVolumeInfo.xLength),
+	static_cast<double>(myVolumeInfo.yLength),
+	static_cast<double>(myVolumeInfo.zLength)
+    };
+    matrix.addScale(scale3, MSpace::kPreTransform);
+
     double final_scale[3];
     double final_rotate[3];
     MTransformationMatrix::RotationOrder order = MTransformationMatrix::kXYZ;
@@ -353,6 +360,14 @@ GeometryPart::compute(MDataHandle& handle)
 	    partVolumeResHandle.child(AssetNode::outputPartVolumeResW).set(myVolumeInfo.xLength);
 	    partVolumeResHandle.child(AssetNode::outputPartVolumeResH).set(myVolumeInfo.yLength);
 	    partVolumeResHandle.child(AssetNode::outputPartVolumeResD).set(myVolumeInfo.zLength);
+
+	    MFloatArray resolution;
+	    resolution.append(myVolumeInfo.xLength);
+	    resolution.append(myVolumeInfo.yLength);
+	    resolution.append(myVolumeInfo.zLength);
+	    MDataHandle partVolumeResArrayHandle = partVolumeHandle.child(AssetNode::outputPartVolumeResArray);
+	    MFnFloatArrayData resCreator;
+	    partVolumeResArrayHandle.set(resCreator.create(resolution));
 
 	    MDataHandle partVolumeNameHandle = partVolumeHandle.child(AssetNode::outputPartVolumeName);
 	    partVolumeNameHandle.set(Util::getString(myVolumeInfo.nameSH));

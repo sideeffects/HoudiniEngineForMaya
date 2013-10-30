@@ -10,6 +10,10 @@
 #include "AssetSyncOutputGeoPart.h"
 #include "AssetSyncOutputInstance.h"
 
+#if MAYA_API_VERSION >= 201400
+	#include <maya/MFnFloatArrayData.h>
+#endif
+
 AssetSyncOutputObject::AssetSyncOutputObject(
 	const MPlug &outputPlug,
 	const MObject &assetNodeObj,
@@ -259,7 +263,7 @@ AssetSyncOutputObject::createFluidShape()
 	    }
         }
 
-        // Connect the transform, resolution, dimensions, and playFromCache
+        // Connect the transform, resolution, playFromCache; set inOffset and dimensions
         {
 	    MPlug srcPlug;
 	    MPlug dstPlug;
@@ -268,6 +272,11 @@ AssetSyncOutputObject::createFluidShape()
 
 	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeTranslate);
 	    dstPlug = partFluidTransformFn.findPlug("translate");
+	    status = myDagModifier.connect(srcPlug, dstPlug);
+	    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeResArray);
+	    dstPlug = partVolumeFn.findPlug("inResolution");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -288,7 +297,7 @@ AssetSyncOutputObject::createFluidShape()
 
 	    // Velocity needs an additional step: since houdini may output
 	    // individual grids for each component, we use a dependency node
-	    // to interleave the components into one grid
+	    // to append and extrapolate the components
 	    if (!velConverter.isNull())
 	    {
 	        MFnDependencyNode velConverterFn(velConverter, &status);
@@ -304,24 +313,26 @@ AssetSyncOutputObject::createFluidShape()
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
 	    }
 
-	    // Connect the dimensions and resolution
-	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
-	    dstPlug = partVolumeFn.findPlug("dimensions");
-	    // Connecting compound attribute to fluidShape.dimensions causes
-	    // infinite recursion. Probably a Maya bug. Workaround it by connecting
-	    // individual child attributes instead.
-	    //status = myDagModifier.connect(srcPlug, dstPlug);
-	    status = myDagModifier.connect(srcPlug.child(0), dstPlug.child(0));
-	    status = myDagModifier.connect(srcPlug.child(1), dstPlug.child(1));
-	    status = myDagModifier.connect(srcPlug.child(2), dstPlug.child(2));
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-
 	    srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
 	    dstPlug = partVolumeFn.findPlug("playFromCache");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	    // inOffset must be initialized or bugs will be had; and the math is
+	    // simpler with dimensions all equal to 1.
+	    MFloatArray offset;
+	    offset.append(0);
+	    offset.append(0);
+	    offset.append(0);
+	    MFnFloatArrayData offsetCreator;
+	    MObject data = offsetCreator.create(offset);
+	    partVolumeFn.findPlug("inOffset").setValue(data);
+	    partVolumeFn.findPlug("dimensionsW").setValue(1);
+	    partVolumeFn.findPlug("dimensionsH").setValue(1);
+	    partVolumeFn.findPlug("dimensionsD").setValue(1);
         }
     }
+
 
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);

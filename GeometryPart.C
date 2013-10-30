@@ -19,15 +19,6 @@
 #include "GeometryPart.h"
 #include "util.h"
 
-GeometryPart::GeometryPart()
-    : myObjectInfo( HAPI_ObjectInfo_Create() )
-    , myGeoInfo( HAPI_GeoInfo_Create() )
-    , myPartInfo( HAPI_PartInfo_Create() )
-    , myVolumeInfo( HAPI_VolumeInfo_Create() )
-    , myMaterialInfo( HAPI_MaterialInfo_Create() )
-{
-}
-
 GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
         HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl) : 
     myObjectControl(objectControl),

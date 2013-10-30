@@ -11,11 +11,8 @@
 #include "GeometryPart.h"
 #include "util.h"
 
-GeometryObject::GeometryObject() {}
-
-
-GeometryObject::GeometryObject(int assetId, int objectId)
-    :Object(assetId, objectId)
+GeometryObject::GeometryObject(int assetId, int objectId) :
+    Object(assetId, objectId)
 {
 }
 

@@ -9,10 +9,6 @@
 #include "InstancerObject.h"
 #include "util.h"
 
-
-InstancerObject::InstancerObject() {}
-
-
 InstancerObject::InstancerObject(int assetId, int objectId)
     :Object(assetId, objectId)
 {

@@ -32,13 +32,6 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
     return obj;
 }
 
-
-Object::Object()
-    : myObjectInfo( HAPI_ObjectInfo_Create() )
-    , myGeoInfo( HAPI_GeoInfo_Create() )
-{}
-
-
 Object::~Object() {}
 
 

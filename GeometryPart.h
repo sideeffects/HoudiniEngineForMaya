@@ -4,7 +4,6 @@
 class GeometryPart
 {
     public:
-        GeometryPart();
         GeometryPart(int assetId, int objectId, int geoId, int partId,
                 HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl);
         virtual ~GeometryPart();

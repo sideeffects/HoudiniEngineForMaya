@@ -81,7 +81,13 @@ proc string[] getValidAssetInputs(string $objects[])
 	// check if there are any supported nodes in immediate children
 	if(!$found)
 	{
-	    string $tempObjects[] = `listRelatives -fullPath -shapes -type "mesh" -type "nurbsCurve" $object`;
+	    string $tempObjects[] = `listRelatives
+		-fullPath
+		-shapes
+		-noIntermediate
+		-type "mesh"
+		-type "nurbsCurve"
+		$object`;
 	    if(size($tempObjects))
 	    {
 		for($tempObject in $tempObjects)

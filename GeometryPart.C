@@ -37,10 +37,7 @@ GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
     myPartId(partId),
     myObjectInfo(objectInfo),
     myGeoInfo(geoInfo),
-    myNeverBuilt(true),
-    myPartInfo( HAPI_PartInfo_Create() ),
-    myVolumeInfo( HAPI_VolumeInfo_Create() ),
-    myMaterialInfo( HAPI_MaterialInfo_Create() )
+    myNeverBuilt(true)
 {
     // Do a full update
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
@@ -617,7 +614,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
         // get material info
         int matId = myPartInfo.materialId;
         HAPI_GetMaterial( myAssetId, matId, &myMaterialInfo );
-        HAPI_NodeInfo materialNodeInfo = HAPI_NodeInfo_Create();
+        HAPI_NodeInfo materialNodeInfo;
         HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
 
         std::vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);

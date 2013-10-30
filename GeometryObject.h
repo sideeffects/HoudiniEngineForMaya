@@ -4,6 +4,8 @@
 #include "GeometryPart.h"
 #include "Object.h"
 
+#include <vector>
+
 class GeometryObject: public Object
 {
     public:
@@ -42,7 +44,7 @@ class GeometryObject: public Object
 
     private:
         HAPI_Transform myTransformInfo;
-        GeometryPart* myParts;
+        std::vector<GeometryPart> myParts;
         //HAPI_MaterialInfo materialInfo;
 
         //MIntArray faceCounts;

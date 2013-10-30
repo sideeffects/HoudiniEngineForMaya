@@ -26,20 +26,12 @@ GeometryObject::init()
     // Do a full update
     Object::init();
 
-    int partCount = myGeoInfo.partCount;
-    myParts = new GeometryPart[partCount];
-    
-    for (int i=0; i<partCount; i++)
-    {
-        myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, myObjectInfo, myGeoInfo, myObjectControl );
-    }
-    
+    update();
 }
 
 
 GeometryObject::~GeometryObject()
 {
-    delete[] myParts;
 }
 
 
@@ -53,29 +45,19 @@ GeometryObject::type()
 void
 GeometryObject::update()
 {
-    int oldPartCount = myGeoInfo.partCount;
-    Object::update();
-    int partCount = myGeoInfo.partCount;
-
-    // if partCount changed, we clear out the array and make a new one.
-    if (oldPartCount != partCount)
+    myParts.reserve(myGeoInfo.partCount);
+    for(int i = 0; i < myGeoInfo.partCount; i++)
     {
-        delete[] myParts;
-        myParts = new GeometryPart[partCount];
-        for (int i=0; i<partCount; i++)
-        {
-	    //TODO: remove the hard coding of the geo id to 0
-            myParts[i] = GeometryPart( myAssetId, myObjectId, 0, i, myObjectInfo, myGeoInfo, myObjectControl);
-        }
+	myParts.push_back(GeometryPart(
+		myAssetId,
+		myObjectId,
+		0,
+		i,
+		myObjectInfo,
+		myGeoInfo,
+		myObjectControl
+		));
     }
-    else
-    {
-        for (int i=0; i<partCount; i++)
-        {
-            myParts[i].setGeoInfo( myGeoInfo );
-        }
-    }
-
 }
 
 

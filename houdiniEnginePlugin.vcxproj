@@ -50,6 +50,8 @@
     <ClCompile Include="AssetSyncOutputGeoPart.C" />
     <ClCompile Include="AssetSyncOutputInstance.C" />
     <ClCompile Include="AssetSyncOutputObject.C" />
+    <ClCompile Include="FluidVelocityConvert.C" />
+    <ClCompile Include="Geo.C" />
     <ClCompile Include="GeometryObject.C" />
     <ClCompile Include="GeometryPart.C" />
     <ClCompile Include="InstancerObject.C" />
@@ -73,6 +75,8 @@
     <ClInclude Include="AssetSyncOutputGeoPart.h" />
     <ClInclude Include="AssetSyncOutputInstance.h" />
     <ClInclude Include="AssetSyncOutputObject.h" />
+    <ClInclude Include="FluidVelocityConvert.h" />
+    <ClInclude Include="Geo.h" />
     <ClInclude Include="GeometryObject.h" />
     <ClInclude Include="GeometryPart.h" />
     <ClInclude Include="InstancerObject.h" />
@@ -156,6 +160,8 @@
       <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <Optimization>Disabled</Optimization>
       <CompileAs>CompileAsCpp</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

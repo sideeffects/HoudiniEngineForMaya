@@ -42,7 +42,7 @@ AssetInputMesh::setInputTransform(MDataHandle &dataHandle)
     }
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler( inputMat, 0, 0, &transformEuler );
+    HAPI_ConvertMatrixToEuler( inputMat, HAPI_TRS, HAPI_XYZ, &transformEuler );
     HAPI_SetObjectTransform( myInputAssetId, myInputInfo.objectId, transformEuler );
 }
 

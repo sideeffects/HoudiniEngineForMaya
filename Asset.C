@@ -233,18 +233,15 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
-    for (int i=0; i< myNumObjects; i++)
+    for (int ii = 0; ii < myNumObjects; ii++)
     {
-        Object * obj = myObjects[i];        
+        Object * obj = myObjects[ ii ];        
 
-	MDataHandle objectHandle = objectsBuilder.addElement(i);
+	MDataHandle objectHandle = objectsBuilder.addElement( ii );
 
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
-	    obj->compute( objectHandle );
-            GeometryObject * geoObj = dynamic_cast<GeometryObject *>(obj);
-
-            stat = geoObj->computeGeos( objectHandle );
+	    obj->compute( objectHandle );                        
 
             MDataHandle visibilityHandle = objectHandle.child( AssetNode::outputVisibility );
 	    visibilityHandle.setBool( obj->isVisible() );
@@ -261,9 +258,9 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
     int objBuilderSizeCheck = objectsBuilder.elementCount();
     if (objBuilderSizeCheck > myNumObjects)
     {
-        for (int i=myNumObjects; i<objBuilderSizeCheck; i++)
+        for (int ii = myNumObjects; ii < objBuilderSizeCheck; ii++)
 	{
-	    stat = objectsBuilder.removeElement(i);
+	    stat = objectsBuilder.removeElement( ii );
 	    CHECK_MSTATUS(stat);
 	}
     }

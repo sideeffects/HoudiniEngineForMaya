@@ -18,11 +18,7 @@ class GeometryObject: public Object
 
         //MObject createMesh();
 
-        virtual MStatus compute(MDataHandle& handle);
-
-        //*************** function until groups are fully supported **************
-        MStatus computeGeos( MDataHandle& objectHandle );
-        //************************************************************************
+        virtual MStatus compute(MDataHandle& handle);        
 
         virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 

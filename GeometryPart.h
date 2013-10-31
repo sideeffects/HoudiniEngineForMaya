@@ -1,9 +1,17 @@
 #ifndef __GeometryPart_h__
 #define __GeometryPart_h__
 
+#include <maya/MIntArray.h>
+#include <maya/MFloatPointArray.h>
+#include <maya/MFloatArray.h>
+#include <maya/MVectorArray.h>
+#include <maya/MString.h>
+
+class Asset;
+
 class GeometryPart
 {
-    public:
+    public:        
         GeometryPart(int assetId, int objectId, int geoId, int partId,
                 HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl);
         virtual ~GeometryPart();

@@ -1,18 +1,16 @@
-#include <maya/MFnMesh.h>
-#include <maya/MFnMeshData.h>
-#include <maya/MEulerRotation.h>
-#include <maya/MQuaternion.h>
-#include <maya/MFnArrayAttrsData.h>
+
 #include <maya/MFnIntArrayData.h>
 
 #include "Asset.h"
 #include "AssetNode.h"
 #include "GeometryObject.h"
-#include "GeometryPart.h"
 #include "util.h"
+#include "Geo.h"
 
-GeometryObject::GeometryObject(int assetId, int objectId) :
-    Object(assetId, objectId)
+
+
+GeometryObject::GeometryObject(int assetId, int objectId)
+    :Object(assetId, objectId)
 {
 }
 
@@ -23,12 +21,27 @@ GeometryObject::init()
     // Do a full update
     Object::init();
 
-    update();
+    int geoCount = myObjectInfo.geoCount;
+    myGeos.reserve( geoCount );
+    myGeos.clear();
+
+    for ( int ii = 0; ii < geoCount; ii++ )
+    {	
+        Geo * geo = new Geo( myAssetId, myObjectId, ii, this );
+        myGeos.push_back( geo );
+        geo->init();
+    }
+        
 }
 
 
 GeometryObject::~GeometryObject()
 {
+    for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
+    {
+        delete myGeos[ ii ];
+    }    
+
 }
 
 
@@ -36,25 +49,6 @@ Object::ObjectType
 GeometryObject::type()
 {
     return Object::OBJECT_TYPE_GEOMETRY;
-}
-
-
-void
-GeometryObject::update()
-{
-    myParts.reserve(myGeoInfo.partCount);
-    for(int i = 0; i < myGeoInfo.partCount; i++)
-    {
-	myParts.push_back(GeometryPart(
-		myAssetId,
-		myObjectId,
-		0,
-		i,
-		myObjectInfo,
-		myGeoInfo,
-		myObjectControl
-		));
-    }
 }
 
 
@@ -76,62 +70,49 @@ GeometryObject::compute(MDataHandle& handle)
 
 
 MStatus
-GeometryObject::computeParts(MDataHandle& obj, MArrayDataBuilder* builder)
+GeometryObject::computeGeos( MDataHandle& objectHandle )
 {
-    update();
-
-    MStatus stat;
-    // TODO: this may be temporary until HAPI supports actual groups
-    if ( myNeverBuilt || myObjectInfo.haveGeosChanged)
+    for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
     {
+        myGeos[ ii ]->update();
+    }    
 
-        // TODO: right now assume one geo
-        for (int i=0; i< myGeoInfo.partCount; i++)
+    if ( myNeverBuilt || myObjectInfo.haveGeosChanged )
+    {
+        MDataHandle geosHandle = objectHandle.child( AssetNode::outputGeos );
+        MArrayDataHandle geoArrayHandle( geosHandle );
+        MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
+        
+        MStatus stat = MS::kSuccess;
+        for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
         {
-            MDataHandle h = builder->addElement(i);
-            stat = myParts[i].compute(h);
+            MDataHandle geoHandle = geosBuilder.addElement( ii );
+            MDataHandle partsPlugTemp = geoHandle.child(AssetNode::outputParts);
+	    MArrayDataHandle partsHandle(partsPlugTemp);
+	    MArrayDataBuilder partsBuilder = partsHandle.builder();
 
-            if (MS::kSuccess == stat)
+            if( myGeos[ ii ]->computeParts( objectHandle, &partsBuilder ) != MS::kSuccess )
             {
-                if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
-                {
-                    MDataHandle t = obj.child(AssetNode::outputObjectTransform);
-                    updateTransform(t);
-                }
+                stat = MS::kFailure;
+                break;
             }
+
+            partsHandle.set(partsBuilder);
+        }
+
+        geoArrayHandle.set( geosBuilder );
+
+        if( stat == MS::kSuccess )
+        {
+            MDataHandle transformHandle = objectHandle.child( AssetNode::outputObjectTransform );
+            updateTransform( transformHandle );
         }
 
         myNeverBuilt = false;
     }
-    else
-    {
-	// TODO: !
-        for (int i=0; i< myGeoInfo.partCount; i++)
-        {
-            if ( myParts[i].hasMesh() )
-            {
-                MDataHandle h = builder->addElement(i);
-		stat = myParts[i].compute(h);
-                if ( myNeverBuilt || myObjectInfo.hasTransformChanged)
-                {
-                    MDataHandle t = obj.child(AssetNode::outputObjectTransform);
-                    updateTransform(t);
-                }
-            }
-        }
-    }
-
-    int partBuilderSizeCheck = builder->elementCount();
-    if (partBuilderSizeCheck > myGeoInfo.partCount)
-    {
-        for (int i = myGeoInfo.partCount; i< partBuilderSizeCheck; i++)
-	{
-	    stat = builder->removeElement(i);
-	    CHECK_MSTATUS(stat);
-	}
-    }
 
     return MS::kSuccess;
+
 }
 
 
@@ -150,21 +131,7 @@ GeometryObject::setClean(MPlug& plug, MDataBlock& data)
     for( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
     {
         MPlug geoPlug = geosPlug[ ii ];
-        MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
-        for (int jj=0; jj<myGeoInfo.partCount; jj++)
-        {
-	    MPlug partPlug = partsPlug[jj];
-	    data.setClean(partPlug.child(AssetNode::outputPartName));
-	    data.setClean(partPlug.child(AssetNode::outputPartMesh));
-
-	    data.setClean(partPlug.child(AssetNode::outputPartMaterial));
-	    data.setClean(partPlug.child(AssetNode::outputPartMaterialExists));
-	    data.setClean(partPlug.child(AssetNode::outputPartTexturePath));
-	    data.setClean(partPlug.child(AssetNode::outputPartAmbientColor));
-	    data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor));
-	    data.setClean(partPlug.child(AssetNode::outputPartSpecularColor));
-	    data.setClean(partPlug.child(AssetNode::outputPartAlphaColor));
-        }
+        myGeos[ ii ]->setClean( geoPlug, data );
     }
 
     return MS::kSuccess;

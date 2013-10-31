@@ -21,6 +21,7 @@ class Asset {
         Object** getObjects();
         Object* findObjectByName(MString name);
         Object* findObjectById(int id);
+        HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
 
         // Getters for infos
         HAPI_ObjectInfo getObjectInfo(int id);        
@@ -33,8 +34,7 @@ class Asset {
         MFloatArray getParmFloatValues(HAPI_ParmInfo& parm);
         MStringArray getParmStringValues(HAPI_ParmInfo& parm);
 
-    public:
-        HAPI_AssetInfo 	myAssetInfo;
+    public:        
         HAPI_NodeInfo	myNodeInfo;
         int myNumVisibleObjects;
         int myNumObjects;
@@ -50,6 +50,7 @@ class Asset {
 
 
     private:
+        HAPI_AssetInfo 	myAssetInfo;
         MObject myNode;		    //The Maya asset node
 
 	AssetInputs* myAssetInputs;

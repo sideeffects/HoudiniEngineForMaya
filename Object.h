@@ -34,6 +34,8 @@ class Object {
 
         virtual int getId();
         virtual MString getName();
+        HAPI_ObjectInfo getObjectInfo() { return myObjectInfo; }
+        Asset * getParentAsset() { return myObjectControl; }
 
         //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
         virtual MStatus compute(MDataHandle& handle) = 0;
@@ -42,6 +44,7 @@ class Object {
 
 	bool	isVisible() const; 
 	bool	isInstanced() const;
+        
 
     public:
         Asset* myObjectControl;
@@ -52,8 +55,7 @@ class Object {
 
 
     protected:
-        HAPI_ObjectInfo myObjectInfo;
-        HAPI_GeoInfo myGeoInfo;
+        HAPI_ObjectInfo myObjectInfo;        
         int myAssetId;
         int myObjectId;
 

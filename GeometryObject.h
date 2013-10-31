@@ -6,6 +6,8 @@
 
 #include <vector>
 
+class Geo;
+
 class GeometryObject: public Object
 {
     public:
@@ -19,18 +21,13 @@ class GeometryObject: public Object
         virtual MStatus compute(MDataHandle& handle);
 
         //*************** function until groups are fully supported **************
-        MStatus computeParts(MDataHandle& obj, MArrayDataBuilder* builder);
+        MStatus computeGeos( MDataHandle& objectHandle );
         //************************************************************************
 
         virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 
         virtual ObjectType type();
-
-
-    public:
-
-    protected:
-        virtual void update();
+        
 
     private:
         void updateTransform(MDataHandle& handle);
@@ -42,8 +39,10 @@ class GeometryObject: public Object
         //void updateUVs();
 
     private:
-        HAPI_Transform myTransformInfo;
-        std::vector<GeometryPart> myParts;
+
+        HAPI_Transform myTransformInfo;        
+        std::vector<Geo *> myGeos;
+
         //HAPI_MaterialInfo materialInfo;
 
         //MIntArray faceCounts;

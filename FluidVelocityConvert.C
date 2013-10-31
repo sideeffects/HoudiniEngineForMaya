@@ -16,9 +16,6 @@
 MTypeId FluidVelocityConvert::id = MayaTypeID_HoudiniFluidVelocityConvert;
 
 MObject FluidVelocityConvert::resolution;
-MObject FluidVelocityConvert::resolutionW;
-MObject FluidVelocityConvert::resolutionH;
-MObject FluidVelocityConvert::resolutionD;
 
 MObject FluidVelocityConvert::inGridX;
 MObject FluidVelocityConvert::inGridY;
@@ -47,17 +44,7 @@ FluidVelocityConvert::initialize()
     MFnCompoundAttribute cAttr;
     MFnTypedAttribute tAttr;
 
-    resolutionW = nAttr.create("resolutionW", "resolutionW", MFnNumericData::kInt);
-    nAttr.setStorable(false);
-    resolutionH = nAttr.create("resolutionH", "resolutionH", MFnNumericData::kInt);
-    nAttr.setStorable(false);
-    resolutionD = nAttr.create("resolutionD", "resolutionD", MFnNumericData::kInt);
-    nAttr.setStorable(false);
-
-    resolution = cAttr.create("resolution", "resolution");
-    cAttr.addChild(resolutionW);
-    cAttr.addChild(resolutionH);
-    cAttr.addChild(resolutionD);
+    resolution = tAttr.create("resolution", "resolution", MFnData::kFloatArray);
     cAttr.setStorable(false);
 
     inGridX = tAttr.create("inGridX", "inGridX", MFnData::kFloatArray);
@@ -239,16 +226,11 @@ FluidVelocityConvert::compute(const MPlug& plug, MDataBlock& data)
     MFloatArray gridY = gridYFn.array();
     MFloatArray gridZ = gridZFn.array();
 
-    MDataHandle resWHandle = data.inputValue(resolutionW, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    MDataHandle resHHandle = data.inputValue(resolutionH, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    MDataHandle resDHandle = data.inputValue(resolutionD, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    int resW = resWHandle.asInt();
-    int resH = resHHandle.asInt();
-    int resD = resDHandle.asInt();
+    MFnFloatArrayData res(data.inputValue(resolution, &status).data());
+    MFloatArray resArray = res.array();
+    int resW = resArray[0];
+    int resH = resArray[1];
+    int resD = resArray[2];
 
     // Convert from houdini's velocity at voxel center format
     // into Maya's velocity at voxel face format.

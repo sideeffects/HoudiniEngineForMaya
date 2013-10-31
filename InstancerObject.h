@@ -30,6 +30,7 @@ class InstancerObject: public Object
         virtual MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
 
     private:
+        HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
 
         MStringArray myInstancedObjectNames;

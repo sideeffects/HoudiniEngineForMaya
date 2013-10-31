@@ -10,7 +10,8 @@
 #include "util.h"
 
 InstancerObject::InstancerObject(int assetId, int objectId)
-    :Object(assetId, objectId)
+    :Object(assetId, objectId),
+    myGeoInfo( HAPI_GeoInfo_Create() )
 {
     //update();
 }
@@ -45,7 +46,20 @@ InstancerObject::update()
 {
     Object::update();
 
-    if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
+    
+    try
+    {	
+        HAPI_Result hstat = HAPI_RESULT_SUCCESS;
+        hstat = HAPI_GetGeoInfo( myAssetId, myObjectId, 0, &myGeoInfo );
+        Util::checkHAPIStatus(hstat);
+    }
+    catch (HAPIError& e)
+    {
+        cerr << e.what() << endl;
+        return;
+    }
+        
+    if ( myNeverBuilt || myGeoInfo.hasGeoChanged )
     {
         
 	// clear the arrays

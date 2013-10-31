@@ -1186,7 +1186,7 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
 	    return 0;
 	}
 
-	return myAsset->myAssetInfo.maxGeoInputCount;
+        return myAsset->getAssetInfo().maxGeoInputCount;
     }
 
     return MPxTransform::internalArrayCount(plug, ctx);

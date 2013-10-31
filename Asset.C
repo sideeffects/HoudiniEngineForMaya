@@ -239,37 +239,21 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 
 	MDataHandle objectHandle = objectsBuilder.addElement(i);
 
-        //TODO: FIXME: This needs to be refactored into a Geo class, and taking
-        // into account the actual number of geos, instead of assuming only 1
-        // as we are doing now.
-        MDataHandle geosHandle = objectHandle.child( AssetNode::outputGeos );
-        MArrayDataHandle geoArrayHandle( geosHandle );
-        MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
-        MDataHandle geoHandle = geosBuilder.addElement( 0 );
-
-	MDataHandle partsPlugTemp = geoHandle.child(AssetNode::outputParts);
-	MArrayDataHandle partsHandle(partsPlugTemp);
-	MArrayDataBuilder partsBuilder = partsHandle.builder();
-
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
 	    obj->compute( objectHandle );
+            GeometryObject * geoObj = dynamic_cast<GeometryObject *>(obj);
 
-	    GeometryObject * geoObj = dynamic_cast<GeometryObject *>(obj);
-            stat = geoObj->computeParts(objectHandle, &partsBuilder);
-	    partsHandle.set(partsBuilder);
+            stat = geoObj->computeGeos( objectHandle );
 
-	    MDataHandle visibilityHandle = objectHandle.child( AssetNode::outputVisibility );
+            MDataHandle visibilityHandle = objectHandle.child( AssetNode::outputVisibility );
 	    visibilityHandle.setBool( obj->isVisible() );
 	    visibilityHandle.setClean();
 
 	    MDataHandle isInstancedHandle = objectHandle.child( AssetNode::outputIsInstanced );
 	    isInstancedHandle.setBool( obj->isInstanced() );
 	    isInstancedHandle.setClean();
-
         }
-
-        geoArrayHandle.set( geosBuilder );
     }
 
     // clean up extra elements

@@ -32,6 +32,7 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
     return obj;
 }
 
+
 Object::~Object() {}
 
 
@@ -39,7 +40,8 @@ Object::Object(int assetId, int objectId) :
     myIsInstanced(false),
     myAssetId(assetId),
     myObjectId(objectId),
-    myNeverBuilt(true)
+    myNeverBuilt(true),
+    myObjectInfo( HAPI_ObjectInfo_Create() )    
 {
     myObjectControl = NULL;
 
@@ -57,10 +59,8 @@ Object::init()
         // update object
         //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
         //Util::checkHAPIStatus(hstat);
-        myObjectInfo = myObjectControl->getObjectInfo( myObjectId );
-        // update geometry
-        hstat = HAPI_GetGeoInfo( myAssetId, myObjectInfo.id, 0, &myGeoInfo);
-        Util::checkHAPIStatus(hstat);
+        myObjectInfo = myObjectControl->getObjectInfo( myObjectId );        
+        
 
     }
     catch (HAPIError& e)
@@ -80,27 +80,7 @@ void
 Object::update()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    try
-    {
-        // update object
-        //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
-        //Util::checkHAPIStatus(hstat);
-        myObjectInfo = myObjectControl->getObjectInfo( myObjectId );
-
-        // update geometry
-        if ( myNeverBuilt || myObjectInfo.haveGeosChanged)
-        {
-	    //TODO: This assumes that there is only 1 geo, and the index of the geo is 0
-            hstat = HAPI_GetGeoInfo( myAssetId, myObjectInfo.id, 0, &myGeoInfo);
-            Util::checkHAPIStatus(hstat);
-        }
-
-    }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-        HAPI_GeoInfo_Init( &myGeoInfo );
-    }
+    myObjectInfo = myObjectControl->getObjectInfo( myObjectId );    
     
 }
 

@@ -53,9 +53,9 @@ GeometryObject::type()
 
 
 MStatus
-GeometryObject::compute(MDataHandle& handle)
+GeometryObject::compute(MDataHandle& objectHandle)
 {
-    MDataHandle metaDataHandle = handle.child(AssetNode::outputObjectMetaData);
+    MDataHandle metaDataHandle = objectHandle.child(AssetNode::outputObjectMetaData);
 
     // Meta data
     MFnIntArrayData ffIAD;
@@ -65,25 +65,18 @@ GeometryObject::compute(MDataHandle& handle)
     MObject newMetaData = ffIAD.create(metaDataArray);
     metaDataHandle.set(newMetaData);
 
-    return MS::kSuccess;
-}
-
-
-MStatus
-GeometryObject::computeGeos( MDataHandle& objectHandle )
-{
     for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
     {
         myGeos[ ii ]->update();
     }    
 
+    MStatus stat = MS::kSuccess;
     if ( myNeverBuilt || myObjectInfo.haveGeosChanged )
     {
         MDataHandle geosHandle = objectHandle.child( AssetNode::outputGeos );
         MArrayDataHandle geoArrayHandle( geosHandle );
         MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
-        
-        MStatus stat = MS::kSuccess;
+                
         for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
         {
             MDataHandle geoHandle = geosBuilder.addElement( ii );
@@ -111,8 +104,7 @@ GeometryObject::computeGeos( MDataHandle& objectHandle )
         myNeverBuilt = false;
     }
 
-    return MS::kSuccess;
-
+    return stat;
 }
 
 

@@ -180,6 +180,7 @@ CXXFILES = \
 	   util.C \
 	   GeometryObject.C \
 	   InstancerObject.C \
+	   Geo.C \
 	   GeometryPart.C \
 	   AssetSync.C \
 	   AssetSyncAttribute.C \

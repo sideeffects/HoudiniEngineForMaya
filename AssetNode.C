@@ -85,10 +85,6 @@ MObject AssetNode::outputPartVolume;
 MObject AssetNode::outputPartVolumeName;
 MObject AssetNode::outputPartVolumeGrid;
 MObject AssetNode::outputPartVolumeRes;
-MObject AssetNode::outputPartVolumeResW;
-MObject AssetNode::outputPartVolumeResH;
-MObject AssetNode::outputPartVolumeResD;
-MObject AssetNode::outputPartVolumeResArray;
 MObject AssetNode::outputPartVolumeTransform;
 MObject AssetNode::outputPartVolumeTranslate;
 MObject AssetNode::outputPartVolumeTranslateX;
@@ -470,29 +466,10 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::outputPartVolumeGrid);
 
     // Volume resolution
-    AssetNode::outputPartVolumeResW = nAttr.create("outputPartVolumeResW", "outputPartVolumeResW", MFnNumericData::kInt);
+    AssetNode::outputPartVolumeRes = tAttr.create("outputPartVolumeRes", "outputPartVolumeRes", MFnData::kFloatArray);
     nAttr.setWritable(false);
     nAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeResW);
-    AssetNode::outputPartVolumeResH = nAttr.create("outputPartVolumeResH", "outputPartVolumeResH", MFnNumericData::kInt);
-    nAttr.setWritable(false);
-    nAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeResH);
-    AssetNode::outputPartVolumeResD = nAttr.create("outputPartVolumeResD", "outputPartVolumeResD", MFnNumericData::kInt);
-    nAttr.setWritable(false);
-    nAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeResD);
-    AssetNode::outputPartVolumeRes = cAttr.create("outputPartVolumeRes", "outputPartVolumeRes");
-    cAttr.addChild(AssetNode::outputPartVolumeResW);
-    cAttr.addChild(AssetNode::outputPartVolumeResH);
-    cAttr.addChild(AssetNode::outputPartVolumeResD);
-    cAttr.setWritable(false);
-    cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolumeRes);
-    AssetNode::outputPartVolumeResArray = tAttr.create("outputPartVolumeResArray", "outputPartVolumeResArray", MFnData::kFloatArray);
-    nAttr.setWritable(false);
-    nAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeResArray);
 
     // volume transform
     // translate
@@ -565,7 +542,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartVolumeGrid);
     cAttr.addChild(AssetNode::outputPartVolumeTransform);
     cAttr.addChild(AssetNode::outputPartVolumeRes);
-    cAttr.addChild(AssetNode::outputPartVolumeResArray);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolume);
@@ -783,7 +759,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
 		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
 		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
-		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeResArray));
 		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
 
 		MPlug outputPartVolumeTransform = outputPartVolume.child(AssetNode::outputPartVolumeTransform);

@@ -102,25 +102,21 @@ AssetSyncOutputObject::createVelocityConverter(MObject& velocityConverter)
 bool
 AssetSyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
 {
-    MPlug resAWidth = resA.child(AssetNode::outputPartVolumeResW);
-    MPlug resAHeight = resA.child(AssetNode::outputPartVolumeResH);
-    MPlug resADepth = resA.child(AssetNode::outputPartVolumeResD);
+    MPlug resAPlug = resA.child(AssetNode::outputPartVolumeRes);
+    MObject resAObj;
+    resAPlug.getValue(resAObj);
 
-    MPlug resBWidth = resB.child(AssetNode::outputPartVolumeResW);
-    MPlug resBHeight = resB.child(AssetNode::outputPartVolumeResH);
-    MPlug resBDepth = resB.child(AssetNode::outputPartVolumeResD);
+    MPlug resBPlug = resB.child(AssetNode::outputPartVolumeRes);
+    MObject resBObj;
+    resBPlug.getValue(resBObj);
 
-    int resAWidthValue, resAHeightValue, resADepthValue;
-    int resBWidthValue, resBHeightValue, resBDepthValue;
-    resAWidth.getValue(resAWidthValue);
-    resAHeight.getValue(resAHeightValue);
-    resADepth.getValue(resADepthValue);
-    resBWidth.getValue(resBWidthValue);
-    resBHeight.getValue(resBHeightValue);
-    resBDepth.getValue(resBDepthValue);
-    return resAWidthValue == resBWidthValue &&
-	   resAHeightValue == resBHeightValue &&
-	   resADepthValue == resBDepthValue;
+    MStatus status;
+    MFnFloatArrayData dataA(resAObj, &status);
+    MFnFloatArrayData dataB(resBObj, &status);
+
+    return dataA[0] == dataB[0] &&
+	   dataA[1] == dataB[1] &&
+	   dataA[2] == dataB[2];
 }
 
 
@@ -275,7 +271,7 @@ AssetSyncOutputObject::createFluidShape()
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeResArray);
+	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
 	    dstPlug = partVolumeFn.findPlug("inResolution");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -287,11 +283,6 @@ AssetSyncOutputObject::createFluidShape()
 
 	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeScale);
 	    dstPlug = partFluidTransformFn.findPlug("scale");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
-	    dstPlug = partVolumeFn.findPlug("resolution");
 	    status = myDagModifier.connect(srcPlug, dstPlug);
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 

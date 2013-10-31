@@ -344,18 +344,13 @@ GeometryPart::compute(MDataHandle& handle)
 	    MDataHandle partVolumeGridHandle = partVolumeHandle.child(AssetNode::outputPartVolumeGrid);
 	    partVolumeGridHandle.set(createVolume());
 
-	    MDataHandle partVolumeResHandle = partVolumeHandle.child(AssetNode::outputPartVolumeRes);
-	    partVolumeResHandle.child(AssetNode::outputPartVolumeResW).set(myVolumeInfo.xLength);
-	    partVolumeResHandle.child(AssetNode::outputPartVolumeResH).set(myVolumeInfo.yLength);
-	    partVolumeResHandle.child(AssetNode::outputPartVolumeResD).set(myVolumeInfo.zLength);
-
 	    MFloatArray resolution;
 	    resolution.append(myVolumeInfo.xLength);
 	    resolution.append(myVolumeInfo.yLength);
 	    resolution.append(myVolumeInfo.zLength);
-	    MDataHandle partVolumeResArrayHandle = partVolumeHandle.child(AssetNode::outputPartVolumeResArray);
+	    MDataHandle partVolumeResHandle = partVolumeHandle.child(AssetNode::outputPartVolumeRes);
 	    MFnFloatArrayData resCreator;
-	    partVolumeResArrayHandle.set(resCreator.create(resolution));
+	    partVolumeResHandle.set(resCreator.create(resolution));
 
 	    MDataHandle partVolumeNameHandle = partVolumeHandle.child(AssetNode::outputPartVolumeName);
 	    partVolumeNameHandle.set(Util::getString(myVolumeInfo.nameSH));

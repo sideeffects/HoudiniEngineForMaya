@@ -32,9 +32,6 @@ public:
     static MTypeId id;
 
     static MObject resolution;
-    static MObject resolutionW;
-    static MObject resolutionH;
-    static MObject resolutionD;
 
     static MObject inGridX;
     static MObject inGridY;

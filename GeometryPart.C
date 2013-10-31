@@ -183,9 +183,9 @@ GeometryPart::updateVolumeTransform(MDataHandle& handle)
 				  transform.position[1],
 				  transform.position[2]), MSpace::kTransform);
 
-    int xoffset = myVolumeInfo.xLength/2 + myVolumeInfo.minX;
-    int yoffset = myVolumeInfo.yLength/2 + myVolumeInfo.minY;
-    int zoffset = myVolumeInfo.zLength/2 + myVolumeInfo.minZ;
+    double xoffset = myVolumeInfo.xLength/2.0 + myVolumeInfo.minX;
+    double yoffset = myVolumeInfo.yLength/2.0 + myVolumeInfo.minY;
+    double zoffset = myVolumeInfo.zLength/2.0 + myVolumeInfo.minZ;
 
     const double scale2[3] = {2, 2, 2};
     matrix.addScale(scale2, MSpace::kPreTransform);

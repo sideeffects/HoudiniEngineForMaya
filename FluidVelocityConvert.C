@@ -245,17 +245,17 @@ FluidVelocityConvert::compute(const MPlug& plug, MDataBlock& data)
 		     extrapolatedY.length() +
 		     extrapolatedZ.length());
     int j = 0;
-    for (int i=0; i<extrapolatedX.length(); i++)
+    for (unsigned int i=0; i<extrapolatedX.length(); i++)
     {
 	result[j] = extrapolatedX[i];
 	j++;
     }
-    for (int i=0; i<extrapolatedY.length(); i++)
+    for (unsigned int i=0; i<extrapolatedY.length(); i++)
     {
 	result[j] = extrapolatedY[i];
 	j++;
     }
-    for (int i=0; i<extrapolatedZ.length(); i++)
+    for (unsigned int i=0; i<extrapolatedZ.length(); i++)
     {
 	result[j] = extrapolatedZ[i];
 	j++;

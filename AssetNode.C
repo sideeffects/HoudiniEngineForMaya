@@ -35,6 +35,8 @@ MObject AssetNode::input;
 MObject AssetNode::output;
 MObject AssetNode::outputObjects;
 
+MObject AssetNode::outputObjectName;
+
 MObject AssetNode::outputObjectTransform;
 MObject AssetNode::outputObjectTranslate;
 MObject AssetNode::outputObjectTranslateX;
@@ -55,6 +57,7 @@ MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputGeos;
 MObject AssetNode::outputGeoType;
+MObject AssetNode::outputGeoName;
 MObject AssetNode::outputGeoCurveType;
 MObject AssetNode::outputGeoCurveOrder;
 MObject AssetNode::outputGeoCurveCVX;
@@ -570,6 +573,11 @@ AssetNode::initialize()
     tAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputGeoType);
 
+    AssetNode::outputGeoName = tAttr.create("outputGeoName", "outputGeoName", MFnData::kString);
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputGeoName);    
+
     AssetNode::outputGeoCurveType = tAttr.create("outputGeoCurveType", "outputGeoCurveType", MFnData::kString);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
@@ -606,6 +614,7 @@ AssetNode::initialize()
 
     AssetNode::outputGeos = cAttr.create("outputGeos", "outputGeos");
     cAttr.addChild( AssetNode::outputGeoType );
+    cAttr.addChild( AssetNode::outputGeoName );
     cAttr.addChild( AssetNode::outputGeoCurveType );
     cAttr.addChild( AssetNode::outputGeoCurveOrder );
     cAttr.addChild( AssetNode::outputGeoCurveCVs );
@@ -625,8 +634,14 @@ AssetNode::initialize()
     nAttr.setStorable(false);
     nAttr.setWritable(false);     
 
+    AssetNode::outputObjectName = tAttr.create("outputObjectName", "outputObjectName", MFnData::kString);
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputObjectName);    
+
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputGeos);
+    cAttr.addChild(AssetNode::outputObjectName);
     cAttr.addChild(AssetNode::outputObjectTransform);
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputObjectFluidFromAsset);

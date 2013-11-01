@@ -31,7 +31,8 @@ Geo::init()
         hstat = HAPI_GetGeoInfo( myAssetId, myObjectId, myGeoId, &myGeoInfo);
         Util::checkHAPIStatus(hstat);
 
-        if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT )
+        if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT || 
+            myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
         {
             int partCount = myGeoInfo.partCount;
             myParts.clear();
@@ -89,7 +90,8 @@ Geo::update()
             hstat = HAPI_GetGeoInfo( myAssetId, myObjectId, myGeoId, &myGeoInfo );
             Util::checkHAPIStatus(hstat);
 
-            if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT )
+            if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
+                myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
             {                
                 int partCount = myGeoInfo.partCount;
 
@@ -130,7 +132,8 @@ Geo::computeParts( MDataHandle& obj, MArrayDataBuilder* builder )
 {
     MStatus stat;    
          
-    if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT )
+    if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT || 
+        myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
     { 
         for (int i=0; i< myGeoInfo.partCount; i++)
         {

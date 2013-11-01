@@ -80,6 +80,11 @@ GeometryObject::compute(MDataHandle& objectHandle)
         for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
         {
             MDataHandle geoHandle = geosBuilder.addElement( ii );
+
+            MDataHandle geoNameHandle = geoHandle.child( AssetNode::outputGeoName );
+            geoNameHandle.setString( myGeos[ ii ]->getName() );
+	    geoNameHandle.setClean();
+
             MDataHandle partsPlugTemp = geoHandle.child(AssetNode::outputParts);
 	    MArrayDataHandle partsHandle(partsPlugTemp);
 	    MArrayDataBuilder partsBuilder = partsHandle.builder();

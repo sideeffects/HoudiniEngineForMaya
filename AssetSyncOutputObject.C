@@ -5,6 +5,7 @@
 
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnDagNode.h>
+#include <maya/MDagPath.h>
 
 #include "AssetNode.h"
 #include "AssetSyncOutputGeoPart.h"
@@ -43,8 +44,28 @@ AssetSyncOutputObject::doIt()
     // other information.
     MFnDependencyNode assetNodeFn(myAssetNodeObj, &status);
 
-    // Parts
-    // TODO: FIXME: each geo should have its own transform
+    MObject objectTransform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);        
+
+    // rename objectTransform
+    MPlug objectNamePlug = myOutputPlug.child( AssetNode::outputObjectName );
+
+    MString objectName = objectNamePlug.asString();
+    if( objectName.length() > 0 )
+        status = myDagModifier.renameNode( objectTransform, objectName );
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    myDagModifier.doIt();
+
+    if( !myVisible )
+    {	
+	MFnDagNode fnDag( objectTransform );
+	MDagPath transformPath;
+	fnDag.getPath( transformPath );
+	MString cmd = "hide ";
+	cmd += fnDag.partialPathName();
+	MGlobal::executeCommand( cmd );
+    }
+    
     MPlug geosPlug = myOutputPlug.child( AssetNode::outputGeos );
     int geoCount = geosPlug.evaluateNumElements( &status );
     CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -52,12 +73,32 @@ AssetSyncOutputObject::doIt()
     {
         MPlug geoPlug = geosPlug[ ii ];
 
+        MObject geoTransform = MObject::kNullObj;
+        MObject partParent = objectTransform;    
+
+        if( geoCount > 1 )
+        {
+            geoTransform = myDagModifier.createNode("transform", objectTransform, &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);        
+
+            // rename geoTransform
+            MPlug geoNamePlug = geoPlug.child( AssetNode::outputGeoName );
+            MString geoName = geoNamePlug.asString();
+            if( geoName.length() > 0 )
+                status = myDagModifier.renameNode( geoTransform, geoName );
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+            myDagModifier.doIt();
+
+            partParent = geoTransform;
+        }
+
+
         MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
         int partCount = partsPlug.evaluateNumElements(&status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
         for (int jj=0; jj<partCount; jj++)
         {
-	    AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[jj], myAssetNodeObj, myVisible );
+	    AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[jj], partParent );
 	    sync->doIt();
 	    myAssetSyncs.push_back(sync);
         }

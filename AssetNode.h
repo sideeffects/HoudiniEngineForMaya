@@ -111,6 +111,7 @@ class AssetNode: public MPxTransform
         static MObject output;
 
         static MObject outputObjects;
+        static MObject outputObjectName;
         static MObject outputObjectTransform;
         static MObject outputObjectTranslate;
         static MObject outputObjectTranslateX;
@@ -132,6 +133,7 @@ class AssetNode: public MPxTransform
 
         static MObject outputGeos;
         static MObject outputGeoType;
+        static MObject outputGeoName;
         static MObject outputGeoCurveType;
         static MObject outputGeoCurveOrder;
         static MObject outputGeoCurveCVX;

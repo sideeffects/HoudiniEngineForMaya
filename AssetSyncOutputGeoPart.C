@@ -11,12 +11,10 @@
 
 AssetSyncOutputGeoPart::AssetSyncOutputGeoPart(
 	const MPlug &outputPlug,
-	const MObject &assetNodeObj,
-	const bool visible
+	const MObject &objectTransform
 	) :
     myOutputPlug(outputPlug),
-    myAssetNodeObj(assetNodeObj),
-    myVisible( visible )
+    myObjectTransform(objectTransform)    
 {
 }
 
@@ -28,51 +26,22 @@ MStatus
 AssetSyncOutputGeoPart::doIt()
 {
     MStatus status;
-
-    MString objectName;
+    
     MString partName;
     {
 	MString outputPartName = myOutputPlug.child(AssetNode::outputPartName).asString();
 	int separatorIndex = outputPartName.rindexW('/');
-	objectName = outputPartName.substringW(0, separatorIndex-1);
 	partName = outputPartName.substringW(separatorIndex + 1, outputPartName.numChars() - 1);
-    }
+    }    
+           
 
-    MFnDagNode assetNodeFn(myAssetNodeObj);
-
-    // Since the objectTransform is shared by multiple parts, it may or may not
-    // already exist. Create objectTransform if it doesn't exist.
-    MObject objectTransform = Util::findDagChild(assetNodeFn, objectName);
-    if(objectTransform.isNull())
-    {
-	// create objectTransform
-	objectTransform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	// rename objectTransform
-	status = myDagModifier.renameNode(objectTransform, objectName);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	if( !myVisible )
-	{
-	    myDagModifier.doIt();
-	    MFnDagNode fnDag( objectTransform );
-	    MDagPath transformPath;
-	    fnDag.getPath( transformPath );
-	    MString cmd = "hide ";
-	    cmd += fnDag.partialPathName();
-	    MGlobal::executeCommand( cmd );
-	}
-	    
-    }
-
-    MFnDagNode objectTransformFn(objectTransform);
+    MFnDagNode objectTransformFn( myObjectTransform );
 
     // create part
-    MObject partTransform = Util::findDagChild(objectTransformFn, partName);
+    MObject partTransform = Util::findDagChild( objectTransformFn, partName );
     if(partTransform.isNull())
     {
-	status = createOutputPart(objectTransform, partName, partTransform);
+	status = createOutputPart( myObjectTransform, partName, partTransform);
     }
 
     // create material

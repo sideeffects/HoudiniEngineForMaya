@@ -250,6 +250,10 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 	    MDataHandle isInstancedHandle = objectHandle.child( AssetNode::outputIsInstanced );
 	    isInstancedHandle.setBool( obj->isInstanced() );
 	    isInstancedHandle.setClean();
+
+            MDataHandle objectNameHandle = objectHandle.child( AssetNode::outputObjectName );
+            objectNameHandle.setString( obj->getName() );
+	    objectNameHandle.setClean();
         }
     }
 

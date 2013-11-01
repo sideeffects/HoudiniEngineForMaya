@@ -71,11 +71,11 @@ FluidVelocityConvert::initialize()
     return MS::kSuccess;
 }
 
-// Linearly extrapolates f(2.5) if f(1) = a, f(2) = b
+// Linearly extrapolates f(1.5) if f(0) = a, f(1) = b
 static float
 extrapolate(float a, float b)
 {
-    return (b - a) * 0.25 + b;
+    return (b - a) * 0.5 + b;
 }
 
 static int

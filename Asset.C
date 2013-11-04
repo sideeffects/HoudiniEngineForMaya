@@ -537,7 +537,14 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                         if(parmInfo.size == 1)
                         {
-                            dataHandle.setInt(values[0]);
+                            if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                            {
+                                dataHandle.setShort(values[0]);
+                            }
+                            else
+                            {
+                                dataHandle.setInt(values[0]);
+                            }
                         }
                         else
                         {
@@ -548,7 +555,14 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                     i++)
                             {
                                 MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
-                                elementDataHandle.setInt(values[i]);
+                                if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                                {
+                                    elementDataHandle.setShort(values[i]);
+                                }
+                                else
+                                {
+                                    elementDataHandle.setInt(values[i]);
+                                }
                             }
                         }
 
@@ -694,14 +708,28 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         int * values = new int[parmInfo.size];
                         if (parmInfo.size == 1)
                         {
-                            values[0] = dataHandle.asInt();
+                            if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                            {
+                                values[0] = dataHandle.asShort();
+                            }
+                            else
+                            {
+                                values[0] = dataHandle.asInt();
+                            }
                         } else
                         {
                             MFnCompoundAttribute attrFn(attrObj);
                             for (int i=0; i<parmInfo.size; i++)
                             {
                                 MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
-                                values[i] = elementHandle.asInt();
+                                if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                                {
+                                    values[i] = dataHandle.asShort();
+                                }
+                                else
+                                {
+                                    values[i] = dataHandle.asInt();
+                                }
                             }
                         }
                         HAPI_SetParmIntValues( myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size );

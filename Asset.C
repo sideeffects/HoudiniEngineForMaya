@@ -6,6 +6,7 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFnIntArrayData.h>
 #include <maya/MItMeshPolygon.h>
+#include <maya/MDataHandle.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 
@@ -15,6 +16,123 @@
 #include "GeometryObject.h"
 #include "InstancerObject.h"
 #include "util.h"
+
+class AttrOperation : public Util::WalkParmOperation
+{
+    public:
+        AttrOperation(
+                const MDataHandle &dataHandle,
+                const MFnDependencyNode &nodeFn,
+                const HAPI_NodeInfo &nodeInfo,
+                const std::vector<MObject>* attrs
+                );
+        ~AttrOperation();
+
+        virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
+        virtual void popFolder();
+
+        bool containsParm(const HAPI_ParmInfo &parm) const;
+
+    protected:
+        std::vector<MDataHandle> myDataHandles;
+        std::vector<bool> myExists;
+
+        const MFnDependencyNode &myNodeFn;
+        const HAPI_NodeInfo &myNodeInfo;
+        const std::vector<MObject>* myAttrs;
+};
+
+AttrOperation::AttrOperation(
+        const MDataHandle &dataHandle,
+        const MFnDependencyNode &nodeFn,
+        const HAPI_NodeInfo &nodeInfo,
+        const std::vector<MObject>* attrs
+        ) :
+    myNodeFn(nodeFn),
+    myNodeInfo(nodeInfo),
+    myAttrs(attrs)
+{
+    myDataHandles.push_back(dataHandle);
+    myExists.push_back(true);
+}
+
+AttrOperation::~AttrOperation()
+{
+    myDataHandles.pop_back();
+    myExists.pop_back();
+}
+
+void
+AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
+{
+    MDataHandle dataHandle;
+    bool exists = false;
+
+    MDataHandle &parentDataHandle = myDataHandles.back();
+    bool parentExists = myExists.back();
+
+    if(parentExists)
+    {
+        MString folderAttrName = Util::getAttrNameFromParm(parmInfo);
+        MObject folderAttrObj = myNodeFn.attribute(folderAttrName);
+
+        if(!folderAttrObj.isNull())
+        {
+            exists = true;
+            dataHandle = parentDataHandle.child(folderAttrObj);
+        }
+    }
+
+    myDataHandles.push_back(dataHandle);
+    myExists.push_back(exists);
+}
+
+void
+AttrOperation::popFolder()
+{
+    MDataHandle &dataHandle = myDataHandles.back();
+    bool exists = myExists.back();
+
+    myDataHandles.pop_back();
+    myExists.pop_back();
+}
+
+bool
+AttrOperation::containsParm(const HAPI_ParmInfo &parm) const
+{
+    if(!myAttrs)
+    {
+        return true;
+    }
+
+    MPlug parmPlug = myNodeFn.findPlug(
+            Util::getAttrNameFromParm(parm)
+            );
+
+    for(std::vector<MObject>::const_iterator iter = myAttrs->begin();
+            iter != myAttrs->end();
+            iter++)
+    {
+        MPlug plug = myNodeFn.findPlug(*iter);
+
+        if(parmPlug == plug)
+        {
+            return true;
+        }
+
+        // If the parm is a tuple, then we also need to check the parent plug.
+        // We need to check if it's int, float, or string, because non-values
+        // like folders also use parm.size.
+        if(( HAPI_ParmInfo_IsInt( &parm ) || HAPI_ParmInfo_IsFloat( &parm ) || HAPI_ParmInfo_IsString( &parm ) )
+                && parm.size > 1
+                && plug.isChild() && parmPlug == plug.parent())
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 Asset::Asset(MString otlFilePath, MObject node) :
     myNode(node)
@@ -332,54 +450,313 @@ Asset::getObjects()
     return myObjects;
 }
 
-
-// Parms ---------------------------------------------------
-MIntArray
-Asset::getParmIntValues(HAPI_ParmInfo& parm)
+class GetAttrOperation : public AttrOperation
 {
-    int index = parm.intValuesIndex;
-    int size = parm.size;
-    int * values = new int[size];
-    HAPI_GetParmIntValues( myNodeInfo.id, values, index, size);
+    public:
+        GetAttrOperation(
+                const MDataHandle &dataHandle,
+                const MFnDependencyNode &nodeFn,
+                const HAPI_NodeInfo &nodeInfo,
+                const std::vector<MObject>* attrs
+                );
 
-    MIntArray ret(values, size);
+        virtual void leaf(const HAPI_ParmInfo &parmInfo);
+};
 
-    delete[] values;
-    return ret;
+GetAttrOperation::GetAttrOperation(
+        const MDataHandle &dataHandle,
+        const MFnDependencyNode &nodeFn,
+        const HAPI_NodeInfo &nodeInfo,
+        const std::vector<MObject>* attrs
+        ) :
+    AttrOperation(
+            dataHandle,
+            nodeFn,
+            nodeInfo,
+            attrs
+            )
+{
 }
 
-
-MFloatArray
-Asset::getParmFloatValues(HAPI_ParmInfo& parm)
+void
+GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
-    int index = parm.floatValuesIndex;
-    int size = parm.size;
-    float * values = new float[size];
-    HAPI_GetParmFloatValues( myNodeInfo.id, values, index, size);
+    MDataHandle dataHandle;
+    bool exists = false;
 
-    MFloatArray ret(values, size);
+    MDataHandle &parentDataHandle = myDataHandles.back();
+    bool parentExists = myExists.back();
 
-    delete[] values;
-    return ret;
-}
-
-
-MStringArray
-Asset::getParmStringValues(HAPI_ParmInfo& parm)
-{
-    int index = parm.stringValuesIndex;
-    int size = parm.size;
-    int * handles = new int[size];
-    HAPI_GetParmStringValues( myNodeInfo.id, handles, index, size);
-
-    MStringArray ret;
-    for (int i=0; i<size; i++)
+    if(parentExists && containsParm(parmInfo))
     {
-        MString str = Util::getString(handles[i]);
-        ret.append(str);
-    }
+        MString attrName = Util::getAttrNameFromParm(parmInfo);
+        MObject attrObj = myNodeFn.attribute(attrName);
+        if(!attrObj.isNull())
+        {
+            exists = true;
+        }
 
-    delete[] handles;
-    return ret;
+        if(exists)
+        {
+            dataHandle = parentDataHandle.child(attrObj);
+
+            switch(parmInfo.type)
+            {
+                case HAPI_PARMTYPE_FLOAT:
+                case HAPI_PARMTYPE_COLOUR:
+                    {
+                        float* values = new float[parmInfo.size];
+                        HAPI_GetParmFloatValues(myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+
+                        if(parmInfo.size == 1)
+                        {
+                            dataHandle.setFloat(values[0]);
+                        }
+                        else
+                        {
+                            MFnCompoundAttribute attrFn(attrObj);
+                            for(int i = 0;
+                                    i < attrFn.numChildren()
+                                    && i < parmInfo.size;
+                                    i++)
+                            {
+                                MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                elementDataHandle.setFloat(values[i]);
+                            }
+                        }
+
+                        delete[] values;
+                    }
+                    break;
+                case HAPI_PARMTYPE_INT:
+                case HAPI_PARMTYPE_TOGGLE:
+                case HAPI_PARMTYPE_BUTTON:
+                    {
+                        int* values = new int[parmInfo.size];
+                        HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
+
+                        if(parmInfo.size == 1)
+                        {
+                            dataHandle.setInt(values[0]);
+                        }
+                        else
+                        {
+                            MFnCompoundAttribute attrFn(attrObj);
+                            for(int i = 0;
+                                    i < attrFn.numChildren()
+                                    && i < parmInfo.size;
+                                    i++)
+                            {
+                                MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                elementDataHandle.setInt(values[i]);
+                            }
+                        }
+
+                        delete[] values;
+                    }
+                    break;
+                case HAPI_PARMTYPE_STRING:
+                case HAPI_PARMTYPE_FILE:
+                    {
+                        int* values = new int[parmInfo.size];
+                        HAPI_GetParmStringValues(myNodeInfo.id, values, parmInfo.stringValuesIndex, parmInfo.size);
+
+                        if(parmInfo.size == 1)
+                        {
+                            dataHandle.setString(Util::getString(values[0]));
+                        }
+                        else
+                        {
+                            MFnCompoundAttribute attrFn(attrObj);
+                            for(int i = 0;
+                                    i < attrFn.numChildren()
+                                    && i < parmInfo.size;
+                                    i++)
+                            {
+                                MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                elementDataHandle.setString(Util::getString(values[i]));
+                            }
+                        }
+
+                        delete[] values;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }
 
+void
+Asset::getParmValues(
+        const MDataHandle &parentDataHandle,
+        const MFnDependencyNode &nodeFn,
+        const std::vector<MObject>* attrs
+        )
+{
+    MStatus status;
+
+    std::vector<HAPI_ParmInfo> parmInfos;
+
+    // Get value
+    {
+	parmInfos.resize(myNodeInfo.parmCount);
+	HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+
+	GetAttrOperation operation(
+		parentDataHandle,
+		nodeFn,
+		myNodeInfo,
+		attrs
+		);
+	Util::walkParm(parmInfos, operation);
+    }
+}
+
+class SetAttrOperation : public AttrOperation
+{
+    public:
+        SetAttrOperation(
+                const MDataHandle &dataHandle,
+                const MFnDependencyNode &nodeFn,
+                const HAPI_NodeInfo &nodeInfo,
+                const std::vector<MObject>* attrs
+                );
+
+        virtual void leaf(const HAPI_ParmInfo &parmInfo);
+};
+
+SetAttrOperation::SetAttrOperation(
+        const MDataHandle &dataHandle,
+        const MFnDependencyNode &nodeFn,
+        const HAPI_NodeInfo &nodeInfo,
+        const std::vector<MObject>* attrs
+        ) :
+    AttrOperation(
+            dataHandle,
+            nodeFn,
+            nodeInfo,
+            attrs
+            )
+{
+}
+
+void
+SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
+{
+    MDataHandle dataHandle;
+    bool exists = false;
+
+    MDataHandle &parentDataHandle = myDataHandles.back();
+    bool parentExists = myExists.back();
+
+    if(parentExists && containsParm(parmInfo))
+    {
+        MString attrName = Util::getAttrNameFromParm(parmInfo);
+        MObject attrObj = myNodeFn.attribute(attrName);
+        if(!attrObj.isNull())
+        {
+            exists = true;
+        }
+
+        if(exists)
+        {
+            dataHandle = parentDataHandle.child(attrObj);
+
+            switch(parmInfo.type)
+            {
+                case HAPI_PARMTYPE_FLOAT:
+                case HAPI_PARMTYPE_COLOUR:
+                    {
+                        float * values = new float[parmInfo.size];
+                        if (parmInfo.size == 1)
+                        {
+                            values[0] = dataHandle.asFloat();
+                        } else
+                        {
+                            MFnCompoundAttribute attrFn(attrObj);
+                            for (int i=0; i<parmInfo.size; i++)
+                            {
+                                MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                values[i] = elementHandle.asFloat();
+                            }
+                        }
+                        HAPI_SetParmFloatValues( myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+
+                        delete[] values;
+                    }
+                    break;
+                case HAPI_PARMTYPE_INT:
+                case HAPI_PARMTYPE_TOGGLE:
+                case HAPI_PARMTYPE_BUTTON:
+                    {
+                        int * values = new int[parmInfo.size];
+                        if (parmInfo.size == 1)
+                        {
+                            values[0] = dataHandle.asInt();
+                        } else
+                        {
+                            MFnCompoundAttribute attrFn(attrObj);
+                            for (int i=0; i<parmInfo.size; i++)
+                            {
+                                MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                values[i] = elementHandle.asInt();
+                            }
+                        }
+                        HAPI_SetParmIntValues( myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size );
+
+                        delete[] values;
+                    }
+                    break;
+                case HAPI_PARMTYPE_STRING:
+                case HAPI_PARMTYPE_FILE:
+                    {
+                        if (parmInfo.size == 1)
+                        {
+                            const char* val = dataHandle.asString().asChar();
+                            HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, 0);
+                        } else
+                        {
+                            MFnCompoundAttribute attrFn(attrObj);
+                            for (int i=0; i<parmInfo.size; i++)
+                            {
+                                MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                const char* val = elementHandle.asString().asChar();
+                                HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, i);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+void
+Asset::setParmValues(
+        const MDataHandle &parentDataHandle,
+        const MFnDependencyNode &nodeFn,
+        const std::vector<MObject>* attrs
+        )
+{
+    MStatus status;
+
+    std::vector<HAPI_ParmInfo> parmInfos;
+
+    // Set value
+    {
+	parmInfos.resize(myNodeInfo.parmCount);
+	HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+
+	SetAttrOperation operation(
+		parentDataHandle,
+		nodeFn,
+		myNodeInfo,
+		attrs
+		);
+	Util::walkParm(parmInfos, operation);
+    }
+}

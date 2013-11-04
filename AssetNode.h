@@ -75,16 +75,6 @@ class AssetNode: public MPxTransform
         static MTypeId id;
 
     private:
-        MObject getAttrFromParm(HAPI_ParmInfo& parm);
-
-
-        void updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data);
-        void updateAttrValues(MDataBlock& data);
-
-        void setParmValues(MDataBlock& data, bool dirtyOnly = true);
-        void setParmValue(HAPI_ParmInfo& parm, MDataBlock& data, bool dirtyOnly = true);
-
-	bool isPlugDirty(const MPlug &plug, const HAPI_ParmInfo &parm);
 	void setPlugDirty(const MPlug &plug);
 
     private:

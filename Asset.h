@@ -9,7 +9,10 @@
 
 #include "Object.h"
 
+#include <vector>
+
 class AssetInputs;
+class MFnDependencyNode;
 
 class Asset {
     public:
@@ -30,9 +33,17 @@ class Asset {
 
         MStatus compute(const MPlug& plug, MDataBlock& data);
 
-        MIntArray getParmIntValues(HAPI_ParmInfo& parm);
-        MFloatArray getParmFloatValues(HAPI_ParmInfo& parm);
-        MStringArray getParmStringValues(HAPI_ParmInfo& parm);
+        void getParmValues(
+                const MDataHandle &parentDataHandle,
+                const MFnDependencyNode &nodeFn,
+                const std::vector<MObject>* attrs
+                );
+
+        void setParmValues(
+                const MDataHandle &parentDataHandle,
+                const MFnDependencyNode &nodeFn,
+                const std::vector<MObject>* attrs
+                );
 
     public:        
         HAPI_NodeInfo	myNodeInfo;

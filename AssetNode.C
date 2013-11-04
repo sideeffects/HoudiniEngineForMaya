@@ -868,259 +868,6 @@ AssetNode::rebuildAsset()
 
 }
 
-
-MObject
-AssetNode::getAttrFromParm(HAPI_ParmInfo& parm)
-{
-    MFnDependencyNode fnDN(thisMObject());
-    MString name = Util::getAttrNameFromParm(parm);
-    MObject attr = fnDN.attribute(name);
-    return attr;
-}
-
-
-void
-AssetNode::updateAttrValue(HAPI_ParmInfo& parm, MDataBlock& data)
-{    
-    // get attribute
-    MObject attr = getAttrFromParm(parm);
-    // The attribute might not actually exist on the node if the asset has
-    // changed since last sync.
-    if(attr.isNull())
-    {
-	return;
-    }
-
-    // create plug to the attribute
-    MPlug plug(thisMObject(), attr);
-
-    int size = parm.size;
-    if( HAPI_ParmInfo_IsInt( &parm ) )
-    {
-        MIntArray values = myAsset->getParmIntValues(parm);
-        if (size == 1)
-        {
-            MDataHandle handle = data.inputValue(plug);
-            handle.set(values[0]);
-        }
-        else
-        {
-            for (int i=0; i<size; i++)
-            {
-                MPlug child = plug.child(i);
-                MDataHandle handle = data.inputValue(child);
-                handle.set(values[i]);
-            }
-        }
-        return;
-    }
-
-    if( HAPI_ParmInfo_IsFloat( &parm ) )
-    {
-        MFloatArray values = myAsset->getParmFloatValues(parm);
-        if (size == 1)
-        {
-            MDataHandle handle = data.inputValue(plug);
-            handle.set(values[0]);
-        }
-        else
-        {
-            for (int i=0; i<size; i++)
-            {
-                MPlug child = plug.child(i);
-                MDataHandle handle = data.inputValue(child);
-                handle.set(values[i]);
-            }
-        }
-        return;
-    }
-
-    if( HAPI_ParmInfo_IsString( &parm ) )
-    {
-        MStringArray values = myAsset->getParmStringValues(parm);
-        if (size == 1)
-        {
-            MDataHandle handle = data.inputValue(plug);
-            handle.set(values[0]);
-        }
-        else
-        {
-            for (int i=0; i<size; i++)
-            {
-                MPlug child = plug.child(i);
-                MDataHandle handle = data.inputValue(child);
-                handle.set(values[i]);
-            }
-        }
-        return;
-    }
-}
-
-
-// This function will update Maya attrs based on Houdini Parms
-void
-AssetNode::updateAttrValues(MDataBlock& data)
-{
-    int parmCount = myAsset->myNodeInfo.parmCount;
-    if (parmCount <= 0)
-        return;
-    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(myAsset->myNodeInfo.id, parmInfos, 0, parmCount);
-
-    for (int i=0; i<parmCount; i++)
-    {
-        HAPI_ParmInfo& parm = parmInfos[i];
-        updateAttrValue(parm, data);
-    }
-
-    delete[] parmInfos;
-}
-
-// This function takes Maya attr values and pushes it into Houdini
-void
-AssetNode::setParmValue(HAPI_ParmInfo& parm, MDataBlock& data, bool dirtyOnly)
-{    
-
-    MObject attr = getAttrFromParm(parm);
-    // The attribute might not actually exist on the node if the asset has
-    // changed since last sync.
-    if(attr.isNull())
-    {
-	return;
-    }
-
-    MPlug plug(thisMObject(), attr);
-
-    //Only push into Houdini the minimum changes necessary.
-    //Only push what has been dirtied.
-    if (dirtyOnly && !isPlugDirty(plug, parm))
-    {
-	return;
-    }
-
-	// this is the tuple size
-    int size = parm.size;
-
-    if ( HAPI_ParmInfo_IsInt( &parm ) )
-    {
-        int * values = new int[size];
-        if (size == 1)
-        {
-            MDataHandle handle = data.inputValue(plug);
-            values[0] = handle.asInt();
-        } else
-        {
-            for (int i=0; i<size; i++)
-            {
-                MPlug child = plug.child(i);
-                MDataHandle handle = data.inputValue(child);
-                values[i] = handle.asInt();
-            }
-        }
-        HAPI_SetParmIntValues( myAsset->myNodeInfo.id, values, parm.intValuesIndex, size );
-
-        delete[] values;
-    }
-
-    if ( HAPI_ParmInfo_IsFloat( &parm ) )
-    {
-        float * values = new float[size];
-        if (size == 1)
-        {
-            MDataHandle handle = data.inputValue(plug);
-            values[0] = handle.asFloat();
-        } else
-        {
-            for (int i=0; i<size; i++)
-            {
-                MPlug child = plug.child(i);
-                MDataHandle handle = data.inputValue(child);
-                values[i] = handle.asFloat();
-            }
-        }
-        HAPI_SetParmFloatValues( myAsset->myNodeInfo.id, values, parm.floatValuesIndex, size);
-
-        delete[] values;
-    }
-
-    if ( HAPI_ParmInfo_IsString( &parm ) )
-    {
-        if (size == 1)
-        {
-            MDataHandle handle = data.inputValue(plug);
-            const char* val = handle.asString().asChar();
-            HAPI_SetParmStringValue( myAsset->myNodeInfo.id, val, parm.id, 0);
-        } else
-        {
-            for (int i=0; i<size; i++)
-            {
-                MPlug child = plug.child(i);
-                MDataHandle handle = data.inputValue(child);
-                const char* val = handle.asString().asChar();
-                HAPI_SetParmStringValue( myAsset->myNodeInfo.id, val, parm.id, i);
-            }
-        }
-    }
-
-}
-
-// This function takes Maya attr values and pushes it into Houdini
-void
-AssetNode::setParmValues(MDataBlock& data, bool dirtyOnly)
-{
-    int parmCount = myAsset->myNodeInfo.parmCount;
-    if (parmCount <= 0)
-        return;
-    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(myAsset->myNodeInfo.id, parmInfos, 0, parmCount );
-
-    for (int i=0; i<parmCount; i++)
-    {
-
-        HAPI_ParmInfo& parm = parmInfos[i];
-        setParmValue(parm, data, dirtyOnly);
-    }
-
-    delete[] parmInfos;
-}
-
-bool
-AssetNode::isPlugDirty(const MPlug &plug, const HAPI_ParmInfo &parm)
-{
-    bool isDirty = false;
-
-    for(MObjectVector::iterator iter = myDirtyParmAttributes.begin();
-	    iter != myDirtyParmAttributes.end();
-	    iter++)
-    {
-	MPlug dirtyParmPlug(thisMObject(), *iter);
-
-	// If the dirtied plug matches the parm
-	if(plug == dirtyParmPlug)
-	{
-	    isDirty = true;
-	}
-
-	// If the parm is a tuple, then we also need to check the parent plug.
-	// We need to check if it's int, float, or string, because non-values
-	// like folders also use parm.size.
-	if(( HAPI_ParmInfo_IsInt( &parm ) || HAPI_ParmInfo_IsFloat( &parm ) || HAPI_ParmInfo_IsString( &parm ) )
-		&& parm.size > 1
-		&& dirtyParmPlug.isChild() && dirtyParmPlug.parent() == plug)
-	{
-	    isDirty = true;
-	}
-
-	if(isDirty)
-	{
-	    myDirtyParmAttributes.erase(iter);
-	    break;
-	}
-    }
-
-    return isDirty;
-}
-
 void
 AssetNode::setPlugDirty(const MPlug &plug)
 {
@@ -1130,17 +877,41 @@ AssetNode::setPlugDirty(const MPlug &plug)
 MStatus
 AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
+    MStatus status;
+
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
 	!= computeAttributes.end() && !myResultsClean )
     {
 	// make sure Asset is created
 	createAsset();
 
+        MFnDependencyNode assetNodeFn(thisMObject());
+        MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+
 	//push parms into Houdini
-	setParmValues(data);
+        if(!parmAttrObj.isNull())
+        {
+            MDataHandle dataHandle = data.outputValue(parmAttrObj, &status);
+            CHECK_MSTATUS(status);
+            myAsset->setParmValues(
+                    dataHandle,
+                    assetNodeFn,
+                    &myDirtyParmAttributes
+                    );
+            myDirtyParmAttributes.clear();
+        }
 
 	//updates Maya attrs from Houdini
-	updateAttrValues(data);
+        if(!parmAttrObj.isNull())
+        {
+            MDataHandle dataHandle = data.inputValue(parmAttrObj, &status);
+            CHECK_MSTATUS(status);
+            myAsset->getParmValues(
+                    dataHandle,
+                    assetNodeFn,
+                    NULL
+                    );
+        }
 
 	MPlug outputPlug(thisMObject(), AssetNode::output);
 	myAsset->compute(outputPlug, data);
@@ -1229,6 +1000,8 @@ AssetNode::getAsset()
 void
 AssetNode::createAsset()
 {
+    MStatus status;
+
     if(!myAssetPathChanged)
     {
 	return;
@@ -1240,9 +1013,21 @@ AssetNode::createAsset()
 
     myAssetPathChanged = false;
 
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+
     // Restore all the asset's parameter values
     MDataBlock dataBlock = forceCache();
-    setParmValues(dataBlock, false);
+    if(!parmAttrObj.isNull())
+    {
+        MDataHandle dataHandle = dataBlock.outputValue(parmAttrObj, &status);
+        CHECK_MSTATUS(status);
+        myAsset->setParmValues(
+                dataHandle,
+                assetNodeFn,
+                NULL
+                );
+    }
 }
 
 void

@@ -43,7 +43,38 @@ AssetSyncAttribute::doIt()
 	}
     }
 
-    buildParms();
+    MObject houdiniAssetParmObj;
+
+    // delete existing attribute
+    houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+    if(!houdiniAssetParmObj.isNull())
+    {
+        myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
+        myDGModifier.doIt();
+    }
+
+    // create root attribute
+    MFnCompoundAttribute cAttr;
+    houdiniAssetParmObj = cAttr.create(
+            Util::getParmAttrPrefix(),
+            Util::getParmAttrPrefix()
+            );
+
+    int parmCount = myNodeInfo.parmCount;
+    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
+    HAPI_GetParameters(myNodeInfo.id, parmInfos, 0, parmCount);
+
+    // create attributes for all parameters
+    int index = 0;
+    while (index < parmCount)
+    {
+        int consumed = buildAttrTree(parmInfos, houdiniAssetParmObj, index, index+1);
+        index += consumed;
+    }
+
+    delete[] parmInfos;
+
+    myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
 
     // restore old parameter values
     status = myDGModifier.commandToExecute("select " + assetNodeFn.name());
@@ -258,39 +289,6 @@ AssetSyncAttribute::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MS
         nAttr.setSoftMax(parm.UIMax);
 
     return result;
-}
-
-void
-AssetSyncAttribute::buildParms()
-{
-    MFnDependencyNode assetNodeFn(myAssetNodeObj);
-    MObject houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
-    if(!houdiniAssetParmObj.isNull())
-    {
-	myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
-	myDGModifier.doIt();
-    }
-
-    MFnCompoundAttribute cAttr;
-    houdiniAssetParmObj = cAttr.create(
-	    Util::getParmAttrPrefix(),
-	    Util::getParmAttrPrefix()
-	    );
-
-    int parmCount = myNodeInfo.parmCount;
-    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(myNodeInfo.id, parmInfos, 0, parmCount);
-
-    int index = 0;
-    while (index < parmCount)
-    {
-        int consumed = buildAttrTree(parmInfos, houdiniAssetParmObj, index, index+1);
-        index += consumed;
-    }
-
-    delete[] parmInfos;
-
-    myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
 }
 
 int

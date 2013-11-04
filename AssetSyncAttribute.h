@@ -25,7 +25,6 @@ class AssetSyncAttribute : public AssetSync
         MObject createStringAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
         MObject createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
 
-        void buildParms();
 	int buildAttrTree(
 		HAPI_ParmInfo* myParmInfos,
 		const MObject &parent,

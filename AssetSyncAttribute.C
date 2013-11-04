@@ -11,106 +11,100 @@
 #include "AssetNode.h"
 #include "util.h"
 
-AssetSyncAttribute::AssetSyncAttribute(
-	const MObject &assetNodeObj
-	) :
-    myAssetNodeObj(assetNodeObj)
+class CreateAttrOperation : public Util::WalkParmOperation
 {
-    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+    public:
+        CreateAttrOperation(
+                MFnCompoundAttribute* attrFn,
+                const HAPI_NodeInfo &nodeInfo
+                );
+        ~CreateAttrOperation();
 
-    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
-    myNodeInfo = assetNode->getAsset()->myNodeInfo;
+        virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
+        virtual void popFolder();
+
+        virtual void leaf(const HAPI_ParmInfo &parmInfo);
+
+    private:
+        std::vector<MFnCompoundAttribute*> myAttrFns;
+        std::vector<bool> myInvisibles;
+
+        const HAPI_NodeInfo &myNodeInfo;
+
+        MObject createAttr(const HAPI_ParmInfo &parm);
+        MObject createStringAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName);
+        MObject createNumericAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName);
+};
+
+CreateAttrOperation::CreateAttrOperation(
+        MFnCompoundAttribute* attrFn,
+        const HAPI_NodeInfo &nodeInfo
+        ) :
+    myNodeInfo(nodeInfo)
+{
+    myAttrFns.push_back(attrFn);
+    myInvisibles.push_back(false);
 }
 
-AssetSyncAttribute::~AssetSyncAttribute()
+CreateAttrOperation::~CreateAttrOperation()
 {
+    myAttrFns.pop_back();
+    myInvisibles.pop_back();
 }
 
-MStatus
-AssetSyncAttribute::doIt()
+void
+CreateAttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 {
-    MStatus status;
+    MFnCompoundAttribute* attrFn = NULL;
+    bool invisible = myInvisibles.back() || parmInfo.invisible;
 
-    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+    MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
 
-    // save the existing parameter values
-    MStringArray setAttrCmds;
+    if(!invisible)
     {
-	MPlug houdiniAssetParmPlug = assetNodeFn.findPlug(Util::getParmAttrPrefix(), &status);
-	if(status)
-	{
-	    houdiniAssetParmPlug.getSetAttrCmds(setAttrCmds, MPlug::kAll, true);
-	}
+        MObject folderAttrObj = createAttr(parmInfo);
+
+        attrFn = new MFnCompoundAttribute(folderAttrObj);
     }
 
-    MObject houdiniAssetParmObj;
-
-    // delete existing attribute
-    houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
-    if(!houdiniAssetParmObj.isNull())
-    {
-        myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
-        myDGModifier.doIt();
-    }
-
-    // create root attribute
-    MFnCompoundAttribute cAttr;
-    houdiniAssetParmObj = cAttr.create(
-            Util::getParmAttrPrefix(),
-            Util::getParmAttrPrefix()
-            );
-
-    int parmCount = myNodeInfo.parmCount;
-    HAPI_ParmInfo * parmInfos = new HAPI_ParmInfo[parmCount];
-    HAPI_GetParameters(myNodeInfo.id, parmInfos, 0, parmCount);
-
-    // create attributes for all parameters
-    int index = 0;
-    while (index < parmCount)
-    {
-        int consumed = buildAttrTree(parmInfos, houdiniAssetParmObj, index, index+1);
-        index += consumed;
-    }
-
-    delete[] parmInfos;
-
-    myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
-
-    // restore old parameter values
-    status = myDGModifier.commandToExecute("select " + assetNodeFn.name());
-    for(unsigned int i = 0; i< setAttrCmds.length(); i++)
-    {
-	status = myDGModifier.commandToExecute(setAttrCmds[i]);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
-
-    return redoIt();
+    myAttrFns.push_back(attrFn);
+    myInvisibles.push_back(invisible);
 }
 
-MStatus
-AssetSyncAttribute::undoIt()
+void
+CreateAttrOperation::popFolder()
 {
-    MStatus status;
+    MFnCompoundAttribute* attrFn = myAttrFns.back();
+    bool invisible = myInvisibles.back();
 
-    status = myDGModifier.undoIt();
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    myAttrFns.pop_back();
+    myInvisibles.pop_back();
 
-    return MStatus::kSuccess;
+    MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+
+    if(!invisible)
+    {
+        parentAttrFn->addChild(attrFn->object());
+
+        delete attrFn;
+    }
 }
 
-MStatus
-AssetSyncAttribute::redoIt()
+void
+CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
-    MStatus status;
+    MFnCompoundAttribute* attrFn = myAttrFns.back();
+    bool invisible = myInvisibles.back();
 
-    status = myDGModifier.doIt();
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    return MStatus::kSuccess;
+    if(!invisible && !parmInfo.invisible)
+    {
+        MObject attrObj = createAttr(parmInfo);
+        attrFn->addChild(attrObj);
+    }
 }
 
 MObject
-AssetSyncAttribute::createAttr(HAPI_ParmInfo& parm)
+CreateAttrOperation::createAttr(const HAPI_ParmInfo &parm)
 {
     MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
@@ -161,7 +155,7 @@ AssetSyncAttribute::createAttr(HAPI_ParmInfo& parm)
 }
 
 MObject
-AssetSyncAttribute::createStringAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName)
+CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName)
 {
     MFnTypedAttribute tAttr;
     MFnCompoundAttribute cAttr;
@@ -200,7 +194,7 @@ AssetSyncAttribute::createStringAttr(HAPI_ParmInfo& parm, MString& longName, MSt
 }
 
 MObject
-AssetSyncAttribute::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName)
+CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName)
 {
     MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
@@ -291,73 +285,98 @@ AssetSyncAttribute::createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MS
     return result;
 }
 
-int
-AssetSyncAttribute::buildAttrTree(
-	HAPI_ParmInfo* parmInfos,
-	const MObject &parent,
-	int current,
-	int start,
-	bool invisible
-	)
+AssetSyncAttribute::AssetSyncAttribute(
+        const MObject &assetNodeObj
+        ) :
+    myAssetNodeObj(assetNodeObj)
 {
-    HAPI_ParmInfo parm = parmInfos[current];
+    MFnDependencyNode assetNodeFn(myAssetNodeObj);
 
-    if(parm.invisible)
-    {
-	invisible = true;
-    }
+    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+    myNodeInfo = assetNode->getAsset()->myNodeInfo;
+}
 
-    // We can do this even if invisible, since this doesn't actually create any new
-    // attributes
-    if (parm.type == HAPI_PARMTYPE_FOLDERLIST)
+AssetSyncAttribute::~AssetSyncAttribute()
+{
+}
+
+MStatus
+AssetSyncAttribute::doIt()
+{
+    MStatus status;
+
+    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+
+    // save the existing parameter values
+    MStringArray setAttrCmds;
     {
-        int offset = parm.size;
-        for (int i = start; i < start+parm.size; i++)
+        MPlug houdiniAssetParmPlug = assetNodeFn.findPlug(Util::getParmAttrPrefix(), &status);
+        if(status)
         {
-            int count = buildAttrTree(parmInfos, parent, i, start + offset, invisible);
-            offset += count;
+            houdiniAssetParmPlug.getSetAttrCmds(setAttrCmds, MPlug::kAll, true);
         }
-        return offset + 1;
     }
 
-    // If invisible, we still need to traverse the parameters to figure out the
-    // offset.
-    if(invisible)
+    MObject houdiniAssetParmObj;
+
+    // delete existing attribute
+    houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+    if(!houdiniAssetParmObj.isNull())
     {
-	if (parm.type == HAPI_PARMTYPE_FOLDER)
-	{
-	    MObject result;
-	    int offset = 0;
-	    for (int i = start; i < start+parm.size; i++)
-	    {
-		int count = buildAttrTree(parmInfos, result, start + offset, start + offset + 1, true);
-		offset += count;
-	    }
-	    return offset;
-	}
-	else
-	{
-	    return 1;
-	}
+        myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
+        myDGModifier.doIt();
     }
 
-    MFnCompoundAttribute cAttr(parent);
-
-    if (parm.type == HAPI_PARMTYPE_FOLDER)
     {
-        MObject result;
-	result = createAttr(parm);
-        int offset = 0;
-        for (int i = start; i < start+parm.size; i++)
-        {
-            int count = buildAttrTree(parmInfos, result, start + offset, start + offset + 1);
-            offset += count;
-        }
-	cAttr.addChild(result);
-        return offset;
+        std::vector<HAPI_ParmInfo> parmInfos;
+        parmInfos.resize(myNodeInfo.parmCount);
+        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+
+        // create root attribute
+        MFnCompoundAttribute attrFn;
+        houdiniAssetParmObj = attrFn.create(
+                Util::getParmAttrPrefix(),
+                Util::getParmAttrPrefix()
+                );
+
+        CreateAttrOperation operation(
+                reinterpret_cast<MFnCompoundAttribute*>(&reinterpret_cast<char&>(attrFn)),
+                myNodeInfo
+                );
+        Util::walkParm(parmInfos, operation);
     }
 
-    MObject result = createAttr(parm);
-    cAttr.addChild(result);
-    return 1;
+    myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
+
+    // restore old parameter values
+    status = myDGModifier.commandToExecute("select " + assetNodeFn.name());
+    for(unsigned int i = 0; i< setAttrCmds.length(); i++)
+    {
+        status = myDGModifier.commandToExecute(setAttrCmds[i]);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    return redoIt();
+}
+
+MStatus
+AssetSyncAttribute::undoIt()
+{
+    MStatus status;
+
+    status = myDGModifier.undoIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
+}
+
+MStatus
+AssetSyncAttribute::redoIt()
+{
+    MStatus status;
+
+    status = myDGModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
 }

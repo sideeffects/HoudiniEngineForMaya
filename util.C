@@ -426,3 +426,116 @@ Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name)
 
     return -1;
 }
+
+Util::WalkParmOperation::WalkParmOperation()
+{
+}
+
+Util::WalkParmOperation::~WalkParmOperation()
+{
+}
+
+void
+Util::WalkParmOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
+{
+}
+
+void
+Util::WalkParmOperation::popFolder()
+{
+}
+
+void
+Util::WalkParmOperation::leaf(const HAPI_ParmInfo &parmInfo)
+{
+}
+
+int
+walkParmOne(
+        const HAPI_ParmInfo* parmInfos,
+        Util::WalkParmOperation &operation
+        );
+
+int
+walkParmMultiple(
+        const HAPI_ParmInfo* parmInfos,
+        Util::WalkParmOperation &operation,
+        unsigned int count
+        );
+
+int
+walkParmOne(
+        const HAPI_ParmInfo* parmInfos,
+        Util::WalkParmOperation &operation
+        )
+{
+    int consumed = 0;
+
+    const HAPI_ParmInfo &parmInfo = *parmInfos;
+    consumed++;
+
+    if(parmInfo.type == HAPI_PARMTYPE_FOLDERLIST)
+    {
+        const HAPI_ParmInfo* folderParmInfos = parmInfos + 1 + parmInfo.size;
+
+        // loop over the HAPI_PARMTYPE_FOLDER parms
+        for(int i = 0; i < parmInfo.size; i++)
+        {
+            const HAPI_ParmInfo &folderParmInfo = parmInfos[1 + i];
+            consumed++;
+
+            operation.pushFolder(folderParmInfo);
+
+            //folderAttrFn,
+            int folderConsumed = walkParmMultiple(
+                    folderParmInfos,
+                    operation,
+                    folderParmInfo.size
+                    );
+            folderParmInfos += folderConsumed;
+            consumed += folderConsumed;
+
+
+            operation.popFolder();
+        }
+    }
+    else
+    {
+        operation.leaf(parmInfo);
+    }
+
+    return consumed;
+}
+
+int
+walkParmMultiple(
+        const HAPI_ParmInfo* parmInfos,
+        Util::WalkParmOperation &operation,
+        unsigned int count
+        )
+{
+    unsigned int consumed = 0;
+
+    for(unsigned int i = 0; i < count; i++)
+    {
+        int oneConsumed = walkParmOne(parmInfos + consumed, operation);
+        consumed += oneConsumed;
+    }
+
+    return consumed;
+}
+
+void
+Util::walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, Util::WalkParmOperation &operation)
+{
+    size_t index = 0;
+
+    const HAPI_ParmInfo* walkParmInfos = &parmInfos.front();
+
+    while(index < parmInfos.size())
+    {
+        size_t consumed = walkParmOne(walkParmInfos, operation);
+        walkParmInfos += consumed;
+        index += consumed;
+    }
+}

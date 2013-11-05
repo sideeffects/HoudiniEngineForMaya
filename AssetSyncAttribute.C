@@ -84,7 +84,14 @@ CreateAttrOperation::popFolder()
 
     if(!invisible)
     {
-        parentAttrFn->addChild(attrFn->object());
+        // Maya will crash if there is a compound attribute with no children.
+        // As a temporary workaround, avoid creating the attribute if there are
+        // no children. Eventually, we should avoid using compound attributes
+        // to represent folders.
+        if(attrFn->numChildren() > 0)
+        {
+            parentAttrFn->addChild(attrFn->object());
+        }
 
         delete attrFn;
     }

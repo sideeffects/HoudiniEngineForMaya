@@ -77,6 +77,19 @@ class Util {
 
         // Returns true if the parm was found.
         static int findParm(std::vector<HAPI_ParmInfo>& parms, MString name);
+
+        class WalkParmOperation
+        {
+            public:
+                WalkParmOperation();
+                virtual ~WalkParmOperation();
+
+                virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
+                virtual void popFolder();
+
+                virtual void leaf(const HAPI_ParmInfo &parmInfo);
+        };
+        static void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
 };
 
 #endif

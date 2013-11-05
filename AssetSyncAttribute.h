@@ -8,6 +8,8 @@
 
 #include <HAPI/HAPI.h>
 
+class MFnCompoundAttribute;
+
 class AssetSyncAttribute : public AssetSync
 {
     public:
@@ -19,19 +21,6 @@ class AssetSyncAttribute : public AssetSync
 	virtual MStatus doIt();
 	virtual MStatus undoIt();
 	virtual MStatus redoIt();
-
-    protected:
-        MObject createAttr(HAPI_ParmInfo& parm);
-        MObject createStringAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
-        MObject createNumericAttr(HAPI_ParmInfo& parm, MString& longName, MString& shortName, MString& niceName);
-
-	int buildAttrTree(
-		HAPI_ParmInfo* myParmInfos,
-		const MObject &parent,
-		int current,
-		int start,
-		bool invisible = false
-		);
 
     protected:
 	const MObject myAssetNodeObj;

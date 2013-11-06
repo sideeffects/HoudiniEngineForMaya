@@ -174,7 +174,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
         cAttr.setNiceNameOverride(niceName);
         for (int i=0; i<size; i++)
         {
-            MString childAttrName = attrName + "_" + i;
+            MString childAttrName = attrName + "__tuple" + i;
             MString childNiceName = niceName + " " + i;
             MObject child = tAttr.create(
                     childAttrName,
@@ -245,7 +245,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
         cAttr.setNiceNameOverride(niceName);
         for (int i = 0; i < parm.size; i++)
         {
-            MString childAttrName = attrName + "_" + i;
+            MString childAttrName = attrName + "__tuple" + i;
             MString childNiceName = niceName + " " + i;
             MObject child = nAttr.create(
                     childAttrName,

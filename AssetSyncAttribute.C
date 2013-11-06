@@ -31,9 +31,9 @@ class CreateAttrOperation : public Util::WalkParmOperation
 
         const HAPI_NodeInfo &myNodeInfo;
 
-        MObject createAttr(const HAPI_ParmInfo &parm);
-        MObject createStringAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName);
-        MObject createNumericAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName);
+        MObject createStringAttr(const HAPI_ParmInfo &parm);
+        MObject createNumericAttr(const HAPI_ParmInfo &parm);
+        MObject createEnumAttr(const HAPI_ParmInfo &parm);
 };
 
 CreateAttrOperation::CreateAttrOperation(
@@ -62,9 +62,13 @@ CreateAttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 
     if(!invisible)
     {
-        MObject folderAttrObj = createAttr(parmInfo);
+        attrFn = new MFnCompoundAttribute();
 
-        attrFn = new MFnCompoundAttribute(folderAttrObj);
+        MString attrName = Util::getAttrNameFromParm(parmInfo);
+        MString niceName = Util::getString(parmInfo.labelSH);
+
+        attrFn->create(attrName, attrName);
+        attrFn->setNiceNameOverride(niceName);
     }
 
     myAttrFns.push_back(attrFn);
@@ -105,63 +109,51 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
     if(!invisible && !parmInfo.invisible)
     {
-        MObject attrObj = createAttr(parmInfo);
+        MObject attrObj;
+
+        switch(parmInfo.type)
+        {
+            case HAPI_PARMTYPE_SEPARATOR:
+                {
+                    MFnGenericAttribute gAttr;
+
+                    MString attrName = Util::getAttrNameFromParm(parmInfo);
+
+                    attrObj = gAttr.create(attrName, attrName);
+                    gAttr.setHidden(true);
+                    gAttr.setStorable(false);
+                    gAttr.setReadable(false);
+                    gAttr.setWritable(false);
+                    gAttr.setConnectable(false);
+                    gAttr.setNiceNameOverride("Separator");
+                }
+                break;
+            case HAPI_PARMTYPE_INT:
+            case HAPI_PARMTYPE_FLOAT:
+            case HAPI_PARMTYPE_COLOUR:
+            case HAPI_PARMTYPE_TOGGLE:
+                attrObj = createNumericAttr(parmInfo);
+                break;
+            case HAPI_PARMTYPE_STRING:
+            case HAPI_PARMTYPE_FILE:
+                attrObj = createStringAttr(parmInfo);
+                break;
+            default:
+                break;
+        }
+
         attrFn->addChild(attrObj);
     }
 }
 
 MObject
-CreateAttrOperation::createAttr(const HAPI_ParmInfo &parm)
+CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
 {
-    MFnCompoundAttribute cAttr;
-    MFnGenericAttribute gAttr;
     MFnTypedAttribute tAttr;
+    MFnCompoundAttribute cAttr;
 
-    MString label = Util::getString(parm.labelSH);
     MString attrName = Util::getAttrNameFromParm(parm);
-
-    MObject result;
-
-    // Other types
-    switch(parm.type)
-    {
-        case HAPI_PARMTYPE_FOLDERLIST:
-        case HAPI_PARMTYPE_FOLDER:
-            result = cAttr.create(attrName, attrName);
-            cAttr.setStorable(true);
-            cAttr.setNiceNameOverride(label);
-            break;
-        case HAPI_PARMTYPE_SEPARATOR:
-            result = gAttr.create(attrName, attrName);
-            gAttr.setHidden(true);
-            gAttr.setStorable(false);
-            gAttr.setReadable(false);
-            gAttr.setWritable(false);
-            gAttr.setConnectable(false);
-            gAttr.setNiceNameOverride("Separator");
-            break;
-        case HAPI_PARMTYPE_INT:
-        case HAPI_PARMTYPE_FLOAT:
-        case HAPI_PARMTYPE_COLOUR:
-        case HAPI_PARMTYPE_TOGGLE:
-            result = createNumericAttr(parm, attrName, attrName, label);
-            break;
-        case HAPI_PARMTYPE_STRING:
-        case HAPI_PARMTYPE_FILE:
-            result = createStringAttr(parm, attrName, attrName, label);
-            break;
-        default:
-            break;
-    }
-
-    return result;
-}
-
-MObject
-CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName)
-{
-    MFnTypedAttribute tAttr;
-    MFnCompoundAttribute cAttr;
+    MString niceName = Util::getString(parm.labelSH);
 
     int size = parm.size;
 
@@ -169,16 +161,19 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm, MString& longNa
 
     if (size > 1)
     {
-        result = cAttr.create(longName, shortName);
+        result = cAttr.create(attrName, attrName);
         cAttr.setStorable(true);
         cAttr.setNiceNameOverride(niceName);
         for (int i=0; i<size; i++)
         {
-            MString ln = longName + "_" + i;
-            MString sn = shortName + "_" + i;
-            MString nn = niceName + " " + i;
-            MObject child = tAttr.create(ln, sn, MFnData::kString);
-            tAttr.setNiceNameOverride(nn);
+            MString childAttrName = attrName + "_" + i;
+            MString childNiceName = niceName + " " + i;
+            MObject child = tAttr.create(
+                    childAttrName,
+                    childAttrName,
+                    MFnData::kString
+                    );
+            tAttr.setNiceNameOverride(childNiceName);
             tAttr.setStorable(true);
             if (parm.type == HAPI_PARMTYPE_FILE)
                 tAttr.setUsedAsFilename(true);
@@ -187,7 +182,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm, MString& longNa
         return result;
     }
 
-    result = tAttr.create(longName, shortName, MFnData::kString);
+    result = tAttr.create(attrName, attrName, MFnData::kString);
     tAttr.setStorable(true);
     tAttr.setNiceNameOverride(niceName);
     if (parm.type == HAPI_PARMTYPE_FILE)
@@ -197,8 +192,11 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm, MString& longNa
 }
 
 MObject
-CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm, MString& longName, MString& shortName, MString& niceName)
+CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
 {
+    MString attrName = Util::getAttrNameFromParm(parm);
+    MString niceName = Util::getString(parm.labelSH);
+
     MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
     MFnEnumAttribute eAttr;
@@ -210,7 +208,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm, MString& longN
     // Choice list
     if (choiceCount > 0)
     {
-        result = eAttr.create(longName, shortName);
+        result = eAttr.create(attrName, attrName);
         eAttr.setStorable(true);
         eAttr.setNiceNameOverride(niceName);
 
@@ -254,24 +252,27 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm, MString& longN
     }
 
     if (size > 3) {
-        result = cAttr.create(longName, shortName);
+        result = cAttr.create(attrName, attrName);
         cAttr.setNiceNameOverride(niceName);
         for (int i=0; i<size; i++)
         {
-            MString ln = longName + "_" + i;
-            MString sn = shortName + "_" + i;
-            MString nn = niceName + " " + i;
-            MObject child = nAttr.create(ln, sn, type);
-            nAttr.setNiceNameOverride(nn);
+            MString childAttrName = attrName + "_" + i;
+            MString childNiceName = niceName + " " + i;
+            MObject child = nAttr.create(
+                    childAttrName,
+                    childAttrName,
+                    type
+                    );
+            nAttr.setNiceNameOverride(childNiceName);
             cAttr.addChild(child);
         }
         return result;
     }
 
     if (parm.type == HAPI_PARMTYPE_COLOUR)
-        result = nAttr.createColor(longName, shortName);
+        result = nAttr.createColor(attrName, attrName);
     else
-        result = nAttr.create(longName, shortName, type);
+        result = nAttr.create(attrName, attrName, type);
     nAttr.setStorable(true);
     nAttr.setNiceNameOverride(niceName);
 

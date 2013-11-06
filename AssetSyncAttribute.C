@@ -111,35 +111,43 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     {
         MObject attrObj;
 
-        switch(parmInfo.type)
+        if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
+                && parmInfo.choiceCount > 0)
         {
-            case HAPI_PARMTYPE_SEPARATOR:
-                {
-                    MFnGenericAttribute gAttr;
+            attrObj = createEnumAttr(parmInfo);
+        }
+        else
+        {
+            switch(parmInfo.type)
+            {
+                case HAPI_PARMTYPE_SEPARATOR:
+                    {
+                        MFnGenericAttribute gAttr;
 
-                    MString attrName = Util::getAttrNameFromParm(parmInfo);
+                        MString attrName = Util::getAttrNameFromParm(parmInfo);
 
-                    attrObj = gAttr.create(attrName, attrName);
-                    gAttr.setHidden(true);
-                    gAttr.setStorable(false);
-                    gAttr.setReadable(false);
-                    gAttr.setWritable(false);
-                    gAttr.setConnectable(false);
-                    gAttr.setNiceNameOverride("Separator");
-                }
-                break;
-            case HAPI_PARMTYPE_INT:
-            case HAPI_PARMTYPE_FLOAT:
-            case HAPI_PARMTYPE_COLOUR:
-            case HAPI_PARMTYPE_TOGGLE:
-                attrObj = createNumericAttr(parmInfo);
-                break;
-            case HAPI_PARMTYPE_STRING:
-            case HAPI_PARMTYPE_FILE:
-                attrObj = createStringAttr(parmInfo);
-                break;
-            default:
-                break;
+                        attrObj = gAttr.create(attrName, attrName);
+                        gAttr.setHidden(true);
+                        gAttr.setStorable(false);
+                        gAttr.setReadable(false);
+                        gAttr.setWritable(false);
+                        gAttr.setConnectable(false);
+                        gAttr.setNiceNameOverride("Separator");
+                    }
+                    break;
+                case HAPI_PARMTYPE_INT:
+                case HAPI_PARMTYPE_FLOAT:
+                case HAPI_PARMTYPE_COLOUR:
+                case HAPI_PARMTYPE_TOGGLE:
+                    attrObj = createNumericAttr(parmInfo);
+                    break;
+                case HAPI_PARMTYPE_STRING:
+                case HAPI_PARMTYPE_FILE:
+                    attrObj = createStringAttr(parmInfo);
+                    break;
+                default:
+                    break;
+            }
         }
 
         attrFn->addChild(attrObj);
@@ -199,32 +207,9 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
 
     MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
-    MFnEnumAttribute eAttr;
 
     MObject result;
     int size = parm.size;
-    int choiceCount = parm.choiceCount;
-
-    // Choice list
-    if (choiceCount > 0)
-    {
-        result = eAttr.create(attrName, attrName);
-        eAttr.setStorable(true);
-        eAttr.setNiceNameOverride(niceName);
-
-        HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[choiceCount];
-        HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parm.choiceIndex, choiceCount);
-        for (int i=0; i<choiceCount; i++)
-        {
-            MString field = Util::getString(choiceInfos[i].labelSH);
-            eAttr.addField(field, static_cast<short>(i));
-        }
-
-	delete[] choiceInfos;
-        return result;
-    }
-
-
 
     MFnNumericData::Type type;
     if (parm.type == HAPI_PARMTYPE_TOGGLE)
@@ -286,6 +271,30 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
     if (parm.hasUIMax)
         nAttr.setSoftMax(parm.UIMax);
 
+    return result;
+}
+
+MObject
+CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
+{
+    MString attrName = Util::getAttrNameFromParm(parm);
+    MString niceName = Util::getString(parm.labelSH);
+
+    MFnEnumAttribute eAttr;
+
+    MObject result = eAttr.create(attrName, attrName);
+    eAttr.setStorable(true);
+    eAttr.setNiceNameOverride(niceName);
+
+    HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parm.choiceCount];
+    HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parm.choiceIndex, parm.choiceCount);
+    for (int i = 0; i < parm.choiceCount; i++)
+    {
+        MString field = Util::getString(choiceInfos[i].labelSH);
+        eAttr.addField(field, static_cast<short>(i));
+    }
+
+    delete[] choiceInfos;
     return result;
 }
 

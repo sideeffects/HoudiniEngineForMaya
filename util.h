@@ -87,6 +87,10 @@ class Util {
                 virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
                 virtual void popFolder();
 
+                virtual void pushMultiparm(const HAPI_ParmInfo &parmInfo);
+                virtual void nextMultiparm();
+                virtual void popMultiparm();
+
                 virtual void leaf(const HAPI_ParmInfo &parmInfo);
         };
         static void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);

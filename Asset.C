@@ -530,7 +530,6 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     break;
                 case HAPI_PARMTYPE_INT:
                 case HAPI_PARMTYPE_TOGGLE:
-                case HAPI_PARMTYPE_BUTTON:
                     {
                         int* values = new int[parmInfo.size];
                         HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
@@ -703,7 +702,6 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     break;
                 case HAPI_PARMTYPE_INT:
                 case HAPI_PARMTYPE_TOGGLE:
-                case HAPI_PARMTYPE_BUTTON:
                     {
                         int * values = new int[parmInfo.size];
                         if (parmInfo.size == 1)

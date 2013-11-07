@@ -113,7 +113,6 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 MObject
 CreateAttrOperation::createAttr(const HAPI_ParmInfo &parm)
 {
-    MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
     MFnGenericAttribute gAttr;
     MFnTypedAttribute tAttr;
@@ -152,9 +151,6 @@ CreateAttrOperation::createAttr(const HAPI_ParmInfo &parm)
             result = createStringAttr(parm, attrName, attrName, label);
             break;
         default:
-            result = nAttr.create(attrName, attrName, MFnNumericData::kFloat, 1.0);
-            nAttr.setStorable(true);
-            nAttr.setNiceNameOverride(label);
             break;
     }
 

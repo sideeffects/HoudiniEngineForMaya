@@ -76,7 +76,7 @@ class Util {
         static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
 
         // Returns true if the parm was found.
-        static int findParm(std::vector<HAPI_ParmInfo>& parms, MString name);
+        static int findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum = -1);
 
         class WalkParmOperation
         {

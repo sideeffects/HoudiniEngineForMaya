@@ -62,7 +62,12 @@ Util::getString(int handle)
 MString
 Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
 {
-    return getParmAttrPrefix() + "_" + getString(parm.nameSH);
+    MString name = getString(parm.nameSH);
+    if(parm.isChildOfMultiParm)
+    {
+        name = replaceString(name, "#", "_");
+    }
+    return getParmAttrPrefix() + "_" + name;
 }
 
 
@@ -408,20 +413,16 @@ Util::getAttributeStringData(int assetId,
 }
 
 int
-Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name)
+Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
 {
     for (size_t i = 0; i < parms.size(); i++)
     {
-	MString current_parm_name = getString(parms[i].nameSH);
-	if(parms[i].isChildOfMultiParm)
-	{
-	    current_parm_name = replaceString(current_parm_name, "#", MString() + parms[i].instanceNum);
-	}
-
-	if (current_parm_name == name)
-	{
-	    return static_cast<int>(i);
-	}
+        if(getString(parms[i].nameSH) == name
+                && (instanceNum < 0 || parms[i].instanceNum == instanceNum)
+          )
+        {
+            return static_cast<int>(i);
+        }
     }
 
     return -1;

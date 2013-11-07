@@ -610,7 +610,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
         int diffuseParmIndex = Util::findParm(parms, "ogl_diff");
         int alphaParmIndex = Util::findParm(parms, "ogl_alpha");
         int specularParmIndex = Util::findParm(parms, "ogl_spec");
-        int texturePathSHParmIndex = Util::findParm(parms, "ogl_tex1");
+        int texturePathSHParmIndex = Util::findParm(parms, "ogl_tex#", 1);
         float valueHolder[4];
 
         matExistsHandle.set(true);

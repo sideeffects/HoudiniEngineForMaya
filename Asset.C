@@ -500,102 +500,138 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         {
             dataHandle = parentDataHandle.child(attrObj);
 
-            switch(parmInfo.type)
+            if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
+                    && parmInfo.choiceCount > 0)
             {
-                case HAPI_PARMTYPE_FLOAT:
-                case HAPI_PARMTYPE_COLOUR:
+                int enumIndex = 0;
+
+                if(parmInfo.type == HAPI_PARMTYPE_STRING)
+                {
+                    int value;
+                    HAPI_GetParmStringValues(myNodeInfo.id, &value, parmInfo.stringValuesIndex, parmInfo.size);
+                    MString valueString = Util::getString(value);
+
+                    HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
+                    HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parmInfo.choiceIndex, parmInfo.choiceCount);
+
+                    for(int i = 0; i < parmInfo.choiceCount; i++)
                     {
-                        float* values = new float[parmInfo.size];
-                        HAPI_GetParmFloatValues(myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
-
-                        if(parmInfo.size == 1)
+                        if(valueString == Util::getString(choiceInfos[i].valueSH))
                         {
-                            dataHandle.setFloat(values[0]);
+                            enumIndex = i;
                         }
-                        else
-                        {
-                            MFnCompoundAttribute attrFn(attrObj);
-                            for(int i = 0;
-                                    i < attrFn.numChildren()
-                                    && i < parmInfo.size;
-                                    i++)
-                            {
-                                MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
-                                elementDataHandle.setFloat(values[i]);
-                            }
-                        }
-
-                        delete[] values;
                     }
-                    break;
-                case HAPI_PARMTYPE_INT:
-                case HAPI_PARMTYPE_TOGGLE:
-                    {
-                        int* values = new int[parmInfo.size];
-                        HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
 
-                        if(parmInfo.size == 1)
+                    delete[] choiceInfos;
+                }
+                else
+                {
+                    HAPI_GetParmIntValues(myNodeInfo.id, &enumIndex, parmInfo.intValuesIndex, parmInfo.size);
+                }
+
+                dataHandle.setShort(static_cast<short>(enumIndex));
+            }
+            else
+            {
+                switch(parmInfo.type)
+                {
+                    case HAPI_PARMTYPE_FLOAT:
+                    case HAPI_PARMTYPE_COLOUR:
                         {
-                            if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                            float* values = new float[parmInfo.size];
+                            HAPI_GetParmFloatValues(myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+
+                            if(parmInfo.size == 1)
                             {
-                                dataHandle.setShort(values[0]);
+                                dataHandle.setFloat(values[0]);
                             }
                             else
                             {
-                                dataHandle.setInt(values[0]);
-                            }
-                        }
-                        else
-                        {
-                            MFnCompoundAttribute attrFn(attrObj);
-                            for(int i = 0;
-                                    i < attrFn.numChildren()
-                                    && i < parmInfo.size;
-                                    i++)
-                            {
-                                MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
-                                if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                                MFnCompoundAttribute attrFn(attrObj);
+                                for(int i = 0;
+                                        i < attrFn.numChildren()
+                                        && i < parmInfo.size;
+                                        i++)
                                 {
-                                    elementDataHandle.setShort(values[i]);
+                                    MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                    elementDataHandle.setFloat(values[i]);
+                                }
+                            }
+
+                            delete[] values;
+                        }
+                        break;
+                    case HAPI_PARMTYPE_INT:
+                    case HAPI_PARMTYPE_TOGGLE:
+                        {
+                            int* values = new int[parmInfo.size];
+                            HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
+
+                            if(parmInfo.size == 1)
+                            {
+                                if(parmInfo.type == HAPI_PARMTYPE_TOGGLE
+                                        || parmInfo.choiceCount > 0)
+                                {
+                                    dataHandle.setShort(values[0]);
                                 }
                                 else
                                 {
-                                    elementDataHandle.setInt(values[i]);
+                                    dataHandle.setInt(values[0]);
                                 }
                             }
-                        }
-
-                        delete[] values;
-                    }
-                    break;
-                case HAPI_PARMTYPE_STRING:
-                case HAPI_PARMTYPE_FILE:
-                    {
-                        int* values = new int[parmInfo.size];
-                        HAPI_GetParmStringValues(myNodeInfo.id, values, parmInfo.stringValuesIndex, parmInfo.size);
-
-                        if(parmInfo.size == 1)
-                        {
-                            dataHandle.setString(Util::getString(values[0]));
-                        }
-                        else
-                        {
-                            MFnCompoundAttribute attrFn(attrObj);
-                            for(int i = 0;
-                                    i < attrFn.numChildren()
-                                    && i < parmInfo.size;
-                                    i++)
+                            else
                             {
-                                MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
-                                elementDataHandle.setString(Util::getString(values[i]));
+                                MFnCompoundAttribute attrFn(attrObj);
+                                for(int i = 0;
+                                        i < attrFn.numChildren()
+                                        && i < parmInfo.size;
+                                        i++)
+                                {
+                                    MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                    if(parmInfo.type == HAPI_PARMTYPE_TOGGLE
+                                            || parmInfo.choiceCount > 0)
+                                    {
+                                        elementDataHandle.setShort(values[i]);
+                                    }
+                                    else
+                                    {
+                                        elementDataHandle.setInt(values[i]);
+                                    }
+                                }
                             }
-                        }
 
-                        delete[] values;
-                    }
-                    break;
-                default:
-                    break;
+                            delete[] values;
+                        }
+                        break;
+                    case HAPI_PARMTYPE_STRING:
+                    case HAPI_PARMTYPE_FILE:
+                        {
+                            int* values = new int[parmInfo.size];
+                            HAPI_GetParmStringValues(myNodeInfo.id, values, parmInfo.stringValuesIndex, parmInfo.size);
+
+                            if(parmInfo.size == 1)
+                            {
+                                dataHandle.setString(Util::getString(values[0]));
+                            }
+                            else
+                            {
+                                MFnCompoundAttribute attrFn(attrObj);
+                                for(int i = 0;
+                                        i < attrFn.numChildren()
+                                        && i < parmInfo.size;
+                                        i++)
+                                {
+                                    MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                    elementDataHandle.setString(Util::getString(values[i]));
+                                }
+                            }
+
+                            delete[] values;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
@@ -677,85 +713,109 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         {
             dataHandle = parentDataHandle.child(attrObj);
 
-            switch(parmInfo.type)
+            if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
+                    && parmInfo.choiceCount > 0)
             {
-                case HAPI_PARMTYPE_FLOAT:
-                case HAPI_PARMTYPE_COLOUR:
-                    {
-                        float * values = new float[parmInfo.size];
-                        if (parmInfo.size == 1)
-                        {
-                            values[0] = dataHandle.asFloat();
-                        } else
-                        {
-                            MFnCompoundAttribute attrFn(attrObj);
-                            for (int i=0; i<parmInfo.size; i++)
-                            {
-                                MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
-                                values[i] = elementHandle.asFloat();
-                            }
-                        }
-                        HAPI_SetParmFloatValues( myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+                int enumIndex = static_cast<int>(dataHandle.asShort());
 
-                        delete[] values;
-                    }
-                    break;
-                case HAPI_PARMTYPE_INT:
-                case HAPI_PARMTYPE_TOGGLE:
-                    {
-                        int * values = new int[parmInfo.size];
-                        if (parmInfo.size == 1)
+                if(parmInfo.type == HAPI_PARMTYPE_STRING)
+                {
+                    HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
+                    HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parmInfo.choiceIndex, parmInfo.choiceCount);
+
+                    MString valueString = Util::getString(choiceInfos[enumIndex].valueSH);
+
+                    HAPI_SetParmStringValue( myNodeInfo.id, valueString.asChar(), parmInfo.id, 0);
+
+                    delete[] choiceInfos;
+                }
+                else
+                {
+                    HAPI_SetParmIntValues(myNodeInfo.id, &enumIndex, parmInfo.intValuesIndex, 1);
+                }
+            }
+            else
+            {
+                switch(parmInfo.type)
+                {
+                    case HAPI_PARMTYPE_FLOAT:
+                    case HAPI_PARMTYPE_COLOUR:
                         {
-                            if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                            float * values = new float[parmInfo.size];
+                            if (parmInfo.size == 1)
                             {
-                                values[0] = dataHandle.asShort();
-                            }
-                            else
+                                values[0] = dataHandle.asFloat();
+                            } else
                             {
-                                values[0] = dataHandle.asInt();
+                                MFnCompoundAttribute attrFn(attrObj);
+                                for (int i=0; i<parmInfo.size; i++)
+                                {
+                                    MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    values[i] = elementHandle.asFloat();
+                                }
                             }
-                        } else
+                            HAPI_SetParmFloatValues( myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+
+                            delete[] values;
+                        }
+                        break;
+                    case HAPI_PARMTYPE_INT:
+                    case HAPI_PARMTYPE_TOGGLE:
                         {
-                            MFnCompoundAttribute attrFn(attrObj);
-                            for (int i=0; i<parmInfo.size; i++)
+                            int * values = new int[parmInfo.size];
+                            if (parmInfo.size == 1)
                             {
-                                MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
                                 if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
                                 {
-                                    values[i] = dataHandle.asShort();
+                                    values[0] = dataHandle.asBool();
                                 }
                                 else
                                 {
-                                    values[i] = dataHandle.asInt();
+                                    values[0] = dataHandle.asInt();
+                                }
+                            } else
+                            {
+                                MFnCompoundAttribute attrFn(attrObj);
+                                for (int i=0; i<parmInfo.size; i++)
+                                {
+                                    MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
+                                    {
+                                        values[i] = dataHandle.asBool();
+                                    }
+                                    else
+                                    {
+                                        values[i] = dataHandle.asInt();
+                                    }
+                                }
+                            }
+                            HAPI_SetParmIntValues( myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size );
+
+                            delete[] values;
+                        }
+                        break;
+                    case HAPI_PARMTYPE_STRING:
+                    case HAPI_PARMTYPE_FILE:
+                        {
+                            if (parmInfo.size == 1)
+                            {
+                                const char* val = dataHandle.asString().asChar();
+                                HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, 0);
+                            } else
+                            {
+                                MFnCompoundAttribute attrFn(attrObj);
+                                for (int i=0; i<parmInfo.size; i++)
+                                {
+                                    MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    const char* val = elementHandle.asString().asChar();
+                                    HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, i);
                                 }
                             }
                         }
-                        HAPI_SetParmIntValues( myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size );
-
-                        delete[] values;
-                    }
-                    break;
-                case HAPI_PARMTYPE_STRING:
-                case HAPI_PARMTYPE_FILE:
-                    {
-                        if (parmInfo.size == 1)
-                        {
-                            const char* val = dataHandle.asString().asChar();
-                            HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, 0);
-                        } else
-                        {
-                            MFnCompoundAttribute attrFn(attrObj);
-                            for (int i=0; i<parmInfo.size; i++)
-                            {
-                                MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
-                                const char* val = elementHandle.asString().asChar();
-                                HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, i);
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    break;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }

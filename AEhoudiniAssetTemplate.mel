@@ -12,7 +12,7 @@ proc buildAttrTree(string $nodeName, string $attr)
     }
 
     // simple attributes
-    if($type != "compound")
+    if(`attrControlGrp -q -handlesAttribute $fullAttrName`)
     {
 	attrControlGrp -attribute $fullAttrName;
         return;

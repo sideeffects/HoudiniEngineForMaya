@@ -209,37 +209,41 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
     MFnCompoundAttribute cAttr;
 
     MObject result;
-    int size = parm.size;
 
-    MFnNumericData::Type type;
-    if (parm.type == HAPI_PARMTYPE_TOGGLE)
+    MFnNumericData::Type type = MFnNumericData::kInvalid;
+    switch(parm.type)
     {
-        type = MFnNumericData::kBoolean;
-    }
-    else if (parm.type == HAPI_PARMTYPE_INT)
-    {
-        switch (size)
-        {
-            case 1: type = MFnNumericData::kInt; break;
-            case 2: type = MFnNumericData::k2Int; break;
-            case 3: type = MFnNumericData::k3Int; break;
-            default: type = MFnNumericData::kInt; break;
-        }
-    } else
-    {
-        switch (size)
-        {
-            case 1: type = MFnNumericData::kFloat; break;
-            case 2: type = MFnNumericData::k2Float; break;
-            case 3: type = MFnNumericData::k3Float; break;
-            default: type = MFnNumericData::kFloat; break;
-        }
+        case HAPI_PARMTYPE_TOGGLE:
+            type = MFnNumericData::kBoolean;
+            break;
+        case HAPI_PARMTYPE_INT:
+            type = MFnNumericData::kInt;
+            break;
+        case HAPI_PARMTYPE_FLOAT:
+        case HAPI_PARMTYPE_COLOUR:
+            type = MFnNumericData::kFloat;
+            break;
+        default:
+            break;
     }
 
-    if (size > 3) {
+    if(type == MFnNumericData::kInvalid)
+    {
+        return result;
+    }
+
+    if(parm.type == HAPI_PARMTYPE_COLOUR
+            && parm.size == 3)
+    {
+        result = nAttr.createColor(attrName, attrName);
+        return result;
+    }
+
+    if(parm.size > 1)
+    {
         result = cAttr.create(attrName, attrName);
         cAttr.setNiceNameOverride(niceName);
-        for (int i=0; i<size; i++)
+        for (int i = 0; i < parm.size; i++)
         {
             MString childAttrName = attrName + "_" + i;
             MString childNiceName = niceName + " " + i;
@@ -254,11 +258,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
         return result;
     }
 
-    if (parm.type == HAPI_PARMTYPE_COLOUR)
-        result = nAttr.createColor(attrName, attrName);
-    else
-        result = nAttr.create(attrName, attrName, type);
-    nAttr.setStorable(true);
+    result = nAttr.create(attrName, attrName, type);
     nAttr.setNiceNameOverride(niceName);
 
     // TODO: support min/max for all sizes

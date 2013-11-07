@@ -23,6 +23,9 @@ class CreateAttrOperation : public Util::WalkParmOperation
         virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
         virtual void popFolder();
 
+        virtual void pushMultiparm(const HAPI_ParmInfo &parmInfo);
+        virtual void popMultiparm();
+
         virtual void leaf(const HAPI_ParmInfo &parmInfo);
 
     private:
@@ -102,10 +105,72 @@ CreateAttrOperation::popFolder()
 }
 
 void
+CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
+{
+    MFnCompoundAttribute* attrFn = NULL;
+    bool invisible = myInvisibles.back() || parmInfo.invisible;
+
+    MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+
+    if(!invisible)
+    {
+        MString attrName = Util::getAttrNameFromParm(parmInfo);
+	MString label = Util::getString(parmInfo.labelSH);
+
+	MFnNumericAttribute sizeAttrFn;
+	sizeAttrFn.create(attrName + "__multiSize", attrName + "__multiSize", MFnNumericData::kInt);
+	sizeAttrFn.setNiceNameOverride(label);
+        sizeAttrFn.setInternal(true);
+	parentAttrFn->addChild(sizeAttrFn.object());
+
+        attrFn = new MFnCompoundAttribute();
+        MObject compoundAttrObj = attrFn->create(attrName, attrName);
+	attrFn->setNiceNameOverride(label);
+        attrFn->setArray(true);
+        attrFn->setUsesArrayDataBuilder(true);
+    }
+
+    myAttrFns.push_back(attrFn);
+    myInvisibles.push_back(invisible);
+}
+
+void
+CreateAttrOperation::popMultiparm()
+{
+    MFnCompoundAttribute* attrFn = myAttrFns.back();
+    bool invisible = myInvisibles.back();
+
+    myAttrFns.pop_back();
+    myInvisibles.pop_back();
+
+    MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+
+    if(!invisible)
+    {
+        // Maya will crash if there is a compound attribute with no children.
+        // As a temporary workaround, avoid creating the attribute if there are
+        // no children.
+        if(attrFn->numChildren() > 0)
+        {
+            parentAttrFn->addChild(attrFn->object());
+        }
+
+        delete attrFn;
+    }
+}
+
+void
 CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
     MFnCompoundAttribute* attrFn = myAttrFns.back();
     bool invisible = myInvisibles.back();
+
+    // for multiparm, only build the first instance
+    if(parmInfo.isChildOfMultiParm
+            && parmInfo.instanceNum != parmInfo.instanceStartOffset)
+    {
+        invisible = true;
+    }
 
     if(!invisible && !parmInfo.invisible)
     {

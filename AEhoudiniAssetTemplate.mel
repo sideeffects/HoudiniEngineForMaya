@@ -1,6 +1,6 @@
-proc buildAttrTree(string $nodeName, string $attr)
+proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 {
-    string $fullAttrName = $nodeName + "." + $attr;
+    string $fullAttrName = $nodeName + "." + $fullAttr;
 
     // Using for-in loop with the attributeQuery result directly crashes Maya.
     // This is most likely a MEL bug. Workaround it by first storing the result
@@ -12,6 +12,11 @@ proc buildAttrTree(string $nodeName, string $attr)
     for($child in $children)
     {
         string $type = `attributeQuery -node $nodeName -attributeType $child`;
+        int $isCompound = `attributeQuery -node $nodeName -attributeType $child` == "compound";
+        int $isMulti = `attributeQuery -node $nodeName -multi $child`;
+
+        string $multiparm_suffix = "__multiSize";
+        int $isMultiSize = endsWith($child, $multiparm_suffix);
 
         // separator
         if($type == "generic"
@@ -20,12 +25,13 @@ proc buildAttrTree(string $nodeName, string $attr)
             separator;
         }
         // simple attributes
-        else if(`attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`)
+        else if(`attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`
+                && !$isMultiSize)
         {
             attrControlGrp -attribute ($fullAttrName + "." + $child);
         }
         // a folder is represented by a compound attribute
-        else if(`attributeQuery -node $nodeName -attributeType $child` == "compound")
+        else if($isCompound && !$isMulti)
         {
             string $niceName = `attributeQuery -node $nodeName -niceName $child`;
 
@@ -35,16 +41,97 @@ proc buildAttrTree(string $nodeName, string $attr)
             columnLayout
                 -adjustableColumn 1;
 
-            buildAttrTree($nodeName, $child);
+            buildAttrTree($nodeName, $child, $fullAttr + "." + $child);
+
+            setParent ..;
+            setParent ..;
+        }
+        // a multiparm is represented by a "multiSize" attribute and a multi compound attribute
+        else if($isCompound && $isMulti)
+        {
+            // the actual UI for the multiparm attribute is generated when checking "multiSize"
+        }
+        else if($isMultiSize)
+        {
+            string $multiAttr = substring($child, 1, size($child) - size($multiparm_suffix));
+            string $multiFullAttr = $fullAttr + "." + $multiAttr;
+
+            string $multiNiceName = `attributeQuery -node $nodeName -niceName $child`;
+
+            frameLayout
+                -collapsable true
+                -label $multiNiceName;
+            columnLayout
+                -adjustableColumn 1;
+
+            string $parent = `setParent -q`;
+
+            attrControlGrp
+                -attribute ($fullAttrName + "." + $child)
+                -changeCommand ("houdiniAssetAdjustMulti \\\"" + $parent + "\\\" \\\"" + $nodeName + "\\\" \\\"" + $multiAttr + "\\\" \\\"" + $multiFullAttr + "\\\"");
+            ;
+
+            houdiniAssetAdjustMulti($parent, $nodeName, $multiAttr, $multiFullAttr);
 
             setParent ..;
             setParent ..;
         }
         else
         {
-            buildAttrTree($nodeName, $child);
+            buildAttrTree($nodeName, $child, $fullAttr + "." + $child);
         }
     }
+}
+
+global proc houdiniAssetAdjustMulti(
+	string $parent,
+	string $nodeName,
+	string $attr,
+	string $fullAttr
+	)
+{
+    setParent $parent;
+
+    setUITemplate -pushTemplate attributeEditorTemplate;
+
+    string $fullAttrName = $nodeName + "." + $fullAttr;
+
+    int $curMultiSize = (`layout -q -numberOfChildren $parent` - 1);
+    int $multiSize = `getAttr ($fullAttrName + "__multiSize")`;
+
+    if(`attributeQuery -node $nodeName -exists $attr`)
+    {
+        string $children[] = `attributeQuery -node $nodeName -listChildren $attr`;
+        //TODO: child attributes aren't created when the size is 0
+
+        for($i = $curMultiSize; $i < $multiSize; $i++)
+        {
+            // Wrap UI for each instance under one layout so that we have a known
+            // number of children.
+            columnLayout
+                -adjustableColumn true;
+
+            separator;
+
+            text
+                -align "left"
+                -label $i;
+
+            string $elementAttr = $fullAttr + "[" + $i + "]";
+
+            buildAttrTree($nodeName, $attr, $elementAttr);
+
+            setParent ..;
+        }
+    }
+
+    string $layoutChildArray[] = `layout -q -childArray $parent`;
+    for($i = $curMultiSize; $i-- > $multiSize; )
+    {
+        deleteUI $layoutChildArray[$i + 1];
+    }
+
+    setUITemplate -popTemplate;
 }
 
 proc string[] getValidAssetInputs(string $objects[])
@@ -386,7 +473,7 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
     string $nodeName = plugNode($houdiniAssetParmAttribute);
     string $attrName = plugAttr($houdiniAssetParmAttribute);
 
-    buildAttrTree($nodeName, $attrName);
+    buildAttrTree($nodeName, $attrName, $attrName);
 }
 
 global proc AEhoudiniAssetTemplate( string $nodeName )

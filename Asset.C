@@ -20,8 +20,14 @@
 class AttrOperation : public Util::WalkParmOperation
 {
     public:
+        enum Mode{
+            Get,
+            Set
+        };
+
         AttrOperation(
                 const MDataHandle &dataHandle,
+                const Mode &mode,
                 const MFnDependencyNode &nodeFn,
                 const HAPI_NodeInfo &nodeInfo,
                 const std::vector<MObject>* attrs
@@ -31,6 +37,10 @@ class AttrOperation : public Util::WalkParmOperation
         virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
         virtual void popFolder();
 
+        virtual void pushMultiparm(const HAPI_ParmInfo &parmInfo);
+        virtual void nextMultiparm();
+        virtual void popMultiparm();
+
         bool containsParm(const HAPI_ParmInfo &parm) const;
 
     protected:
@@ -38,6 +48,15 @@ class AttrOperation : public Util::WalkParmOperation
         std::vector<MPlug> myPlugs;
         std::vector<bool> myExists;
 
+        std::vector<bool> myIsMulti;
+        std::vector<MDataHandle> myMultiSizeDataHandles;
+        std::vector<MPlug> myMultiSizePlugs;
+        std::vector<bool> myHasMultiAttr;
+        std::vector<MArrayDataHandle> myMultiDataHandles;
+        std::vector<MPlug> myMultiPlugs;
+        std::vector<int> myMultiLogicalIndices;
+
+        const Mode &myMode;
         const MFnDependencyNode &myNodeFn;
         const HAPI_NodeInfo &myNodeInfo;
         const std::vector<MObject>* myAttrs;
@@ -45,10 +64,12 @@ class AttrOperation : public Util::WalkParmOperation
 
 AttrOperation::AttrOperation(
         const MDataHandle &dataHandle,
+        const Mode &mode,
         const MFnDependencyNode &nodeFn,
         const HAPI_NodeInfo &nodeInfo,
         const std::vector<MObject>* attrs
         ) :
+    myMode(mode),
     myNodeFn(nodeFn),
     myNodeInfo(nodeInfo),
     myAttrs(attrs)
@@ -100,6 +121,140 @@ AttrOperation::popFolder()
     //MDataHandle &dataHandle = myDataHandles.back();
     //MPlug &plug = myPlugs.back();
     //bool exists = myExists.back();
+
+    myDataHandles.pop_back();
+    myPlugs.pop_back();
+    myExists.pop_back();
+}
+
+void
+AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
+{
+    MStatus status;
+
+    // In a multiparm context, these variables are used to store the element
+    // attribute.
+    MDataHandle dataHandle;
+    MPlug plug;
+    bool exists = false;
+
+    // These parameters are pushed only for multiparms, and not created for the
+    // other parameters (e.g. folders and leaf).
+    // Since MArrayDataHandle doesn't have a default constructor, we construct
+    // an invalid MArrayDataHandle this way.
+    bool isMulti = false;
+    MDataHandle multiSizeDataHandle;
+    MPlug multiSizePlug;
+    bool hasMultiAttr = false;
+    MArrayDataHandle multiDataHandle(dataHandle);
+    MPlug multiPlug;
+    int multiLogicalIndex = -1;
+
+    MDataHandle &parentDataHandle = myDataHandles.back();
+    MPlug &parentPlug = myPlugs.back();
+    bool parentExists = myExists.back();
+
+    if(parentExists)
+    {
+        MString multiAttrName = Util::getAttrNameFromParm(parmInfo);
+        MObject multiSizeAttrObj = myNodeFn.attribute(multiAttrName + "__multiSize");
+        MObject multiAttrObj = myNodeFn.attribute(multiAttrName);
+
+        if(!multiSizeAttrObj.isNull())
+        {
+	    multiSizeDataHandle = parentDataHandle.child(multiSizeAttrObj);
+            multiSizePlug = parentPlug.child(multiSizeAttrObj);
+
+            isMulti = true;
+        }
+
+        // multiAttrObj might not exist if the current instanceCount is 0
+        if(isMulti && !multiAttrObj.isNull())
+        {
+            multiDataHandle = MArrayDataHandle(parentDataHandle.child(multiAttrObj));
+            multiPlug = parentPlug.child(multiAttrObj);
+
+            hasMultiAttr = true;
+        }
+    }
+
+    myIsMulti.push_back(isMulti);
+    myMultiSizeDataHandles.push_back(multiSizeDataHandle);
+    myMultiSizePlugs.push_back(multiSizePlug);
+    myHasMultiAttr.push_back(hasMultiAttr);
+    myMultiDataHandles.push_back(multiDataHandle);
+    myMultiPlugs.push_back(multiPlug);
+    myMultiLogicalIndices.push_back(multiLogicalIndex);
+
+    myDataHandles.push_back(dataHandle);
+    myPlugs.push_back(plug);
+    myExists.push_back(exists);
+
+    // initializes the first element
+    nextMultiparm();
+}
+
+void
+AttrOperation::nextMultiparm()
+{
+    MStatus status;
+
+    MDataHandle &dataHandle = myDataHandles.back();
+    MPlug &plug = myPlugs.back();
+    bool exists = myExists.back();
+
+    //bool isMulti = myIsMulti.back();
+    //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
+    //MPlug &multiSizePlug = myMultiSizePlugs.back();
+    bool hasMultiAttr = myHasMultiAttr.back();
+    MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
+    MPlug &multiPlug = myMultiPlugs.back();
+    int &multiLogicalIndex = myMultiLogicalIndices.back();
+
+    if(hasMultiAttr)
+    {
+        multiLogicalIndex++;
+        status = multiDataHandle.jumpToElement(multiLogicalIndex);
+        exists = status;
+
+        if(exists)
+        {
+            if(myMode == AttrOperation::Get)
+            {
+                dataHandle = multiDataHandle.outputValue();
+            }
+            else if(myMode == AttrOperation::Set)
+            {
+                dataHandle = multiDataHandle.inputValue();
+            }
+
+            plug = multiPlug.elementByLogicalIndex(multiLogicalIndex);
+        }
+    }
+}
+
+void
+AttrOperation::popMultiparm()
+{
+    //MDataHandle &dataHandle = myDataHandles.back();
+    //MPlug &plug = myPlugs.back();
+    //bool exists = myExists.back();
+
+    //bool isMulti = myIsMulti.back();
+    //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
+    //MPlug &multiSizePlug = myMultiSizePlugs.back();
+    //bool hasMultiAttr = myHasMultiAttr.back();
+    //MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
+    //MPlug &multiPlug = myMultiPlugs.back();
+    //int &multiLogicalIndex = myMultiLogicalIndices.back();
+
+    myIsMulti.pop_back();
+    myMultiSizeDataHandles.pop_back();
+    myMultiSizePlugs.pop_back();
+    myHasMultiAttr.pop_back();
+    myMultiDataHandles.pop_back();
+    myMultiPlugs.pop_back();
+    myMultiLogicalIndices.pop_back();
 
     myDataHandles.pop_back();
     myPlugs.pop_back();
@@ -480,6 +635,7 @@ GetAttrOperation::GetAttrOperation(
         ) :
     AttrOperation(
             dataHandle,
+            AttrOperation::Get,
             nodeFn,
             nodeInfo,
             attrs
@@ -696,6 +852,7 @@ SetAttrOperation::SetAttrOperation(
         ) :
     AttrOperation(
             dataHandle,
+            AttrOperation::Set,
             nodeFn,
             nodeInfo,
             attrs

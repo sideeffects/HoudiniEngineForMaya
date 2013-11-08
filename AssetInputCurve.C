@@ -25,7 +25,7 @@ AssetInputCurve::~AssetInputCurve()
 {
     HAPI_DisconnectAssetGeometry(myAssetId, myInputIdx);
 
-    HAPI_UnloadOTLFile(myCurveAssetInfo.id);
+    HAPI_DestroyAsset(myCurveAssetInfo.id);
 }
 
 AssetInputCurve::AssetInputType

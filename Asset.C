@@ -90,8 +90,8 @@ AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 void
 AttrOperation::popFolder()
 {
-    MDataHandle &dataHandle = myDataHandles.back();
-    bool exists = myExists.back();
+    //MDataHandle &dataHandle = myDataHandles.back();
+    //bool exists = myExists.back();
 
     myDataHandles.pop_back();
     myExists.pop_back();

@@ -447,6 +447,21 @@ Util::WalkParmOperation::popFolder()
 }
 
 void
+Util::WalkParmOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
+{
+}
+
+void
+Util::WalkParmOperation::nextMultiparm()
+{
+}
+
+void
+Util::WalkParmOperation::popMultiparm()
+{
+}
+
+void
 Util::WalkParmOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
 }
@@ -499,6 +514,32 @@ walkParmOne(
 
             operation.popFolder();
         }
+    }
+    else if(parmInfo.type == HAPI_PARMTYPE_MULTIPARMLIST)
+    {
+        operation.pushMultiparm(parmInfo);
+
+        const HAPI_ParmInfo* multiparmInfos = parmInfos + 1;
+
+        // The parameters of the multiparm won't be listed until there is at
+        // least one instance of the multiparm. We create the attributes using
+        // the first instance. After creating the attributes with the first
+        // instance, we still need to walk through the rest of the instances to
+        // find the end.
+        for(int i = 0; i < parmInfo.instanceCount; i++)
+        {
+            int multiparmConsumed = walkParmMultiple(
+                    multiparmInfos,
+                    operation,
+                    parmInfo.instanceLength
+                    );
+            multiparmInfos += multiparmConsumed;
+            consumed += multiparmConsumed;
+
+            operation.nextMultiparm();
+        }
+
+        operation.popMultiparm();
     }
     else
     {

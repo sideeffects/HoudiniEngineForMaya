@@ -934,11 +934,46 @@ AssetNode::getInternalValueInContext(
 	MDataHandle &dataHandle,
 	MDGContext &ctx)
 {
+    MStatus status;
+
     if(plug == assetPath)
     {
 	dataHandle.setString(myAssetPath);
 
 	return true;
+    }
+
+    // handle getting multiparm length
+    {
+        MString multiSizeSuffix = "__multiSize";
+        // check suffix
+        MString attrName = MFnAttribute(plug.attribute()).name();
+        if(attrName.substring(attrName.length() - multiSizeSuffix.length(),
+                        attrName.length() - 1) == multiSizeSuffix)
+        {
+            MFnDependencyNode assetNodeFn(thisMObject());
+            MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+
+            if(!parmAttrObj.isNull())
+            {
+                MDataBlock dataBlock = forceCache();
+
+                MDataHandle parmAttrHandle = dataBlock.outputValue(parmAttrObj, &status);
+                CHECK_MSTATUS(status);
+
+                int multiSize = 0;
+                getAsset()->getMultiparmLength(
+                        parmAttrHandle,
+                        plug,
+                        multiSize,
+                        assetNodeFn
+                        );
+
+                dataHandle.setInt(multiSize);
+            }
+
+            return true;
+        }
     }
 
     return MPxTransform::getInternalValueInContext(plug, dataHandle, ctx);
@@ -951,12 +986,44 @@ AssetNode::setInternalValueInContext(
 	MDGContext &ctx
 	)
 {
+    MStatus status;
+
     if(plug == assetPath)
     {
 	myAssetPath = dataHandle.asString();
 	myAssetPathChanged = true;
 
 	return true;
+    }
+
+    // handle setting multiparm length
+    {
+        MString multiSizeSuffix = "__multiSize";
+        // check suffix
+        MString attrName = MFnAttribute(plug.attribute()).name();
+        if(attrName.substring(attrName.length() - multiSizeSuffix.length(),
+                        attrName.length() - 1) == multiSizeSuffix)
+        {
+            MFnDependencyNode assetNodeFn(thisMObject());
+            MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+
+            if(!parmAttrObj.isNull())
+            {
+                MDataBlock dataBlock = forceCache();
+
+                MDataHandle parmAttrHandle = dataBlock.outputValue(parmAttrObj, &status);
+                CHECK_MSTATUS(status);
+
+                getAsset()->setMultiparmLength(
+                        parmAttrHandle,
+                        plug,
+                        dataHandle.asInt(),
+                        assetNodeFn
+                        );
+            }
+
+            return true;
+        }
     }
 
     return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);

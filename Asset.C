@@ -1018,3 +1018,236 @@ Asset::setParmValues(
 	Util::walkParm(parmInfos, operation);
     }
 }
+
+class GetMultiparmLengthOperation : public AttrOperation
+{
+    public:
+        GetMultiparmLengthOperation(
+                const MDataHandle &dataHandle,
+                const MPlug &multiSizePlug,
+                int &multiSize,
+                const MFnDependencyNode &nodeFn,
+                const HAPI_NodeInfo &nodeInfo
+                );
+
+        virtual void pushMultiparm(const HAPI_ParmInfo &parmInfo);
+
+    protected:
+        const MPlug &myMultiSizePlug;
+        int &myMultiSize;
+};
+
+GetMultiparmLengthOperation::GetMultiparmLengthOperation(
+                const MDataHandle &dataHandle,
+                const MPlug &multiSizePlug,
+                int &multiSize,
+                const MFnDependencyNode &nodeFn,
+                const HAPI_NodeInfo &nodeInfo
+        ) :
+    AttrOperation(
+            dataHandle,
+            AttrOperation::Get,
+            nodeFn,
+            nodeInfo,
+            NULL
+            ),
+            myMultiSizePlug(multiSizePlug),
+            myMultiSize(multiSize)
+{
+}
+
+void
+GetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
+{
+    MStatus status;
+
+    AttrOperation::pushMultiparm(parmInfo);
+
+    //MDataHandle &dataHandle = myDataHandles.back();
+    //MPlug &plug = myPlugs.back();
+    //bool exists = myExists.back();
+
+    bool isMulti = myIsMulti.back();
+    //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
+    MPlug &multiSizePlug = myMultiSizePlugs.back();
+    //bool hasMultiAttr = myHasMultiAttr.back();
+    //MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
+    //MPlug &multiPlug = myMultiPlugs.back();
+    //int &multiLogicalIndex = myMultiLogicalIndices.back();
+
+    if(isMulti && myMultiSizePlug == multiSizePlug)
+    {
+        myMultiSize = parmInfo.instanceCount;
+    }
+}
+
+void
+Asset::getMultiparmLength(
+        const MDataHandle &parentDataHandle,
+        const MPlug &multiSizePlug,
+        int &multiSize,
+        const MFnDependencyNode &nodeFn
+        )
+{
+    MStatus status;
+
+    std::vector<HAPI_ParmInfo> parmInfos;
+
+    // Get multiparm length
+    {
+        parmInfos.resize(myNodeInfo.parmCount);
+        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+
+        GetMultiparmLengthOperation operation(
+                parentDataHandle,
+                multiSizePlug,
+                multiSize,
+                nodeFn,
+                myNodeInfo
+                );
+        Util::walkParm(parmInfos, operation);
+    }
+
+    getParmValues(parentDataHandle, nodeFn, NULL);
+}
+
+class SetMultiparmLengthOperation : public AttrOperation
+{
+    public:
+        SetMultiparmLengthOperation(
+                const MDataHandle &dataHandle,
+                const MPlug &multiSizePlug,
+                int multiSize,
+                const MFnDependencyNode &nodeFn,
+                const HAPI_NodeInfo &nodeInfo
+                );
+
+        virtual void pushMultiparm(const HAPI_ParmInfo &parmInfo);
+
+    protected:
+        const MPlug &myMultiSizePlug;
+        int myMultiSize;
+};
+
+SetMultiparmLengthOperation::SetMultiparmLengthOperation(
+        const MDataHandle &dataHandle,
+        const MPlug &multiSizePlug,
+        int multiSize,
+        const MFnDependencyNode &nodeFn,
+        const HAPI_NodeInfo &nodeInfo
+        ) :
+    AttrOperation(
+            dataHandle,
+            AttrOperation::Set,
+            nodeFn,
+            nodeInfo,
+            NULL
+            ),
+    myMultiSizePlug(multiSizePlug),
+    myMultiSize(multiSize)
+{
+}
+
+void
+SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
+{
+    MStatus status;
+
+    AttrOperation::pushMultiparm(parmInfo);
+
+    //MDataHandle &dataHandle = myDataHandles.back();
+    //MPlug &plug = myPlugs.back();
+    //bool exists = myExists.back();
+
+    bool isMulti = myIsMulti.back();
+    //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
+    MPlug &multiSizePlug = myMultiSizePlugs.back();
+    bool hasMultiAttr = myHasMultiAttr.back();
+    MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
+    //MPlug &multiPlug = myMultiPlugs.back();
+    //int &multiLogicalIndex = myMultiLogicalIndices.back();
+
+    if(isMulti && myMultiSizePlug == multiSizePlug)
+    {
+        {
+            // If the multiparm has less instances than the multiDataHandle, then
+            // we need to add to the multiparm.
+            for(int i = parmInfo.instanceCount; i < myMultiSize; ++i)
+            {
+                HAPI_InsertMultiparmInstance(
+                        myNodeInfo.id,
+                        parmInfo.id,
+                        i + parmInfo.instanceStartOffset
+                        );
+            }
+
+            // If the multiparm has more instances than the multiDataHandle, then
+            // we need to remove from the multiparm.
+            for(int i = parmInfo.instanceCount; i-- > myMultiSize; )
+            {
+                HAPI_RemoveMultiparmInstance(
+                        myNodeInfo.id,
+                        parmInfo.id,
+                        i + parmInfo.instanceStartOffset
+                        );
+            }
+        }
+
+        if(hasMultiAttr)
+        {
+            MArrayDataBuilder builder = multiDataHandle.builder(&status);
+            CHECK_MSTATUS(status);
+
+            const int builderCount = builder.elementCount();
+
+            // If the builder has less elements than the multiparm, then we need to
+            // add to the builder.
+            for(int i = builderCount; i < myMultiSize; ++i)
+            {
+                builder.addElement(i);
+            }
+
+            // If the builder has more elements than the multiparm, then we need to
+            // remove from the builder.
+            for(int i = builderCount; i-- > myMultiSize; )
+            {
+                builder.removeElement(i);
+            }
+
+            multiDataHandle.set(builder);
+        }
+    }
+}
+
+void
+Asset::setMultiparmLength(
+        const MDataHandle &parentDataHandle,
+        const MPlug &multiSizePlug,
+        int multiSize,
+        const MFnDependencyNode &nodeFn
+        )
+{
+    MStatus status;
+
+    std::vector<HAPI_ParmInfo> parmInfos;
+
+    // Set multiparm length
+    {
+        parmInfos.resize(myNodeInfo.parmCount);
+        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+
+        SetMultiparmLengthOperation operation(
+                parentDataHandle,
+                multiSizePlug,
+                multiSize,
+                nodeFn,
+                myNodeInfo
+                );
+        Util::walkParm(parmInfos, operation);
+
+        // multiparm length could change, so we need to get the new parmCount
+        HAPI_GetNodeInfo( myAssetInfo.nodeId, &myNodeInfo);
+    }
+
+    getParmValues(parentDataHandle, nodeFn, NULL);
+}

@@ -31,6 +31,7 @@ class CreateAttrOperation : public Util::WalkParmOperation
     private:
         std::vector<MFnCompoundAttribute*> myAttrFns;
         std::vector<bool> myInvisibles;
+        std::vector<const HAPI_ParmInfo*> myParentParmInfos;
 
         const HAPI_NodeInfo &myNodeInfo;
 
@@ -47,12 +48,14 @@ CreateAttrOperation::CreateAttrOperation(
 {
     myAttrFns.push_back(attrFn);
     myInvisibles.push_back(false);
+    myParentParmInfos.push_back(NULL);
 }
 
 CreateAttrOperation::~CreateAttrOperation()
 {
     myAttrFns.pop_back();
     myInvisibles.pop_back();
+    myParentParmInfos.pop_back();
 }
 
 void
@@ -62,6 +65,7 @@ CreateAttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
     bool invisible = myInvisibles.back() || parmInfo.invisible;
 
     MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+    const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(!invisible)
     {
@@ -76,6 +80,7 @@ CreateAttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 
     myAttrFns.push_back(attrFn);
     myInvisibles.push_back(invisible);
+    myParentParmInfos.push_back(&parmInfo);
 }
 
 void
@@ -86,6 +91,7 @@ CreateAttrOperation::popFolder()
 
     myAttrFns.pop_back();
     myInvisibles.pop_back();
+    myParentParmInfos.pop_back();
 
     MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
 
@@ -111,6 +117,7 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     bool invisible = myInvisibles.back() || parmInfo.invisible;
 
     MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+    const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(!invisible)
     {
@@ -132,6 +139,7 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
     myAttrFns.push_back(attrFn);
     myInvisibles.push_back(invisible);
+    myParentParmInfos.push_back(&parmInfo);
 }
 
 void
@@ -142,6 +150,7 @@ CreateAttrOperation::popMultiparm()
 
     myAttrFns.pop_back();
     myInvisibles.pop_back();
+    myParentParmInfos.pop_back();
 
     MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
 
@@ -164,6 +173,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
     MFnCompoundAttribute* attrFn = myAttrFns.back();
     bool invisible = myInvisibles.back();
+    const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     // for multiparm, only build the first instance
     if(parmInfo.isChildOfMultiParm

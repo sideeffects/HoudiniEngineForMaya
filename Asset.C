@@ -35,6 +35,7 @@ class AttrOperation : public Util::WalkParmOperation
 
     protected:
         std::vector<MDataHandle> myDataHandles;
+        std::vector<MPlug> myPlugs;
         std::vector<bool> myExists;
 
         const MFnDependencyNode &myNodeFn;
@@ -53,12 +54,14 @@ AttrOperation::AttrOperation(
     myAttrs(attrs)
 {
     myDataHandles.push_back(dataHandle);
+    myPlugs.push_back(myNodeFn.findPlug(Util::getParmAttrPrefix()));
     myExists.push_back(true);
 }
 
 AttrOperation::~AttrOperation()
 {
     myDataHandles.pop_back();
+    myPlugs.pop_back();
     myExists.pop_back();
 }
 
@@ -66,9 +69,11 @@ void
 AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 {
     MDataHandle dataHandle;
+    MPlug plug;
     bool exists = false;
 
     MDataHandle &parentDataHandle = myDataHandles.back();
+    MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
 
     if(parentExists)
@@ -80,10 +85,12 @@ AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
         {
             exists = true;
             dataHandle = parentDataHandle.child(folderAttrObj);
+            plug = parentPlug.child(folderAttrObj);
         }
     }
 
     myDataHandles.push_back(dataHandle);
+    myPlugs.push_back(plug);
     myExists.push_back(exists);
 }
 
@@ -91,9 +98,11 @@ void
 AttrOperation::popFolder()
 {
     //MDataHandle &dataHandle = myDataHandles.back();
+    //MPlug &plug = myPlugs.back();
     //bool exists = myExists.back();
 
     myDataHandles.pop_back();
+    myPlugs.pop_back();
     myExists.pop_back();
 }
 
@@ -482,9 +491,11 @@ void
 GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
     MDataHandle dataHandle;
+    MPlug plug;
     bool exists = false;
 
     MDataHandle &parentDataHandle = myDataHandles.back();
+    MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
 
     if(parentExists && containsParm(parmInfo))
@@ -499,6 +510,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         if(exists)
         {
             dataHandle = parentDataHandle.child(attrObj);
+            plug = parentPlug.child(attrObj);
 
             if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
                     && parmInfo.choiceCount > 0)
@@ -695,9 +707,11 @@ void
 SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
     MDataHandle dataHandle;
+    MPlug plug;
     bool exists = false;
 
     MDataHandle &parentDataHandle = myDataHandles.back();
+    MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
 
     if(parentExists && containsParm(parmInfo))
@@ -712,6 +726,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         if(exists)
         {
             dataHandle = parentDataHandle.child(attrObj);
+            plug = parentPlug.child(attrObj);
 
             if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
                     && parmInfo.choiceCount > 0)

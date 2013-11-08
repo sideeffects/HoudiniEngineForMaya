@@ -375,7 +375,7 @@ Asset::~Asset()
     delete[] myObjectInfos;    
     delete myAssetInputs;
 
-    hstat = HAPI_UnloadOTLFile(myAssetInfo.id);
+    hstat = HAPI_DestroyAsset(myAssetInfo.id);
     Util::checkHAPIStatus(hstat);
 }
 
@@ -728,8 +728,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             {
                                 MFnCompoundAttribute attrFn(attrObj);
                                 for(int i = 0;
-                                        i < attrFn.numChildren()
-                                        && i < parmInfo.size;
+                                        i < (int) attrFn.numChildren()
+                                        && i < (int) parmInfo.size;
                                         i++)
                                 {
                                     MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
@@ -762,8 +762,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             {
                                 MFnCompoundAttribute attrFn(attrObj);
                                 for(int i = 0;
-                                        i < attrFn.numChildren()
-                                        && i < parmInfo.size;
+                                        i < (int) attrFn.numChildren()
+                                        && i < (int) parmInfo.size;
                                         i++)
                                 {
                                     MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
@@ -796,8 +796,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             {
                                 MFnCompoundAttribute attrFn(attrObj);
                                 for(int i = 0;
-                                        i < attrFn.numChildren()
-                                        && i < parmInfo.size;
+                                        i < (int) attrFn.numChildren()
+                                        && i < (int) parmInfo.size;
                                         i++)
                                 {
                                     MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));

@@ -231,6 +231,8 @@ AttrOperation::nextMultiparm()
             plug = multiPlug.elementByLogicalIndex(multiLogicalIndex);
         }
     }
+
+    myExists.back() = exists;
 }
 
 void

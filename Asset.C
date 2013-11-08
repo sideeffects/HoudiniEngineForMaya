@@ -781,11 +781,11 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                     MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
                                     if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
                                     {
-                                        values[i] = dataHandle.asBool();
+                                        values[i] = elementHandle.asBool();
                                     }
                                     else
                                     {
-                                        values[i] = dataHandle.asInt();
+                                        values[i] = elementHandle.asInt();
                                     }
                                 }
                             }

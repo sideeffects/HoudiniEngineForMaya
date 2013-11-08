@@ -310,8 +310,17 @@ Asset::Asset(MString otlFilePath, MObject node) :
     // load the otl
     const char* filename = otlFilePath.asChar();
 
+    int libraryId;
     int assetId;
-    hstat = HAPI_LoadOTLFile(filename, 3, 20, &assetId);
+    int assetNameSH;
+    HAPI_LoadAssetLibraryFromFile(filename, &libraryId);
+    HAPI_GetAvailableAssets(libraryId, &assetNameSH, 1);
+    HAPI_InstantiateAsset(
+            Util::getString(assetNameSH).asChar(),
+            true,
+            3, 20,
+            &assetId
+            );
 
     Util::statusCheckLoop();
     Util::checkHAPIStatus(hstat);

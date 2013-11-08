@@ -1,30 +1,6 @@
 proc buildAttrTree(string $nodeName, string $attr)
 {
     string $fullAttrName = $nodeName + "." + $attr;
-    string $type = `attributeQuery -node $nodeName -attributeType $attr`;
-    string $niceName = `attributeQuery -node $nodeName -niceName $attr`;
-
-    // separator
-    if($type == "generic" && $niceName == "Separator")
-    {
-	separator;
-	return;
-    }
-
-    // simple attributes
-    if(`attrControlGrp -q -handlesAttribute $fullAttrName`)
-    {
-	attrControlGrp -attribute $fullAttrName;
-        return;
-    }
-
-    // compound attributes
-    frameLayout
-	-collapsable true
-	-label $niceName;
-    columnLayout
-	-adjustableColumn 1;
-
 
     // Using for-in loop with the attributeQuery result directly crashes Maya.
     // This is most likely a MEL bug. Workaround it by first storing the result
@@ -35,11 +11,40 @@ proc buildAttrTree(string $nodeName, string $attr)
     string $children[] = `attributeQuery -node $nodeName -listChildren $attr`;
     for($child in $children)
     {
-        buildAttrTree($nodeName, $child);
-    }
+        string $type = `attributeQuery -node $nodeName -attributeType $child`;
 
-    setParent ..;
-    setParent ..;
+        // separator
+        if($type == "generic"
+                && `attributeQuery -node $nodeName -niceName $child` == "Separator")
+        {
+            separator;
+        }
+        // simple attributes
+        else if(`attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`)
+        {
+            attrControlGrp -attribute ($fullAttrName + "." + $child);
+        }
+        // a folder is represented by a compound attribute
+        else if(`attributeQuery -node $nodeName -attributeType $child` == "compound")
+        {
+            string $niceName = `attributeQuery -node $nodeName -niceName $child`;
+
+            frameLayout
+                -collapsable true
+                -label $niceName;
+            columnLayout
+                -adjustableColumn 1;
+
+            buildAttrTree($nodeName, $child);
+
+            setParent ..;
+            setParent ..;
+        }
+        else
+        {
+            buildAttrTree($nodeName, $child);
+        }
+    }
 }
 
 proc string[] getValidAssetInputs(string $objects[])
@@ -381,10 +386,7 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
     string $nodeName = plugNode($houdiniAssetParmAttribute);
     string $attrName = plugAttr($houdiniAssetParmAttribute);
 
-    for($attr in `attributeQuery -node $nodeName -listChildren $attrName`)
-    {
-	buildAttrTree($nodeName, $attr);
-    }
+    buildAttrTree($nodeName, $attrName);
 }
 
 global proc AEhoudiniAssetTemplate( string $nodeName )

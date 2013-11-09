@@ -66,10 +66,31 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
             string $parent = `setParent -q`;
 
+            // attributeEditorTemplate messes up layout, so pop out of it temporarily
+            setUITemplate -popTemplate;
+
+            rowLayout
+                -numberOfColumns 3;
+
             attrControlGrp
                 -attribute ($fullAttrName + "." + $child)
                 -changeCommand ("houdiniAssetAdjustMulti \\\"" + $parent + "\\\" \\\"" + $nodeName + "\\\" \\\"" + $multiAttr + "\\\" \\\"" + $multiFullAttr + "\\\"");
             ;
+
+            button
+                -label "+"
+                -width 30
+                -command ("setAttr " + $fullAttrName + "." + $child
+                        + " (`getAttr " + $fullAttrName + "." + $child + "` + 1)");
+            button
+                -label "-"
+                -width 30
+                -command ("setAttr " + $fullAttrName + "." + $child
+                        + " (`getAttr " + $fullAttrName + "." + $child + "` - 1)");
+
+            setParent ..;
+
+            setUITemplate -pushTemplate attributeEditorTemplate;
 
             houdiniAssetAdjustMulti($parent, $nodeName, $multiAttr, $multiFullAttr);
 

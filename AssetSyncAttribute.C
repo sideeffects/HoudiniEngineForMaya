@@ -177,7 +177,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
     // for multiparm, only build the first instance
     if(parmInfo.isChildOfMultiParm
-            && parmInfo.instanceNum != parmInfo.instanceStartOffset)
+            && parmInfo.instanceNum != parentParmInfo->instanceStartOffset)
     {
         invisible = true;
     }

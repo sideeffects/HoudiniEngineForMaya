@@ -108,7 +108,7 @@ endif
 CPPFLAGS += -I$(HFS)/custom/houdini/include
 CPPFLAGS += -I$(HFS)/toolkit/include
 ifeq ($(OS), Linux)
-    LDFLAGS += -Wl,-rpath,$(HFS)/dsolib
+    LDFLAGS += -Wl,-rpath,'$$ORIGIN/../../../../dsolib'
     LDLIBS += -L$(HFS)/dsolib -lHAPI
 else ifeq ($(OS), Cygwin)
     LDLIBS += -LIBPATH:$(HFS)/custom/houdini/dsolib libHAPI.a

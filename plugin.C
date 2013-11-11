@@ -22,14 +22,7 @@ initializeHAPI()
     MString otl_dir(getenv("HAPI_OTL_PATH"));
     MString dso_dir(getenv("HAPI_DSO_PATH"));
 
-    MString hfs(getenv("HAPI_PATH"));
-    if (hfs == "")
-    {
-	MGlobal::displayError("HAPI_PATH enviornment variable is not set.");
-	return false;
-    }
-
-    hstat = HAPI_Initialize(hfs.asChar(), otl_dir.asChar(),
+    hstat = HAPI_Initialize(otl_dir.asChar(),
 	    dso_dir.asChar(), true, -1);
     if(hstat != HAPI_RESULT_SUCCESS)
     {

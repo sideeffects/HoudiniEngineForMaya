@@ -393,7 +393,7 @@ AssetSyncAttribute::doIt()
 {
     MStatus status;
 
-    MFnDependencyNode assetNodeFn(myAssetNodeObj);
+    MFnDagNode assetNodeFn(myAssetNodeObj);
 
     // save the existing parameter values
     MStringArray setAttrCmds;
@@ -437,7 +437,7 @@ AssetSyncAttribute::doIt()
     myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
 
     // restore old parameter values
-    status = myDGModifier.commandToExecute("select " + assetNodeFn.name());
+    status = myDGModifier.commandToExecute("select " + assetNodeFn.fullPathName());
     for(unsigned int i = 0; i< setAttrCmds.length(); i++)
     {
         status = myDGModifier.commandToExecute(setAttrCmds[i]);

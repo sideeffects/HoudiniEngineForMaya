@@ -20,7 +20,6 @@ class GeometryPart
         virtual MStatus compute(MDataHandle& handle);
 
         virtual void setGeoInfo(HAPI_GeoInfo& info);
-        virtual bool hasMesh();
 
     public:
         MString myPartName;

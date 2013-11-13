@@ -93,14 +93,15 @@ GeometryPart::updateVertexList()
 void
 GeometryPart::updatePoints()
 {
-    MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_POINT, "P");
+    std::vector<float> floatArray;
+    getAttributeFloatData(floatArray, "P", HAPI_ATTROWNER_POINT);
     // make a maya point array, assume 3 tuple
     MFloatPointArray result;
     int i = 0;
-    int len = data.length();
+    int len = floatArray.size();
     while (i < len)
     {
-        MFloatPoint v(data[i], data[i+1], data[i+2]);
+        MFloatPoint v(floatArray[i], floatArray[i+1], floatArray[i+2]);
         result.append(v);
         i = i+3;
     }
@@ -112,17 +113,18 @@ GeometryPart::updatePoints()
 void
 GeometryPart::updateNormals()
 {
-    MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_POINT, "N");
+    std::vector<float> floatArray;
+    getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_POINT);
     // make a maya vector array, assume 3 tuple
     MVectorArray result;
 
-    if (data.length() > 0)
+    if (floatArray.size() > 0)
     {
         int i = 0;
-        int len = data.length();
+        int len = floatArray.size();
         while (i < len)
         {
-            MFloatVector v(data[i], data[i+1], data[i+2]);
+            MFloatVector v(floatArray[i], floatArray[i+1], floatArray[i+2]);
             result.append(v);
             i = i+3;
         }
@@ -135,19 +137,20 @@ GeometryPart::updateNormals()
 void
 GeometryPart::updateUVs()
 {
-    MFloatArray data = getAttributeFloatData(HAPI_ATTROWNER_VERTEX, "uv");
+    std::vector<float> floatArray;
+    getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_POINT);
     // split UVs into two arrays, assume 3 tuple
     MFloatArray Us;
     MFloatArray Vs;
 
-    if (data.length() > 0)
+    if (floatArray.size() > 0)
     {
         int i = 0;
-        int len = data.length();
+        int len = floatArray.size();
         while (i < len)
         {
-            Us.append(data[i]);
-            Vs.append(data[i+1]);
+            Us.append(floatArray[i]);
+            Vs.append(floatArray[i+1]);
             i = i+3;
         }
         Util::reverseWindingOrderFloat(Us, myFaceCounts);
@@ -261,30 +264,37 @@ GeometryPart::setGeoInfo(HAPI_GeoInfo& info)
 // Utility functions
 //=============================================================================
 
-MFloatArray
-GeometryPart::getAttributeFloatData(HAPI_AttributeOwner owner, MString name)
+void
+GeometryPart::getAttributeFloatData(
+        std::vector<float> &floatArray,
+        const char* name,
+        HAPI_AttributeOwner owner
+        )
 {
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
-    HAPI_GetAttributeInfo( myAssetId, myObjectId, myGeoId, myPartId, name.asChar(), owner, &attr_info);
+    HAPI_GetAttributeInfo(
+            myAssetId, myObjectId, myGeoId, myPartId,
+            name,
+            owner,
+            &attr_info
+            );
 
-    MFloatArray ret;
     if (!attr_info.exists)
-        return ret;
-
-    int size = attr_info.count * attr_info.tupleSize;
-    float * data = new float[size];
-    // zero the array
-    for (int j=0; j<size; j++){
-        data[j] = 0;
+    {
+        floatArray.clear();
+        return;
     }
-    HAPI_GetAttributeFloatData( myAssetId, myObjectId, myGeoId, myPartId, name.asChar(),
-            &attr_info, data, 0, attr_info.count);
 
-    ret = MFloatArray(data, size);
-
-    delete[] data;
-    return ret;
+    floatArray.resize(attr_info.count * attr_info.tupleSize);
+    HAPI_GetAttributeFloatData(
+            myAssetId, myObjectId, myGeoId, myPartId,
+            name,
+            &attr_info,
+            &floatArray.front(),
+            0,
+            attr_info.count
+            );
 }
 
 MStatus
@@ -373,6 +383,8 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     MDataHandle positionsHandle = dataHandle.child(AssetNode::outputPartParticlePositions);
     MDataHandle arrayDataHandle = dataHandle.child(AssetNode::outputPartParticleArrayData);
 
+    std::vector<float> floatArray;
+
     // positions
     MObject positionsObj = positionsHandle.data();
     MFnVectorArrayData positionDataFn(positionsObj);
@@ -384,13 +396,13 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
 
     MVectorArray positions = positionDataFn.array();
     {
-	MFloatArray attributeP = getAttributeFloatData(HAPI_ATTROWNER_POINT, "P");
-	positions.setLength(attributeP.length()/3);
+        getAttributeFloatData(floatArray, "P", HAPI_ATTROWNER_POINT);
+	positions.setLength(floatArray.size()/3);
 	for(unsigned int i = 0; i < positions.length(); i++)
 	{
-	    positions[i].x = attributeP[i * 3 + 0];
-	    positions[i].y = attributeP[i * 3 + 1];
-	    positions[i].z = attributeP[i * 3 + 2];
+	    positions[i].x = floatArray[i * 3 + 0];
+	    positions[i].y = floatArray[i * 3 + 1];
+	    positions[i].z = floatArray[i * 3 + 2];
 	}
     }
 
@@ -414,42 +426,42 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     // velocity
     MVectorArray velocityArray = arrayDataFn.vectorArray("velocity");
     {
-	MFloatArray v = getAttributeFloatData(HAPI_ATTROWNER_POINT, "v");
-	velocityArray.setLength(v.length()/3);
+        getAttributeFloatData(floatArray, "v", HAPI_ATTROWNER_POINT);
+	velocityArray.setLength(floatArray.size()/3);
 	for ( unsigned int i = 0; i < velocityArray.length(); i++ )
 	{
-	    velocityArray[i].x = v[i * 3 + 0];
-	    velocityArray[i].y = v[i * 3 + 1];
-	    velocityArray[i].z = v[i * 3 + 2];
+	    velocityArray[i].x = floatArray[i * 3 + 0];
+	    velocityArray[i].y = floatArray[i * 3 + 1];
+	    velocityArray[i].z = floatArray[i * 3 + 2];
 	}
     }
 
     // rgbPP
     {
-	MFloatArray Cd = getAttributeFloatData(HAPI_ATTROWNER_POINT, "Cd");
-	if(Cd.length()/3 == positions.length())
+        getAttributeFloatData(floatArray, "Cd", HAPI_ATTROWNER_POINT);
+	if(floatArray.size()/3 == positions.length())
 	{
 	    MVectorArray rgbPPArray = arrayDataFn.vectorArray("rgbPP");
-	    rgbPPArray.setLength(Cd.length()/3);
+	    rgbPPArray.setLength(floatArray.size()/3);
 	    for ( unsigned int i = 0; i < rgbPPArray.length(); i++ )
 	    {
-		rgbPPArray[i].x = Cd[i * 3 + 0];
-		rgbPPArray[i].y = Cd[i * 3 + 1];
-		rgbPPArray[i].z = Cd[i * 3 + 2];
+		rgbPPArray[i].x = floatArray[i * 3 + 0];
+		rgbPPArray[i].y = floatArray[i * 3 + 1];
+		rgbPPArray[i].z = floatArray[i * 3 + 2];
 	    }
 	}
     }
 
     // radiusPP
     {
-	MFloatArray pscale = getAttributeFloatData(HAPI_ATTROWNER_POINT, "pscale");
-	if(pscale.length() == positions.length())
+        getAttributeFloatData(floatArray, "pscale", HAPI_ATTROWNER_POINT);
+	if(floatArray.size() == positions.length())
 	{
 	    MDoubleArray radiusPPArray = arrayDataFn.doubleArray("radiusPP");
-	    radiusPPArray.setLength(pscale.length());
+	    radiusPPArray.setLength(floatArray.size());
 	    for ( unsigned int i = 0; i < radiusPPArray.length(); i++ )
 	    {
-		radiusPPArray[i] = pscale[i];
+		radiusPPArray[i] = floatArray[i];
 	    }
 	}
     }
@@ -457,11 +469,11 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     // age
     MDoubleArray ageArray = arrayDataFn.doubleArray("age");
     {
-	MFloatArray age = getAttributeFloatData(HAPI_ATTROWNER_POINT, "age");
-	ageArray.setLength(age.length());
+        getAttributeFloatData(floatArray, "age", HAPI_ATTROWNER_POINT);
+	ageArray.setLength(floatArray.size());
 	for ( unsigned int i = 0; i < ageArray.length(); i++ )
 	{
-	    ageArray[i] = age[i];
+	    ageArray[i] = floatArray[i];
 	}
     }
 

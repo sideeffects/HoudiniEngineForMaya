@@ -287,17 +287,6 @@ GeometryPart::getAttributeFloatData(HAPI_AttributeOwner owner, MString name)
     return ret;
 }
 
-
-bool
-GeometryPart::hasMesh()
-{
-    update();
-    if ( myPartInfo.pointCount == 0 || myPartInfo.faceCount == 0 || myPartInfo.vertexCount == 0)
-        return false;
-    return true;
-}
-
-
 MStatus
 GeometryPart::compute(MDataHandle& handle)
 {

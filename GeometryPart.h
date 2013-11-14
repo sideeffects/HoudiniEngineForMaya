@@ -29,13 +29,8 @@ class GeometryPart
 
     private:
         void updateMaterial(MDataHandle& handle);
-        void updateFaceCounts();
-        void updateVertexList();
-        void updatePoints();
-        void updateNormals();
-        void updateUVs();
 
-        MObject createMesh();
+        void createMesh(MDataHandle &dataHandle);
 	void createParticle(MDataHandle &dataHandle);
 
 	MObject createVolume();
@@ -60,13 +55,6 @@ class GeometryPart
         HAPI_PartInfo myPartInfo;
 	HAPI_VolumeInfo myVolumeInfo;
         HAPI_MaterialInfo myMaterialInfo;
-
-        MIntArray myFaceCounts;
-        MIntArray myVertexList;
-        MFloatPointArray myPoints;
-        MVectorArray myNormals;
-        MFloatArray myUs;
-        MFloatArray myVs;
 
         bool myNeverBuilt;
 };

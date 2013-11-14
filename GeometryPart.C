@@ -54,113 +54,6 @@ GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
 
 GeometryPart::~GeometryPart() {}
 
-
-void
-GeometryPart::updateFaceCounts()
-{
-    int numFaceCount = myPartInfo.faceCount;
-    if (numFaceCount > 0)
-    {
-        int * tempFaceCounts = new int[numFaceCount];
-        HAPI_GetFaceCounts( myAssetId, myObjectId, myGeoId, myPartId, tempFaceCounts, 0, numFaceCount);
-        MIntArray result(tempFaceCounts, numFaceCount);
-
-        myFaceCounts = result;
-
-        delete[] tempFaceCounts;
-    }
-}
-
-
-void
-GeometryPart::updateVertexList()
-{
-    int numVertexCount = myPartInfo.vertexCount;
-    if (numVertexCount > 0)
-    {
-        int * tempVertexList = new int[numVertexCount];
-        HAPI_GetVertexList( myAssetId, myObjectId, myGeoId, myPartId, tempVertexList, 0, numVertexCount);
-        MIntArray result(tempVertexList, numVertexCount);
-        Util::reverseWindingOrderInt(result, myFaceCounts);
-
-        myVertexList = result;
-
-	delete[] tempVertexList;
-    }
-}
-
-
-void
-GeometryPart::updatePoints()
-{
-    std::vector<float> floatArray;
-    getAttributeFloatData(floatArray, "P", HAPI_ATTROWNER_POINT);
-    // make a maya point array, assume 3 tuple
-    MFloatPointArray result;
-    int i = 0;
-    int len = floatArray.size();
-    while (i < len)
-    {
-        MFloatPoint v(floatArray[i], floatArray[i+1], floatArray[i+2]);
-        result.append(v);
-        i = i+3;
-    }
-
-    myPoints = result;
-}
-
-
-void
-GeometryPart::updateNormals()
-{
-    std::vector<float> floatArray;
-    getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_POINT);
-    // make a maya vector array, assume 3 tuple
-    MVectorArray result;
-
-    if (floatArray.size() > 0)
-    {
-        int i = 0;
-        int len = floatArray.size();
-        while (i < len)
-        {
-            MFloatVector v(floatArray[i], floatArray[i+1], floatArray[i+2]);
-            result.append(v);
-            i = i+3;
-        }
-    }
-
-    myNormals = result;
-}
-
-
-void
-GeometryPart::updateUVs()
-{
-    std::vector<float> floatArray;
-    getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_POINT);
-    // split UVs into two arrays, assume 3 tuple
-    MFloatArray Us;
-    MFloatArray Vs;
-
-    if (floatArray.size() > 0)
-    {
-        int i = 0;
-        int len = floatArray.size();
-        while (i < len)
-        {
-            Us.append(floatArray[i]);
-            Vs.append(floatArray[i+1]);
-            i = i+3;
-        }
-        Util::reverseWindingOrderFloat(Us, myFaceCounts);
-        Util::reverseWindingOrderFloat(Vs, myFaceCounts);
-    }
-
-    myUs = Us;
-    myVs = Vs;
-}
-
 #if MAYA_API_VERSION >= 201400
 void
 GeometryPart::updateVolumeTransform(MDataHandle& handle)
@@ -243,13 +136,6 @@ GeometryPart::update()
         cerr << e.what() << endl;
         HAPI_PartInfo_Init( &myPartInfo );
     }
-
-    updateFaceCounts();
-    updateVertexList();
-    updatePoints();
-    updateNormals();
-    updateUVs();
-
 }
 
 
@@ -258,11 +144,6 @@ GeometryPart::setGeoInfo(HAPI_GeoInfo& info)
 {
     myGeoInfo = info;
 }
-
-
-//=============================================================================
-// Utility functions
-//=============================================================================
 
 void
 GeometryPart::getAttributeFloatData(
@@ -316,8 +197,7 @@ GeometryPart::compute(MDataHandle& handle)
         partNameHandle.set(partName);
 
         // Mesh
-        MObject newMeshData = createMesh();
-        meshHandle.set(newMeshData);
+        createMesh(meshHandle);
 
 	// Particle
 	if(myPartInfo.pointCount != 0
@@ -542,44 +422,140 @@ GeometryPart::createVolume()
 }
 #endif
 
-MObject
-GeometryPart::createMesh()
+void
+GeometryPart::createMesh(MDataHandle &dataHandle)
 {
-    // Mesh Data
-    MFnMeshData dataCreator;
-    MObject outData = dataCreator.create();
+    MStatus status;
 
-    // Create mesh.
-    MFnMesh meshFS;
-    MObject newMesh = meshFS.create( myPoints.length(), myFaceCounts.length(),
-				     myPoints, myFaceCounts, myVertexList, 
-				     outData );
-
-    if(myFaceCounts.length() == 0)
+    // create mesh
+    MObject meshDataObj = dataHandle.data();
+    MFnMeshData meshDataFn(meshDataObj);
+    if(meshDataObj.isNull())
     {
-        return outData;
+        // set the MDataHandle
+        meshDataObj = meshDataFn.create();
+        dataHandle.setMObject(meshDataObj);
+
+        // then get the copy from MDataHandle
+        meshDataObj = dataHandle.data();
+        meshDataFn.setObject(meshDataObj);
     }
 
-    // Set normals.
-    if ( myNormals.length() > 0)
+    std::vector<float> floatArray;
+    std::vector<int> intArray;
+
+    // vertex array
+    MFloatPointArray vertexArray;
     {
-        MIntArray vlist;
-        for ( unsigned int j = 0; j < myPoints.length(); ++j )
-            vlist.append( j );
-        meshFS.setVertexNormals( myNormals, vlist );
+        getAttributeFloatData(floatArray, "P", HAPI_ATTROWNER_POINT);
+
+        // assume 3 tuple
+        vertexArray.setLength(floatArray.size() / 3);
+
+        for(unsigned int i = 0, j = 0; i < vertexArray.length(); i++, j += 3)
+        {
+            vertexArray.set(i, floatArray[j], floatArray[j+1], floatArray[j+2]);
+        }
     }
 
-    // Set UVs.
-    if ( myUs.length() > 0 )
+    // polygon counts
+    MIntArray polygonCounts;
     {
-	meshFS.setUVs( myUs, myVs );
-	MIntArray uvIds;
-	for ( unsigned int j = 0; j < myVertexList.length(); ++j )
-	    uvIds.append( j );
-	meshFS.assignUVs( myFaceCounts, uvIds );
+        intArray.resize(myPartInfo.faceCount);
+
+        if(myPartInfo.faceCount)
+        {
+            HAPI_GetFaceCounts(
+                    myAssetId,
+                    myObjectId,
+                    myGeoId,
+                    myPartId,
+                    &intArray.front(),
+                    0,
+                    myPartInfo.faceCount
+                    );
+        }
+
+        polygonCounts = MIntArray(&intArray.front(), intArray.size());
     }
 
-    return outData;
+    // polygon connects
+    MIntArray polygonConnects;
+    {
+        intArray.resize(myPartInfo.vertexCount);
+
+        if(myPartInfo.vertexCount)
+        {
+            HAPI_GetVertexList(
+                    myAssetId,
+                    myObjectId,
+                    myGeoId,
+                    myPartId,
+                    &intArray.front(),
+                    0,
+                    myPartInfo.vertexCount
+                    );
+        }
+
+        polygonConnects = MIntArray(&intArray.front(), intArray.size());
+
+        Util::reverseWindingOrderInt(polygonConnects, polygonCounts);
+    }
+
+    MFnMesh meshFn;
+    meshFn.create(
+            vertexArray.length(),
+            polygonCounts.length(),
+            vertexArray,
+            polygonCounts,
+            polygonConnects,
+            meshDataObj,
+            &status
+            );
+    CHECK_MSTATUS(status);
+
+    // normal array
+    if(polygonCounts.length())
+    {
+        getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_POINT);
+
+        // assume 3 tuple
+        MVectorArray normals(
+                reinterpret_cast<float(*)[3]>(&floatArray.front()),
+                floatArray.size() / 3);
+
+        MIntArray vertexList;
+        for ( unsigned int j = 0; j < vertexArray.length(); ++j )
+        {
+            vertexList.append( j );
+        }
+
+        meshFn.setVertexNormals(normals, vertexList);
+    }
+
+    // uv
+    if(polygonCounts.length())
+    {
+        getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_POINT);
+
+        // assume 3 tuple
+        MFloatArray uArray;
+        MFloatArray vArray;
+        for(size_t i = 0; i < floatArray.size(); i++)
+        {
+            uArray.append(floatArray[i]);
+            vArray.append(floatArray[i+1]);
+            i = i+3;
+        }
+
+        MIntArray vertexList;
+        for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
+        {
+            vertexList.append( j );
+        }
+
+        meshFn.assignUVs(polygonCounts, vertexList);
+    }
 }
 
 

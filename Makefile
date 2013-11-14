@@ -245,7 +245,7 @@ ifneq ($(findstring $(MAYA_VERSION), 2013 2014),)
         # The module file for Maya 2013 and newer can be used to set environment variables
 
         # Set the PATH variable for dynamic library.
-	echo "PATH += $(shell cygpath -w $(DST_DIR))\\..\\..\\..\\bin" >> $(@)
+	echo "PATH +:= ..\\..\\..\\bin" >> $(@)
 
     ifeq ($(MAYA_VERSION), 2014)
         # Maya 2014 uses python 2.7, and that causes the houdiniEngine plugin

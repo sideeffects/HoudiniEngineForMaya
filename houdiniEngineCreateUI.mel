@@ -195,6 +195,12 @@ houdiniEngine_createInstance( string $assetNode,
 }
 
 global proc
+houdiniEngine_launchOrboltPageClick()
+{
+    launch -web "http://www.orbolt.com";
+}
+
+global proc
 houdiniEngineCreateUI()
 {
     //cleanup UI
@@ -208,12 +214,13 @@ houdiniEngineCreateUI()
 	houdiniEngineMenu;
     menuItem -label "Load Houdini Asset..."
 	-command "houdiniEngine_loadOTLMenuClick";
+    menuItem -label "Get Assets"
+        -command "houdiniEngine_launchOrboltPageClick";
     menuItem -label "Sync Asset Output"
 	-command "performAssetSync 0";
     menuItem -optionBox true
-	-command "performAssetSync 1";
-    menuItem -label "Reload Asset"
-	-command "houdiniEngine_reloadAssetOutputMenuClick";
-    menuItem -label "HAPI Debug Window"
-	-command "houdiniEngine_debugWindowMenuClick";
+	-command "performAssetSync 1";    
+    menuItem -label "Save Current Houdini Scene..." 
+        -command "saveHipFile";
+    
 }

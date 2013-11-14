@@ -41,8 +41,11 @@ class GeometryPart
 	MObject createVolume();
 	void    updateVolumeTransform(MDataHandle& handle);
 
-        // Utility
-        virtual MFloatArray getAttributeFloatData(HAPI_AttributeOwner owner, MString name);
+        void getAttributeFloatData(
+                std::vector<float> &floatArray,
+                const char* name,
+                HAPI_AttributeOwner owner
+                );
 
     private:
         Asset* myObjectControl;

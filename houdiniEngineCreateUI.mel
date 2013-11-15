@@ -197,7 +197,7 @@ houdiniEngine_createInstance( string $assetNode,
 global proc
 houdiniEngine_launchOrboltPageClick()
 {
-    launch -web "http://www.orbolt.com";
+    launch -web "http://www.orbolt.com/maya";
 }
 
 global proc

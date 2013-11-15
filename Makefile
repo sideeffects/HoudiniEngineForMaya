@@ -241,17 +241,19 @@ endif
 $(DST_MODULE):
 	@mkdir -p $(dir $(@))
 	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.5 maya$(MAYA_VERSION)" > $(@)
-ifneq ($(findstring $(MAYA_VERSION), 2013 2014),)
+ifeq ($(OS), Cygwin)
+    ifneq ($(findstring $(MAYA_VERSION), 2013 2014),)
         # The module file for Maya 2013 and newer can be used to set environment variables
 
         # Set the PATH variable for dynamic library.
 	echo "PATH +:= ..\\..\\..\\bin" >> $(@)
 
-    ifeq ($(MAYA_VERSION), 2014)
+        ifeq ($(MAYA_VERSION), 2014)
         # Maya 2014 uses python 2.7, and that causes the houdiniEngine plugin
         # to conflict with the Mayatomr (mentalray) plugin. Workaround the
         # problem by forcing Houdini to use python 2.6.
 	echo "HOUDINI_PYTHON_VERSION = 2.6" >> $(@)
+        endif
     endif
 endif
 

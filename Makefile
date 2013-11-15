@@ -202,12 +202,15 @@ OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
 
 DEPFILES = $(patsubst %.C, $(OBJ_DIR)/%.d, $(CXXFILES))
 
-# Maya 2013 and newer has a new format for the module description file, which
-# is not supported by Maya 2012 and older. So, we need to create the old format
-# for Maya 2012 and older. And technically, for Maya 2012 and older, we don't
-# have to create the new module description file.
+# This module description file uses relative path to specify the module
+# directory. Relative path is only supported by Maya 2013 and newer.
+ifneq ($(findstring $(MAYA_VERSION), 2013 2014),)
 DST_MODULE = $(DST_MODULE_DIR)/houdiniEngine-maya$(MAYA_VERSION)
-DST_OLD_MODULE = $(DST_DIR)/houdiniEngine-maya$(MAYA_VERSION)
+endif
+# This module description file uses absolute path to specify the module
+# directory. The installer modifies this path at install time, so that the file
+# can be copied to one of Maya's default directory.
+DST_MODULE_ABSOLUTE = $(DST_DIR)/houdiniEngine-maya$(MAYA_VERSION)
 DST_PLUG_IN = $(DST_PLUG_INS_DIR)/$(SONAME)
 DST_SCRIPTS = $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(MELFILES))
 
@@ -230,14 +233,14 @@ endif
 .PHONY: all
 all:
 ifeq ($(CAN_BUILD), 1)
-all: $(DST_MODULE) $(DST_OLD_MODULE) $(DST_PLUG_IN) $(DST_SCRIPTS)
+all: $(DST_MODULE) $(DST_MODULE_ABSOLUTE) $(DST_PLUG_IN) $(DST_SCRIPTS)
 endif
 
 $(DST_MODULE):
 	@mkdir -p $(dir $(@))
 	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.5 maya$(MAYA_VERSION)" > $(@)
 
-$(DST_OLD_MODULE):
+$(DST_MODULE_ABSOLUTE):
 	@mkdir -p $(dir $(@))
 ifeq ($(OS), Cygwin)
 	echo "+ houdiniEngine 1.5 $(shell cygpath -w $(DST_DIR))" > $(@)
@@ -274,7 +277,7 @@ $(DST_SCRIPTS_DIR)/%.mel: %.mel
 # clean
 .PHONY: clean
 clean:
-	rm -f $(DST_MODULE) $(DST_OLD_MODULE) $(DST_PLUG_IN) $(DST_SCRIPTS)
+	rm -f $(DST_MODULE) $(DST_MODULE_ABSOLUTE) $(DST_PLUG_IN) $(DST_SCRIPTS)
 ifeq ($(OS), Cygwin)
 	rm -f $(DST_PLUG_IN:%.$(SOSUFFIX)=%.lib) $(DST_PLUG_IN:%.$(SOSUFFIX)=%.exp)
 endif

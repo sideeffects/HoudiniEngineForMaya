@@ -519,42 +519,50 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
     {
         getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_POINT);
 
-        // assume 3 tuple
-        MVectorArray normals(
-                reinterpret_cast<float(*)[3]>(&floatArray.front()),
-                floatArray.size() / 3);
-
-        MIntArray vertexList;
-        for ( unsigned int j = 0; j < vertexArray.length(); ++j )
+        if(floatArray.size())
         {
-            vertexList.append( j );
-        }
+            // assume 3 tuple
+            MVectorArray normals(
+                    reinterpret_cast<float(*)[3]>(&floatArray.front()),
+                    floatArray.size() / 3);
 
-        meshFn.setVertexNormals(normals, vertexList);
+            MIntArray vertexList;
+            for ( unsigned int j = 0; j < vertexArray.length(); ++j )
+            {
+                vertexList.append( j );
+            }
+
+            meshFn.setVertexNormals(normals, vertexList);
+        }
     }
 
     // uv
     if(polygonCounts.length())
     {
-        getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_POINT);
+        getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_VERTEX);
 
-        // assume 3 tuple
-        MFloatArray uArray;
-        MFloatArray vArray;
-        for(size_t i = 0; i < floatArray.size(); i++)
+        if(floatArray.size())
         {
-            uArray.append(floatArray[i]);
-            vArray.append(floatArray[i+1]);
-            i = i+3;
-        }
+            // assume 3 tuple
+            MFloatArray uArray;
+            MFloatArray vArray;
+            for(size_t i = 0; i < floatArray.size(); i+=3)
+            {
+                uArray.append(floatArray[i]);
+                vArray.append(floatArray[i+1]);
+            }
+            Util::reverseWindingOrderFloat(uArray, polygonCounts);
+            Util::reverseWindingOrderFloat(vArray, polygonCounts);
+            meshFn.setUVs(uArray, vArray);
 
-        MIntArray vertexList;
-        for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
-        {
-            vertexList.append( j );
-        }
+            MIntArray vertexList;
+            for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
+            {
+                vertexList.append( j );
+            }
 
-        meshFn.assignUVs(polygonCounts, vertexList);
+            meshFn.assignUVs(polygonCounts, vertexList);
+        }
     }
 }
 

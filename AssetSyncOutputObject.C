@@ -212,9 +212,9 @@ AssetSyncOutputObject::createFluidShape()
 
         MPlug referenceRes = referenceVolume.child(AssetNode::outputPartVolumeRes);
 
-        MFnDependencyNode partVolumeFn(fluid, &status);
+        MFnDagNode partVolumeFn(fluid, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
-        MFnDependencyNode partFluidTransformFn(transform, &status);
+        MFnDagNode partFluidTransformFn(transform, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         MObject velConverter;
@@ -363,6 +363,16 @@ AssetSyncOutputObject::createFluidShape()
 	    partVolumeFn.findPlug("dimensionsH").setValue(1);
 	    partVolumeFn.findPlug("dimensionsD").setValue(1);
         }
+
+        // doIt so that we can access the fullPathName
+        status = myDagModifier.doIt();
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        // assign shader
+        status = myDagModifier.commandToExecute(
+                "assignSG " + partVolumeFn.fullPathName() + " " + partVolumeFn.fullPathName()
+                );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
 

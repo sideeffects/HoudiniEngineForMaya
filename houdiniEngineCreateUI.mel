@@ -201,6 +201,12 @@ houdiniEngine_launchOrboltPageClick()
 }
 
 global proc
+houdiniEngine_launchForum()
+{
+    launch -web "http://www.sidefx.com/index.php?option=com_forum&Itemid=172&page=viewforum&f=46";
+}
+
+global proc
 houdiniEngineCreateUI()
 {
     //cleanup UI
@@ -214,13 +220,17 @@ houdiniEngineCreateUI()
 	houdiniEngineMenu;
     menuItem -label "Load Houdini Asset..."
 	-command "houdiniEngine_loadOTLMenuClick";
-    menuItem -label "Get Assets"
-        -command "houdiniEngine_launchOrboltPageClick";
     menuItem -label "Sync Asset Output"
 	-command "performAssetSync 0";
     menuItem -optionBox true
 	-command "performAssetSync 1";    
     menuItem -label "Save Current Houdini Scene..." 
         -command "saveHipFile";
+
+    menuItem -divider true;
     
+    menuItem -label "Get Assets..."
+        -command "houdiniEngine_launchOrboltPageClick";
+    menuItem -label "Visit Forum..."
+        -command "houdiniEngine_launchForum";
 }

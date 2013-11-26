@@ -432,9 +432,12 @@ AssetSyncAttribute::doIt()
                 myNodeInfo
                 );
         Util::walkParm(parmInfos, operation);
-    }
 
-    myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
+        if(attrFn.numChildren())
+        {
+            myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
+        }
+    }
 
     // restore old parameter values
     status = myDGModifier.commandToExecute("select " + assetNodeFn.fullPathName());

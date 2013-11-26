@@ -494,7 +494,10 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
     string $nodeName = plugNode($houdiniAssetParmAttribute);
     string $attrName = plugAttr($houdiniAssetParmAttribute);
 
-    buildAttrTree($nodeName, $attrName, $attrName);
+    if(`attributeQuery -node $nodeName -exists $attrName`)
+    {
+        buildAttrTree($nodeName, $attrName, $attrName);
+    }
 }
 
 global proc AEhoudiniAssetTemplate( string $nodeName )

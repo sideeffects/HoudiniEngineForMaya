@@ -44,7 +44,10 @@ class Object {
         Asset * getParentAsset() { return myObjectControl; }
 
         //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
-        virtual MStatus compute(MDataHandle& handle) = 0;
+        virtual MStatus compute(
+                MDataHandle& handle,
+                bool &needToSyncOutputs
+                ) = 0;
         virtual MStatus setClean(MPlug& plug, MDataBlock& data) = 0;
         virtual ObjectType type() = 0;
 

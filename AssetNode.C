@@ -30,6 +30,8 @@ MObject AssetNode::inTime;
 
 MObject AssetNode::assetType;
 
+MObject AssetNode::autoSyncOutputs;
+
 MObject AssetNode::input;
 
 MObject AssetNode::output;
@@ -165,6 +167,8 @@ AssetNode::initialize()
     nAttr.setWritable(false);    
     computeAttributes.push_back(AssetNode::assetType);
         
+    AssetNode::autoSyncOutputs = nAttr.create("autoSyncOutputs", "autoSyncOutputs", MFnNumericData::kBoolean);
+
     // input
     AssetNode::input = AssetInputs::createInputAttribute();
 
@@ -673,6 +677,7 @@ AssetNode::initialize()
     nAttr.setDefault( false );
 
     // add the static attributes to the node
+    addAttribute(AssetNode::autoSyncOutputs);
     addAttribute(AssetNode::assetPath);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::assetType);
@@ -913,8 +918,15 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
                     );
         }
 
+        bool autoSyncOutputs = data.inputValue(AssetNode::autoSyncOutputs).asBool();
+
 	MPlug outputPlug(thisMObject(), AssetNode::output);
-	myAsset->compute(outputPlug, data);
+        bool needToSyncOutputs = false;
+	myAsset->compute(outputPlug, data, needToSyncOutputs);
+        if(autoSyncOutputs && needToSyncOutputs)
+        {
+            MGlobal::executeCommandOnIdle("houdiniAsset -sync " + assetNodeFn.name() + " -syncOutputs");
+        }
 
 	myResultsClean = true;
 

@@ -19,13 +19,9 @@ class Geo {
         Geo( int assetId, int objectId, int geoId, Object * parentObject );
         ~Geo();
 
-        int getId();
-        HAPI_GeoInfo getGeoInfo() { return myGeoInfo; }
-        MString getName();        
-
         MStatus setClean( MPlug& geoPlug, MDataBlock& data );
 
-        MStatus computeParts( MDataHandle& obj, MArrayDataBuilder* builder );
+        MStatus compute(MDataHandle &geoHandle);
     
         void update();
     

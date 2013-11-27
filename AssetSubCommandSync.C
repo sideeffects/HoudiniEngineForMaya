@@ -17,6 +17,9 @@ AssetSubCommandSync::AssetSubCommandSync(
 	const bool syncOnlyVisible
 	) :
     AssetSubCommandAsset(assetNodeObj),
+    mySyncAll(true),
+    mySyncAttributes(false),
+    mySyncOutputs(false),
     mySyncOnlyVisible( syncOnlyVisible )
 {
 }
@@ -32,6 +35,20 @@ AssetSubCommandSync::~AssetSubCommandSync()
     myAssetSyncs.clear();
 }
 
+void
+AssetSubCommandSync::setSyncAttributes()
+{
+    mySyncAll = false;
+    mySyncAttributes = true;
+}
+
+void
+AssetSubCommandSync::setSyncOutputs()
+{
+    mySyncAll = false;
+    mySyncOutputs = true;
+}
+
 MStatus
 AssetSubCommandSync::doIt()
 {
@@ -42,6 +59,7 @@ AssetSubCommandSync::doIt()
     MGlobal::getActiveSelectionList(oldSelection);
 
     // attributes
+    if(mySyncAll || mySyncAttributes)
     {
 	AssetSync* syncOutput = new AssetSyncAttribute(myAssetNodeObj);
 	syncOutput->doIt();
@@ -49,64 +67,68 @@ AssetSubCommandSync::doIt()
 	myAssetSyncs.push_back(syncOutput);
     }
 
-    MFnDagNode assetNodeFn(myAssetNodeObj, &status);
-
-    // Delete all children nodes. This way the sync will completely recreate
-    // the connections. Otherwise, output connections may not be connected to
-    // the right output node. For example, if parts were inserted in the
-    // middle.
+    // outputs
+    if(mySyncAll || mySyncOutputs)
     {
-	for(unsigned int i = 0; i < assetNodeFn.childCount(); i++)
-	{
-	    MObject childNode = assetNodeFn.child(i);
-	    // Can't use deleteNode() here, because it could delete the parent
-	    // node as well.
-	    MFnDagNode childFnDag(childNode);
-	    myDagModifier.commandToExecute("delete " + childFnDag.fullPathName());
-	}
+        MFnDagNode assetNodeFn(myAssetNodeObj, &status);
 
-	// Call doIt() here so that the delete commands are actually executed.
-	status = myDagModifier.doIt();
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
+        // Delete all children nodes. This way the sync will completely recreate
+        // the connections. Otherwise, output connections may not be connected to
+        // the right output node. For example, if parts were inserted in the
+        // middle.
+        {
+            for(unsigned int i = 0; i < assetNodeFn.childCount(); i++)
+            {
+                MObject childNode = assetNodeFn.child(i);
+                // Can't use deleteNode() here, because it could delete the parent
+                // node as well.
+                MFnDagNode childFnDag(childNode);
+                myDagModifier.commandToExecute("delete " + childFnDag.fullPathName());
+            }
 
-    // Objects
-    MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
-    unsigned int objCount = objectsPlug.evaluateNumElements(&status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+            // Call doIt() here so that the delete commands are actually executed.
+            status = myDagModifier.doIt();
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
 
-    for(unsigned int i=0; i < objCount; i++)
-    {
-	MPlug elemPlug = objectsPlug[i];
+        // Objects
+        MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
+        unsigned int objCount = objectsPlug.evaluateNumElements(&status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	MPlug visibilityPlug = elemPlug.child( AssetNode::outputVisibility );
-	bool visible = visibilityPlug.asBool();
+        for(unsigned int i=0; i < objCount; i++)
+        {
+            MPlug elemPlug = objectsPlug[i];
 
-	MPlug instancedPlug = elemPlug.child( AssetNode::outputIsInstanced );
-	bool instanced = instancedPlug.asBool();
+            MPlug visibilityPlug = elemPlug.child( AssetNode::outputVisibility );
+            bool visible = visibilityPlug.asBool();
 
-	if( !mySyncOnlyVisible || visible || instanced )
-	{
-	    AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj, visible );
-	    syncOutput->doIt();
+            MPlug instancedPlug = elemPlug.child( AssetNode::outputIsInstanced );
+            bool instanced = instancedPlug.asBool();
 
-	    myAssetSyncs.push_back(syncOutput);
-	}
-    }
+            if( !mySyncOnlyVisible || visible || instanced )
+            {
+                AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj, visible );
+                syncOutput->doIt();
 
-    // instancers
-    MPlug instancersPlug = assetNodeFn.findPlug(AssetNode::outputInstancers);
-    unsigned int instCount = instancersPlug.numElements(&status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+                myAssetSyncs.push_back(syncOutput);
+            }
+        }
 
-    for(unsigned int i=0; i < instCount; i++)
-    {
-	MPlug elemPlug = instancersPlug[i];
+        // instancers
+        MPlug instancersPlug = assetNodeFn.findPlug(AssetNode::outputInstancers);
+        unsigned int instCount = instancersPlug.numElements(&status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-        AssetSync* syncOutput = new AssetSyncOutputInstance(elemPlug, i, myAssetNodeObj);
-	syncOutput->doIt();
+        for(unsigned int i=0; i < instCount; i++)
+        {
+            MPlug elemPlug = instancersPlug[i];
 
-	myAssetSyncs.push_back(syncOutput);
+            AssetSync* syncOutput = new AssetSyncOutputInstance(elemPlug, i, myAssetNodeObj);
+            syncOutput->doIt();
+
+            myAssetSyncs.push_back(syncOutput);
+        }
     }
 
     // restore old selection

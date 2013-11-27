@@ -13,16 +13,13 @@ class GeometryPart
 {
     public:        
         GeometryPart(int assetId, int objectId, int geoId, int partId,
-                HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl);
+                HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo);
         virtual ~GeometryPart();
 
 
         virtual MStatus compute(MDataHandle& handle);
 
         virtual void setGeoInfo(HAPI_GeoInfo& info);
-
-    public:
-        MString myPartName;
 
     protected:
         virtual void update();
@@ -43,8 +40,6 @@ class GeometryPart
                 );
 
     private:
-        Asset* myObjectControl;
-
         int myAssetId;
         int myObjectId;
         int myGeoId;

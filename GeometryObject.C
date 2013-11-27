@@ -9,18 +9,17 @@
 
 
 
-GeometryObject::GeometryObject(int assetId, int objectId)
-    :Object(assetId, objectId)
+GeometryObject::GeometryObject(
+        int assetId,
+        int objectId,
+        Asset* objectControl
+        ) :
+    Object(
+            assetId,
+            objectId,
+            objectControl
+          )
 {
-}
-
-
-void
-GeometryObject::init()
-{
-    // Do a full update
-    Object::init();
-
     int geoCount = myObjectInfo.geoCount;
     myGeos.reserve( geoCount );
     myGeos.clear();
@@ -29,7 +28,6 @@ GeometryObject::init()
     {	
         Geo * geo = new Geo( myAssetId, myObjectId, ii, this );
         myGeos.push_back( geo );
-        geo->init();
     }
         
 }

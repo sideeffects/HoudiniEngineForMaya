@@ -330,15 +330,6 @@ Asset::Asset(MString otlFilePath, MObject node) :
     Util::checkHAPIStatus(hstat);
 
     myAssetInputs = new AssetInputs( myAssetInfo.id);
-
-    init();
-
-}
-
-
-void
-Asset::init()
-{
     myAssetInputs->setNumInputs( myAssetInfo.maxGeoInputCount);
 
     // get the infos
@@ -358,7 +349,6 @@ Asset::init()
     {
 	Util::updateProgressWindow( status, (int)( (float) i *100.0f / (float) objCount) );
         myObjects[i] = Object::createObject( myAssetInfo.id, i, this);
-        myObjects[i]->init();
     }
 
     Util::hideProgressWindow();

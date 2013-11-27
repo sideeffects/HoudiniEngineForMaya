@@ -20,8 +20,7 @@
 #include "util.h"
 
 GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
-        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo, Asset* objectControl) : 
-    myObjectControl(objectControl),
+        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo) : 
     myAssetId(assetId),
     myObjectId(objectId),
     myGeoId(geoId),

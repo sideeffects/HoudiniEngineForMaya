@@ -39,7 +39,6 @@ Geo::init()
             myParts.reserve( partCount );
     
             HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
-            Asset * parentAsset = myParentObject->getParentAsset();
 
             for ( int ii = 0; ii < partCount; ii++)
             {
@@ -48,8 +47,8 @@ Geo::init()
                                                  myGeoId, 
                                                  ii, 
                                                  objectInfo, 
-                                                 myGeoInfo, 
-                                                 parentAsset ) );
+                                                 myGeoInfo
+                                                 ) );
             }
         }
 
@@ -100,7 +99,6 @@ Geo::update()
                 {
                     myParts.clear();
                     myParts.reserve( partCount );
-                    Asset * parentAsset = myParentObject->getParentAsset();
                     HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
                     for ( int ii = 0; ii < partCount; ii++ )
                     {	                
@@ -109,8 +107,8 @@ Geo::update()
                                                          myGeoId, 
                                                          ii, 
                                                          objectInfo, 
-                                                         myGeoInfo, 
-                                                         parentAsset ));
+                                                         myGeoInfo
+                                                         ));
                     }
                 }
                 

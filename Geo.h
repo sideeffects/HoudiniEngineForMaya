@@ -19,10 +19,6 @@ class Geo {
         Geo( int assetId, int objectId, int geoId, Object * parentObject );
         virtual ~Geo();
 
-        
-        virtual void init();
-
-        
         int getId();
         HAPI_GeoInfo getGeoInfo() { return myGeoInfo; }
         MString getName();        

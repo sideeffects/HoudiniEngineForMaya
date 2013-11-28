@@ -9,20 +9,20 @@
 #include "InstancerObject.h"
 #include "util.h"
 
-InstancerObject::InstancerObject(int assetId, int objectId)
-    :Object(assetId, objectId),
+InstancerObject::InstancerObject(
+        int assetId,
+        int objectId,
+        Asset* objectControl
+        ) :
+    Object(
+            assetId,
+            objectId,
+            objectControl
+          ),
     myGeoInfo( HAPI_GeoInfo_Create() )
 {
     //update();
 }
-
-
-void
-InstancerObject::init()
-{
-    Object::init();
-}
-
 
 InstancerObject::~InstancerObject() {}
 

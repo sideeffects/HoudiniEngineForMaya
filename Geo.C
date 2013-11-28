@@ -18,12 +18,7 @@ Geo::Geo( int assetId, int objectId, int geoId, Object * parentObject) :
     myGeoId ( geoId )
 {    
     HAPI_GeoInfo_Init( &myGeoInfo );
-}
 
-
-void
-Geo::init()
-{
     // Do a full update, ignoring what has changed
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try

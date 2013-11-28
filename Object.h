@@ -25,12 +25,18 @@ class Object {
         };
 
         // static creator
-        static Object* createObject(int assetId, int objectId, Asset* objControl);
+        static Object* createObject(
+                int assetId,
+                int objectId,
+                Asset* objectControl
+                );
 
-        Object(int assetId, int objectId);
+        Object(
+                int assetId,
+                int objectId,
+                Asset* objectControl
+              );
         virtual ~Object();
-
-        virtual void init();
 
         virtual int getId();
         virtual MString getName();

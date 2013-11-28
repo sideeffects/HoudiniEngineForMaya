@@ -19,8 +19,6 @@ class Asset {
         Asset(MString otlFilePath, MObject node);
         ~Asset();
 
-        void init();
-
         Object** getObjects();
         Object* findObjectByName(MString name);
         Object* findObjectById(int id);

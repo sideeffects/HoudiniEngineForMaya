@@ -29,7 +29,7 @@ class InstancerObject: public Object
     protected:
         virtual void update();
 
-        virtual MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
+        MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
 
     private:
         HAPI_GeoInfo myGeoInfo;

@@ -38,8 +38,8 @@ class Object {
               );
         virtual ~Object();
 
-        virtual int getId();
-        virtual MString getName();
+        int getId();
+        MString getName();
         HAPI_ObjectInfo getObjectInfo() { return myObjectInfo; }
         Asset * getParentAsset() { return myObjectControl; }
 

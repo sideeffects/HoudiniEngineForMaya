@@ -17,7 +17,10 @@ class GeometryPart
         ~GeometryPart();
 
 
-        MStatus compute(MDataHandle& handle);
+        MStatus compute(
+                MDataHandle& handle,
+                bool &needToSyncOutputs
+                );
 
         void setGeoInfo(HAPI_GeoInfo& info);
 

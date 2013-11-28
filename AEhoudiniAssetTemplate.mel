@@ -523,6 +523,12 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
 
     editorTemplate -callCustom "AEhoudiniAssetParmNew" "AEhoudiniAssetParmReplace" "houdiniAssetParm";
 
+    editorTemplate -beginLayout "Sync Options" -collapse false;
+
+    editorTemplate -addControl "autoSyncOutputs";
+
+    editorTemplate -endLayout;
+
     editorTemplate -beginLayout "Maya Transform Attributes";
 
     AEtransformMain $nodeName;

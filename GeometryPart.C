@@ -178,7 +178,10 @@ GeometryPart::getAttributeFloatData(
 }
 
 MStatus
-GeometryPart::compute(MDataHandle& handle)
+GeometryPart::compute(
+        MDataHandle& handle,
+        bool &needToSyncOutputs
+        )
 {
     update();
 

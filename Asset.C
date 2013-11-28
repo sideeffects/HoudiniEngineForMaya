@@ -445,7 +445,11 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 
 
 void
-Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
+Asset::computeInstancerObjects(
+        const MPlug& plug,
+        MDataBlock& data,
+        bool &needToSyncOutputs
+        )
 {
     MStatus stat;
 
@@ -463,7 +467,7 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
         if ( obj->type() == Object::OBJECT_TYPE_INSTANCER )
         {
             MDataHandle instancerElemHandle = instancersBuilder.addElement( instancerIndex );
-            stat = obj->compute( instancerElemHandle );
+            stat = obj->compute(instancerElemHandle, needToSyncOutputs);
             if ( MS::kSuccess == stat )
             {
                 instancerIndex++;
@@ -508,7 +512,11 @@ Asset::computeInstancerObjects(const MPlug& plug, MDataBlock& data)
 
 
 void
-Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
+Asset::computeGeometryObjects(
+        const MPlug& plug,
+        MDataBlock& data,
+        bool &needToSyncOutputs
+        )
 {
     MStatus stat;
 
@@ -524,7 +532,7 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 
         if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
         {
-	    obj->compute( objectHandle );                        
+            obj->compute(objectHandle, needToSyncOutputs);
 
             MDataHandle visibilityHandle = objectHandle.child( AssetNode::outputVisibility );
 	    visibilityHandle.setBool( obj->isVisible() );
@@ -560,7 +568,11 @@ Asset::computeGeometryObjects(const MPlug& plug, MDataBlock& data)
 
 
 MStatus
-Asset::compute(const MPlug& plug, MDataBlock& data)
+Asset::compute(
+        const MPlug& plug,
+        MDataBlock& data,
+        bool &needToSyncOutputs
+        )
 {
     MStatus stat(MS::kSuccess);
 
@@ -601,10 +613,10 @@ Asset::compute(const MPlug& plug, MDataBlock& data)
     // instanced.  In computeGeometryObjects, each object will check 
     // if it is instanced or not, and will compute an output or not 
     // depending on whether it is instanced and whether it is visible
-    computeInstancerObjects(plug, data);
+    computeInstancerObjects(plug, data, needToSyncOutputs);
 
     // second pass - geometry objects
-    computeGeometryObjects(plug, data);
+    computeGeometryObjects(plug, data, needToSyncOutputs);
 
     return stat;
 }

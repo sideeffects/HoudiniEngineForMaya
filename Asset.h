@@ -29,7 +29,11 @@ class Asset {
 
 	void resetSimulation();
 
-        MStatus compute(const MPlug& plug, MDataBlock& data);
+        MStatus compute(
+                const MPlug& plug,
+                MDataBlock& data,
+                bool &needToSyncOutputs
+                );
 
         void getParmValues(
                 const MDataHandle &parentDataHandle,
@@ -68,8 +72,16 @@ class Asset {
         void update();
 
         void computeAssetInputs(const MPlug& plug, MDataBlock& data);
-        void computeInstancerObjects(const MPlug& plug, MDataBlock& data);
-        void computeGeometryObjects(const MPlug& plug, MDataBlock& data);
+        void computeInstancerObjects(
+                const MPlug& plug,
+                MDataBlock& data,
+                bool &needToSyncOutputs
+                );
+        void computeGeometryObjects(
+                const MPlug& plug,
+                MDataBlock& data,
+                bool &needToSyncOutputs
+                );
 
 
     private:

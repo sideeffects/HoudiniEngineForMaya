@@ -20,7 +20,10 @@ class GeometryObject: public Object
 
         //MObject createMesh();
 
-        virtual MStatus compute(MDataHandle& handle);        
+        virtual MStatus compute(
+                MDataHandle& handle,
+                bool &needToSyncOutputs
+                );
 
         virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 

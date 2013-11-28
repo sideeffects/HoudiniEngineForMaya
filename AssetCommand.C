@@ -20,6 +20,10 @@
 #define kResetSimulationFlagLong "-resetSimulation"
 #define kReloadAssetFlag "-rl"
 #define kReloadAssetFlagLong "-reloadAsset"
+#define kSyncAttributesFlag "-sa"
+#define kSyncAttributesFlagLong "-syncAttributes"
+#define kSyncOutputsFlag "-so"
+#define kSyncOutputsFlagLong "-syncOutputs"
 #define kSyncOnlyVisibleFlag "-sov"
 #define kSyncOnlyVisibleFlagLong "-syncOnlyVisible"
 
@@ -79,6 +83,8 @@ AssetCommand::newSyntax()
 				 kReloadAssetFlagLong, 
 				 MSyntax::kString));
 
+    CHECK_MSTATUS(syntax.addFlag(kSyncAttributesFlag, kSyncAttributesFlagLong));
+    CHECK_MSTATUS(syntax.addFlag(kSyncOutputsFlag, kSyncOutputsFlagLong));
 
     // -syncOnlyVisible will cause only those objects that are visible to be sync'ed
     CHECK_MSTATUS(syntax.addFlag(kSyncOnlyVisibleFlag, 
@@ -200,9 +206,21 @@ AssetCommand::parseArgs(const MArgList &args)
 	if( argData.isFlagSet( kSyncOnlyVisibleFlag ) )
 	    syncOnlyVisible = true;
 
-	myAssetSubCommand = new AssetSubCommandSync(
+	AssetSubCommandSync* subCommand = new AssetSubCommandSync(
 		assetNodeObj, syncOnlyVisible
 		);
+
+	if(argData.isFlagSet(kSyncAttributesFlag))
+        {
+            subCommand->setSyncAttributes();
+        }
+
+	if(argData.isFlagSet(kSyncOutputsFlag))
+        {
+            subCommand->setSyncOutputs();
+        }
+
+	myAssetSubCommand = subCommand;
     }
 
     if(argData.isFlagSet(kSaveHIPFlag))

@@ -104,7 +104,7 @@ Geo::update()
 
 
 MStatus 
-Geo::compute(MDataHandle &geoHandle)
+Geo::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
 {
     MStatus stat;    
 
@@ -115,6 +115,10 @@ Geo::compute(MDataHandle &geoHandle)
     MDataHandle partsHandle = geoHandle.child(AssetNode::outputParts);
     MArrayDataHandle partsArrayHandle(partsHandle);
     MArrayDataBuilder partsBuilder = partsArrayHandle.builder();
+    if(partsBuilder.elementCount() != myGeoInfo.partCount)
+    {
+        needToSyncOutputs = true;
+    }
 
     if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT || 
         myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
@@ -122,7 +126,7 @@ Geo::compute(MDataHandle &geoHandle)
         for (int i=0; i< myGeoInfo.partCount; i++)
         {
             MDataHandle h = partsBuilder.addElement(i);
-            stat = myParts[i].compute(h);
+            stat = myParts[i].compute(h, needToSyncOutputs);
             CHECK_MSTATUS_AND_RETURN( stat, MS::kFailure );
         
         }    

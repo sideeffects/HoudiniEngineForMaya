@@ -19,7 +19,10 @@ class InstancerObject: public Object
         MIntArray getInstancedObjIds();
         MStringArray getUniqueInstObjNames();
 
-        virtual MStatus compute(MDataHandle& handle);
+        virtual MStatus compute(
+                MDataHandle& handle,
+                bool &needToSyncOutputs
+                );
         virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 
         virtual ObjectType type();

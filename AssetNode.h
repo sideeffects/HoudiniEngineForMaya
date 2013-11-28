@@ -96,6 +96,8 @@ class AssetNode: public MPxTransform
 
         static MObject assetType;
 
+        static MObject autoSyncOutputs;
+
         static MObject input;
 
         static MObject output;

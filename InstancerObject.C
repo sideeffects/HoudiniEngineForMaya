@@ -150,7 +150,10 @@ InstancerObject::getUniqueInstObjNames()
 
 MStatus
 //InstancerObject::compute(const MPlug& plug, MDataBlock& data)
-InstancerObject::compute(MDataHandle& handle)
+InstancerObject::compute(
+        MDataHandle& handle,
+        bool &needToSyncOutputs
+        )
 {
     update();
 

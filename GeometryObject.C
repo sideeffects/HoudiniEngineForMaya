@@ -51,7 +51,10 @@ GeometryObject::type()
 
 
 MStatus
-GeometryObject::compute(MDataHandle& objectHandle)
+GeometryObject::compute(
+        MDataHandle& objectHandle,
+        bool &needToSyncOutputs
+        )
 {
     MDataHandle metaDataHandle = objectHandle.child(AssetNode::outputObjectMetaData);
 
@@ -74,11 +77,15 @@ GeometryObject::compute(MDataHandle& objectHandle)
         MDataHandle geosHandle = objectHandle.child( AssetNode::outputGeos );
         MArrayDataHandle geoArrayHandle( geosHandle );
         MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
+        if(geosBuilder.elementCount() != myObjectInfo.geoCount)
+        {
+            needToSyncOutputs = true;
+        }
                 
         for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
         {
             MDataHandle geoHandle = geosBuilder.addElement( ii );
-            stat = myGeos[ii]->compute(geoHandle);
+            stat = myGeos[ii]->compute(geoHandle, needToSyncOutputs);
             CHECK_MSTATUS_AND_RETURN_IT(stat);
         }
 

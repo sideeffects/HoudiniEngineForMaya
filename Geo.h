@@ -21,7 +21,7 @@ class Geo {
 
         MStatus setClean( MPlug& geoPlug, MDataBlock& data );
 
-        MStatus compute(MDataHandle &geoHandle);
+        MStatus compute(MDataHandle &geoHandle, bool &needToSyncOutputs);
     
         void update();
     

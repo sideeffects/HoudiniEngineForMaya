@@ -11,10 +11,12 @@ class Geo;
 class GeometryObject: public Object
 {
     public:
-        GeometryObject(int assetId, int objectId);
+        GeometryObject(
+                int assetId,
+                int objectId,
+                Asset* objectControl
+                );
         virtual ~GeometryObject();
-
-        virtual void init();
 
         //MObject createMesh();
 

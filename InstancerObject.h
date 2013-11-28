@@ -9,10 +9,12 @@
 class InstancerObject: public Object
 {
     public:
-        InstancerObject(int assetId, int objectId);
+        InstancerObject(
+                int assetId,
+                int objectId,
+                Asset* objectControl
+                );
         virtual ~InstancerObject();
-
-        virtual void init();
 
         MIntArray getInstancedObjIds();
         MStringArray getUniqueInstObjNames();

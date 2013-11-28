@@ -20,14 +20,11 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
     objInfo = objControl->getObjectInfo(objectId);
 
     if (objInfo.isInstancer)
-        obj = new InstancerObject(assetId, objectId);
+        obj = new InstancerObject(assetId, objectId, objControl);
     else
     {
-        obj = new GeometryObject(assetId, objectId);
+        obj = new GeometryObject(assetId, objectId, objControl);
     }
-
-    obj->myObjectControl = objControl;
-    //obj->objectInfo = objInfo;
 
     return obj;
 }
@@ -36,22 +33,17 @@ Object::createObject(int assetId, int objectId, Asset* objControl)
 Object::~Object() {}
 
 
-Object::Object(int assetId, int objectId) :
+Object::Object(
+        int assetId,
+        int objectId,
+        Asset* objectControl
+        ) :
+    myObjectControl(objectControl),
     myIsInstanced(false),
     myAssetId(assetId),
     myObjectId(objectId),
-    myNeverBuilt(true),
-    myObjectInfo( HAPI_ObjectInfo_Create() )    
+    myNeverBuilt(true)
 {
-    myObjectControl = NULL;
-
-}
-
-
-void
-Object::init()
-{
-
     // Do a full update, ignoring what has changed
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try

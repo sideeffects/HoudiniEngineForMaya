@@ -54,23 +54,6 @@ Geo::Geo( int assetId, int objectId, int geoId, Object * parentObject) :
     }
 }
 
-
-
-// Getters ----------------------------------------------------
-int 
-Geo::getId() 
-{     
-    return myGeoId; 
-}
-
-
-MString 
-Geo::getName() 
-{ 
-    return Util::getString( myGeoInfo.nameSH ); 
-}
-
-
 void
 Geo::update()
 {
@@ -121,31 +104,41 @@ Geo::update()
 
 
 MStatus 
-Geo::computeParts( MDataHandle& obj, MArrayDataBuilder* builder )
+Geo::compute(MDataHandle &geoHandle)
 {
     MStatus stat;    
-         
+
+    MDataHandle geoNameHandle = geoHandle.child( AssetNode::outputGeoName );
+    geoNameHandle.setString(Util::getString( myGeoInfo.nameSH));
+    geoNameHandle.setClean();
+
+    MDataHandle partsHandle = geoHandle.child(AssetNode::outputParts);
+    MArrayDataHandle partsArrayHandle(partsHandle);
+    MArrayDataBuilder partsBuilder = partsArrayHandle.builder();
+
     if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT || 
         myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
     { 
         for (int i=0; i< myGeoInfo.partCount; i++)
         {
-            MDataHandle h = builder->addElement(i);
+            MDataHandle h = partsBuilder.addElement(i);
             stat = myParts[i].compute(h);
             CHECK_MSTATUS_AND_RETURN( stat, MS::kFailure );
         
         }    
 
-        int partBuilderSizeCheck = builder->elementCount();
+        int partBuilderSizeCheck = partsBuilder.elementCount();
         if (partBuilderSizeCheck > myGeoInfo.partCount)
         {
             for (int i = myGeoInfo.partCount; i< partBuilderSizeCheck; i++)
 	    {
-	        stat = builder->removeElement(i);
+	        stat = partsBuilder.removeElement(i);
 	        CHECK_MSTATUS_AND_RETURN( stat, MS::kFailure );
 	    }
         }
     }
+
+    partsArrayHandle.set(partsBuilder);
 
     return MS::kSuccess;
 }

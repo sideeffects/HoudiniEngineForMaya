@@ -14,15 +14,15 @@ class GeometryPart
     public:        
         GeometryPart(int assetId, int objectId, int geoId, int partId,
                 HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo);
-        virtual ~GeometryPart();
+        ~GeometryPart();
 
 
-        virtual MStatus compute(MDataHandle& handle);
+        MStatus compute(MDataHandle& handle);
 
-        virtual void setGeoInfo(HAPI_GeoInfo& info);
+        void setGeoInfo(HAPI_GeoInfo& info);
 
     protected:
-        virtual void update();
+        void update();
 
     private:
         void updateMaterial(MDataHandle& handle);

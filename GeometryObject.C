@@ -78,22 +78,8 @@ GeometryObject::compute(MDataHandle& objectHandle)
         for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
         {
             MDataHandle geoHandle = geosBuilder.addElement( ii );
-
-            MDataHandle geoNameHandle = geoHandle.child( AssetNode::outputGeoName );
-            geoNameHandle.setString( myGeos[ ii ]->getName() );
-	    geoNameHandle.setClean();
-
-            MDataHandle partsPlugTemp = geoHandle.child(AssetNode::outputParts);
-	    MArrayDataHandle partsHandle(partsPlugTemp);
-	    MArrayDataBuilder partsBuilder = partsHandle.builder();
-
-            if( myGeos[ ii ]->computeParts( objectHandle, &partsBuilder ) != MS::kSuccess )
-            {
-                stat = MS::kFailure;
-                break;
-            }
-
-            partsHandle.set(partsBuilder);
+            stat = myGeos[ii]->compute(geoHandle);
+            CHECK_MSTATUS_AND_RETURN_IT(stat);
         }
 
         geoArrayHandle.set( geosBuilder );

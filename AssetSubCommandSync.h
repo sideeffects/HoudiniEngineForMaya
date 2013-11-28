@@ -19,12 +19,19 @@ class AssetSubCommandSync : public AssetSubCommandAsset
 		);
 	virtual ~AssetSubCommandSync();
 
+        void setSyncAttributes();
+        void setSyncOutputs();
+
 	virtual MStatus doIt();
 	virtual MStatus redoIt();
 	virtual MStatus undoIt();
 	virtual bool isUndoable() const;
 
     protected:
+	bool mySyncAll;
+	bool mySyncAttributes;
+	bool mySyncOutputs;
+
 	const bool mySyncOnlyVisible;
 	MDagModifier myDagModifier;
 

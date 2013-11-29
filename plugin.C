@@ -7,7 +7,64 @@
 #include "FluidVelocityConvert.h"
 #include "util.h"
 
+#include <HAPI/HAPI_Version.h>
+
 #include <cstdlib>
+
+void
+printHAPIVersion()
+{
+    int i, j, k;
+    char version[32];
+    MString msg;
+
+    {
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &i);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &j);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &k);
+
+        msg = "Houdini version: ";
+        sprintf(version, "%d.%d.%d", i, j, k);
+        msg += version;
+        if(!(i == HAPI_VERSION_HOUDINI_MAJOR
+                    && j == HAPI_VERSION_HOUDINI_MINOR
+                    && k == HAPI_VERSION_HOUDINI_BUILD))
+        {
+            msg += ", expected: ";
+            sprintf(version, "%d.%d.%d",
+                    HAPI_VERSION_HOUDINI_MAJOR,
+                    HAPI_VERSION_HOUDINI_MINOR,
+                    HAPI_VERSION_HOUDINI_BUILD);
+            msg += version;
+        }
+
+        MGlobal::displayInfo(msg);
+    }
+
+    {
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &i);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &j);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &k);
+
+        msg = "Houdini Engine version: ";
+        sprintf(version, "%d.%d (API: %d)", i, j, k);
+        msg += version;
+
+        if(!(i == HAPI_VERSION_HOUDINI_ENGINE_MAJOR
+                    && j == HAPI_VERSION_HOUDINI_ENGINE_MINOR
+                    && k == HAPI_VERSION_HOUDINI_ENGINE_API))
+        {
+            msg += ", expected: ";
+            sprintf(version, "%d.%d (API: %d)",
+                    HAPI_VERSION_HOUDINI_ENGINE_MAJOR,
+                    HAPI_VERSION_HOUDINI_ENGINE_MINOR,
+                    HAPI_VERSION_HOUDINI_ENGINE_API);
+            msg += version;
+        }
+
+        MGlobal::displayInfo(msg);
+    }
+}
 
 bool
 initializeHAPI()
@@ -36,9 +93,21 @@ initializeHAPI()
 MStatus
 initializePlugin(MObject obj)
 {
-    MStatus status;
-    MFnPlugin plugin(obj, "Side Effects", "1.5", "Any");
+    printHAPIVersion();
     
+    char engine_version[32];
+    sprintf(engine_version, "%d.%d (API: %d)",
+            HAPI_VERSION_HOUDINI_ENGINE_MAJOR,
+            HAPI_VERSION_HOUDINI_ENGINE_MINOR,
+            HAPI_VERSION_HOUDINI_ENGINE_API);
+
+    MStatus status;
+    MFnPlugin plugin(
+            obj, "Side Effects",
+            engine_version,
+            "Any"
+            );
+
     if(initializeHAPI())
     {
 	MGlobal::displayInfo("Houdini Engine initialized successfully.");

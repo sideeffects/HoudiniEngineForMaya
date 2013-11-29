@@ -26,7 +26,7 @@ class AttrOperation : public Util::WalkParmOperation
         };
 
         AttrOperation(
-                const MDataHandle &dataHandle,
+                MDataBlock &dataBlock,
                 const Mode &mode,
                 const MFnDependencyNode &nodeFn,
                 const HAPI_NodeInfo &nodeInfo,
@@ -56,6 +56,7 @@ class AttrOperation : public Util::WalkParmOperation
         std::vector<MPlug> myMultiPlugs;
         std::vector<int> myMultiLogicalIndices;
 
+        MDataBlock &myDataBlock;
         const Mode &myMode;
         const MFnDependencyNode &myNodeFn;
         const HAPI_NodeInfo &myNodeInfo;
@@ -63,19 +64,33 @@ class AttrOperation : public Util::WalkParmOperation
 };
 
 AttrOperation::AttrOperation(
-        const MDataHandle &dataHandle,
+        MDataBlock &dataBlock,
         const Mode &mode,
         const MFnDependencyNode &nodeFn,
         const HAPI_NodeInfo &nodeInfo,
         const std::vector<MObject>* attrs
         ) :
+    myDataBlock(dataBlock),
     myMode(mode),
     myNodeFn(nodeFn),
     myNodeInfo(nodeInfo),
     myAttrs(attrs)
 {
+    MDataHandle dataHandle;
+    MPlug plug;
+
+    plug = myNodeFn.findPlug(Util::getParmAttrPrefix());
+    if(myMode == AttrOperation::Get)
+    {
+        dataHandle = myDataBlock.outputValue(plug);
+    }
+    else if(myMode == AttrOperation::Set)
+    {
+        dataHandle = myDataBlock.inputValue(plug);
+    }
+
     myDataHandles.push_back(dataHandle);
-    myPlugs.push_back(myNodeFn.findPlug(Util::getParmAttrPrefix()));
+    myPlugs.push_back(plug);
     myExists.push_back(true);
 }
 
@@ -105,8 +120,28 @@ AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
         if(!folderAttrObj.isNull())
         {
             exists = true;
-            dataHandle = parentDataHandle.child(folderAttrObj);
             plug = parentPlug.child(folderAttrObj);
+            // When we got the parentDataHandle, Maya doesn't actually evaluate
+            // the child compound attributes. So if we get the child dataHandle
+            // with child(), it could still be dirty. Workaround it by calling
+            // MDataBlock's inputValue()/outputValue(). Unfortunately, this
+            // still doesn't work for the case where attributes are under a
+            // multi attribute.
+            if(myIsMulti.size() == 0)
+            {
+                if(myMode == AttrOperation::Get)
+                {
+                    dataHandle = myDataBlock.outputValue(plug);
+                }
+                else if(myMode == AttrOperation::Set)
+                {
+                    dataHandle = myDataBlock.inputValue(plug);
+                }
+            }
+            else
+            {
+                dataHandle = parentDataHandle.child(folderAttrObj);
+            }
         }
     }
 
@@ -631,7 +666,7 @@ class GetAttrOperation : public AttrOperation
 {
     public:
         GetAttrOperation(
-                const MDataHandle &dataHandle,
+                MDataBlock &dataBlock,
                 const MFnDependencyNode &nodeFn,
                 const HAPI_NodeInfo &nodeInfo,
                 const std::vector<MObject>* attrs
@@ -641,13 +676,13 @@ class GetAttrOperation : public AttrOperation
 };
 
 GetAttrOperation::GetAttrOperation(
-        const MDataHandle &dataHandle,
+        MDataBlock &dataBlock,
         const MFnDependencyNode &nodeFn,
         const HAPI_NodeInfo &nodeInfo,
         const std::vector<MObject>* attrs
         ) :
     AttrOperation(
-            dataHandle,
+            dataBlock,
             AttrOperation::Get,
             nodeFn,
             nodeInfo,
@@ -820,7 +855,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
 void
 Asset::getParmValues(
-        const MDataHandle &parentDataHandle,
+        MDataBlock &dataBlock,
         const MFnDependencyNode &nodeFn,
         const std::vector<MObject>* attrs
         )
@@ -835,7 +870,7 @@ Asset::getParmValues(
 	HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
 
 	GetAttrOperation operation(
-		parentDataHandle,
+		dataBlock,
 		nodeFn,
 		myNodeInfo,
 		attrs
@@ -848,7 +883,7 @@ class SetAttrOperation : public AttrOperation
 {
     public:
         SetAttrOperation(
-                const MDataHandle &dataHandle,
+                MDataBlock &dataBlock,
                 const MFnDependencyNode &nodeFn,
                 const HAPI_NodeInfo &nodeInfo,
                 const std::vector<MObject>* attrs
@@ -858,13 +893,13 @@ class SetAttrOperation : public AttrOperation
 };
 
 SetAttrOperation::SetAttrOperation(
-        const MDataHandle &dataHandle,
+        MDataBlock &dataBlock,
         const MFnDependencyNode &nodeFn,
         const HAPI_NodeInfo &nodeInfo,
         const std::vector<MObject>* attrs
         ) :
     AttrOperation(
-            dataHandle,
+            dataBlock,
             AttrOperation::Set,
             nodeFn,
             nodeInfo,
@@ -1008,7 +1043,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
 void
 Asset::setParmValues(
-        const MDataHandle &parentDataHandle,
+        MDataBlock &dataBlock,
         const MFnDependencyNode &nodeFn,
         const std::vector<MObject>* attrs
         )
@@ -1023,7 +1058,7 @@ Asset::setParmValues(
 	HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
 
 	SetAttrOperation operation(
-		parentDataHandle,
+		dataBlock,
 		nodeFn,
 		myNodeInfo,
 		attrs
@@ -1036,7 +1071,7 @@ class GetMultiparmLengthOperation : public AttrOperation
 {
     public:
         GetMultiparmLengthOperation(
-                const MDataHandle &dataHandle,
+                MDataBlock &dataBlock,
                 const MPlug &multiSizePlug,
                 int &multiSize,
                 const MFnDependencyNode &nodeFn,
@@ -1051,14 +1086,14 @@ class GetMultiparmLengthOperation : public AttrOperation
 };
 
 GetMultiparmLengthOperation::GetMultiparmLengthOperation(
-                const MDataHandle &dataHandle,
+                MDataBlock &dataBlock,
                 const MPlug &multiSizePlug,
                 int &multiSize,
                 const MFnDependencyNode &nodeFn,
                 const HAPI_NodeInfo &nodeInfo
         ) :
     AttrOperation(
-            dataHandle,
+            dataBlock,
             AttrOperation::Get,
             nodeFn,
             nodeInfo,
@@ -1096,7 +1131,7 @@ GetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
 void
 Asset::getMultiparmLength(
-        const MDataHandle &parentDataHandle,
+        MDataBlock &dataBlock,
         const MPlug &multiSizePlug,
         int &multiSize,
         const MFnDependencyNode &nodeFn
@@ -1112,7 +1147,7 @@ Asset::getMultiparmLength(
         HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
 
         GetMultiparmLengthOperation operation(
-                parentDataHandle,
+                dataBlock,
                 multiSizePlug,
                 multiSize,
                 nodeFn,
@@ -1121,14 +1156,14 @@ Asset::getMultiparmLength(
         Util::walkParm(parmInfos, operation);
     }
 
-    getParmValues(parentDataHandle, nodeFn, NULL);
+    getParmValues(dataBlock, nodeFn, NULL);
 }
 
 class SetMultiparmLengthOperation : public AttrOperation
 {
     public:
         SetMultiparmLengthOperation(
-                const MDataHandle &dataHandle,
+                MDataBlock &dataBlock,
                 const MPlug &multiSizePlug,
                 int multiSize,
                 const MFnDependencyNode &nodeFn,
@@ -1143,14 +1178,14 @@ class SetMultiparmLengthOperation : public AttrOperation
 };
 
 SetMultiparmLengthOperation::SetMultiparmLengthOperation(
-        const MDataHandle &dataHandle,
+        MDataBlock &dataBlock,
         const MPlug &multiSizePlug,
         int multiSize,
         const MFnDependencyNode &nodeFn,
         const HAPI_NodeInfo &nodeInfo
         ) :
     AttrOperation(
-            dataHandle,
+            dataBlock,
             AttrOperation::Set,
             nodeFn,
             nodeInfo,
@@ -1234,7 +1269,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
 void
 Asset::setMultiparmLength(
-        const MDataHandle &parentDataHandle,
+        MDataBlock &dataBlock,
         const MPlug &multiSizePlug,
         int multiSize,
         const MFnDependencyNode &nodeFn
@@ -1250,7 +1285,7 @@ Asset::setMultiparmLength(
         HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
 
         SetMultiparmLengthOperation operation(
-                parentDataHandle,
+                dataBlock,
                 multiSizePlug,
                 multiSize,
                 nodeFn,
@@ -1262,5 +1297,5 @@ Asset::setMultiparmLength(
         HAPI_GetNodeInfo( myAssetInfo.nodeId, &myNodeInfo);
     }
 
-    getParmValues(parentDataHandle, nodeFn, NULL);
+    getParmValues(dataBlock, nodeFn, NULL);
 }

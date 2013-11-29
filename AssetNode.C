@@ -896,10 +896,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	//push parms into Houdini
         if(!parmAttrObj.isNull())
         {
-            MDataHandle dataHandle = data.outputValue(parmAttrObj, &status);
-            CHECK_MSTATUS(status);
             myAsset->setParmValues(
-                    dataHandle,
+                    data,
                     assetNodeFn,
                     &myDirtyParmAttributes
                     );
@@ -909,10 +907,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	//updates Maya attrs from Houdini
         if(!parmAttrObj.isNull())
         {
-            MDataHandle dataHandle = data.inputValue(parmAttrObj, &status);
-            CHECK_MSTATUS(status);
             myAsset->getParmValues(
-                    dataHandle,
+                    data,
                     assetNodeFn,
                     NULL
                     );
@@ -970,12 +966,9 @@ AssetNode::getInternalValueInContext(
             {
                 MDataBlock dataBlock = forceCache();
 
-                MDataHandle parmAttrHandle = dataBlock.outputValue(parmAttrObj, &status);
-                CHECK_MSTATUS(status);
-
                 int multiSize = 0;
                 getAsset()->getMultiparmLength(
-                        parmAttrHandle,
+                        dataBlock,
                         plug,
                         multiSize,
                         assetNodeFn
@@ -1023,11 +1016,8 @@ AssetNode::setInternalValueInContext(
             {
                 MDataBlock dataBlock = forceCache();
 
-                MDataHandle parmAttrHandle = dataBlock.outputValue(parmAttrObj, &status);
-                CHECK_MSTATUS(status);
-
                 getAsset()->setMultiparmLength(
-                        parmAttrHandle,
+                        dataBlock,
                         plug,
                         dataHandle.asInt(),
                         assetNodeFn
@@ -1099,10 +1089,8 @@ AssetNode::createAsset()
     MDataBlock dataBlock = forceCache();
     if(!parmAttrObj.isNull())
     {
-        MDataHandle dataHandle = dataBlock.outputValue(parmAttrObj, &status);
-        CHECK_MSTATUS(status);
         myAsset->setParmValues(
-                dataHandle,
+                dataBlock,
                 assetNodeFn,
                 NULL
                 );

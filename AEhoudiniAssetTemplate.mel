@@ -37,6 +37,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
             frameLayout
                 -collapsable true
+                -collapse false
                 -label $niceName;
             columnLayout
                 -adjustableColumn true;

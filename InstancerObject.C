@@ -178,7 +178,7 @@ InstancerObject::compute(
 
         int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
-        HAPI_GetInstanceTransforms( myAssetId, myObjectInfo.id, 0, 5, instTransforms, 0, size );
+        HAPI_GetInstanceTransforms( myAssetId, myObjectInfo.id, 0, HAPI_SRT, instTransforms, 0, size );
 
 	MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
 	MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();

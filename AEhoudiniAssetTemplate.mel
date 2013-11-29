@@ -39,7 +39,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                 -collapsable true
                 -label $niceName;
             columnLayout
-                -adjustableColumn 1;
+                -adjustableColumn true;
 
             buildAttrTree($nodeName, $child, $fullAttr + "." + $child);
 
@@ -62,7 +62,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                 -collapsable true
                 -label $multiNiceName;
             columnLayout
-                -adjustableColumn 1;
+                -adjustableColumn true;
 
             string $parent = `setParent -q`;
 

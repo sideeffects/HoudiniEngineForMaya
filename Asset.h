@@ -36,26 +36,26 @@ class Asset {
                 );
 
         void getParmValues(
-                const MDataHandle &parentDataHandle,
+                MDataBlock &dataBlock,
                 const MFnDependencyNode &nodeFn,
                 const std::vector<MObject>* attrs
                 );
 
         void setParmValues(
-                const MDataHandle &parentDataHandle,
+                MDataBlock &dataBlock,
                 const MFnDependencyNode &nodeFn,
                 const std::vector<MObject>* attrs
                 );
 
         void getMultiparmLength(
-                const MDataHandle &parentDataHandle,
+                MDataBlock &dataBlock,
                 const MPlug &multiSizePlug,
                 int &multiSize,
                 const MFnDependencyNode &nodeFn
                 );
 
         void setMultiparmLength(
-                const MDataHandle &parentDataHandle,
+                MDataBlock &dataBlock,
                 const MPlug &multiSizePlug,
                 int multiSize,
                 const MFnDependencyNode &nodeFn

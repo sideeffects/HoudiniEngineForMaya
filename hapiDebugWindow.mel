@@ -25,7 +25,7 @@ proc hapiPopulateTree(string $uiTree)
 		for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
 		{
 			string $fullPath = $subDir + $subDirContents[ $jj ];
-			string $cmd = "houdiniAsset -loadOTL \"" + $fullPath + "\"";
+			string $cmd = "houdiniAsset -loadAsset \"" + $fullPath + "\"";
 			string $filePath = "All Assets/" + $otlDirContents[ $ii ] + "/" + $subDirContents[ $jj ];
 			treeLister -e -add $filePath $logoPath $cmd
 				  $uiTree;
@@ -70,7 +70,7 @@ global proc hapiInstanceAllCoreAssets()
 	for( $jj = 0; $jj < size( $subDirContents ) ; $jj++)
 	{
 		string $fullPath = $subDir + $subDirContents[ $jj ];
-		string $cmd = "houdiniAsset -loadOTL \"" + $fullPath + "\"";
+		string $cmd = "houdiniAsset -loadAsset \"" + $fullPath + "\"";
 		eval $cmd;		
 	}
 	
@@ -90,7 +90,7 @@ global proc hapiDebugWindow()
 	
 	menu -label "File" -tearOff true;    
     menuItem -label "Save Current Houdini Scene..." -c "saveHipFile";
-	menuItem -label "Load Houdini Asset..." -c "houdiniAsset_loadOTLMenuClick";
+	menuItem -label "Load Houdini Asset..." -c "houdiniAsset_loadAssetMenuClick";
 	menu -label "Help" -helpMenu true;
 		menuItem -label "About..." -c "hapiAboutBox";
 	

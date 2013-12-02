@@ -6,12 +6,12 @@
 #include "AssetNode.h"
 #include "AssetCommand.h"
 #include "AssetSubCommand.h"
-#include "AssetSubCommandLoadOTL.h"
+#include "AssetSubCommandLoadAsset.h"
 #include "AssetSubCommandSync.h"
 #include "util.h"
 
-#define kLoadOTLFlag "-lo"
-#define kLoadOTLFlagLong "-loadOTL"
+#define kLoadAssetFlag "-la"
+#define kLoadAssetFlagLong "-loadAsset"
 #define kSyncFlag "-syn"
 #define kSyncFlagLong "-sync"
 #define kSaveHIPFlag "-sh"
@@ -53,9 +53,9 @@ AssetCommand::newSyntax()
 {
     MSyntax syntax;
 
-    // -loadOTL load an otl file
+    // -loadAsset load an otl file
     // expected arguments: otl_file_name - the name of the otl file to load
-    CHECK_MSTATUS(syntax.addFlag(kLoadOTLFlag, kLoadOTLFlagLong,
+    CHECK_MSTATUS(syntax.addFlag(kLoadAssetFlag, kLoadAssetFlagLong,
                 MSyntax::kString,
                 MSyntax::kString));
 
@@ -122,14 +122,14 @@ AssetCommand::parseArgs(const MArgList &args)
 	return status;
     }
 
-    if(!(argData.isFlagSet(kLoadOTLFlag)
+    if(!(argData.isFlagSet(kLoadAssetFlag)
 		^ argData.isFlagSet(kSyncFlag)
 		^ argData.isFlagSet(kSaveHIPFlag)
 		^ argData.isFlagSet(kResetSimulationFlag)
 		^ argData.isFlagSet(kReloadAssetFlag)))
     {
 	displayError("Exactly one of these flags must be specified:\n"
-		kLoadOTLFlagLong "\n"
+		kLoadAssetFlagLong "\n"
 		kSyncFlagLong "\n"
 		kSaveHIPFlagLong "\n"
 		kResetSimulationFlagLong "\n"
@@ -137,31 +137,31 @@ AssetCommand::parseArgs(const MArgList &args)
         return MStatus::kInvalidParameter;
     }
 
-    if(argData.isFlagSet(kLoadOTLFlag))
+    if(argData.isFlagSet(kLoadAssetFlag))
     {
 	myOperationType = kOperationSubCommand;
 
 	MString otlFilePath;
 	{
-	    status = argData.getFlagArgument(kLoadOTLFlag, 0, otlFilePath);
+	    status = argData.getFlagArgument(kLoadAssetFlag, 0, otlFilePath);
 	    if(!status)
 	    {
-		displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
+		displayError("Invalid argument for \"" kLoadAssetFlagLong "\".");
 		return status;
 	    }
 	}
 
 	MString assetName;
 	{
-	    status = argData.getFlagArgument(kLoadOTLFlag, 1, assetName);
+	    status = argData.getFlagArgument(kLoadAssetFlag, 1, assetName);
 	    if(!status)
 	    {
-		displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
+		displayError("Invalid argument for \"" kLoadAssetFlagLong "\".");
 		return status;
 	    }
 	}
 
-	myAssetSubCommand = new AssetSubCommandLoadOTL(
+	myAssetSubCommand = new AssetSubCommandLoadAsset(
 		otlFilePath,
 		assetName
 		);

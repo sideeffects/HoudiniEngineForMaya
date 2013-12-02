@@ -1,4 +1,4 @@
-#include "AssetSubCommandLoadOTL.h"
+#include "AssetSubCommandLoadAsset.h"
 
 #include <maya/MFileObject.h>
 #include <maya/MGlobal.h>
@@ -9,7 +9,7 @@
 #include "AssetSubCommandSync.h"
 #include "util.h"
 
-AssetSubCommandLoadOTL::AssetSubCommandLoadOTL(
+AssetSubCommandLoadAsset::AssetSubCommandLoadAsset(
 	const MString &otlFilePath,
 	const MString &assetName
 	) :
@@ -19,12 +19,12 @@ AssetSubCommandLoadOTL::AssetSubCommandLoadOTL(
 {
 }
 
-AssetSubCommandLoadOTL::~AssetSubCommandLoadOTL()
+AssetSubCommandLoadAsset::~AssetSubCommandLoadAsset()
 {
 }
 
 MStatus
-AssetSubCommandLoadOTL::doIt()
+AssetSubCommandLoadAsset::doIt()
 {
     MStatus status;
 
@@ -80,7 +80,7 @@ AssetSubCommandLoadOTL::doIt()
 }
 
 MStatus
-AssetSubCommandLoadOTL::redoIt()
+AssetSubCommandLoadAsset::redoIt()
 {
     MStatus status;
 
@@ -94,7 +94,7 @@ AssetSubCommandLoadOTL::redoIt()
 }
 
 MStatus
-AssetSubCommandLoadOTL::undoIt()
+AssetSubCommandLoadAsset::undoIt()
 {
     MStatus status;
 
@@ -107,7 +107,7 @@ AssetSubCommandLoadOTL::undoIt()
     return MStatus::kSuccess;
 }
 
-bool AssetSubCommandLoadOTL::isUndoable() const
+bool AssetSubCommandLoadAsset::isUndoable() const
 {
     return true;
 }

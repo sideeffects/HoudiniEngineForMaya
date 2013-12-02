@@ -16,8 +16,15 @@ class MFnDependencyNode;
 
 class Asset {
     public:
-        Asset(MString otlFilePath, MObject node);
+        Asset(
+                MString otlFilePath,
+                MString assetName,
+                MObject node
+             );
         ~Asset();
+
+        MString getOTLFilePath() const;
+        MString getAssetName() const;
 
         Object** getObjects();
         Object* findObjectByName(MString name);

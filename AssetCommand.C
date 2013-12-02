@@ -55,7 +55,9 @@ AssetCommand::newSyntax()
 
     // -loadOTL load an otl file
     // expected arguments: otl_file_name - the name of the otl file to load
-    CHECK_MSTATUS(syntax.addFlag(kLoadOTLFlag, kLoadOTLFlagLong, MSyntax::kString));
+    CHECK_MSTATUS(syntax.addFlag(kLoadOTLFlag, kLoadOTLFlagLong,
+                MSyntax::kString,
+                MSyntax::kString));
 
     // -sync synchronize the Maya nodes with the asset's state
     // expected arguments:
@@ -139,9 +141,19 @@ AssetCommand::parseArgs(const MArgList &args)
     {
 	myOperationType = kOperationSubCommand;
 
-	MString otlPath;
+	MString otlFilePath;
 	{
-	    status = argData.getFlagArgument(kLoadOTLFlag, 0, otlPath);
+	    status = argData.getFlagArgument(kLoadOTLFlag, 0, otlFilePath);
+	    if(!status)
+	    {
+		displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
+		return status;
+	    }
+	}
+
+	MString assetName;
+	{
+	    status = argData.getFlagArgument(kLoadOTLFlag, 1, assetName);
 	    if(!status)
 	    {
 		displayError("Invalid argument for \"" kLoadOTLFlagLong "\".");
@@ -150,7 +162,8 @@ AssetCommand::parseArgs(const MArgList &args)
 	}
 
 	myAssetSubCommand = new AssetSubCommandLoadOTL(
-		otlPath
+		otlFilePath,
+		assetName
 		);
     }
 

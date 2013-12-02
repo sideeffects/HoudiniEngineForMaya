@@ -12,7 +12,8 @@ class AssetSubCommandLoadOTL : public AssetSubCommand
 {
     public:
 	AssetSubCommandLoadOTL(
-		const MString &otlFile
+		const MString &otlFilePath,
+		const MString &assetName
 		);
 	virtual ~AssetSubCommandLoadOTL();
 
@@ -23,7 +24,8 @@ class AssetSubCommandLoadOTL : public AssetSubCommand
 	virtual bool isUndoable() const;
 
     protected:
-	MString myOTLFile;
+	MString myOTLFilePath;
+	MString myAssetName;
 
 	MDagModifier myDagModifier;
 

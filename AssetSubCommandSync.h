@@ -8,8 +8,6 @@
 
 #include <vector>
 
-class AssetSync;
-
 class AssetSubCommandSync : public AssetSubCommandAsset
 {
     public:
@@ -35,7 +33,7 @@ class AssetSubCommandSync : public AssetSubCommandAsset
 	const bool mySyncOnlyVisible;
 	MDagModifier myDagModifier;
 
-	typedef std::vector<AssetSync*> AssetSyncs;
+	typedef std::vector<AssetSubCommand*> AssetSyncs;
 	AssetSyncs myAssetSyncs;
 };
 

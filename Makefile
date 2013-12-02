@@ -182,7 +182,6 @@ CXXFILES = \
 	   InstancerObject.C \
 	   Geo.C \
 	   GeometryPart.C \
-	   AssetSync.C \
 	   AssetSyncAttribute.C \
 	   AssetSyncOutputObject.C \
 	   AssetSyncOutputGeoPart.C \

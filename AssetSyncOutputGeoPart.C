@@ -85,6 +85,12 @@ AssetSyncOutputGeoPart::redoIt()
     return MStatus::kSuccess;
 }
 
+bool
+AssetSyncOutputGeoPart::isUndoable() const
+{
+    return true;
+}
+
 MStatus
 AssetSyncOutputGeoPart::createOutputPart(
 	const MObject &objectTransform,

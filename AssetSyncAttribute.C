@@ -471,3 +471,9 @@ AssetSyncAttribute::redoIt()
 
     return MStatus::kSuccess;
 }
+
+bool
+AssetSyncAttribute::isUndoable() const
+{
+    return true;
+}

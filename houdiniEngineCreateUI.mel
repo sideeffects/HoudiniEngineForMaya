@@ -5,16 +5,6 @@ houdiniEngine_debugWindowMenuClick()
 }
 
 global proc
-houdiniEngine_loadAssetMenuClick()
-{
-    string $filter = "Houdini Digital Assets (*.otl);;All Files (*.*)";
-    string $results[] = `fileDialog2 -cap "Load Houdini Asset" -okc "Open" -fileFilter $filter -fm 1`;
-    if (size($results) > 0)
-	houdiniAsset -loadAsset $results[0];
-}
-
-
-global proc
 houdiniEngine_syncAssetOutput(int $syncOnlyVisible)
 {
     string $currSels[] = `ls -sl`;
@@ -219,7 +209,7 @@ houdiniEngineCreateUI()
 	-tearOff true
 	houdiniEngineMenu;
     menuItem -label "Load Houdini Asset..."
-	-command "houdiniEngine_loadAssetMenuClick";
+	-command "houdiniEngineLoadAsset";
     menuItem -label "Sync Asset Output"
 	-command "performAssetSync 0";
     menuItem -optionBox true

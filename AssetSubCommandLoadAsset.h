@@ -1,5 +1,5 @@
-#ifndef __AssetSubCommandLoadOTL_h__
-#define __AssetSubCommandLoadOTL_h__
+#ifndef __AssetSubCommandLoadAsset_h__
+#define __AssetSubCommandLoadAsset_h__
 
 #include "AssetSubCommand.h"
 
@@ -8,14 +8,14 @@
 
 class AssetSubCommandSync;
 
-class AssetSubCommandLoadOTL : public AssetSubCommand
+class AssetSubCommandLoadAsset : public AssetSubCommand
 {
     public:
-	AssetSubCommandLoadOTL(
+	AssetSubCommandLoadAsset(
 		const MString &otlFilePath,
 		const MString &assetName
 		);
-	virtual ~AssetSubCommandLoadOTL();
+	virtual ~AssetSubCommandLoadAsset();
 
 	virtual MStatus doIt();
 	virtual MStatus redoIt();

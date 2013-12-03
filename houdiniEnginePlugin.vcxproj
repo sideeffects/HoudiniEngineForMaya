@@ -43,7 +43,7 @@
     <ClCompile Include="AssetInputMesh.C" />
     <ClCompile Include="AssetNode.C" />
     <ClCompile Include="AssetSubCommand.C" />
-    <ClCompile Include="AssetSubCommandLoadOTL.C" />
+    <ClCompile Include="AssetSubCommandLoadAsset.C" />
     <ClCompile Include="AssetSubCommandSync.C" />
     <ClCompile Include="AssetSyncAttribute.C" />
     <ClCompile Include="AssetSyncOutputGeoPart.C" />
@@ -67,7 +67,7 @@
     <ClInclude Include="AssetInputMesh.h" />
     <ClInclude Include="AssetNode.h" />
     <ClInclude Include="AssetSubCommand.h" />
-    <ClInclude Include="AssetSubCommandLoadOTL.h" />
+    <ClInclude Include="AssetSubCommandLoadAsset.h" />
     <ClInclude Include="AssetSubCommandSync.h" />
     <ClInclude Include="AssetSyncAttribute.h" />
     <ClInclude Include="AssetSyncOutputGeoPart.h" />

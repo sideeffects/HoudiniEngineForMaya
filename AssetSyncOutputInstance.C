@@ -58,6 +58,12 @@ AssetSyncOutputInstance::redoIt()
     return MStatus::kSuccess;
 }
 
+bool
+AssetSyncOutputInstance::isUndoable() const
+{
+    return true;
+}
+
 void 
 AssetSyncOutputInstance::instanceObject( MDagPath & objToInstance,
 					 MObject instancerTransform,

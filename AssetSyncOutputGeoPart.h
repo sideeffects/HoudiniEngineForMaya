@@ -4,9 +4,9 @@
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
 
-#include "AssetSync.h"
+#include "AssetSubCommand.h"
 
-class AssetSyncOutputGeoPart : public AssetSync
+class AssetSyncOutputGeoPart : public AssetSubCommand
 {
     public:
 	AssetSyncOutputGeoPart(
@@ -18,6 +18,8 @@ class AssetSyncOutputGeoPart : public AssetSync
 	virtual MStatus doIt();
 	virtual MStatus undoIt();
 	virtual MStatus redoIt();
+
+	virtual bool isUndoable() const;
 
     protected:
 	MStatus createOutputPart(

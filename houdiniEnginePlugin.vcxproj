@@ -45,7 +45,6 @@
     <ClCompile Include="AssetSubCommand.C" />
     <ClCompile Include="AssetSubCommandLoadOTL.C" />
     <ClCompile Include="AssetSubCommandSync.C" />
-    <ClCompile Include="AssetSync.C" />
     <ClCompile Include="AssetSyncAttribute.C" />
     <ClCompile Include="AssetSyncOutputGeoPart.C" />
     <ClCompile Include="AssetSyncOutputInstance.C" />
@@ -70,7 +69,6 @@
     <ClInclude Include="AssetSubCommand.h" />
     <ClInclude Include="AssetSubCommandLoadOTL.h" />
     <ClInclude Include="AssetSubCommandSync.h" />
-    <ClInclude Include="AssetSync.h" />
     <ClInclude Include="AssetSyncAttribute.h" />
     <ClInclude Include="AssetSyncOutputGeoPart.h" />
     <ClInclude Include="AssetSyncOutputInstance.h" />

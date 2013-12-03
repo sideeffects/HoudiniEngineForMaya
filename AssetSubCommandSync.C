@@ -61,7 +61,7 @@ AssetSubCommandSync::doIt()
     // attributes
     if(mySyncAll || mySyncAttributes)
     {
-	AssetSync* syncOutput = new AssetSyncAttribute(myAssetNodeObj);
+	AssetSubCommand* syncOutput = new AssetSyncAttribute(myAssetNodeObj);
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);
@@ -108,7 +108,7 @@ AssetSubCommandSync::doIt()
 
             if( !mySyncOnlyVisible || visible || instanced )
             {
-                AssetSync* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj, visible );
+                AssetSubCommand* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj, visible );
                 syncOutput->doIt();
 
                 myAssetSyncs.push_back(syncOutput);
@@ -124,7 +124,7 @@ AssetSubCommandSync::doIt()
         {
             MPlug elemPlug = instancersPlug[i];
 
-            AssetSync* syncOutput = new AssetSyncOutputInstance(elemPlug, i, myAssetNodeObj);
+            AssetSubCommand* syncOutput = new AssetSyncOutputInstance(elemPlug, i, myAssetNodeObj);
             syncOutput->doIt();
 
             myAssetSyncs.push_back(syncOutput);

@@ -25,8 +25,10 @@
 #include "util.h"
 
 MTypeId AssetNode::id(MayaTypeID_HoudiniAssetNode);
-MObject AssetNode::assetPath;
 MObject AssetNode::inTime;
+
+MObject AssetNode::otlFilePath;
+MObject AssetNode::assetName;
 
 MObject AssetNode::assetType;
 
@@ -148,17 +150,20 @@ AssetNode::initialize()
     MFnCompoundAttribute cAttr;
     MFnUnitAttribute uAttr;
 
-    // file name
-    // The name of the otl file we loaded.
-    AssetNode::assetPath = tAttr.create("assetPath", "assetPath", MFnData::kString);
-    tAttr.setInternal(true);
-    tAttr.setUsedAsFilename(true);
-
     // time input
     // For time dpendence.
     AssetNode::inTime = uAttr.create("inTime", "inTime", MTime());
     uAttr.setStorable(true);
     uAttr.setHidden(true);
+
+    // otl file path
+    AssetNode::otlFilePath = tAttr.create("otlFilePath", "otlFilePath", MFnData::kString);
+    tAttr.setInternal(true);
+    tAttr.setUsedAsFilename(true);
+
+    // asset name
+    AssetNode::assetName = tAttr.create("assetName", "assetName", MFnData::kString);
+    tAttr.setInternal(true);
 
     // asset type
     // This maps to the underlying Houdini asset type: OBJ, SOP, etc. (see HAPI_AssetType)
@@ -678,8 +683,9 @@ AssetNode::initialize()
 
     // add the static attributes to the node
     addAttribute(AssetNode::autoSyncOutputs);
-    addAttribute(AssetNode::assetPath);
     addAttribute(AssetNode::inTime);
+    addAttribute(AssetNode::otlFilePath);
+    addAttribute(AssetNode::assetName);
     addAttribute(AssetNode::assetType);
     addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
@@ -688,7 +694,8 @@ AssetNode::initialize()
     
     //most of the dependencies between attrs are set via the AssetNode::setDependentsDirty() call
     //this call may not even be necessary.
-    attributeAffects(AssetNode::assetPath, AssetNode::output);
+    attributeAffects(AssetNode::otlFilePath, AssetNode::output);
+    attributeAffects(AssetNode::assetName, AssetNode::output);
     
 
     return MS::kSuccess;
@@ -700,7 +707,7 @@ AssetNode::AssetNode()
     myAsset = NULL;
 
     myBuiltParms = false;
-    myAssetPathChanged = true;
+    //myAssetPathChanged = true;
     myResultsClean = false;
 }
 
@@ -721,7 +728,8 @@ MStatus
 AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlugArray& affectedPlugs)
 {
-    if (plugBeingDirtied == AssetNode::assetPath)
+    if (plugBeingDirtied == AssetNode::otlFilePath
+        || plugBeingDirtied == AssetNode::assetName)
         return MS::kSuccess;
 
     myResultsClean = false;
@@ -868,7 +876,7 @@ void
 AssetNode::rebuildAsset()
 {
     destroyAsset();
-    myAsset = new Asset(myAssetPath, thisMObject());
+    myAsset = new Asset(myOTLFilePath, myAssetName, thisMObject());
     myResultsClean = false;
 
 }
@@ -944,9 +952,15 @@ AssetNode::getInternalValueInContext(
 {
     MStatus status;
 
-    if(plug == assetPath)
+    if(plug == AssetNode::otlFilePath)
     {
-	dataHandle.setString(myAssetPath);
+	dataHandle.setString(myOTLFilePath);
+
+	return true;
+    }
+    else if(plug == AssetNode::assetName)
+    {
+	dataHandle.setString(myAssetName);
 
 	return true;
     }
@@ -993,10 +1007,15 @@ AssetNode::setInternalValueInContext(
 {
     MStatus status;
 
-    if(plug == assetPath)
+    if(plug == AssetNode::otlFilePath)
     {
-	myAssetPath = dataHandle.asString();
-	myAssetPathChanged = true;
+	myOTLFilePath = dataHandle.asString();
+
+	return true;
+    }
+    else if(plug == AssetNode::assetName)
+    {
+	myAssetName = dataHandle.asString();
 
 	return true;
     }
@@ -1052,8 +1071,9 @@ AssetNode::copyInternalData(MPxNode* node)
 {
     AssetNode* assetNode = dynamic_cast<AssetNode*>(node);
 
-    myAssetPath = assetNode->myAssetPath;
-    myAssetPathChanged = true;
+    myOTLFilePath = assetNode->myOTLFilePath;
+    myAssetName = assetNode->myAssetName;
+    //myAssetPathChanged = true;
 
     MPxTransform::copyInternalData(node);
 }
@@ -1071,16 +1091,18 @@ AssetNode::createAsset()
 {
     MStatus status;
 
-    if(!myAssetPathChanged)
+    if(
+            myAsset != NULL
+            && myAsset->getOTLFilePath() == myOTLFilePath
+            && myAsset->getAssetName() == myAssetName
+      )
     {
-	return;
+        return;
     }
 
     destroyAsset();
 
-    myAsset = new Asset(myAssetPath, thisMObject());
-
-    myAssetPathChanged = false;
+    myAsset = new Asset(myOTLFilePath, myAssetName, thisMObject());
 
     MFnDependencyNode assetNodeFn(thisMObject());
     MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());

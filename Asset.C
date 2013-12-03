@@ -335,7 +335,11 @@ AttrOperation::containsParm(const HAPI_ParmInfo &parm) const
     return false;
 }
 
-Asset::Asset(MString otlFilePath, MObject node) :
+Asset::Asset(
+        MString otlFilePath,
+        MString assetName,
+        MObject node
+        ) :
     myNode(node)
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
@@ -343,15 +347,31 @@ Asset::Asset(MString otlFilePath, MObject node) :
     myObjectInfos = NULL;    
 
     // load the otl
-    const char* filename = otlFilePath.asChar();
-
     int libraryId;
+    HAPI_LoadAssetLibraryFromFile(otlFilePath.asChar(), &libraryId);
+
+    int assetCount;
+    HAPI_GetAvailableAssetCount(libraryId, &assetCount);
+
+    std::vector<HAPI_StringHandle> assetNamesSH(assetCount);
+    HAPI_GetAvailableAssets(libraryId, &assetNamesSH.front(), assetCount);
+
+    bool foundAsset = false;
+    for(int i = 0; i < assetCount; i++)
+    {
+        if(Util::getString(assetNamesSH[i]) == assetName)
+        {
+            foundAsset = true;
+        }
+    }
+    if(!foundAsset)
+    {
+        return;
+    }
+
     int assetId;
-    int assetNameSH;
-    HAPI_LoadAssetLibraryFromFile(filename, &libraryId);
-    HAPI_GetAvailableAssets(libraryId, &assetNameSH, 1);
     HAPI_InstantiateAsset(
-            Util::getString(assetNameSH).asChar(),
+            assetName.asChar(),
             true,
             3, 20,
             &assetId
@@ -404,6 +424,17 @@ Asset::~Asset()
     Util::checkHAPIStatus(hstat);
 }
 
+MString
+Asset::getOTLFilePath() const
+{
+    return Util::getString(myAssetInfo.filePathSH);
+}
+
+MString
+Asset::getAssetName() const
+{
+    return Util::getString(myAssetInfo.fullOpNameSH);
+}
 
 Object*
 Asset::findObjectByName(MString name)

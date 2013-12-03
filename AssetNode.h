@@ -83,16 +83,18 @@ class AssetNode: public MPxTransform
 	void createAsset();
 	void destroyAsset();
 
-	MString myAssetPath;
-	bool myAssetPathChanged;
+	MString myOTLFilePath;
+	MString myAssetName;
 	bool myResultsClean;
 
 	typedef std::vector<MObject> MObjectVector;
 	MObjectVector myDirtyParmAttributes;
 
     public:
-        static MObject assetPath;
         static MObject inTime;
+
+        static MObject otlFilePath;
+        static MObject assetName;
 
         static MObject assetType;
 

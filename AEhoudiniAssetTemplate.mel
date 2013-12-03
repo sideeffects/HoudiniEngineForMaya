@@ -505,7 +505,8 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
 {
     editorTemplate -beginScrollLayout;
 
-    editorTemplate -addControl "assetPath";
+    editorTemplate -addControl "otlFilePath";
+    editorTemplate -addControl "assetName";
 
     editorTemplate -callCustom "AEhoudiniAssetOperationNew" "AEhoudiniAssetOperationReplace"
 	"unused";

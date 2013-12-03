@@ -1,7 +1,7 @@
 #ifndef __AssetSyncAttribute_h__
 #define __AssetSyncAttribute_h__
 
-#include "AssetSync.h"
+#include "AssetSubCommand.h"
 
 #include <maya/MDGModifier.h>
 #include <maya/MObject.h>
@@ -10,7 +10,7 @@
 
 class MFnCompoundAttribute;
 
-class AssetSyncAttribute : public AssetSync
+class AssetSyncAttribute : public AssetSubCommand
 {
     public:
 	AssetSyncAttribute(
@@ -21,6 +21,8 @@ class AssetSyncAttribute : public AssetSync
 	virtual MStatus doIt();
 	virtual MStatus undoIt();
 	virtual MStatus redoIt();
+
+	virtual bool isUndoable() const;
 
     protected:
 	const MObject myAssetNodeObj;

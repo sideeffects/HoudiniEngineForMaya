@@ -6,9 +6,9 @@
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
 
-#include "AssetSync.h"
+#include "AssetSubCommand.h"
 
-class AssetSyncOutputObject : public AssetSync
+class AssetSyncOutputObject : public AssetSubCommand
 {
     public:
 	AssetSyncOutputObject(
@@ -21,6 +21,8 @@ class AssetSyncOutputObject : public AssetSync
 	virtual MStatus doIt();
 	virtual MStatus undoIt();
 	virtual MStatus redoIt();
+
+	virtual bool isUndoable() const;
 
     protected:
 	MStatus createOutputObject();
@@ -36,7 +38,7 @@ class AssetSyncOutputObject : public AssetSync
 	MDagModifier myDagModifier;
 
 	// TODO: change this into an AssetSyncOutputGeoPart
-	typedef std::vector<AssetSync*> AssetSyncs;
+	typedef std::vector<AssetSubCommand*> AssetSyncs;
 	AssetSyncs myAssetSyncs;
 };
 

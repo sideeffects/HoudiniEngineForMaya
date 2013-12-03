@@ -98,7 +98,7 @@ AssetSyncOutputObject::doIt()
         CHECK_MSTATUS_AND_RETURN_IT(status);
         for (int jj=0; jj<partCount; jj++)
         {
-	    AssetSync* sync = new AssetSyncOutputGeoPart(partsPlug[jj], partParent );
+	    AssetSubCommand* sync = new AssetSyncOutputGeoPart(partsPlug[jj], partParent );
 	    sync->doIt();
 	    myAssetSyncs.push_back(sync);
         }
@@ -409,4 +409,10 @@ AssetSyncOutputObject::redoIt()
     }
 
     return MStatus::kSuccess;
+}
+
+bool
+AssetSyncOutputObject::isUndoable() const
+{
+    return true;
 }

@@ -4,11 +4,11 @@
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
 
-#include "AssetSync.h"
+#include "AssetSubCommand.h"
 
 class MDagPath;
 
-class AssetSyncOutputInstance : public AssetSync
+class AssetSyncOutputInstance : public AssetSubCommand
 {
     public:
 	AssetSyncOutputInstance(
@@ -21,6 +21,8 @@ class AssetSyncOutputInstance : public AssetSync
 	virtual MStatus doIt();
 	virtual MStatus undoIt();
 	virtual MStatus redoIt();
+
+	virtual bool isUndoable() const;
 
     protected:
 	MStatus createOutput();

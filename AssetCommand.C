@@ -10,6 +10,8 @@
 #include "AssetSubCommandSync.h"
 #include "util.h"
 
+#define kListAssetsFlag "-ls"
+#define kListAssetsFlagLong "-listAssets"
 #define kLoadAssetFlag "-la"
 #define kLoadAssetFlagLong "-loadAsset"
 #define kSyncFlag "-syn"
@@ -43,6 +45,39 @@ class AssetSubCommandResetSimulation : public AssetSubCommandAsset
 	}
 };
 
+class AssetSubCommandListAssets : public AssetSubCommand
+{
+    public:
+	AssetSubCommandListAssets(const MString &otlFilePath) :
+            myOTLFilePath(otlFilePath)
+	{
+	}
+
+	virtual MStatus doIt()
+        {
+            int libraryId;
+            HAPI_LoadAssetLibraryFromFile(myOTLFilePath.asChar(), &libraryId);
+
+            int assetCount;
+            HAPI_GetAvailableAssetCount(libraryId, &assetCount);
+
+            std::vector<HAPI_StringHandle> assetNamesSH(assetCount);
+            HAPI_GetAvailableAssets(libraryId,
+                    &assetNamesSH.front(),
+                    assetNamesSH.size());
+
+            for(unsigned int i = 0; i < assetNamesSH.size(); i++)
+            {
+                MPxCommand::appendToResult(Util::getString(assetNamesSH[i]));
+            }
+
+            return MStatus::kSuccess;
+        }
+
+    protected:
+        MString myOTLFilePath;
+};
+
 void* AssetCommand::creator()
 {
     return new AssetCommand();
@@ -52,6 +87,10 @@ MSyntax
 AssetCommand::newSyntax()
 {
     MSyntax syntax;
+
+    // -listAssets list assets in an OTL file
+    CHECK_MSTATUS(syntax.addFlag(kListAssetsFlag, kListAssetsFlagLong,
+                MSyntax::kString));
 
     // -loadAsset load an otl file
     // expected arguments: otl_file_name - the name of the otl file to load
@@ -122,7 +161,8 @@ AssetCommand::parseArgs(const MArgList &args)
 	return status;
     }
 
-    if(!(argData.isFlagSet(kLoadAssetFlag)
+    if(!(argData.isFlagSet(kListAssetsFlag)
+                ^ argData.isFlagSet(kLoadAssetFlag)
 		^ argData.isFlagSet(kSyncFlag)
 		^ argData.isFlagSet(kSaveHIPFlag)
 		^ argData.isFlagSet(kResetSimulationFlag)
@@ -135,6 +175,25 @@ AssetCommand::parseArgs(const MArgList &args)
 		kResetSimulationFlagLong "\n"
 		kReloadAssetFlagLong "\n");
         return MStatus::kInvalidParameter;
+    }
+
+    if(argData.isFlagSet(kListAssetsFlag))
+    {
+        myOperationType = kOperationSubCommand;
+
+	MString otlFilePath;
+	{
+	    status = argData.getFlagArgument(kListAssetsFlag, 0, otlFilePath);
+	    if(!status)
+	    {
+		displayError("Invalid argument for \"" kListAssetsFlagLong "\".");
+		return status;
+	    }
+	}
+
+        myAssetSubCommand = new AssetSubCommandListAssets(
+                otlFilePath
+                );
     }
 
     if(argData.isFlagSet(kLoadAssetFlag))

@@ -1,0 +1,200 @@
+global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
+
+global proc
+houdiniEngineLoadAsset_browseOTL(string $treeView)
+{
+    string $filter = "Houdini Digital Assets (*.otl);;All Files (*.*)";
+    string $results[] = `fileDialog2
+        -caption "Load Houdini Asset"
+        -okCaption "Open"
+        -fileFilter $filter
+        -fileMode 1`;
+    if (size($results) == 0)
+    {
+        return;
+    }
+
+    string $otlFilePath = $results[0];
+
+    houdiniEngineLoadAsset_loadOTL($otlFilePath, $treeView);
+}
+
+global proc
+houdiniEngineLoadAsset_loadOTL(string $otlFilePath, string $treeView)
+{
+    global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
+
+    if(size(`houdiniAsset -listAssets $otlFilePath`) == 0)
+    {
+        return;
+    }
+
+    // Maya 2012 doesn't have stringArrayFind
+    int $index = -1;
+    for($i = 0; $i < size($houdiniEngineLoadAsset_loadedOTLFilePaths); $i++)
+    {
+        if($otlFilePath == $houdiniEngineLoadAsset_loadedOTLFilePaths[$i])
+        {
+            $index = $i;
+            break;
+        }
+    }
+
+    // does it already exist?
+    if($index == -1)
+    {
+        $houdiniEngineLoadAsset_loadedOTLFilePaths[size($houdiniEngineLoadAsset_loadedOTLFilePaths)] =
+            $otlFilePath;
+        $houdiniEngineLoadAsset_loadedOTLFilePaths = `sort $houdiniEngineLoadAsset_loadedOTLFilePaths`;
+    }
+
+    houdiniEngineLoadAsset_refreshAssetList $treeView;
+}
+
+global proc
+houdiniEngineLoadAsset_refreshAssetList(string $treeView)
+{
+    global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
+
+    treeView -edit -removeAll $treeView;
+
+    for($otlFilePath in $houdiniEngineLoadAsset_loadedOTLFilePaths)
+    {
+        treeView -e
+            -addItem $otlFilePath ""
+            $treeView;
+
+        for($asset in `houdiniAsset -listAssets $otlFilePath`)
+        {
+            string $command = "houdiniAsset -loadAsset \"" + encodeString($otlFilePath) + "\""
+                + " \"" + $asset + "\"";
+
+            string $itemName = ($otlFilePath + "," + $asset);
+            treeView -e
+                -addItem $itemName $otlFilePath
+                $treeView;
+            treeView -e
+                -displayLabel $itemName $asset
+                $treeView;
+        }
+    }
+}
+
+global proc
+houdiniEngineLoadAsset_loadAsset(string $treeView, string $item)
+{
+    // if the user double clicked on the OTL file, do nothing
+    // check -itemExists because of treeView bug with displayLabel
+    if(`treeView -q -itemExists $item $treeView`
+            && !`treeView -q -isLeaf $item $treeView`)
+    {
+        return;
+    }
+
+    //treeView has a bug where the itemDblClickCommand is called with the
+    //displayLabel instead of the item name, so we can't use comma as a
+    //delimiter.
+
+    //string $tokens[];
+    //tokenize $item "," $tokens;
+
+    //string $otlFilePath = $tokens[0];
+    //string $asset = $tokens[1];
+
+    string $otlFilePath;
+    string $asset;
+
+    // workaround the treeView bug
+    // check the selected item
+    if(size($asset) == 0)
+    {
+        string $selectItem[] = `treeView -q -selectItem $treeView`;
+
+        if(size($selectItem) == 1)
+        {
+            string $tokens[];
+            tokenize $selectItem[0] "," $tokens;
+
+            if(size($tokens) == 2 && $tokens[1] == $item)
+            {
+                $otlFilePath = $tokens[0];
+                $asset = $tokens[1];
+            }
+        }
+    }
+
+    // workaround the treeView bug
+    // find it from the list of children
+    if(size($asset) == 0)
+    {
+        string $child;
+        for($child in `treeView -q -children "" $treeView`)
+        {
+            string $tokens[];
+            tokenize $child "," $tokens;
+
+            if(size($tokens) == 2 && $tokens[1] == $item)
+            {
+                $otlFilePath = $tokens[0];
+                $asset = $tokens[1];
+
+                break;
+            }
+        }
+    }
+
+    if(size($asset) == 0)
+    {
+        error "Cannot determine clicked item from treeView due to Maya bug.";
+        return;
+    }
+
+    houdiniAsset -loadAsset $otlFilePath $asset;
+}
+
+global proc
+houdiniEngineLoadAsset()
+{
+    if(`window -exists houdiniEngineLoadAssetWindow`)
+    {
+        deleteUI houdiniEngineLoadAssetWindow;
+    }
+
+    string $window = `window
+        -title "Load Houdini Asset"
+        -menuBar true
+        houdiniEngineLoadAssetWindow`;
+
+    // controls
+    string $formLayout = `formLayout`;
+    // Maya 2012 and 2013 don't support "-allowMultiSelection"
+    string $treeView = `treeView`;
+
+    formLayout -e
+        -attachForm $treeView top 0
+        -attachForm $treeView left 0
+        -attachForm $treeView bottom 0
+        -attachForm $treeView right 0
+        $formLayout;
+
+    treeView -e
+        -itemDblClickCommand ("houdiniEngineLoadAsset_loadAsset \"" + $treeView + "\" ")
+        $treeView;
+
+    // menus
+    menu -label "File";
+        menuItem
+            -label "Browse OTL File..."
+            -command ("houdiniEngineLoadAsset_browseOTL \"" + $treeView + "\"");
+
+        menuItem -divider true;
+
+        menuItem
+            -label "Close"
+            -command ("evalDeferred \"deleteUI -window \\\"" + $window + "\\\"\"");
+
+    // populate asset list
+    houdiniEngineLoadAsset_refreshAssetList $treeView;
+
+    showWindow;
+}

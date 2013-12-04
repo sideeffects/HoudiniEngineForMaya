@@ -57,7 +57,7 @@ class AttrOperation : public Util::WalkParmOperation
         std::vector<int> myMultiLogicalIndices;
 
         MDataBlock &myDataBlock;
-        const Mode &myMode;
+        const Mode myMode;
         const MFnDependencyNode &myNodeFn;
         const HAPI_NodeInfo &myNodeInfo;
         const std::vector<MObject>* myAttrs;

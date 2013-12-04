@@ -56,7 +56,7 @@ houdiniEngine_loadOTL(string $otlFilePath)
         $houdiniEngine_loadedOTLFilePaths = `sort $houdiniEngine_loadedOTLFilePaths`;
     }
 
-    houdiniEngineLoadAsset_refreshAssetList;
+    houdiniEngineOTLsManager_refreshAssetList;
 }
 
 global proc
@@ -352,8 +352,8 @@ houdiniEngineCreateUI()
         -subMenu true`;
     setParent -menu ..;
 
-    menuItem -label "Load Houdini Asset..."
-	-command "houdiniEngineLoadAsset";
+    menuItem -label "OTLs Manager..."
+	-command "houdiniEngineOTLsManager";
 
     menuItem -divider true;
 

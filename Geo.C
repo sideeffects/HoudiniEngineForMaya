@@ -112,6 +112,14 @@ Geo::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
     geoNameHandle.setString(Util::getString( myGeoInfo.nameSH));
     geoNameHandle.setClean();
 
+    MDataHandle isTemplatedHandle = geoHandle.child( AssetNode::outputGeoIsTemplated );
+    isTemplatedHandle.setBool( myGeoInfo.isTemplated );
+    isTemplatedHandle.setClean();
+
+    MDataHandle isDisplayGeoHandle = geoHandle.child( AssetNode::outputGeoIsDisplayGeo );
+    isDisplayGeoHandle.setBool( myGeoInfo.isDisplayGeo );
+    isDisplayGeoHandle.setClean();
+
     MDataHandle partsHandle = geoHandle.child(AssetNode::outputParts);
     MArrayDataHandle partsArrayHandle(partsHandle);
     MArrayDataBuilder partsBuilder = partsArrayHandle.builder();

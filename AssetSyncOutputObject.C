@@ -76,31 +76,35 @@ AssetSyncOutputObject::doIt()
         MObject geoTransform = MObject::kNullObj;
         MObject partParent = objectTransform;    
 
-        if( geoCount > 1 )
+        MPlug isTemplatedPlug = geoPlug.child( AssetNode::outputGeoIsTemplated );
+        if( !isTemplatedPlug.asBool() )
         {
-            geoTransform = myDagModifier.createNode("transform", objectTransform, &status);
-            CHECK_MSTATUS_AND_RETURN_IT(status);        
+            if( geoCount > 1 )
+            {                       
+                geoTransform = myDagModifier.createNode("transform", objectTransform, &status);
+                CHECK_MSTATUS_AND_RETURN_IT(status);        
 
-            // rename geoTransform
-            MPlug geoNamePlug = geoPlug.child( AssetNode::outputGeoName );
-            MString geoName = geoNamePlug.asString();
-            if( geoName.length() > 0 )
-                status = myDagModifier.renameNode( geoTransform, geoName );
+                // rename geoTransform
+                MPlug geoNamePlug = geoPlug.child( AssetNode::outputGeoName );
+                MString geoName = geoNamePlug.asString();
+                if( geoName.length() > 0 )
+                    status = myDagModifier.renameNode( geoTransform, geoName );
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                myDagModifier.doIt();
+
+                partParent = geoTransform;
+            }
+
+
+            MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
+            int partCount = partsPlug.evaluateNumElements(&status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
-            myDagModifier.doIt();
-
-            partParent = geoTransform;
-        }
-
-
-        MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
-        int partCount = partsPlug.evaluateNumElements(&status);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-        for (int jj=0; jj<partCount; jj++)
-        {
-	    AssetSubCommand* sync = new AssetSyncOutputGeoPart(partsPlug[jj], partParent );
-	    sync->doIt();
-	    myAssetSyncs.push_back(sync);
+            for (int jj=0; jj<partCount; jj++)
+            {
+	        AssetSubCommand* sync = new AssetSyncOutputGeoPart(partsPlug[jj], partParent );
+	        sync->doIt();
+	        myAssetSyncs.push_back(sync);
+            }
         }
     }
 

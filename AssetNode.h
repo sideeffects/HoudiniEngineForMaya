@@ -128,6 +128,8 @@ class AssetNode: public MPxTransform
         static MObject outputGeos;
         static MObject outputGeoType;
         static MObject outputGeoName;
+        static MObject outputGeoIsTemplated;
+        static MObject outputGeoIsDisplayGeo;
         static MObject outputGeoCurveType;
         static MObject outputGeoCurveOrder;
         static MObject outputGeoCurveCVX;

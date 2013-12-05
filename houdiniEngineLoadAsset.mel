@@ -1,98 +1,7 @@
-global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
-
-global proc
-houdiniEngineLoadAsset_browseOTL()
-{
-    string $filter = "Houdini Digital Assets (*.otl);;All Files (*.*)";
-    string $results[] = `fileDialog2
-        -caption "Load Houdini Asset"
-        -okCaption "Open"
-        -fileFilter $filter
-        -fileMode 1`;
-    if (size($results) == 0)
-    {
-        return;
-    }
-
-    string $otlFilePath = $results[0];
-
-    houdiniEngineLoadAsset_loadOTL($otlFilePath);
-}
-
-global proc
-houdiniEngineLoadAsset_loadOTL(string $otlFilePath)
-{
-    global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
-
-    if(size(`houdiniAsset -listAssets $otlFilePath`) == 0)
-    {
-        return;
-    }
-
-    houdiniEngineLoadAsset_addRecentOTLFile $otlFilePath;
-
-    // Maya 2012 doesn't have stringArrayFind
-    int $index = -1;
-    for($i = 0; $i < size($houdiniEngineLoadAsset_loadedOTLFilePaths); $i++)
-    {
-        if($otlFilePath == $houdiniEngineLoadAsset_loadedOTLFilePaths[$i])
-        {
-            $index = $i;
-            break;
-        }
-    }
-
-    // does it already exist?
-    if($index == -1)
-    {
-        $houdiniEngineLoadAsset_loadedOTLFilePaths[size($houdiniEngineLoadAsset_loadedOTLFilePaths)] =
-            $otlFilePath;
-        $houdiniEngineLoadAsset_loadedOTLFilePaths = `sort $houdiniEngineLoadAsset_loadedOTLFilePaths`;
-    }
-
-    houdiniEngineLoadAsset_refreshAssetList;
-}
-
-global proc
-houdiniEngineLoadAsset_addRecentOTLFile(string $otlFilePath)
-{
-    int $index = -1;
-    if(`optionVar -exists houdiniEngine_recentOTLFilePaths`)
-    {
-        // Maya 2012 doesn't have stringArrayFind
-        string $recentOTLFilePaths[] = `optionVar -q houdiniEngine_recentOTLFilePaths`;
-        for($i = 0; $i < size($recentOTLFilePaths); $i++)
-        {
-            if($otlFilePath == $recentOTLFilePaths[$i])
-            {
-                $index = $i;
-                break;
-            }
-        }
-    }
-
-    // does it already exist?
-    if($index != -1)
-    {
-        optionVar -removeFromArray houdiniEngine_recentOTLFilePaths $index;
-        optionVar -stringValueAppend houdiniEngine_recentOTLFilePaths $otlFilePath;
-    }
-    else
-    {
-        optionVar -stringValueAppend houdiniEngine_recentOTLFilePaths $otlFilePath;
-    }
-
-    int $numToRemove = `optionVar -arraySize houdiniEngine_recentOTLFilePaths` - 20;
-    for($i = 0; $i < $numToRemove; $i++)
-    {
-        optionVar -removeFromArray houdiniEngine_recentOTLFilePaths 0;
-    }
-}
-
 global proc
 houdiniEngineLoadAsset_refreshAssetList()
 {
-    global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
+    global string $houdiniEngine_loadedOTLFilePaths[];
 
     if(!`window -exists houdiniEngineLoadAssetWindow`)
     {
@@ -101,7 +10,7 @@ houdiniEngineLoadAsset_refreshAssetList()
 
     treeView -edit -removeAll houdiniEngineAssetTreeView;
 
-    for($otlFilePath in $houdiniEngineLoadAsset_loadedOTLFilePaths)
+    for($otlFilePath in $houdiniEngine_loadedOTLFilePaths)
     {
         treeView -e
             -addItem $otlFilePath ""
@@ -120,49 +29,6 @@ houdiniEngineLoadAsset_refreshAssetList()
                 -displayLabel $itemName $asset
                 houdiniEngineAssetTreeView;
         }
-    }
-}
-
-global proc
-houdiniEngineLoadAsset_buildRecentOTLsMenu(string $menuItem)
-{
-    string $recentOTLFilePaths[];
-    if(`optionVar -exists houdiniEngine_recentOTLFilePaths`)
-    {
-        $recentOTLFilePaths = `optionVar -q houdiniEngine_recentOTLFilePaths`;
-    }
-
-    // same as existing menuItems?
-    string $existingMenus[] = `menu -query -itemArray $menuItem`;
-    int $numExistingMenus = size($existingMenus);
-    if ($numExistingMenus == size($recentOTLFilePaths))
-    {
-        for ($i = 0; $i < $numExistingMenus; $i++)
-        {
-            string $label = `menuItem -query -label $existingMenus[$i]`;
-            if ($label != $recentOTLFilePaths[$numExistingMenus-$i-1])
-            {
-                break;
-            }
-        }
-
-        if ($i == $numExistingMenus)
-        {
-            return;
-        }
-    }
-
-    // clear existing
-    menu -edit -deleteAllItems $menuItem;
-
-    setParent -menu $menuItem;
-
-    for($i = size($recentOTLFilePaths); $i-- > 0;)
-    {
-        menuItem
-            -label $recentOTLFilePaths[$i]
-            -command ("houdiniEngineLoadAsset_loadOTL"
-                    + " \"" + encodeString($recentOTLFilePaths[$i]) + "\"");
     }
 }
 
@@ -271,22 +137,8 @@ houdiniEngineLoadAsset()
     // menus
     menu -label "File";
         menuItem
-            -label "Browse OTL File..."
-            -command "houdiniEngineLoadAsset_browseOTL";
-        $recentOTLsMenu = `menuItem
-            -label "Recent OTL Files"
-            -subMenu true`;
-        setParent -menu ..;
-
-        menuItem -divider true;
-
-        menuItem
             -label "Close"
             -command ("evalDeferred \"deleteUI -window houdiniEngineLoadAssetWindow\"");
-
-    menuItem -e -postMenuCommand ("houdiniEngineLoadAsset_buildRecentOTLsMenu"
-            + " \"" + $recentOTLsMenu + "\"")
-        $recentOTLsMenu;
 
     // populate asset list
     houdiniEngineLoadAsset_refreshAssetList;

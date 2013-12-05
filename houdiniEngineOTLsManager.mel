@@ -1,9 +1,9 @@
 global proc
-houdiniEngineLoadAsset_refreshAssetList()
+houdiniEngineOTLsManager_refreshAssetList()
 {
     global string $houdiniEngine_loadedOTLFilePaths[];
 
-    if(!`window -exists houdiniEngineLoadAssetWindow`)
+    if(!`window -exists houdiniEngineOTLsManagerWindow`)
     {
         return;
     }
@@ -33,7 +33,7 @@ houdiniEngineLoadAsset_refreshAssetList()
 }
 
 global proc
-houdiniEngineLoadAsset_loadAsset(string $item)
+houdiniEngineOTLsManager_loadAsset(string $item)
 {
     // if the user double clicked on the OTL file, do nothing
     // check -itemExists because of treeView bug with displayLabel
@@ -105,18 +105,18 @@ houdiniEngineLoadAsset_loadAsset(string $item)
 }
 
 global proc
-houdiniEngineLoadAsset()
+houdiniEngineOTLsManager()
 {
-    if(`window -exists houdiniEngineLoadAssetWindow`)
+    if(`window -exists houdiniEngineOTLsManagerWindow`)
     {
-        showWindow houdiniEngineLoadAssetWindow;
+        showWindow houdiniEngineOTLsManagerWindow;
         return;
     }
 
     window
-        -title "Houdini Asset Manager"
+        -title "OTLs Manager"
         -menuBar true
-        houdiniEngineLoadAssetWindow;
+        houdiniEngineOTLsManagerWindow;
 
     // controls
     string $formLayout = `formLayout`;
@@ -131,17 +131,17 @@ houdiniEngineLoadAsset()
         $formLayout;
 
     treeView -e
-        -itemDblClickCommand ("houdiniEngineLoadAsset_loadAsset")
+        -itemDblClickCommand ("houdiniEngineOTLsManager_loadAsset")
         houdiniEngineAssetTreeView;
 
     // menus
     menu -label "File";
         menuItem
             -label "Close"
-            -command ("evalDeferred \"deleteUI -window houdiniEngineLoadAssetWindow\"");
+            -command ("evalDeferred \"deleteUI -window houdiniEngineOTLsManagerWindow\"");
 
     // populate asset list
-    houdiniEngineLoadAsset_refreshAssetList;
+    houdiniEngineOTLsManager_refreshAssetList;
 
     showWindow;
 }

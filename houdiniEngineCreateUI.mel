@@ -57,6 +57,93 @@ houdiniEngine_loadOTL(string $otlFilePath)
     }
 
     houdiniEngineOTLsManager_refreshAssetList;
+
+    houdiniEngine_instantiateAsset($otlFilePath);
+}
+
+global proc
+houdiniEngine_assetPicker(string $otlFilePath, string $message)
+{
+    string $formLayout = `setParent -q`;
+
+    formLayout -e -width 300 $formLayout;
+
+    string $text = `text -label $message`;
+
+    string $textScrollList = `textScrollList`;
+
+    string $okButton = `button
+        -label "OK"
+        -command ("layoutDialog -dismiss `textScrollList -q -selectItem " + $textScrollList + "`")`;
+    string $cancelButton = `button
+        -label "Cancel"
+        -command "layoutDialog -dismiss \"\""`;
+
+    formLayout -edit
+        -attachForm $text "top" 5
+        -attachForm $text "left" 5
+        -attachForm $text "right" 5
+        -attachNone $text "bottom"
+
+        -attachControl $textScrollList "top" 5 $text
+        -attachForm $textScrollList "left" 5
+        -attachForm $textScrollList "right" 5
+        -attachNone $textScrollList "bottom"
+
+        -attachControl $okButton "top" 5 $textScrollList
+        -attachForm $okButton "left" 5
+        -attachPosition $okButton "right" 5 33
+        -attachNone $okButton "bottom"
+
+        -attachControl $cancelButton "top" 5 $textScrollList
+        -attachPosition $cancelButton "left" 5 66
+        -attachForm $cancelButton "right" 5
+        -attachNone $cancelButton "bottom"
+
+        $formLayout;
+
+    textScrollList -e
+        -doubleClickCommand ("layoutDialog -dismiss `textScrollList -q -selectItem " + $textScrollList + "`")
+        $textScrollList;
+
+    string $assets[] = `houdiniAsset -listAssets $otlFilePath`;
+    for($asset in $assets)
+    {
+        textScrollList -e
+            -append $asset
+            $textScrollList;
+    }
+}
+
+global proc
+houdiniEngine_instantiateAsset(string $otlFilePath)
+{
+    string $assets[] = `houdiniAsset -listAssets $otlFilePath`;
+    if(size($assets) == 0)
+    {
+        return;
+    }
+
+    string $asset;
+    if(size($assets) == 1)
+    {
+        // just load the first asset
+        $asset = $assets[0];
+    }
+    else if(size($assets) > 1)
+    {
+        // popup a dialog for the user to choose
+        $asset = `layoutDialog
+            -title ""
+            -uiScript ("houdiniEngine_assetPicker"
+                + " \"" + $otlFilePath + "\""
+                + " \"The OTL file contains multiple assets. Please choose one to create.\"")`;
+    }
+
+    if(size($asset))
+    {
+        houdiniAsset -loadAsset $otlFilePath $asset;
+    }
 }
 
 global proc

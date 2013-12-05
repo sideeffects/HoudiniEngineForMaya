@@ -1,7 +1,7 @@
 global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
 
 global proc
-houdiniEngineLoadAsset_browseOTL(string $treeView)
+houdiniEngineLoadAsset_browseOTL()
 {
     string $filter = "Houdini Digital Assets (*.otl);;All Files (*.*)";
     string $results[] = `fileDialog2
@@ -16,11 +16,11 @@ houdiniEngineLoadAsset_browseOTL(string $treeView)
 
     string $otlFilePath = $results[0];
 
-    houdiniEngineLoadAsset_loadOTL($otlFilePath, $treeView);
+    houdiniEngineLoadAsset_loadOTL($otlFilePath);
 }
 
 global proc
-houdiniEngineLoadAsset_loadOTL(string $otlFilePath, string $treeView)
+houdiniEngineLoadAsset_loadOTL(string $otlFilePath)
 {
     global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
 
@@ -50,7 +50,7 @@ houdiniEngineLoadAsset_loadOTL(string $otlFilePath, string $treeView)
         $houdiniEngineLoadAsset_loadedOTLFilePaths = `sort $houdiniEngineLoadAsset_loadedOTLFilePaths`;
     }
 
-    houdiniEngineLoadAsset_refreshAssetList $treeView;
+    houdiniEngineLoadAsset_refreshAssetList;
 }
 
 global proc
@@ -90,17 +90,22 @@ houdiniEngineLoadAsset_addRecentOTLFile(string $otlFilePath)
 }
 
 global proc
-houdiniEngineLoadAsset_refreshAssetList(string $treeView)
+houdiniEngineLoadAsset_refreshAssetList()
 {
     global string $houdiniEngineLoadAsset_loadedOTLFilePaths[];
 
-    treeView -edit -removeAll $treeView;
+    if(!`window -exists houdiniEngineLoadAssetWindow`)
+    {
+        return;
+    }
+
+    treeView -edit -removeAll houdiniEngineAssetTreeView;
 
     for($otlFilePath in $houdiniEngineLoadAsset_loadedOTLFilePaths)
     {
         treeView -e
             -addItem $otlFilePath ""
-            $treeView;
+            houdiniEngineAssetTreeView;
 
         for($asset in `houdiniAsset -listAssets $otlFilePath`)
         {
@@ -110,16 +115,16 @@ houdiniEngineLoadAsset_refreshAssetList(string $treeView)
             string $itemName = ($otlFilePath + "," + $asset);
             treeView -e
                 -addItem $itemName $otlFilePath
-                $treeView;
+                houdiniEngineAssetTreeView;
             treeView -e
                 -displayLabel $itemName $asset
-                $treeView;
+                houdiniEngineAssetTreeView;
         }
     }
 }
 
 global proc
-houdiniEngineLoadAsset_buildRecentOTLsMenu(string $menuItem, string $treeView)
+houdiniEngineLoadAsset_buildRecentOTLsMenu(string $menuItem)
 {
     string $recentOTLFilePaths[];
     if(`optionVar -exists houdiniEngine_recentOTLFilePaths`)
@@ -157,18 +162,17 @@ houdiniEngineLoadAsset_buildRecentOTLsMenu(string $menuItem, string $treeView)
         menuItem
             -label $recentOTLFilePaths[$i]
             -command ("houdiniEngineLoadAsset_loadOTL"
-                    + " \"" + encodeString($recentOTLFilePaths[$i]) + "\""
-                    + " \"" + $treeView + "\"");
+                    + " \"" + encodeString($recentOTLFilePaths[$i]) + "\"");
     }
 }
 
 global proc
-houdiniEngineLoadAsset_loadAsset(string $treeView, string $item)
+houdiniEngineLoadAsset_loadAsset(string $item)
 {
     // if the user double clicked on the OTL file, do nothing
     // check -itemExists because of treeView bug with displayLabel
-    if(`treeView -q -itemExists $item $treeView`
-            && !`treeView -q -isLeaf $item $treeView`)
+    if(`treeView -q -itemExists $item houdiniEngineAssetTreeView`
+            && !`treeView -q -isLeaf $item houdiniEngineAssetTreeView`)
     {
         return;
     }
@@ -190,7 +194,7 @@ houdiniEngineLoadAsset_loadAsset(string $treeView, string $item)
     // check the selected item
     if(size($asset) == 0)
     {
-        string $selectItem[] = `treeView -q -selectItem $treeView`;
+        string $selectItem[] = `treeView -q -selectItem houdiniEngineAssetTreeView`;
 
         if(size($selectItem) == 1)
         {
@@ -210,7 +214,7 @@ houdiniEngineLoadAsset_loadAsset(string $treeView, string $item)
     if(size($asset) == 0)
     {
         string $child;
-        for($child in `treeView -q -children "" $treeView`)
+        for($child in `treeView -q -children "" houdiniEngineAssetTreeView`)
         {
             string $tokens[];
             tokenize $child "," $tokens;
@@ -239,35 +243,36 @@ houdiniEngineLoadAsset()
 {
     if(`window -exists houdiniEngineLoadAssetWindow`)
     {
-        deleteUI houdiniEngineLoadAssetWindow;
+        showWindow houdiniEngineLoadAssetWindow;
+        return;
     }
 
-    string $window = `window
-        -title "Load Houdini Asset"
+    window
+        -title "Houdini Asset Manager"
         -menuBar true
-        houdiniEngineLoadAssetWindow`;
+        houdiniEngineLoadAssetWindow;
 
     // controls
     string $formLayout = `formLayout`;
     // Maya 2012 and 2013 don't support "-allowMultiSelection"
-    string $treeView = `treeView`;
+    string $treeView = `treeView houdiniEngineAssetTreeView`;
 
     formLayout -e
-        -attachForm $treeView top 0
-        -attachForm $treeView left 0
-        -attachForm $treeView bottom 0
-        -attachForm $treeView right 0
+        -attachForm houdiniEngineAssetTreeView top 0
+        -attachForm houdiniEngineAssetTreeView left 0
+        -attachForm houdiniEngineAssetTreeView bottom 0
+        -attachForm houdiniEngineAssetTreeView right 0
         $formLayout;
 
     treeView -e
-        -itemDblClickCommand ("houdiniEngineLoadAsset_loadAsset \"" + $treeView + "\" ")
-        $treeView;
+        -itemDblClickCommand ("houdiniEngineLoadAsset_loadAsset")
+        houdiniEngineAssetTreeView;
 
     // menus
     menu -label "File";
         menuItem
             -label "Browse OTL File..."
-            -command ("houdiniEngineLoadAsset_browseOTL \"" + $treeView + "\"");
+            -command "houdiniEngineLoadAsset_browseOTL";
         $recentOTLsMenu = `menuItem
             -label "Recent OTL Files"
             -subMenu true`;
@@ -277,15 +282,14 @@ houdiniEngineLoadAsset()
 
         menuItem
             -label "Close"
-            -command ("evalDeferred \"deleteUI -window \\\"" + $window + "\\\"\"");
+            -command ("evalDeferred \"deleteUI -window houdiniEngineLoadAssetWindow\"");
 
     menuItem -e -postMenuCommand ("houdiniEngineLoadAsset_buildRecentOTLsMenu"
-            + " \"" + $recentOTLsMenu + "\""
-            + " \"" + $treeView + "\"")
+            + " \"" + $recentOTLsMenu + "\"")
         $recentOTLsMenu;
 
     // populate asset list
-    houdiniEngineLoadAsset_refreshAssetList $treeView;
+    houdiniEngineLoadAsset_refreshAssetList;
 
     showWindow;
 }

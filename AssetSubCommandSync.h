@@ -13,7 +13,8 @@ class AssetSubCommandSync : public AssetSubCommandAsset
     public:
 	AssetSubCommandSync(
 		const MObject &assetNodeObj,
-		const bool syncOnlyVisible
+		const bool syncOnlyVisible,
+                const bool syncTemplatedGeos
 		);
 	virtual ~AssetSubCommandSync();
 
@@ -31,6 +32,7 @@ class AssetSubCommandSync : public AssetSubCommandAsset
 	bool mySyncOutputs;
 
 	const bool mySyncOnlyVisible;
+        const bool mySyncTemplatedGeos;
 	MDagModifier myDagModifier;
 
 	typedef std::vector<AssetSubCommand*> AssetSyncs;

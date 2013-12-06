@@ -144,7 +144,7 @@ GeometryPart::setGeoInfo(HAPI_GeoInfo& info)
     myGeoInfo = info;
 }
 
-void
+bool
 GeometryPart::getAttributeFloatData(
         std::vector<float> &floatArray,
         const char* name,
@@ -163,7 +163,7 @@ GeometryPart::getAttributeFloatData(
     if (!attr_info.exists)
     {
         floatArray.clear();
-        return;
+        return false;
     }
 
     floatArray.resize(attr_info.count * attr_info.tupleSize);
@@ -175,6 +175,8 @@ GeometryPart::getAttributeFloatData(
             0,
             attr_info.count
             );
+
+    return true;
 }
 
 MStatus

@@ -54,6 +54,16 @@ else ifeq ($(OS), Cygwin)
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0/InstallationFolder" 2> /dev/null), \
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0A/InstallationFolder" 2> /dev/null), \
 		)
+    else ifeq ($(MAYA_VERSION), 2013.5)
+	# Visual C++ 2010
+	MSVC_SDK := $(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/VisualStudio/SxS/VC7/10.0" 2> /dev/null)
+
+	# Windows SDK 7.0: standalone
+	# Windows SDK 7.0a: included in Visual Studio 2010
+	WIN32_SDK := $(or \
+		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0/InstallationFolder" 2> /dev/null), \
+		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0A/InstallationFolder" 2> /dev/null), \
+		)
     else ifeq ($(MAYA_VERSION), 2013)
 	# Visual C++ 2010
 	MSVC_SDK := $(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/VisualStudio/SxS/VC7/10.0" 2> /dev/null)

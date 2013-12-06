@@ -503,7 +503,7 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
 
         polygonConnects = MIntArray(&intArray.front(), intArray.size());
 
-        Util::reverseWindingOrderInt(polygonConnects, polygonCounts);
+        Util::reverseWindingOrder(polygonConnects, polygonCounts);
     }
 
     MFnMesh meshFn;
@@ -555,8 +555,8 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
                 uArray.append(floatArray[i]);
                 vArray.append(floatArray[i+1]);
             }
-            Util::reverseWindingOrderFloat(uArray, polygonCounts);
-            Util::reverseWindingOrderFloat(vArray, polygonCounts);
+            Util::reverseWindingOrder(uArray, polygonCounts);
+            Util::reverseWindingOrder(vArray, polygonCounts);
             meshFn.setUVs(uArray, vArray);
 
             MIntArray vertexList;

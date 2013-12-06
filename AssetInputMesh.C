@@ -72,7 +72,7 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
 	}
 	itMeshPoly.next();
     }
-    Util::reverseWindingOrderInt(vertexList, faceCounts);
+    Util::reverseWindingOrder(vertexList, faceCounts);
 
     // set up GeoInfo            
     HAPI_PartInfo* partInfo    = new HAPI_PartInfo();

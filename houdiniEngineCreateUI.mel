@@ -1,5 +1,7 @@
 global string $houdiniEngine_loadedOTLFilePaths[];
 
+source houdiniEngineOTLsManager;
+
 global proc
 houdiniEngine_debugWindowMenuClick()
 {

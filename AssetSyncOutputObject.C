@@ -79,7 +79,8 @@ AssetSyncOutputObject::doIt()
         MObject partParent = objectTransform;    
 
         MPlug isTemplatedPlug = geoPlug.child( AssetNode::outputGeoIsTemplated );
-        if( mySyncTemplatedGeos || !isTemplatedPlug.asBool() )
+        MPlug isDisplayGeoPlug = geoPlug.child( AssetNode::outputGeoIsDisplayGeo );
+        if( mySyncTemplatedGeos || !isTemplatedPlug.asBool() || isDisplayGeoPlug.asBool() )
         {
             if( geoCount > 1 )
             {                       

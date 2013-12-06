@@ -14,13 +14,15 @@
 
 AssetSubCommandSync::AssetSubCommandSync(
 	const MObject &assetNodeObj,
-	const bool syncOnlyVisible
+	const bool syncOnlyVisible,
+        const bool syncTemplatedGeos
 	) :
     AssetSubCommandAsset(assetNodeObj),
     mySyncAll(true),
     mySyncAttributes(false),
     mySyncOutputs(false),
-    mySyncOnlyVisible( syncOnlyVisible )
+    mySyncOnlyVisible( syncOnlyVisible ),
+    mySyncTemplatedGeos( syncTemplatedGeos )
 {
 }
 
@@ -108,7 +110,8 @@ AssetSubCommandSync::doIt()
 
             if( !mySyncOnlyVisible || visible || instanced )
             {
-                AssetSubCommand* syncOutput = new AssetSyncOutputObject(elemPlug, myAssetNodeObj, visible );
+                AssetSubCommand* syncOutput = new AssetSyncOutputObject(elemPlug, 
+						myAssetNodeObj, visible, mySyncTemplatedGeos );
                 syncOutput->doIt();
 
                 myAssetSyncs.push_back(syncOutput);

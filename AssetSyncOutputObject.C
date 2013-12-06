@@ -18,10 +18,12 @@
 AssetSyncOutputObject::AssetSyncOutputObject(
 	const MPlug &outputPlug,
 	const MObject &assetNodeObj,
-	bool visible )
+	const bool visible,
+        const bool syncTemplatedGeos )
     : myOutputPlug(outputPlug),
       myAssetNodeObj(assetNodeObj),
-      myVisible( visible )
+      myVisible( visible ),
+      mySyncTemplatedGeos( syncTemplatedGeos )
 {}
 
 AssetSyncOutputObject::~AssetSyncOutputObject()
@@ -77,7 +79,7 @@ AssetSyncOutputObject::doIt()
         MObject partParent = objectTransform;    
 
         MPlug isTemplatedPlug = geoPlug.child( AssetNode::outputGeoIsTemplated );
-        if( !isTemplatedPlug.asBool() )
+        if( mySyncTemplatedGeos || !isTemplatedPlug.asBool() )
         {
             if( geoCount > 1 )
             {                       

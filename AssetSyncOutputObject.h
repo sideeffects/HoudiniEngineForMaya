@@ -14,7 +14,8 @@ class AssetSyncOutputObject : public AssetSubCommand
 	AssetSyncOutputObject(
 		const MPlug &outputPlug,
 		const MObject &assetNodeObj,
-		const bool visible
+		const bool visible,
+                const bool syncTemplatedGeos
 		);
 	virtual ~AssetSyncOutputObject();
 
@@ -34,6 +35,7 @@ class AssetSyncOutputObject : public AssetSubCommand
 	const MPlug myOutputPlug;
 	const MObject myAssetNodeObj;
 	const bool myVisible;
+        const bool mySyncTemplatedGeos;
 
 	MDagModifier myDagModifier;
 

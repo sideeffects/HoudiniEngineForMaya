@@ -228,7 +228,7 @@ houdiniEngine_buildRecentOTLsMenu(string $menuItem)
 }
 
 global proc
-houdiniEngine_syncAssetOutput(int $syncOnlyVisible)
+houdiniEngine_syncAssetOutput(int $syncOnlyVisible, int $syncTemplated)
 {
     string $currSels[] = `ls -sl`;
     if( size($currSels) < 1 )
@@ -247,7 +247,10 @@ houdiniEngine_syncAssetOutput(int $syncOnlyVisible)
 	string $cmd = "houdiniAsset";
 	if( $syncOnlyVisible )
 	    $cmd = $cmd + " -syncOnlyVisible";
-			
+
+        if( $syncTemplated )
+            $cmd = $cmd + " -syncTemplatedGeos";
+
 	$cmd = $cmd + " -sync ";
 	$cmd = $cmd + $currSel;
 	evalEcho($cmd);

@@ -65,7 +65,7 @@ AssetSubCommandLoadAsset::doIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    myAssetSubCommandSync = new AssetSubCommandSync( assetNode, false );
+    myAssetSubCommandSync = new AssetSubCommandSync( assetNode, false, false );
     myAssetSubCommandSync->doIt();
 
     MFnDependencyNode assetNodeFn(assetNode);

@@ -205,7 +205,7 @@ DEPFILES = $(patsubst %.C, $(OBJ_DIR)/%.d, $(CXXFILES))
 # This module description file uses relative path to specify the module
 # directory. Relative path is only supported by Maya 2013 and newer. The file
 # can also be used to set environment variables.
-ifneq ($(findstring $(MAYA_VERSION), 2013 2014),)
+ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014),)
 DST_MODULE = $(DST_MODULE_DIR)/houdiniEngine-maya$(MAYA_VERSION)
 endif
 # This module description file uses absolute path to specify the module
@@ -242,7 +242,7 @@ $(DST_MODULE):
 	@mkdir -p $(dir $(@))
 	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.5 maya$(MAYA_VERSION)" > $(@)
 ifeq ($(OS), Cygwin)
-    ifneq ($(findstring $(MAYA_VERSION), 2013 2014),)
+    ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014),)
         # The module file for Maya 2013 and newer can be used to set environment variables
 
         # Set the PATH variable for dynamic library.
@@ -261,7 +261,7 @@ $(DST_MODULE_ABSOLUTE):
 	@mkdir -p $(dir $(@))
 ifeq ($(OS), Cygwin)
 	echo "+ houdiniEngine 1.5 $(shell cygpath -w $(DST_DIR))" > $(@)
-    ifneq ($(findstring $(MAYA_VERSION), 2013 2014),)
+    ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014),)
         # The module file for Maya 2013 and newer can be used to set environment variables
 
         # Set the PATH variable for dynamic library.
@@ -316,6 +316,7 @@ endif
 
 # build multiple Maya versions
 ALL_MAYA_VERSIONS = 2014 \
+		2013.5 \
 		2013 \
 		2012
 

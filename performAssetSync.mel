@@ -23,6 +23,10 @@ proc setOptionVars(int $forceFactorySettings)
     if ($forceFactorySettings || !`optionVar -exists assetSyncMode`) {
 	optionVar -intValue assetSyncMode 1;
     }
+
+    if ($forceFactorySettings || !`optionVar -exists assetSyncTemplated`) {
+	optionVar -intValue assetSyncTemplated 1;
+    }
 	
 }
 
@@ -46,6 +50,10 @@ global proc AssetSyncSetup(string $parent, int $forceFactorySettings)
 	    -select `optionVar -query assetSyncMode`
 	    AssetSyncMode;
 
+    radioButtonGrp -edit 
+	    -select `optionVar -query assetSyncTemplated`
+	    AssetSyncTemplated;
+
 }
 
 //
@@ -61,6 +69,9 @@ global proc AssetSyncCallback(string $parent, int $doIt)
 	
     optionVar -intValue assetSyncMode
 	    `radioButtonGrp -query -select AssetSyncMode`;	
+
+    optionVar -intValue assetSyncTemplated
+	    `radioButtonGrp -query -select AssetSyncTemplated`;	
 
     if ($doIt) {
 	performAssetSync 0; 
@@ -113,6 +124,12 @@ proc AssetSyncOptions()
 	    -select 1
 	    AssetSyncMode;
 	
+    radioButtonGrp -label "Sync Templated Geometry"
+	    -numberOfRadioButtons 2
+	    -label1 "No"
+	    -label2 "Yes" 				
+	    -select 1
+	    AssetSyncTemplated;
 			
     //	Turn off the wait cursor.
     //
@@ -199,9 +216,22 @@ proc string assembleCmd()
     if( $assetSyncMode == 2 )
     {	
 	$syncOnlyVisible = 1;
-    }
+    }    
 
     $cmd = $cmd + $syncOnlyVisible;
+
+    $cmd += ",";
+
+    int $assetSyncTemplated = `optionVar -query assetSyncTemplated`;
+
+    int $syncTemplated = 0;	
+    if( $assetSyncTemplated == 2 )
+    {	
+	$syncTemplated = 1;
+    }
+
+    $cmd = $cmd + $syncTemplated;
+
     $cmd = $cmd + ");";
 	
     return $cmd;

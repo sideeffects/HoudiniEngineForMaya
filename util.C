@@ -78,52 +78,6 @@ Util::getParmAttrPrefix()
     return ret;
 }
 
-void
-Util::reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts)
-{
-    int current_index = 0;
-    int numFaceCount = faceCounts.length();
-    for (int i=0; i<numFaceCount; i++)
-    {
-        int vertex_count = faceCounts[i];
-        int a = current_index;
-        int b = current_index + vertex_count - 1;
-        while (a < b)
-        {
-            int temp = data[a];
-            data[a] = data[b];
-            data[b] = temp;
-            a++;
-            b--;
-        }
-        current_index += vertex_count;
-    }
-}
-
-
-void
-Util::reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts)
-{
-    int current_index = 0;
-    int numFaceCount = faceCounts.length();
-    for (int i=0; i<numFaceCount; i++)
-    {
-        int vertex_count = faceCounts[i];
-        int a = current_index;
-        int b = current_index + vertex_count - 1;
-        while (a < b)
-        {
-            float temp = data[a];
-            data[a] = data[b];
-            data[b] = temp;
-            a++;
-            b--;
-        }
-        current_index += vertex_count;
-    }
-}
-
-
 bool
 Util::hasHAPICallFailed(HAPI_Result stat)
 {

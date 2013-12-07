@@ -4,7 +4,6 @@
 #include <maya/MObject.h>
 #include <maya/MString.h>
 #include <maya/MIntArray.h>
-#include <maya/MFloatArray.h>
 
 #include <vector>
 
@@ -54,8 +53,6 @@ class Util {
 						    HAPI_AttributeOwner owner,
 						    const MString & name);
 	static MString getParmAttrPrefix();
-        static void reverseWindingOrderInt(MIntArray& data, MIntArray& faceCounts);
-        static void reverseWindingOrderFloat(MFloatArray& data, MIntArray& faceCounts);
         static bool hasHAPICallFailed(HAPI_Result stat);
 
         // Throws an exception if an error occurred
@@ -64,6 +61,21 @@ class Util {
 	static void showProgressWindow(const MString & title, const MString & status, int progress);
 	static void updateProgressWindow(const MString & status, int progress);
 	static void hideProgressWindow();
+
+        template <typename T>
+        static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)
+        {
+            unsigned int current_index = 0;
+            for(unsigned int i = 0; i < faceCounts.length(); i++)
+            {
+                for(unsigned int a = current_index, b = current_index + faceCounts[i] - 1;
+                        a < b; a++, b--)
+                {
+                    std::swap(arrayData[a], arrayData[b]);
+                }
+                current_index += faceCounts[i];
+            }
+        }
 
         static MObject findNodeByName(const MString &name);
 	static MObject findDagChild(const MFnDagNode &dag, const MString &name);

@@ -543,9 +543,17 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
     // uv
     if(polygonCounts.length())
     {
-        getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_VERTEX);
+        HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
+        if(getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_VERTEX))
+        {
+            owner = HAPI_ATTROWNER_VERTEX;
+        }
+        else if(getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_POINT))
+        {
+            owner = HAPI_ATTROWNER_POINT;
+        }
 
-        if(floatArray.size())
+        if(owner != HAPI_ATTROWNER_MAX)
         {
             // assume 3 tuple
             MFloatArray uArray;
@@ -555,16 +563,28 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
                 uArray.append(floatArray[i]);
                 vArray.append(floatArray[i+1]);
             }
-            Util::reverseWindingOrder(uArray, polygonCounts);
-            Util::reverseWindingOrder(vArray, polygonCounts);
-            meshFn.setUVs(uArray, vArray);
 
             MIntArray vertexList;
-            for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
+
+            if(owner == HAPI_ATTROWNER_VERTEX)
             {
-                vertexList.append( j );
+                Util::reverseWindingOrder(uArray, polygonCounts);
+                Util::reverseWindingOrder(vArray, polygonCounts);
+
+                for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
+                {
+                    vertexList.append( j );
+                }
+            }
+            else if(owner == HAPI_ATTROWNER_POINT)
+            {
+                for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
+                {
+                    vertexList.append( polygonConnects[j] );
+                }
             }
 
+            meshFn.setUVs(uArray, vArray);
             meshFn.assignUVs(polygonCounts, vertexList);
         }
     }

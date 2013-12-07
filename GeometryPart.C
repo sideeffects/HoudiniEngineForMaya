@@ -521,22 +521,51 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
     // normal array
     if(polygonCounts.length())
     {
-        getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_POINT);
+        HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
+        if(getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_VERTEX))
+        {
+            owner = HAPI_ATTROWNER_VERTEX;
+        }
+        else if(getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_POINT))
+        {
+            owner = HAPI_ATTROWNER_POINT;
+        }
 
-        if(floatArray.size())
+        if(owner != HAPI_ATTROWNER_MAX)
         {
             // assume 3 tuple
             MVectorArray normals(
                     reinterpret_cast<float(*)[3]>(&floatArray.front()),
                     floatArray.size() / 3);
 
-            MIntArray vertexList;
-            for ( unsigned int j = 0; j < vertexArray.length(); ++j )
+            if(owner == HAPI_ATTROWNER_VERTEX)
             {
-                vertexList.append( j );
-            }
+                Util::reverseWindingOrder(normals, polygonCounts);
 
-            meshFn.setVertexNormals(normals, vertexList);
+                MIntArray faceList;
+                MIntArray vertexList;
+
+                for(unsigned int i = 0; i < polygonCounts.length(); i++)
+                {
+                    for(int j = 0; j < polygonCounts[i]; j++)
+                    {
+                        faceList.append(i);
+                    }
+                }
+
+                meshFn.setFaceVertexNormals(normals, faceList, polygonConnects);
+            }
+            else if(owner == HAPI_ATTROWNER_POINT)
+            {
+                MIntArray vertexList;
+
+                for ( unsigned int j = 0; j < vertexArray.length(); ++j )
+                {
+                    vertexList.append( j );
+                }
+
+                meshFn.setVertexNormals(normals, vertexList);
+            }
         }
     }
 

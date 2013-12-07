@@ -8,6 +8,7 @@
 #include <maya/MFnNumericAttribute.h>
 
 #include <maya/MString.h> 
+#include <maya/MFloatArray.h> 
 #include <maya/MTypeId.h> 
 #include <maya/MPlug.h>
 #include <maya/MVector.h>

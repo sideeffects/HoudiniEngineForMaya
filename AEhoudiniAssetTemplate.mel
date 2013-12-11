@@ -1,3 +1,18 @@
+global proc
+AEhoudiniAssetTemplate_fileAttributeBrowse(string $textField)
+{
+    string $fileDialogResults[] = `fileDialog2
+        -fileMode 4
+        -okCaption "Select"`;
+    if(size($fileDialogResults))
+    {
+        textFieldButtonGrp -e
+            -text $fileDialogResults[0]
+            -forceChangeCommand
+            $textField;
+    }
+}
+
 proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 {
     string $fullAttrName = $nodeName + "." + $fullAttr;
@@ -28,7 +43,31 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         else if(`attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`
                 && !$isMultiSize)
         {
-            attrControlGrp -attribute ($fullAttrName + "." + $child);
+            if(`addAttr -q -usedAsFilename ($fullAttrName + "." + $child)`)
+            {
+                string $niceName = `attributeQuery -node $nodeName -niceName $child`;
+                string $text = `getAttr ($fullAttrName + "." + $child)`;
+
+                string $textField = `textFieldButtonGrp
+                    -label $niceName
+                    -buttonLabel "..."
+                    -text $text`;
+
+                scriptJob
+                    -parent $textField
+                    -attributeChange ($fullAttrName + "." + $child)
+                    ("textFieldButtonGrp -e -text `getAttr " + $fullAttrName + "." + $child + "`"
+                     + " \"" + $textField + "\"");
+                textFieldButtonGrp -e
+                    -changeCommand ("setAttr -type \"string\""
+                            + " \"" + $fullAttrName + "." + $child + "\""
+                            + " `textFieldButtonGrp -q -text " + $textField + "`")
+                    -buttonCommand ("AEhoudiniAssetTemplate_fileAttributeBrowse \"" + $textField + "\"") $textField;
+            }
+            else
+            {
+                attrControlGrp -attribute ($fullAttrName + "." + $child);
+            }
         }
         // a folder is represented by a compound attribute
         else if($isCompound && !$isMulti)

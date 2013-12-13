@@ -67,6 +67,14 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
     {
         name = replaceString(name, "#", "_");
     }
+
+    // If it's a button, add a suffix so that we can distinguish it while
+    // populating the AE
+    if(parm.type == HAPI_PARMTYPE_BUTTON)
+    {
+        name += "__button";
+    }
+
     return getParmAttrPrefix() + "_" + name;
 }
 

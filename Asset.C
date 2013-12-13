@@ -810,6 +810,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         break;
                     case HAPI_PARMTYPE_INT:
                     case HAPI_PARMTYPE_TOGGLE:
+                    case HAPI_PARMTYPE_BUTTON:
                         {
                             int* values = new int[parmInfo.size];
                             HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
@@ -1012,6 +1013,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         break;
                     case HAPI_PARMTYPE_INT:
                     case HAPI_PARMTYPE_TOGGLE:
+                    case HAPI_PARMTYPE_BUTTON:
                         {
                             int * values = new int[parmInfo.size];
                             if (parmInfo.size == 1)
@@ -1040,7 +1042,34 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                     }
                                 }
                             }
-                            HAPI_SetParmIntValues( myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size );
+
+                            if(parmInfo.type == HAPI_PARMTYPE_BUTTON)
+                            {
+                                // For buttons, only set if the values are
+                                // different. This avoids clicking the buttons
+                                // when saving and restoring attribute values.
+
+                                int* currentValues = new int[parmInfo.size];
+
+                                HAPI_GetParmIntValues(myNodeInfo.id, currentValues, parmInfo.intValuesIndex, parmInfo.size);
+                                for(int i = 0; i < parmInfo.size; i++)
+                                {
+                                    if(currentValues[i] != values[i])
+                                    {
+                                        // The actual value is irrelevant. Just
+                                        // set it to the current value, so we
+                                        // don't have to worry about the value
+                                        // changing.
+                                        HAPI_SetParmIntValues(myNodeInfo.id, &currentValues[i], parmInfo.intValuesIndex + i, 1);
+                                    }
+                                }
+
+                                delete [] currentValues;
+                            }
+                            else
+                            {
+                                HAPI_SetParmIntValues( myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size );
+                            }
 
                             delete[] values;
                         }

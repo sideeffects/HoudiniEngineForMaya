@@ -211,6 +211,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     }
                     break;
                 case HAPI_PARMTYPE_INT:
+                case HAPI_PARMTYPE_BUTTON:
                 case HAPI_PARMTYPE_FLOAT:
                 case HAPI_PARMTYPE_COLOUR:
                 case HAPI_PARMTYPE_TOGGLE:
@@ -292,6 +293,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
             type = MFnNumericData::kBoolean;
             break;
         case HAPI_PARMTYPE_INT:
+        case HAPI_PARMTYPE_BUTTON:
             type = MFnNumericData::kInt;
             break;
         case HAPI_PARMTYPE_FLOAT:

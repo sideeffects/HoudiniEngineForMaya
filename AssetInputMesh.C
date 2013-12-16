@@ -53,10 +53,6 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
     
     MFnMesh meshFn(meshObj);
 
-    // get points
-    MFloatPointArray points;
-    meshFn.getPoints(points);
-
     // get face data
     MIntArray faceCounts;
     MIntArray vertexList;
@@ -69,18 +65,13 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
     partInfo.id = 0;
     partInfo.faceCount        = faceCounts.length();
     partInfo.vertexCount      = vertexList.length();
-    partInfo.pointCount       = points.length();
+    partInfo.pointCount       = meshFn.numVertices();
 
     // copy data to arrays
     int * vl = new int[partInfo.vertexCount];
     int * fc = new int[partInfo.faceCount];
     vertexList.get(vl);
     faceCounts.get(fc);
-
-    float* pos_attr = new float[ partInfo.pointCount * 3 ];
-    for ( int i = 0; i < partInfo.pointCount; ++i )
-	for ( int j = 0; j < 3; ++j )
-	    pos_attr[ i * 3 + j ] = points[ i ][ j ];
 
     // Set the data
     HAPI_SetPartInfo(myInputAssetId, myInputInfo.objectId, 
@@ -95,17 +86,16 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
     pos_attr_info.exists             = true;
     pos_attr_info.owner              = HAPI_ATTROWNER_POINT;
     pos_attr_info.storage            = HAPI_STORAGETYPE_FLOAT;
-    pos_attr_info.count              = partInfo.pointCount;
+    pos_attr_info.count              = meshFn.numVertices();
     pos_attr_info.tupleSize          = 3;
     HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info );
 
     HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info,
-	    pos_attr, 0, partInfo.pointCount);
+	    meshFn.getRawPoints(NULL), 0, meshFn.numVertices());
 
     // Commit it
     HAPI_CommitGeo(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId);
 
     delete[] vl;
     delete[] fc;
-    delete[] pos_attr;
 }

@@ -65,10 +65,10 @@ class Util {
         template <typename T>
         static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)
         {
-            unsigned int current_index = 0;
-            for(unsigned int i = 0; i < faceCounts.length(); i++)
+            int current_index = 0;
+            for(int i = 0; i < faceCounts.length(); i++)
             {
-                for(unsigned int a = current_index, b = current_index + faceCounts[i] - 1;
+                for(int a = current_index, b = current_index + faceCounts[i] - 1;
                         a < b; a++, b--)
                 {
                     std::swap(arrayData[a], arrayData[b]);

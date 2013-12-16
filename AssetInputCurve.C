@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include <maya/MMatrix.h>
 #include <maya/MPointArray.h>
 #include <maya/MFnNurbsCurve.h>
 
@@ -37,6 +38,14 @@ AssetInputCurve::assetInputType() const
 void
 AssetInputCurve::setInputTransform(MDataHandle &dataHandle)
 {
+    MMatrix transformMatrix = dataHandle.asMatrix();
+
+    float matrix[16];
+    transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
+
+    HAPI_TransformEuler transformEuler;
+    HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
+    HAPI_SetObjectTransform(myCurveAssetInfo.id, 0, transformEuler);
 }
 
 void

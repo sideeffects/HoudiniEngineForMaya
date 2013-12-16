@@ -2,6 +2,7 @@
 
 #include <maya/MFnMesh.h>
 #include <maya/MFloatPointArray.h>
+#include <maya/MFloatVectorArray.h>
 #include <maya/MIntArray.h>
 #include <maya/MMatrix.h>
 
@@ -92,6 +93,45 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
 
     HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info,
 	    meshFn.getRawPoints(NULL), 0, meshFn.numVertices());
+
+    // normals
+    {
+        // get normal IDs
+        MIntArray normalCounts;
+        MIntArray normalIds;
+        meshFn.getNormalIds(normalCounts, normalIds);
+
+        if(normalIds.length())
+        {
+            // reverse winding order
+            Util::reverseWindingOrder(normalIds, faceCounts);
+
+            // get normal values
+            const float* rawNormals = meshFn.getRawNormals(NULL);
+
+            // build the per-vertex normals
+            std::vector<float> vertexNormals;
+            vertexNormals.reserve(normalIds.length() * 3);
+            for(unsigned int i = 0; i < normalIds.length(); ++i)
+            {
+                vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 0]);
+                vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 1]);
+                vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 2]);
+            }
+
+            // add and set it to HAPI
+            HAPI_AttributeInfo attributeInfo;
+            attributeInfo.exists = true;
+            attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+            attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+            attributeInfo.count = normalIds.length();
+            attributeInfo.tupleSize = 3;
+            HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "N", &attributeInfo);
+
+            HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "N", &attributeInfo,
+                    &vertexNormals.front(), 0, normalIds.length());
+        }
+    }
 
     // Commit it
     HAPI_CommitGeo(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId);

@@ -3,7 +3,6 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MIntArray.h>
-#include <maya/MItMeshPolygon.h>
 #include <maya/MMatrix.h>
 
 #include "util.h"
@@ -53,7 +52,6 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
     MObject meshObj = dataHandle.asMesh();
     
     MFnMesh meshFn(meshObj);
-    MItMeshPolygon itMeshPoly(meshObj);
 
     // get points
     MFloatPointArray points;
@@ -62,16 +60,7 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
     // get face data
     MIntArray faceCounts;
     MIntArray vertexList;
-    while (!itMeshPoly.isDone())
-    {
-	int vc = itMeshPoly.polygonVertexCount();
-	faceCounts.append(vc);
-	for (int j=0; j<vc; j++)
-	{
-	    vertexList.append(itMeshPoly.vertexIndex(j));
-	}
-	itMeshPoly.next();
-    }
+    meshFn.getVertices(faceCounts, vertexList);
     Util::reverseWindingOrder(vertexList, faceCounts);
 
     // set up part info

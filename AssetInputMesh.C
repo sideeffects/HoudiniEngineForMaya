@@ -1,6 +1,7 @@
 #include "AssetInputMesh.h"
 
 #include <maya/MFnMesh.h>
+#include <maya/MFloatArray.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MFloatVectorArray.h>
 #include <maya/MIntArray.h>
@@ -130,6 +131,68 @@ AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
 
             HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "N", &attributeInfo,
                     &vertexNormals.front(), 0, normalIds.length());
+        }
+    }
+
+    // UVs
+    {
+        // get UV IDs
+        MIntArray uvCounts;
+        MIntArray uvIds;
+        meshFn.getAssignedUVs(uvCounts, uvIds);
+
+        // if there's UVs
+        if(uvIds.length())
+        {
+            // reverse winding order
+            Util::reverseWindingOrder(uvIds, uvCounts);
+
+            // get UV values
+            MFloatArray uArray;
+            MFloatArray vArray;
+            meshFn.getUVs(uArray, vArray);
+
+            // build the per-vertex UVs
+            std::vector<float> vertexUVs;
+            vertexUVs.reserve(vertexList.length() * 3);
+            unsigned int uvIdIndex = 0;
+            for(unsigned int i = 0; i < uvCounts.length(); ++i)
+            {
+                if(uvCounts[i] == faceCounts[i])
+                {
+                    // has UVs assigned
+                    for(int j = 0; j < uvCounts[i]; ++j)
+                    {
+                        vertexUVs.push_back(uArray[uvIds[uvIdIndex]]);
+                        vertexUVs.push_back(vArray[uvIds[uvIdIndex]]);
+                        vertexUVs.push_back(0);
+
+                        uvIdIndex++;
+                    }
+                }
+                else
+                {
+                    // no UVs assigned
+                    for(int j = 0; j < faceCounts[i]; ++j)
+                    {
+                        vertexUVs.push_back(0);
+                        vertexUVs.push_back(0);
+                        vertexUVs.push_back(0);
+                    }
+                }
+            }
+
+            // add and set it to HAPI
+            HAPI_AttributeInfo attributeInfo;
+            attributeInfo.exists = true;
+            attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+            attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+            attributeInfo.count = vertexList.length();
+            attributeInfo.tupleSize = 3;
+            HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "uv", &attributeInfo);
+
+            HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "uv", &attributeInfo,
+                    &vertexUVs.front(), 0, vertexList.length());
         }
     }
 

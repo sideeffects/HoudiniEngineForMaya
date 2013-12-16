@@ -29,22 +29,14 @@ AssetInputMesh::assetInputType() const
 void
 AssetInputMesh::setInputTransform(MDataHandle &dataHandle)
 {
-    // Set the transform
-    MMatrix transformMat = dataHandle.asMatrix();
+    MMatrix transformMatrix = dataHandle.asMatrix();
 
-    float inputMat[ 16 ];
-
-    for( int ii = 0; ii < 4; ii++ )
-    {
-	for( int jj = 0; jj < 4; jj++ )
-	{
-	    inputMat[ii*4 + jj] = (float) transformMat.matrix[ii][jj];
-	}
-    }
+    float matrix[16];
+    transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler( inputMat, HAPI_TRS, HAPI_XYZ, &transformEuler );
-    HAPI_SetObjectTransform( myInputAssetId, myInputInfo.objectId, transformEuler );
+    HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
+    HAPI_SetObjectTransform(myInputAssetId, myInputInfo.objectId, transformEuler);
 }
 
 void

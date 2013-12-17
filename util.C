@@ -62,7 +62,7 @@ Util::getString(int handle)
 MString
 Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
 {
-    MString name = getString(parm.nameSH);
+    MString name = getString(parm.templateNameSH);
     if(parm.isChildOfMultiParm)
     {
         name = replaceString(name, "#", "_");

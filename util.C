@@ -70,7 +70,7 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
 
     // If it's a button, add a suffix so that we can distinguish it while
     // populating the AE
-    if(parm.type == HAPI_PARMTYPE_BUTTON)
+    if(parm.type == HAPI_PARMTYPE_BUTTON && parm.choiceCount == 0)
     {
         name += "__button";
     }

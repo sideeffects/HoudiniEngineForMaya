@@ -214,6 +214,7 @@ AssetSyncOutputGeoPart::createOutputCurves(
 	myDagModifier.connect(curve, dstPlug);
     }
 
+    return MStatus::kSuccess;
 }
 
 MStatus

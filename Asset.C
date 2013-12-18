@@ -813,7 +813,22 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_BUTTON:
                         {
                             int* values = new int[parmInfo.size];
-                            HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
+
+                            if(parmInfo.type == HAPI_PARMTYPE_BUTTON)
+                            {
+                                // For buttons, always keep the attribute value
+                                // at 0, so that we can trigger it by setting
+                                // the attribute to 1.
+
+                                for(int i = 0; i < parmInfo.size; i++)
+                                {
+                                    values[i] = 0;
+                                }
+                            }
+                            else
+                            {
+                                HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
+                            }
 
                             if(parmInfo.size == 1)
                             {
@@ -1045,16 +1060,16 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                             if(parmInfo.type == HAPI_PARMTYPE_BUTTON)
                             {
-                                // For buttons, only set if the values are
-                                // different. This avoids clicking the buttons
-                                // when saving and restoring attribute values.
+                                // For buttons, only set if the values are 1.
+                                // This avoids clicking the buttons when saving
+                                // and restoring attribute values.
 
                                 int* currentValues = new int[parmInfo.size];
 
                                 HAPI_GetParmIntValues(myNodeInfo.id, currentValues, parmInfo.intValuesIndex, parmInfo.size);
                                 for(int i = 0; i < parmInfo.size; i++)
                                 {
-                                    if(currentValues[i] != values[i])
+                                    if(values[i] == 1)
                                     {
                                         // The actual value is irrelevant. Just
                                         // set it to the current value, so we

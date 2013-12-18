@@ -153,6 +153,9 @@ class AssetNode: public MPxTransform
 	static MObject outputPartParticlePositions;
 	static MObject outputPartParticleArrayData;
 
+	static MObject outputPartCurves;
+	static MObject outputPartCurvesIsBezier;
+
 #if MAYA_API_VERSION >= 201400
 	static MObject outputPartVolume;
 	static MObject outputPartVolumeName;

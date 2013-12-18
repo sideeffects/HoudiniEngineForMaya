@@ -35,6 +35,11 @@ class AssetSyncOutputGeoPart : public AssetSubCommand
 		const MObject &partTransform,
 		const MPlug &particlePlug
 		);
+	MStatus createOutputCurves(
+		MPlug curvesPlug,
+		const MObject &partTransform,
+		bool isBezier
+		);
 
     protected:
 	//This is the output plug from the asset node that represents an object

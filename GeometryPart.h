@@ -32,6 +32,7 @@ class GeometryPart
 
         void createMesh(MDataHandle &dataHandle);
 	void createParticle(MDataHandle &dataHandle);
+	void createCurves(MDataHandle &dataHandle);
 
 	MObject createVolume();
 	void    updateVolumeTransform(MDataHandle& handle);
@@ -52,6 +53,7 @@ class GeometryPart
         HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
 	HAPI_VolumeInfo myVolumeInfo;
+	HAPI_CurveInfo myCurveInfo;
         HAPI_MaterialInfo myMaterialInfo;
 
         bool myNeverBuilt;

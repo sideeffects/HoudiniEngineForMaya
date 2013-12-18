@@ -68,7 +68,8 @@ Geo::update()
             Util::checkHAPIStatus(hstat);
 
             if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
-                myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
+                myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
+		myGeoInfo.type == HAPI_GEOTYPE_CURVE )
             {                
                 int partCount = myGeoInfo.partCount;
 
@@ -129,7 +130,8 @@ Geo::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
     }
 
     if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT || 
-        myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
+        myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
+	myGeoInfo.type == HAPI_GEOTYPE_CURVE )
     { 
         for (int i=0; i< myGeoInfo.partCount; i++)
         {

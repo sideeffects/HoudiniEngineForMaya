@@ -747,12 +747,21 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
             dataHandle = parentDataHandle.child(attrObj);
             plug = parentPlug.child(attrObj);
 
-            if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
+            if((parmInfo.type == HAPI_PARMTYPE_INT
+                        || parmInfo.type == HAPI_PARMTYPE_BUTTON
+                        || parmInfo.type == HAPI_PARMTYPE_STRING)
                     && parmInfo.choiceCount > 0)
             {
                 int enumIndex = 0;
 
-                if(parmInfo.type == HAPI_PARMTYPE_STRING)
+                if(parmInfo.type == HAPI_PARMTYPE_BUTTON)
+                {
+                    // The value of button menu items is irrelevant. We need it
+                    // to always stay at the first dummy field regardless of
+                    // what the actual value is.
+                    enumIndex = 0;
+                }
+                else if(parmInfo.type == HAPI_PARMTYPE_STRING)
                 {
                     int value;
                     HAPI_GetParmStringValues(myNodeInfo.id, &value, parmInfo.stringValuesIndex, parmInfo.size);
@@ -980,12 +989,23 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
             dataHandle = parentDataHandle.child(attrObj);
             plug = parentPlug.child(attrObj);
 
-            if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
+            if((parmInfo.type == HAPI_PARMTYPE_INT
+                        || parmInfo.type == HAPI_PARMTYPE_BUTTON
+                        || parmInfo.type == HAPI_PARMTYPE_STRING)
                     && parmInfo.choiceCount > 0)
             {
                 int enumIndex = static_cast<int>(dataHandle.asShort());
 
-                if(parmInfo.type == HAPI_PARMTYPE_STRING)
+                if(parmInfo.type == HAPI_PARMTYPE_BUTTON)
+                {
+                    // Button menu items have a dummy field at the beginning.
+                    int value = enumIndex - 1;
+                    if(value >= 0)
+                    {
+                        HAPI_SetParmIntValues(myNodeInfo.id, &value, parmInfo.intValuesIndex, 1);
+                    }
+                }
+                else if(parmInfo.type == HAPI_PARMTYPE_STRING)
                 {
                     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
                     HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parmInfo.choiceIndex, parmInfo.choiceCount);

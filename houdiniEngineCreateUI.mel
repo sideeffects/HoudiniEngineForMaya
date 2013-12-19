@@ -453,6 +453,8 @@ houdiniEngineCreateUI()
 	-command "performAssetSync 0";
     menuItem -optionBox true
 	-command "performAssetSync 1";    
+    menuItem -label "Reload Asset"
+       -command "houdiniEngine_reloadAssetOutputMenuClick";
     menuItem -label "Save Current Houdini Scene..." 
         -command "saveHipFile";
 

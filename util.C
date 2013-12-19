@@ -379,7 +379,7 @@ Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
 {
     for (size_t i = 0; i < parms.size(); i++)
     {
-        if(getString(parms[i].nameSH) == name
+        if(getString(parms[i].templateNameSH) == name
                 && (instanceNum < 0 || parms[i].instanceNum == instanceNum)
           )
         {

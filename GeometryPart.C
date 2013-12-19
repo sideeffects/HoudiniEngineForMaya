@@ -319,13 +319,12 @@ GeometryPart::createCurves(MDataHandle &curvesHandle)
 	else
 	    HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId, &order, i, 1);
 
-	int coincident = myCurveInfo.isPeriodic ? myCurveInfo.order - 1 : 0;
 	std::vector<float> vertices;
 	vertices.resize(numVertices * HAPI_CV_VECTOR_SIZE);
 	HAPI_GetCurveVertices(myAssetId, myObjectId, myGeoId, myPartId,
 			      &vertices.front(), vertexOffset,
 			      numVertices * HAPI_CV_VECTOR_SIZE);
-	MPointArray controlVertices(numVertices + coincident);
+	MPointArray controlVertices(numVertices);
 	for (int j=0; j<numVertices; j++)
 	{
 	    controlVertices[j] = MPoint(vertices[j*HAPI_CV_VECTOR_SIZE],
@@ -338,42 +337,28 @@ GeometryPart::createCurves(MDataHandle &curvesHandle)
 	if (myCurveInfo.hasKnots)
 	{
 	    std::vector<float> knots;
-	    knots.resize(numVertices + coincident + order);
+	    knots.resize(numVertices + order);
 	    // The Maya knot vector has two fewer knots; 
 	    // the first and last houdini knot are excluded
-	    knotSequences.setLength(numVertices + coincident +  order - 2);
+	    knotSequences.setLength(numVertices + order - 2);
 	    HAPI_GetCurveKnots(myAssetId, myObjectId, myGeoId, myPartId,
 			       &knots.front(), knotOffset, numVertices + order);
 	    // Maya doesn't need the first and last knots
-	    for (int j=1; j<numVertices + order - 1; j++)
-		knotSequences[j-1] = knots[j];
+	    for (int j=0; j<numVertices + order - 2; j++)
+		knotSequences[j] = knots[j+1];
 	}
 	else if (myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
 	{
 	    // Bezier knot vector needs to still be passed in
-	    knotSequences.setLength(numVertices + coincident + order - 2);
+	    knotSequences.setLength(numVertices + order - 2);
 	    for (int j=0; j<numVertices + order - 2; j++)
 		knotSequences[j] = j / (order - 1);
 	}
 	else
 	{
-	    knotSequences.setLength(numVertices + coincident + order - 2);
+	    knotSequences.setLength(numVertices + order - 2);
 	    for (int j=0; j<numVertices + order - 2; j++)
 		knotSequences[j] = 0;
-	}
-
-	if ( myCurveInfo.isPeriodic )
-	{
-	    // Periodic curves have the last `degree` points
-	    // co-incident with the first `degree` points
-	    for ( int j=0; j<myCurveInfo.order - 1; j++ )
-	    {
-		controlVertices[numVertices + j] =
-		    MPoint( vertices[j*HAPI_CV_VECTOR_SIZE],
-			    vertices[j*HAPI_CV_VECTOR_SIZE + 1],
-			    vertices[j*HAPI_CV_VECTOR_SIZE + 2],
-			    vertices[j*HAPI_CV_VECTOR_SIZE + 3]);
-	    }
 	}
 
 	// NOTE: Periodicity is always constant, so periodic and
@@ -384,14 +369,14 @@ GeometryPart::createCurves(MDataHandle &curvesHandle)
 			   myCurveInfo.isPeriodic ?
 				      MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
 			   false /* 2d? */,
-			   true /* rational? */,
+			   myCurveInfo.isRational /* rational? */,
 			   curveDataObj, &status);
 	CHECK_MSTATUS(status);
 
 
 	// The curve at i will have numVertices vertices, and may have
 	// some knots. The knot count will be numVertices + order for
-	// nurbs curves, while bezier curves are unsupported
+	// nurbs curves
 	vertexOffset += numVertices * 4;
 	knotOffset += numVertices + order;
 

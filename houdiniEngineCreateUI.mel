@@ -264,8 +264,8 @@ houdiniEngine_syncAssetOutput(int $syncOnlyVisible, int $syncTemplated)
 global proc
 houdiniEngine_reloadAsset(string $asset)
 {
-    string $assetPathPlug = $asset + ".assetPath";
-    string $assetPath = `getAttr $assetPathPlug`;
+    string $otlFilePath = `getAttr ($asset + ".otlFilePath")`;
+    string $assetName = `getAttr ($asset + ".assetName")`;
 
     string $srcPlugs[] = `listConnections -s 1 -d 0 -p 1 $asset`;
     string $dstPlugs[] = `listConnections -s 0 -d 1 -p 1 $asset`;
@@ -312,7 +312,7 @@ houdiniEngine_reloadAsset(string $asset)
 
     //reload the asset and restore connections:
 
-    houdiniAsset -loadAsset $assetPath;
+    houdiniAsset -loadAsset $otlFilePath $assetName;
     
 
     refreshEditorTemplates;

@@ -186,7 +186,9 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     {
         MObject attrObj;
 
-        if((parmInfo.type == HAPI_PARMTYPE_INT || parmInfo.type == HAPI_PARMTYPE_STRING)
+        if((parmInfo.type == HAPI_PARMTYPE_INT
+                    || parmInfo.type == HAPI_PARMTYPE_BUTTON
+                    || parmInfo.type == HAPI_PARMTYPE_STRING)
                 && parmInfo.choiceCount > 0)
         {
             attrObj = createEnumAttr(parmInfo);
@@ -365,10 +367,19 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
 
     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parm.choiceCount];
     HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parm.choiceIndex, parm.choiceCount);
+
+    int enumIndex = 0;
+
+    // Button menu items have a dummy field at the beginning.
+    if(parm.type == HAPI_PARMTYPE_BUTTON)
+    {
+        eAttr.addField(niceName, enumIndex++);
+    }
+
     for (int i = 0; i < parm.choiceCount; i++)
     {
         MString field = Util::getString(choiceInfos[i].labelSH);
-        eAttr.addField(field, static_cast<short>(i));
+        eAttr.addField(field, static_cast<short>(enumIndex++));
     }
 
     delete[] choiceInfos;

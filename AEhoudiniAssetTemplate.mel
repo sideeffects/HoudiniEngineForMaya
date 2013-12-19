@@ -42,7 +42,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         else if(endsWith($child, "__button"))
         {
             string $niceName = `attributeQuery -node $nodeName -niceName $child`;
-            button -label $niceName -command ("setAttr " + $fullAttrName + "." + $child + " 0");
+            button -label $niceName -command ("setAttr " + $fullAttrName + "." + $child + " 1");
         }
         // simple attributes
         else if(`attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`

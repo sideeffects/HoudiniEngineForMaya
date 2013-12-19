@@ -140,8 +140,8 @@
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
     <TargetExt>.mll</TargetExt>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <IncludePath>C:\cygwin\home\damian\houdini\dev_d_x86\src\houdini\lib\H_HAPI;C:\Program Files %28x86%29\Autodesk\Maya2013\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\dsolib;C:\Program Files %28x86%29\Autodesk\Maya2013\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\dev_d_x86\src\houdini\lib\H_HAPI;C:\Program Files %28x86%29\Autodesk\Maya2013\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\dev_d_x86\hfs\custom\houdini\dsolib;C:\Program Files %28x86%29\Autodesk\Maya2013\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -166,7 +166,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;E:\dev_d_x86\hfs\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>

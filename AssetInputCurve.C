@@ -120,7 +120,7 @@ AssetInputCurve::setInputGeo(MDataHandle &dataHandle)
 	    num_houdini_cvs -= fnCurve.degree();
 
 	std::ostringstream coords;
-	for(unsigned int i = 0; i < num_houdini_cvs; i++)
+	for(unsigned int i = 0; i < (unsigned int) num_houdini_cvs; i++)
 	{
 	    const MPoint &pt = cvs[i];
 

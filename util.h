@@ -66,7 +66,7 @@ class Util {
         static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)
         {
             int current_index = 0;
-            for(int i = 0; i < faceCounts.length(); i++)
+            for(int i = 0; i < (int) faceCounts.length(); i++)
             {
                 for(int a = current_index, b = current_index + faceCounts[i] - 1;
                         a < b; a++, b--)

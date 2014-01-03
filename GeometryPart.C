@@ -695,6 +695,7 @@ GeometryPart::updateMaterial(MDataHandle& handle)
 	    int texturePathSH;
 	    HAPI_GetParmStringValues(
 		    myMaterialInfo.nodeId,
+		    true,
 		    &texturePathSH,
 		    texturePathParm.stringValuesIndex,
 		    1

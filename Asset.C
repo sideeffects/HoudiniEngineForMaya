@@ -764,7 +764,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 else if(parmInfo.type == HAPI_PARMTYPE_STRING)
                 {
                     int value;
-                    HAPI_GetParmStringValues(myNodeInfo.id, &value, parmInfo.stringValuesIndex, parmInfo.size);
+                    HAPI_GetParmStringValues(myNodeInfo.id, true, &value, parmInfo.stringValuesIndex, parmInfo.size);
                     MString valueString = Util::getString(value);
 
                     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
@@ -879,7 +879,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_FILE:
                         {
                             int* values = new int[parmInfo.size];
-                            HAPI_GetParmStringValues(myNodeInfo.id, values, parmInfo.stringValuesIndex, parmInfo.size);
+                            HAPI_GetParmStringValues(myNodeInfo.id, true, values, parmInfo.stringValuesIndex, parmInfo.size);
 
                             if(parmInfo.size == 1)
                             {

@@ -373,7 +373,6 @@ Asset::Asset(
     HAPI_InstantiateAsset(
             assetName.asChar(),
             true,
-            3, 20,
             &assetId
             );
 
@@ -666,7 +665,7 @@ Asset::compute(
     //for inter-asset stuff
     computeAssetInputs(plug, data);
 
-    HAPI_CookAsset( myAssetInfo.id);
+    HAPI_CookAsset( myAssetInfo.id, NULL );
 
 
     Util::statusCheckLoop();

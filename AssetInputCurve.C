@@ -63,9 +63,11 @@ AssetInputCurve::setInputGeo(MDataHandle &dataHandle)
     int typeParmIndex = Util::findParm(parms, "type");
     int coordsParmIndex = Util::findParm(parms, "coords");
     int orderParmIndex = Util::findParm(parms, "order");
+    int closeParmIndex = Util::findParm(parms, "close");
     if(coordsParmIndex < 0
 	    || coordsParmIndex < 0
-	    || orderParmIndex < 0)
+	    || orderParmIndex < 0
+	    || closeParmIndex < 0)
     {
 	return;
     }
@@ -73,6 +75,7 @@ AssetInputCurve::setInputGeo(MDataHandle &dataHandle)
     const HAPI_ParmInfo &typeParm = parms[typeParmIndex];
     const HAPI_ParmInfo &coordsParm = parms[coordsParmIndex];
     const HAPI_ParmInfo &orderParm = parms[orderParmIndex];
+    const HAPI_ParmInfo &closeParm = parms[closeParmIndex];
 
     MFnNurbsCurve fnCurve(inputMesh);
 
@@ -108,8 +111,16 @@ AssetInputCurve::setInputGeo(MDataHandle &dataHandle)
 	MPointArray cvs;
 	fnCurve.getCVs(cvs);
 
+	// Maya has fnCurve.degree() more cvs in it's data definition
+	// than houdini for periodic curves--but they are conincident
+	// with the first ones. Houdini ignores them, so we don't
+	// output them.
+	int num_houdini_cvs = cvs.length();
+	if (fnCurve.form() == MFnNurbsCurve::kPeriodic)
+	    num_houdini_cvs -= fnCurve.degree();
+
 	std::ostringstream coords;
-	for(unsigned int i = 0; i < cvs.length(); i++)
+	for(unsigned int i = 0; i < num_houdini_cvs; i++)
 	{
 	    const MPoint &pt = cvs[i];
 
@@ -123,5 +134,11 @@ AssetInputCurve::setInputGeo(MDataHandle &dataHandle)
 	int order = fnCurve.degree() + 1;
 
 	HAPI_SetParmIntValues(myCurveNodeInfo.id, &order, orderParm.intValuesIndex, 1);
+    }
+
+    // periodicity
+    {
+	int close = fnCurve.form() == MFnNurbsCurve::kPeriodic;
+	HAPI_SetParmIntValues(myCurveNodeInfo.id, &close, closeParm.intValuesIndex, 1);
     }
 }

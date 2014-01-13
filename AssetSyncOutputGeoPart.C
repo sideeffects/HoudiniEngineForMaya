@@ -5,6 +5,7 @@
 #include <maya/MSelectionList.h>
 
 #include <maya/MFnDagNode.h>
+#include <maya/MFnNurbsCurve.h>
 
 #include "AssetNode.h"
 #include "util.h"
@@ -172,6 +173,12 @@ AssetSyncOutputGeoPart::createOutputPart(
 	CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
+    // create curves
+    MPlug curveIsBezier = myOutputPlug.child(AssetNode::outputPartCurvesIsBezier); 
+    createOutputCurves(myOutputPlug.child(AssetNode::outputPartCurves),
+		       partTransform,
+		       curveIsBezier.asBool());
+
     // doIt
     // Need to do it here right away because otherwise the top level 
     // transform won't be shared.
@@ -179,6 +186,34 @@ AssetSyncOutputGeoPart::createOutputPart(
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return MStatus::kSuccess;
+}
+
+MStatus
+AssetSyncOutputGeoPart::createOutputCurves(
+	MPlug curvesPlug,
+	const MObject &partTransform,
+	bool isBezier
+	)
+{
+    MStatus status;
+
+    int numCurves = curvesPlug.evaluateNumElements();
+    for (int i=0; i<numCurves; i++)
+    {
+	MPlug curve = curvesPlug[i];
+
+	MObject partCurve =
+	    myDagModifier.createNode(isBezier ? "bezierCurve" : "nurbsCurve",
+				     partTransform, &status);
+	CHECK_MSTATUS(status);
+
+	MFnDependencyNode partCurveFn(partCurve, &status);
+	MPlug dstPlug = partCurveFn.findPlug("create");
+	CHECK_MSTATUS(status);
+
+	myDagModifier.connect(curve, dstPlug);
+    }
+
 }
 
 MStatus

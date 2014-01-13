@@ -88,6 +88,9 @@ MObject AssetNode::outputPartParticle;
 MObject AssetNode::outputPartParticlePositions;
 MObject AssetNode::outputPartParticleArrayData;
 
+MObject AssetNode::outputPartCurves;
+MObject AssetNode::outputPartCurvesIsBezier;
+
 #if MAYA_API_VERSION >= 201400
 
 MObject AssetNode::outputPartVolume;
@@ -467,6 +470,20 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartParticle);
 
+    // curves
+    AssetNode::outputPartCurves = tAttr.create("outputPartCurves", "outputPartCurves", MFnData::kNurbsCurve);
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    tAttr.setArray(true);
+    tAttr.setIndexMatters(true);
+    tAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputPartCurves);
+
+    AssetNode::outputPartCurvesIsBezier = nAttr.create("outputPartCurvesIsBezier", "outputPartCurvesIsBezier", MFnNumericData::kBoolean, false);
+    nAttr.setWritable(false);
+    nAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartCurvesIsBezier);
+
 #if MAYA_API_VERSION >= 201400
     // Volumes ---------
     AssetNode::outputPartVolumeName = tAttr.create("outputPartVolumeName", "outputPartVolumeName", MFnData::kString);
@@ -567,6 +584,8 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
     cAttr.addChild(AssetNode::outputPartParticle);    
+    cAttr.addChild(AssetNode::outputPartCurves);    
+    cAttr.addChild(AssetNode::outputPartCurvesIsBezier);
 
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
@@ -809,6 +828,13 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeRotate));
 		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeScale));
 #endif
+		// Curves
+		MPlug outputPartCurves = elemPlug.child(AssetNode::outputPartCurves);
+		for ( unsigned int i = 0; i < outputPartCurves.numElements(); ++i )
+		    affectedPlugs.append(outputPartCurves[ i ]);
+
+		affectedPlugs.append(elemPlug.child(outputPartCurvesIsBezier));
+
 	    }
         }
     }

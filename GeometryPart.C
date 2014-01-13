@@ -6,6 +6,9 @@
 #include <maya/MMatrix.h>
 #include <maya/MFnArrayAttrsData.h>
 #include <maya/MFnDoubleArrayData.h>
+#include <maya/MFnNurbsCurve.h>
+#include <maya/MFnNurbsCurveData.h>
+#include <maya/MPointArray.h>
 #if MAYA_API_VERSION >= 201400
 	#include <maya/MFnFloatArrayData.h>
 #endif
@@ -39,6 +42,12 @@ GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
 	if (myPartInfo.hasVolume)
 	{
 	    hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
+	    Util::checkHAPIStatus(hstat);
+	}
+
+	if (myPartInfo.isCurve)
+	{
+	    hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
 	    Util::checkHAPIStatus(hstat);
 	}
     }
@@ -190,6 +199,7 @@ GeometryPart::compute(
     // Get plugs
     MDataHandle partNameHandle = handle.child(AssetNode::outputPartName);
     MDataHandle meshHandle = handle.child(AssetNode::outputPartMesh);
+    MDataHandle curvesHandle = handle.child(AssetNode::outputPartCurves);
     //MDataHandle transformHandle = handle.child(AssetNode::transform);
     MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
 
@@ -245,6 +255,15 @@ GeometryPart::compute(
 	    partVolumeNameHandle.setClean();
 	}
 #endif
+
+	// Curve
+	if (myPartInfo.isCurve)
+	{
+	    createCurves(curvesHandle);
+	    MDataHandle isBezierHandle =
+		handle.child(AssetNode::outputPartCurvesIsBezier);
+	    isBezierHandle.setBool(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER);
+	}
     }
 
     if ( myNeverBuilt || myGeoInfo.hasMaterialChanged)
@@ -259,6 +278,126 @@ GeometryPart::compute(
     myNeverBuilt = false;
 
     return MS::kSuccess;
+}
+
+void
+GeometryPart::createCurves(MDataHandle &curvesHandle)
+{
+    MStatus status;
+
+    MArrayDataHandle curvesArrayHandle(curvesHandle);
+    MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
+
+    int vertexOffset = 0;
+    int knotOffset = 0;
+    for (int i=0; i<myCurveInfo.curveCount; i++)
+    {
+	MDataHandle curve = curvesBuilder.addElement(i);
+	MObject curveDataObj = curve.data();
+	MFnNurbsCurveData curveDataFn(curveDataObj);
+	if (curve.data().isNull())
+	{
+	    // set the MDataHandle
+	    curveDataObj = curveDataFn.create();
+	    curve.setMObject(curveDataObj);
+
+	    // then get the copy from MDataHandle
+	    curveDataObj = curve.data();
+	    curveDataFn.setObject(curveDataObj);
+	}
+
+	// Number of CVs
+	int numVertices;
+	HAPI_GetCurveCounts(myAssetId, myObjectId, myGeoId, myPartId,
+			    &numVertices, i, 1);
+
+	// Order of this particular curve
+	int order;
+	if (myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
+	    && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID) 
+	    order = myCurveInfo.order;
+	else
+	    HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId, &order, i, 1);
+
+	int coincident = myCurveInfo.isPeriodic ? myCurveInfo.order - 1 : 0;
+	std::vector<float> vertices;
+	vertices.resize(numVertices * HAPI_CV_VECTOR_SIZE);
+	HAPI_GetCurveVertices(myAssetId, myObjectId, myGeoId, myPartId,
+			      &vertices.front(), vertexOffset,
+			      numVertices * HAPI_CV_VECTOR_SIZE);
+	MPointArray controlVertices(numVertices + coincident);
+	for (int j=0; j<numVertices; j++)
+	{
+	    controlVertices[j] = MPoint(vertices[j*HAPI_CV_VECTOR_SIZE],
+					vertices[j*HAPI_CV_VECTOR_SIZE + 1],
+					vertices[j*HAPI_CV_VECTOR_SIZE + 2],
+					vertices[j*HAPI_CV_VECTOR_SIZE + 3]);
+	}
+
+	MDoubleArray knotSequences; 
+	if (myCurveInfo.hasKnots)
+	{
+	    std::vector<float> knots;
+	    knots.resize(numVertices + coincident + order);
+	    // The Maya knot vector has two fewer knots; 
+	    // the first and last houdini knot are excluded
+	    knotSequences.setLength(numVertices + coincident +  order - 2);
+	    HAPI_GetCurveKnots(myAssetId, myObjectId, myGeoId, myPartId,
+			       &knots.front(), knotOffset, numVertices + order);
+	    // Maya doesn't need the first and last knots
+	    for (int j=1; j<numVertices + order - 1; j++)
+		knotSequences[j-1] = knots[j];
+	}
+	else if (myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
+	{
+	    // Bezier knot vector needs to still be passed in
+	    knotSequences.setLength(numVertices + coincident + order - 2);
+	    for (int j=0; j<numVertices + order - 2; j++)
+		knotSequences[j] = j / (order - 1);
+	}
+	else
+	{
+	    knotSequences.setLength(numVertices + coincident + order - 2);
+	    for (int j=0; j<numVertices + order - 2; j++)
+		knotSequences[j] = 0;
+	}
+
+	if ( myCurveInfo.isPeriodic )
+	{
+	    // Periodic curves have the last `degree` points
+	    // co-incident with the first `degree` points
+	    for ( int j=0; j<myCurveInfo.order - 1; j++ )
+	    {
+		controlVertices[numVertices + j] =
+		    MPoint( vertices[j*HAPI_CV_VECTOR_SIZE],
+			    vertices[j*HAPI_CV_VECTOR_SIZE + 1],
+			    vertices[j*HAPI_CV_VECTOR_SIZE + 2],
+			    vertices[j*HAPI_CV_VECTOR_SIZE + 3]);
+	    }
+	}
+
+	// NOTE: Periodicity is always constant, so periodic and
+	//  	 non-periodic curve meshes will have different parts.
+	MFnNurbsCurve curveFn;
+	MObject nurbsCurve =
+	    curveFn.create(controlVertices, knotSequences, order-1,
+			   myCurveInfo.isPeriodic ?
+				      MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
+			   false /* 2d? */,
+			   true /* rational? */,
+			   curveDataObj, &status);
+	CHECK_MSTATUS(status);
+
+
+	// The curve at i will have numVertices vertices, and may have
+	// some knots. The knot count will be numVertices + order for
+	// nurbs curves, while bezier curves are unsupported
+	vertexOffset += numVertices * 4;
+	knotOffset += numVertices + order;
+
+    }
+
+    curvesArrayHandle.set(curvesBuilder);
 }
 
 void

@@ -27,7 +27,8 @@ Geo::Geo( int assetId, int objectId, int geoId, Object * parentObject) :
         Util::checkHAPIStatus(hstat);
 
         if( myGeoInfo.type == HAPI_GEOTYPE_DEFAULT || 
-            myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE )
+            myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
+	    myGeoInfo.type == HAPI_GEOTYPE_CURVE )
         {
             int partCount = myGeoInfo.partCount;
             myParts.clear();

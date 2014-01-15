@@ -1,6 +1,7 @@
 #include "AssetInputMesh.h"
 
 #include <maya/MFnMesh.h>
+#include <maya/MDataBlock.h>
 #include <maya/MFloatArray.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MFloatVectorArray.h>
@@ -40,8 +41,13 @@ AssetInputMesh::setInputTransform(MDataHandle &dataHandle)
 }
 
 void
-AssetInputMesh::setInputGeo(MDataHandle &dataHandle)
+AssetInputMesh::setInputGeo(
+        MDataBlock &dataBlock,
+        const MPlug &plug
+        )
 {
+    MDataHandle dataHandle = dataBlock.inputValue(plug);
+
     // extract mesh data from Maya
     MObject meshObj = dataHandle.asMesh();
     

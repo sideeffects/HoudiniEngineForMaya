@@ -14,6 +14,7 @@
 #include "AssetInputAsset.h"
 #include "AssetInputMesh.h"
 #include "AssetInputCurve.h"
+#include "AssetInputParticle.h"
 
 MObject AssetInputs::input;
 MObject AssetInputs::inputTransform;
@@ -32,6 +33,7 @@ AssetInputs::createInputAttribute()
     gAttr.addDataAccept(MFnData::kIntArray);
     gAttr.addDataAccept(MFnData::kMesh);
     gAttr.addDataAccept(MFnData::kNurbsCurve);
+    gAttr.addDataAccept(MFnData::kVectorArray);
 
     AssetInputs::input = cAttr.create("input", "input");
     cAttr.addChild(AssetInputs::inputTransform);
@@ -140,6 +142,10 @@ AssetInputs::prepareAssetInput(
     {
 	newAssetInputType = AssetInput::AssetInputType_Curve;
     }
+    else if(geoDataHandle.type() == MFnData::kVectorArray)
+    {
+	newAssetInputType = AssetInput::AssetInputType_Particle;
+    }
 
     // if the existing input doesn't match the new input type, delete it
     if(assetInput && assetInput->assetInputType() != newAssetInputType)
@@ -179,6 +185,9 @@ AssetInput::createAssetInput(int assetId, int inputIdx, AssetInputType assetInpu
 	    break;
 	case AssetInputType_Curve:
 	    assetInput = new AssetInputCurve(assetId, inputIdx);
+	    break;
+	case AssetInputType_Particle:
+	    assetInput = new AssetInputParticle(assetId, inputIdx);
 	    break;
 	case AssetInputType_Invalid:
 	    break;

@@ -205,7 +205,8 @@ proc int isSupportedInput(string $object)
     string $supportedTypes[] = {
 	"houdiniAsset",
 	"mesh",
-	"nurbsCurve"
+	"nurbsCurve",
+	"particle"
     };
 
     for($supportedType in $supportedTypes)
@@ -325,6 +326,16 @@ proc setInput(string $inputAttr, string $object)
 	    string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
 	    connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
 	}
+    }
+    else if(`objectType -isAType "particle" $object`)
+    {
+        connectAttr -force ($object + ".position") $inputGeoAttr;
+        string $parent[] = `listRelatives -fullPath -parent $object`;
+        if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
+        {
+            string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
+            connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
+        }
     }
     else
     {

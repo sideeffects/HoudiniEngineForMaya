@@ -53,6 +53,7 @@ class AssetInput
 	    AssetInputType_Asset,
 	    AssetInputType_Mesh,
 	    AssetInputType_Curve,
+	    AssetInputType_Particle,
 	};
 
 	static AssetInput* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);

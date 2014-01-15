@@ -109,9 +109,9 @@ endif
 CPPFLAGS += -I$(MAYA_DIR)/include
 CPPFLAGS += -D_BOOL -DREQUIRE_IOSTREAM
 ifeq ($(OS), Linux)
-    LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lFoundation
+    LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lOpenMayaFX -lFoundation
 else ifeq ($(OS), Cygwin)
-    LDLIBS += -LIBPATH:$(MAYA_DIR)/lib OpenMaya.lib Foundation.lib
+    LDLIBS += -LIBPATH:$(MAYA_DIR)/lib OpenMaya.lib OpenMayaFX.lib Foundation.lib
 endif
 
 # Houdini flags
@@ -186,6 +186,7 @@ CXXFILES = \
 	   AssetInputAsset.C \
 	   AssetInputMesh.C \
 	   AssetInputCurve.C \
+	   AssetInputParticle.C \
 	   Object.C \
 	   util.C \
 	   GeometryObject.C \

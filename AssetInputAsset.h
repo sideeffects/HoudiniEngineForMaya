@@ -12,7 +12,10 @@ class AssetInputAsset : public AssetInput
 	virtual AssetInputType assetInputType() const;
 
 	virtual void setInputTransform(MDataHandle &dataHandle);
-	virtual void setInputGeo(MDataHandle &dataHandle);
+        virtual void setInputGeo(
+                MDataBlock &dataBlock,
+                const MPlug &plug
+                );
 };
 
 #endif

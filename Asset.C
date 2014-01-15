@@ -491,15 +491,13 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
     MStatus status;
 
     MPlug inputsPlug(myNode, AssetNode::input);
-    MArrayDataHandle inputArrayHandle = data.inputArrayValue(AssetNode::input);
 
     for (int i=0; i< myAssetInfo.maxGeoInputCount; i++)
     {
-	status = inputArrayHandle.jumpToElement(i);
+        MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
 	if(status)
 	{
-	    MDataHandle inputHandle = inputArrayHandle.inputValue();
-	    myAssetInputs->setInput(i, inputHandle);
+	    myAssetInputs->setInput(i, data, inputPlug);
 	}
 	else
 	{

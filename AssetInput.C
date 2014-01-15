@@ -4,7 +4,9 @@
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
 
+#include <maya/MDataBlock.h>
 #include <maya/MMatrix.h>
+#include <maya/MPlug.h>
 #include <maya/MString.h>
 
 #include <HAPI/HAPI.h>
@@ -76,12 +78,13 @@ void AssetInputs::setNumInputs(int numInputs)
 }
 
 void
-AssetInputs::setInput(int inputIdx, MDataHandle &dataHandle)
+AssetInputs::setInput(
+        int inputIdx,
+        MDataBlock &dataBlock,
+        const MPlug &plug
+        )
 {
-    prepareAssetInput(inputIdx, dataHandle);
-
-    MDataHandle transformDataHandle = dataHandle.child(AssetInputs::inputTransform);
-    MDataHandle geoDataHandle = dataHandle.child(AssetInputs::inputGeo);
+    prepareAssetInput(inputIdx, dataBlock, plug);
 
     AssetInput* &assetInput = myAssetInputs[inputIdx];
     if(!assetInput)
@@ -89,8 +92,12 @@ AssetInputs::setInput(int inputIdx, MDataHandle &dataHandle)
 	return;
     }
 
-    assetInput->setInputTransform(transformDataHandle);
-    assetInput->setInputGeo(geoDataHandle);
+    MPlug transformPlug = plug.child(AssetInputs::inputTransform);
+    MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
+    assetInput->setInputTransform(transformHandle);
+
+    MPlug geoPlug = plug.child(AssetInputs::inputGeo);
+    assetInput->setInputGeo(dataBlock, geoPlug);
 }
 
 void
@@ -100,8 +107,21 @@ AssetInputs::clearInput(int i)
 }
 
 void
-AssetInputs::prepareAssetInput(int inputIdx, MDataHandle &dataHandle)
+AssetInputs::prepareAssetInput(
+        int inputIdx,
+        MDataBlock &dataBlock,
+        const MPlug &plug
+        )
 {
+    MStatus status;
+
+    MDataHandle dataHandle = dataBlock.inputValue(plug, &status);
+    if(!status)
+    {
+        HAPI_DisconnectAssetGeometry(myAssetId, inputIdx);
+        return;
+    }
+
     MDataHandle geoDataHandle = dataHandle.child(AssetInputs::inputGeo);
 
     AssetInput* &assetInput = myAssetInputs[inputIdx];

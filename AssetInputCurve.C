@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include <maya/MDataBlock.h>
 #include <maya/MMatrix.h>
 #include <maya/MPointArray.h>
 #include <maya/MFnNurbsCurve.h>
@@ -49,8 +50,13 @@ AssetInputCurve::setInputTransform(MDataHandle &dataHandle)
 }
 
 void
-AssetInputCurve::setInputGeo(MDataHandle &dataHandle)
+AssetInputCurve::setInputGeo(
+        MDataBlock &dataBlock,
+        const MPlug &plug
+        )
 {
+    MDataHandle dataHandle = dataBlock.inputValue(plug);
+
     MObject inputMesh = dataHandle.asNurbsCurve();
     if(inputMesh.isNull())
     {

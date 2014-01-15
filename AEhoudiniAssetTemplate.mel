@@ -200,7 +200,7 @@ global proc houdiniAssetAdjustMulti(
     setUITemplate -popTemplate;
 }
 
-proc string[] getValidAssetInputs(string $objects[])
+proc int isSupportedInput(string $object)
 {
     string $supportedTypes[] = {
 	"houdiniAsset",
@@ -208,6 +208,19 @@ proc string[] getValidAssetInputs(string $objects[])
 	"nurbsCurve"
     };
 
+    for($supportedType in $supportedTypes)
+    {
+        if(`objectType -isAType $supportedType $object`)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+proc string[] getValidAssetInputs(string $objects[])
+{
     int $validInputsCount = 0;
     string $validAssetInputs[];
 
@@ -217,44 +230,31 @@ proc string[] getValidAssetInputs(string $objects[])
 
 	// check if the object is a supported node
 	if(!$found)
-	{
-	    int $isSupported = 0;
-
-	    for($supportedType in $supportedTypes)
-	    {
-		if(`objectType -isAType $supportedType $object`)
-		{
-		    $isSupported = 1;
-		    break;
-		}
-	    }
-
-	    if($isSupported)
-	    {
-		$validAssetInputs[$validInputsCount++] = $object;
-		$found = 1;
-	    }
-	}
+        {
+            if(isSupportedInput($object))
+            {
+                $validAssetInputs[$validInputsCount++] = $object;
+                $found = 1;
+            }
+        }
 
 	// check if there are any supported nodes in immediate children
 	if(!$found)
-	{
-	    string $tempObjects[] = `listRelatives
-		-fullPath
-		-shapes
-		-noIntermediate
-		-type "mesh"
-		-type "nurbsCurve"
-		$object`;
-	    if(size($tempObjects))
-	    {
-		for($tempObject in $tempObjects)
-		{
-		    $validAssetInputs[$validInputsCount++] = $tempObject;
-		}
-		$found = 1;
-	    }
-	}
+        {
+            string $tempObjects[] = `listRelatives
+                -fullPath
+                -shapes
+                -noIntermediate
+                $object`;
+            for($tempObject in $tempObjects)
+            {
+                if(isSupportedInput($tempObject))
+                {
+                    $validAssetInputs[$validInputsCount++] = $tempObject;
+                    $found = 1;
+                }
+            }
+        }
     }
 
     return $validAssetInputs;

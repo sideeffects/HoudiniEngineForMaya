@@ -6,6 +6,7 @@
 #include <maya/MDataHandle.h>
 
 class AssetInput;
+class MDataBlock;
 
 class AssetInputs
 {
@@ -17,11 +18,19 @@ class AssetInputs
 	~AssetInputs();
 
 	void setNumInputs(int numInputs);
-	void setInput(int i, MDataHandle &dataHandle);
+        void setInput(
+                int inputIdx,
+                MDataBlock &dataBlock,
+                const MPlug &plug
+                );
 	void clearInput(int i);
 
     private:
-	void prepareAssetInput(int inputIdx, MDataHandle &dataHandle);
+        void prepareAssetInput(
+                int inputIdx,
+                MDataBlock &dataBlock,
+                const MPlug &plug
+                );
 
     private:
 	int myAssetId;
@@ -55,7 +64,10 @@ class AssetInput
 	virtual AssetInputType assetInputType() const = 0;
 
 	virtual void setInputTransform(MDataHandle &dataHandle) = 0;
-	virtual void setInputGeo(MDataHandle &dataHandle) = 0;
+        virtual void setInputGeo(
+                MDataBlock &dataBlock,
+                const MPlug &plug
+                ) = 0;
 
     protected:
 	int myAssetId;

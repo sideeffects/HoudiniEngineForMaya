@@ -43,6 +43,7 @@
     <ClCompile Include="AssetInputAsset.C" />
     <ClCompile Include="AssetInputCurve.C" />
     <ClCompile Include="AssetInputMesh.C" />
+    <ClCompile Include="AssetInputParticle.C" />
     <ClCompile Include="AssetNode.C" />
     <ClCompile Include="AssetSubCommand.C" />
     <ClCompile Include="AssetSubCommandLoadAsset.C" />
@@ -67,6 +68,7 @@
     <ClInclude Include="AssetInputAsset.h" />
     <ClInclude Include="AssetInputCurve.h" />
     <ClInclude Include="AssetInputMesh.h" />
+    <ClInclude Include="assetinputparticle.h" />
     <ClInclude Include="AssetNode.h" />
     <ClInclude Include="AssetSubCommand.h" />
     <ClInclude Include="AssetSubCommandLoadAsset.h" />
@@ -167,7 +169,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\cygwin\home\damian\houdini\dev_d_x86\hfs\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenMaya.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenMaya.lib;OpenMayaFX.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>

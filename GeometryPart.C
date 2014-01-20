@@ -452,6 +452,15 @@ bufferToParticleArray(MDoubleArray &particleArray, const std::vector<float> &buf
 }
 
 static void
+bufferToParticleArray(MIntArray &particleArray, const std::vector<int> &buffer)
+{
+    for(unsigned int i = 0; i < particleArray.length(); i++)
+    {
+        particleArray[i] = buffer[i];
+    }
+}
+
+static void
 zeroParticleArray(MVectorArray &particleArray)
 {
     for(unsigned int i = 0; i < particleArray.length(); i++)
@@ -469,6 +478,15 @@ zeroParticleArray(MDoubleArray &particleArray)
     for(unsigned int i = 0; i < particleArray.length(); i++)
     {
         particleArray[i] = 0.0;
+    }
+}
+
+static void
+zeroParticleArray(MIntArray &particleArray)
+{
+    for(unsigned int i = 0; i < particleArray.length(); i++)
+    {
+        particleArray[i] = 0;
     }
 }
 
@@ -493,6 +511,18 @@ getParticleArray(
         )
 {
     particleArray = arrayDataFn.doubleArray(attrName);
+    particleArray.setLength(particleCount);
+}
+
+static void
+getParticleArray(
+        MIntArray &particleArray,
+        MFnArrayAttrsData &arrayDataFn,
+        const MString &attrName,
+        int particleCount
+        )
+{
+    particleArray = arrayDataFn.intArray(attrName);
     particleArray.setLength(particleCount);
 }
 
@@ -650,21 +680,96 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
             particleCount
             );
 
-    // rgbPP
-    convertParticleAttribute<MVectorArray>(
-            arrayDataFn, "rgbPP",
-            floatArray,
-            "Cd",
-            particleCount
-            );
+    // other attributes
+    int* attributeNames = new int[myPartInfo.pointAttributeCount];
+    HAPI_GetAttributeNames(myAssetId, myObjectId, myGeoId, myPartId,
+            HAPI_ATTROWNER_POINT,
+            attributeNames, myPartInfo.pointAttributeCount);
+    for(int i = 0; i < myPartInfo.pointAttributeCount; i++)
+    {
+        MString attributeName = Util::getString(attributeNames[i]);
 
-    // radiusPP
-    convertParticleAttribute<MDoubleArray>(
-            arrayDataFn, "radiusPP",
-            floatArray,
-            "pscale",
-            particleCount
-            );
+        // skip attributes that were done above already
+        if(attributeName == "id"
+                || attributeName == "count"
+                || attributeName == "P" // houdini name
+                || attributeName == "position"
+                || attributeName == "v" // houdini name
+                || attributeName == "velocity"
+                || attributeName == "force" // houdini name
+                || attributeName == "acceleration"
+                || attributeName == "worldPosition"
+                || attributeName == "worldVelocity"
+                || attributeName == "worldVelocityInObjectSpace"
+                || attributeName == "mass"
+                || attributeName == "birthTime"
+                || attributeName == "age"
+                || attributeName == "finalLifespanPP"
+                || attributeName == "life"
+                || attributeName == "lifespanPP"
+          )
+        {
+            continue;
+        }
+
+        // translate certain attributes into Maya names
+        MString translatedAttributeName;
+        if(attributeName == "Cd")
+        {
+            translatedAttributeName = "rgbPP";
+        }
+        else if(attributeName == "Alpha")
+        {
+            translatedAttributeName = "opacityPP";
+        }
+        else if(attributeName == "pscale")
+        {
+            translatedAttributeName = "radiusPP";
+        }
+        else
+        {
+            translatedAttributeName = attributeName;
+        }
+
+        HAPI_AttributeInfo attributeInfo;
+
+        HAPI_GetAttributeInfo(myAssetId, myObjectId, myGeoId, myPartId,
+                attributeName.asChar(), HAPI_ATTROWNER_POINT,
+                &attributeInfo);
+
+        // put the data into MFnArrayAttrsData
+        if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT
+                && attributeInfo.tupleSize == 3)
+        {
+            convertParticleAttribute<MVectorArray>(
+                    arrayDataFn, translatedAttributeName,
+                    floatArray,
+                    attributeName.asChar(),
+                    particleCount
+                    );
+        }
+        else if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT
+                && attributeInfo.tupleSize == 1)
+        {
+            convertParticleAttribute<MDoubleArray>(
+                    arrayDataFn, translatedAttributeName,
+                    floatArray,
+                    attributeName.asChar(),
+                    particleCount
+                    );
+        }
+        else if(attributeInfo.storage == HAPI_STORAGETYPE_INT
+                && attributeInfo.tupleSize == 1)
+        {
+            convertParticleAttribute<MIntArray>(
+                    arrayDataFn, translatedAttributeName,
+                    intArray,
+                    attributeName.asChar(),
+                    particleCount
+                    );
+        }
+    }
+    delete [] attributeNames;
 
     positionsHandle.setClean();
     arrayDataHandle.setClean();

@@ -527,6 +527,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     MDataHandle arrayDataHandle = dataHandle.child(AssetNode::outputPartParticleArrayData);
 
     std::vector<float> floatArray;
+    std::vector<int> intArray;
 
     int particleCount = myPartInfo.pointCount;
 
@@ -555,6 +556,23 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
 	arrayDataHandle.setMObject(arrayDataObj);
     }
 
+    // id
+    {
+        MDoubleArray idArray = arrayDataFn.doubleArray("id");
+        idArray.setLength(particleCount);
+        if(getAttributeData(intArray, "id", HAPI_ATTROWNER_POINT))
+        {
+            for(unsigned int i = 0; i < idArray.length(); i++)
+            {
+                idArray[i] = intArray[i];
+            }
+        }
+        else
+        {
+            zeroParticleArray(idArray);
+        }
+    }
+
     // count
     MDoubleArray countArray = arrayDataFn.doubleArray("count");
     countArray.setLength(1);
@@ -575,11 +593,60 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
         zeroParticleArray(velocityArray);
     }
 
+    // acceleration
+    convertParticleAttribute<MVectorArray>(
+            arrayDataFn, "acceleration",
+            floatArray,
+            "force",
+            particleCount
+            );
+
+    // worldPosition
+    arrayDataFn.vectorArray("worldPosition").copy(positions);
+
+    // worldVelocity
+    arrayDataFn.vectorArray("worldVelocity").copy(velocityArray);
+
+    // worldVelocityInObjectSpace
+    arrayDataFn.vectorArray("worldVelocityInObjectSpace").copy(velocityArray);
+
+    // mass
+    convertParticleAttribute<MDoubleArray>(
+            arrayDataFn, "mass",
+            floatArray,
+            "mass",
+            particleCount
+            );
+
+    // birthTime
+    convertParticleAttribute<MDoubleArray>(
+            arrayDataFn, "birthTime",
+            floatArray,
+            "birthTime",
+            particleCount
+            );
+
     // age
     convertParticleAttribute<MDoubleArray>(
             arrayDataFn, "age",
             floatArray,
             "age",
+            particleCount
+            );
+
+    // finalLifespanPP
+    convertParticleAttribute<MDoubleArray>(
+            arrayDataFn, "finalLifespanPP",
+            floatArray,
+            "finalLifespanPP",
+            particleCount
+            );
+
+    // lifespanPP
+    convertParticleAttribute<MDoubleArray>(
+            arrayDataFn, "lifespanPP",
+            floatArray,
+            "life",
             particleCount
             );
 

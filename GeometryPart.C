@@ -153,9 +153,54 @@ GeometryPart::setGeoInfo(HAPI_GeoInfo& info)
     myGeoInfo = info;
 }
 
+static
+HAPI_Result
+getAttributeDataWrapper(
+        int asset_id,
+        int object_id,
+        int geo_id,
+        int part_id,
+        const char* name,
+        HAPI_AttributeInfo* attr_info,
+        float* data,
+        int start, int length
+        )
+{
+    return HAPI_GetAttributeFloatData(
+            asset_id, object_id, geo_id, part_id,
+            name,
+            attr_info,
+            data,
+            start, length
+            );
+}
+
+static
+HAPI_Result
+getAttributeDataWrapper(
+        int asset_id,
+        int object_id,
+        int geo_id,
+        int part_id,
+        const char* name,
+        HAPI_AttributeInfo* attr_info,
+        int* data,
+        int start, int length
+        )
+{
+    return HAPI_GetAttributeIntData(
+            asset_id, object_id, geo_id, part_id,
+            name,
+            attr_info,
+            data,
+            start, length
+            );
+}
+
+template<typename T>
 bool
-GeometryPart::getAttributeFloatData(
-        std::vector<float> &floatArray,
+GeometryPart::getAttributeData(
+        std::vector<T> &array,
         const char* name,
         HAPI_AttributeOwner owner
         )
@@ -171,16 +216,16 @@ GeometryPart::getAttributeFloatData(
 
     if (!attr_info.exists)
     {
-        floatArray.clear();
+        array.clear();
         return false;
     }
 
-    floatArray.resize(attr_info.count * attr_info.tupleSize);
-    HAPI_GetAttributeFloatData(
+    array.resize(attr_info.count * attr_info.tupleSize);
+    getAttributeDataWrapper(
             myAssetId, myObjectId, myGeoId, myPartId,
             name,
             &attr_info,
-            &floatArray.front(),
+            &array.front(),
             0,
             attr_info.count
             );
@@ -404,7 +449,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
 
     MVectorArray positions = positionDataFn.array();
     {
-        getAttributeFloatData(floatArray, "P", HAPI_ATTROWNER_POINT);
+        getAttributeData(floatArray, "P", HAPI_ATTROWNER_POINT);
 	positions.setLength(floatArray.size()/3);
 	for(unsigned int i = 0; i < positions.length(); i++)
 	{
@@ -434,7 +479,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     // velocity
     MVectorArray velocityArray = arrayDataFn.vectorArray("velocity");
     {
-        getAttributeFloatData(floatArray, "v", HAPI_ATTROWNER_POINT);
+        getAttributeData(floatArray, "v", HAPI_ATTROWNER_POINT);
 	velocityArray.setLength(floatArray.size()/3);
 	for ( unsigned int i = 0; i < velocityArray.length(); i++ )
 	{
@@ -446,7 +491,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
 
     // rgbPP
     {
-        getAttributeFloatData(floatArray, "Cd", HAPI_ATTROWNER_POINT);
+        getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_POINT);
 	if(floatArray.size()/3 == positions.length())
 	{
 	    MVectorArray rgbPPArray = arrayDataFn.vectorArray("rgbPP");
@@ -462,7 +507,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
 
     // radiusPP
     {
-        getAttributeFloatData(floatArray, "pscale", HAPI_ATTROWNER_POINT);
+        getAttributeData(floatArray, "pscale", HAPI_ATTROWNER_POINT);
 	if(floatArray.size() == positions.length())
 	{
 	    MDoubleArray radiusPPArray = arrayDataFn.doubleArray("radiusPP");
@@ -477,7 +522,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     // age
     MDoubleArray ageArray = arrayDataFn.doubleArray("age");
     {
-        getAttributeFloatData(floatArray, "age", HAPI_ATTROWNER_POINT);
+        getAttributeData(floatArray, "age", HAPI_ATTROWNER_POINT);
 	ageArray.setLength(floatArray.size());
 	for ( unsigned int i = 0; i < ageArray.length(); i++ )
 	{
@@ -575,7 +620,7 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
     // vertex array
     MFloatPointArray vertexArray;
     {
-        getAttributeFloatData(floatArray, "P", HAPI_ATTROWNER_POINT);
+        getAttributeData(floatArray, "P", HAPI_ATTROWNER_POINT);
 
         // assume 3 tuple
         vertexArray.setLength(floatArray.size() / 3);
@@ -646,11 +691,11 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
     if(polygonCounts.length())
     {
         HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
-        if(getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_VERTEX))
+        if(getAttributeData(floatArray, "N", HAPI_ATTROWNER_VERTEX))
         {
             owner = HAPI_ATTROWNER_VERTEX;
         }
-        else if(getAttributeFloatData(floatArray, "N", HAPI_ATTROWNER_POINT))
+        else if(getAttributeData(floatArray, "N", HAPI_ATTROWNER_POINT))
         {
             owner = HAPI_ATTROWNER_POINT;
         }
@@ -697,11 +742,11 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
     if(polygonCounts.length())
     {
         HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
-        if(getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_VERTEX))
+        if(getAttributeData(floatArray, "uv", HAPI_ATTROWNER_VERTEX))
         {
             owner = HAPI_ATTROWNER_VERTEX;
         }
-        else if(getAttributeFloatData(floatArray, "uv", HAPI_ATTROWNER_POINT))
+        else if(getAttributeData(floatArray, "uv", HAPI_ATTROWNER_POINT))
         {
             owner = HAPI_ATTROWNER_POINT;
         }

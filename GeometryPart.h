@@ -37,8 +37,9 @@ class GeometryPart
 	MObject createVolume();
 	void    updateVolumeTransform(MDataHandle& handle);
 
-        bool getAttributeFloatData(
-                std::vector<float> &floatArray,
+        template<typename T>
+        bool getAttributeData(
+                std::vector<T> &array,
                 const char* name,
                 HAPI_AttributeOwner owner
                 );

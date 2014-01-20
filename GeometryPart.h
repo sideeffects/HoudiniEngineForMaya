@@ -9,6 +9,8 @@
 
 class Asset;
 
+class MFnArrayAttrsData;
+
 class GeometryPart
 {
     public:        
@@ -42,6 +44,15 @@ class GeometryPart
                 std::vector<T> &array,
                 const char* name,
                 HAPI_AttributeOwner owner
+                );
+
+        template<typename T, typename U>
+        void convertParticleAttribute(
+                MFnArrayAttrsData &arrayDataFn,
+                const MString &mayaName,
+                U &buffer,
+                const char* houdiniName,
+                int particleCount
                 );
 
     private:

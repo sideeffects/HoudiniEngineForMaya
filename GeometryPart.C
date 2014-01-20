@@ -430,6 +430,96 @@ GeometryPart::createCurves(MDataHandle &curvesHandle)
     curvesArrayHandle.set(curvesBuilder);
 }
 
+static void
+bufferToParticleArray(MVectorArray &particleArray, const std::vector<float> &buffer)
+{
+    for(unsigned int i = 0, j = 0; i < particleArray.length(); i++, j += 3)
+    {
+        MVector &vector = particleArray[i];
+        vector.x = buffer[j + 0];
+        vector.y = buffer[j + 1];
+        vector.z = buffer[j + 2];
+    }
+}
+
+static void
+bufferToParticleArray(MDoubleArray &particleArray, const std::vector<float> &buffer)
+{
+    for(unsigned int i = 0; i < particleArray.length(); i++)
+    {
+        particleArray[i] = buffer[i];
+    }
+}
+
+static void
+zeroParticleArray(MVectorArray &particleArray)
+{
+    for(unsigned int i = 0; i < particleArray.length(); i++)
+    {
+        MVector &vector = particleArray[i];
+        vector.x = 0.0;
+        vector.y = 0.0;
+        vector.z = 0.0;
+    }
+}
+
+static void
+zeroParticleArray(MDoubleArray &particleArray)
+{
+    for(unsigned int i = 0; i < particleArray.length(); i++)
+    {
+        particleArray[i] = 0.0;
+    }
+}
+
+static void
+getParticleArray(
+        MVectorArray &particleArray,
+        MFnArrayAttrsData &arrayDataFn,
+        const MString &attrName,
+        int particleCount
+        )
+{
+    particleArray = arrayDataFn.vectorArray(attrName);
+    particleArray.setLength(particleCount);
+}
+
+static void
+getParticleArray(
+        MDoubleArray &particleArray,
+        MFnArrayAttrsData &arrayDataFn,
+        const MString &attrName,
+        int particleCount
+        )
+{
+    particleArray = arrayDataFn.doubleArray(attrName);
+    particleArray.setLength(particleCount);
+}
+
+template<typename T, typename U>
+void
+GeometryPart::convertParticleAttribute(
+        MFnArrayAttrsData &arrayDataFn,
+        const MString &mayaName,
+        U &buffer,
+        const char* houdiniName,
+        int particleCount
+   )
+{
+    if(getAttributeData(buffer, houdiniName, HAPI_ATTROWNER_POINT))
+    {
+        T particleArray;
+        getParticleArray(particleArray, arrayDataFn, mayaName, particleCount);
+        bufferToParticleArray(particleArray, buffer);
+    }
+    else
+    {
+        T particleArray;
+        getParticleArray(particleArray, arrayDataFn, mayaName, particleCount);
+        zeroParticleArray(particleArray);
+    }
+}
+
 void
 GeometryPart::createParticle(MDataHandle &dataHandle)
 {
@@ -437,6 +527,8 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     MDataHandle arrayDataHandle = dataHandle.child(AssetNode::outputPartParticleArrayData);
 
     std::vector<float> floatArray;
+
+    int particleCount = myPartInfo.pointCount;
 
     // positions
     MObject positionsObj = positionsHandle.data();
@@ -450,13 +542,8 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     MVectorArray positions = positionDataFn.array();
     {
         getAttributeData(floatArray, "P", HAPI_ATTROWNER_POINT);
-	positions.setLength(floatArray.size()/3);
-	for(unsigned int i = 0; i < positions.length(); i++)
-	{
-	    positions[i].x = floatArray[i * 3 + 0];
-	    positions[i].y = floatArray[i * 3 + 1];
-	    positions[i].z = floatArray[i * 3 + 2];
-	}
+        positions.setLength(particleCount);
+        bufferToParticleArray(positions, floatArray);
     }
 
     // array data
@@ -471,64 +558,46 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
     // count
     MDoubleArray countArray = arrayDataFn.doubleArray("count");
     countArray.setLength(1);
-    countArray[0] = positions.length();
+    countArray[0] = particleCount;
 
     // position
     arrayDataFn.vectorArray("position").copy(positions);
 
     // velocity
-    MVectorArray velocityArray = arrayDataFn.vectorArray("velocity");
+    MVectorArray velocityArray;
+    getParticleArray(velocityArray, arrayDataFn, "velocity", particleCount);
+    if(getAttributeData(floatArray, "v", HAPI_ATTROWNER_POINT))
     {
-        getAttributeData(floatArray, "v", HAPI_ATTROWNER_POINT);
-	velocityArray.setLength(floatArray.size()/3);
-	for ( unsigned int i = 0; i < velocityArray.length(); i++ )
-	{
-	    velocityArray[i].x = floatArray[i * 3 + 0];
-	    velocityArray[i].y = floatArray[i * 3 + 1];
-	    velocityArray[i].z = floatArray[i * 3 + 2];
-	}
+        bufferToParticleArray(velocityArray, floatArray);
     }
-
-    // rgbPP
+    else
     {
-        getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_POINT);
-	if(floatArray.size()/3 == positions.length())
-	{
-	    MVectorArray rgbPPArray = arrayDataFn.vectorArray("rgbPP");
-	    rgbPPArray.setLength(floatArray.size()/3);
-	    for ( unsigned int i = 0; i < rgbPPArray.length(); i++ )
-	    {
-		rgbPPArray[i].x = floatArray[i * 3 + 0];
-		rgbPPArray[i].y = floatArray[i * 3 + 1];
-		rgbPPArray[i].z = floatArray[i * 3 + 2];
-	    }
-	}
-    }
-
-    // radiusPP
-    {
-        getAttributeData(floatArray, "pscale", HAPI_ATTROWNER_POINT);
-	if(floatArray.size() == positions.length())
-	{
-	    MDoubleArray radiusPPArray = arrayDataFn.doubleArray("radiusPP");
-	    radiusPPArray.setLength(floatArray.size());
-	    for ( unsigned int i = 0; i < radiusPPArray.length(); i++ )
-	    {
-		radiusPPArray[i] = floatArray[i];
-	    }
-	}
+        zeroParticleArray(velocityArray);
     }
 
     // age
-    MDoubleArray ageArray = arrayDataFn.doubleArray("age");
-    {
-        getAttributeData(floatArray, "age", HAPI_ATTROWNER_POINT);
-	ageArray.setLength(floatArray.size());
-	for ( unsigned int i = 0; i < ageArray.length(); i++ )
-	{
-	    ageArray[i] = floatArray[i];
-	}
-    }
+    convertParticleAttribute<MDoubleArray>(
+            arrayDataFn, "age",
+            floatArray,
+            "age",
+            particleCount
+            );
+
+    // rgbPP
+    convertParticleAttribute<MVectorArray>(
+            arrayDataFn, "rgbPP",
+            floatArray,
+            "Cd",
+            particleCount
+            );
+
+    // radiusPP
+    convertParticleAttribute<MDoubleArray>(
+            arrayDataFn, "radiusPP",
+            floatArray,
+            "pscale",
+            particleCount
+            );
 
     positionsHandle.setClean();
     arrayDataHandle.setClean();

@@ -1,15 +1,15 @@
-global string $houdiniEngineOTLsManager_loadedOTLFilePaths[];
+global string $houdiniEngineAssetLibraryManager_assetLibraryFilePaths[];
 
 global proc
-houdiniEngineOTLsManager_addLoadedFile(string $assetLibraryFilePath)
+houdiniEngineAssetLibraryManager_addLoadedFile(string $assetLibraryFilePath)
 {
-    global string $houdiniEngineOTLsManager_loadedOTLFilePaths[];
+    global string $houdiniEngineAssetLibraryManager_assetLibraryFilePaths[];
 
     // Maya 2012 doesn't have stringArrayFind
     int $index = -1;
-    for($i = 0; $i < size($houdiniEngineOTLsManager_loadedOTLFilePaths); $i++)
+    for($i = 0; $i < size($houdiniEngineAssetLibraryManager_assetLibraryFilePaths); $i++)
     {
-        if($assetLibraryFilePath == $houdiniEngineOTLsManager_loadedOTLFilePaths[$i])
+        if($assetLibraryFilePath == $houdiniEngineAssetLibraryManager_assetLibraryFilePaths[$i])
         {
             $index = $i;
             break;
@@ -19,39 +19,39 @@ houdiniEngineOTLsManager_addLoadedFile(string $assetLibraryFilePath)
     // does it already exist?
     if($index == -1)
     {
-        $houdiniEngineOTLsManager_loadedOTLFilePaths[size($houdiniEngineOTLsManager_loadedOTLFilePaths)] =
+        $houdiniEngineAssetLibraryManager_assetLibraryFilePaths[size($houdiniEngineAssetLibraryManager_assetLibraryFilePaths)] =
             $assetLibraryFilePath;
-        $houdiniEngineOTLsManager_loadedOTLFilePaths = `sort $houdiniEngineOTLsManager_loadedOTLFilePaths`;
+        $houdiniEngineAssetLibraryManager_assetLibraryFilePaths = `sort $houdiniEngineAssetLibraryManager_assetLibraryFilePaths`;
     }
 
 }
 
 global proc
-houdiniEngineOTLsManager_refreshAssetList()
+houdiniEngineAssetLibraryManager_refreshAssetList()
 {
-    global string $houdiniEngineOTLsManager_loadedOTLFilePaths[];
+    global string $houdiniEngineAssetLibraryManager_assetLibraryFilePaths[];
 
-    if(!`window -exists houdiniEngineOTLsManagerWindow`)
+    if(!`window -exists houdiniEngineAssetLibraryManagerWindow`)
     {
         return;
     }
 
     treeView -edit -removeAll houdiniEngineAssetTreeView;
 
-    for($otlFilePath in $houdiniEngineOTLsManager_loadedOTLFilePaths)
+    for($assetLibraryFilePath in $houdiniEngineAssetLibraryManager_assetLibraryFilePaths)
     {
         treeView -e
-            -addItem $otlFilePath ""
+            -addItem $assetLibraryFilePath ""
             houdiniEngineAssetTreeView;
 
-        for($asset in `houdiniAsset -listAssets $otlFilePath`)
+        for($asset in `houdiniAsset -listAssets $assetLibraryFilePath`)
         {
-            string $command = "houdiniAsset -loadAsset \"" + encodeString($otlFilePath) + "\""
+            string $command = "houdiniAsset -loadAsset \"" + encodeString($assetLibraryFilePath) + "\""
                 + " \"" + $asset + "\"";
 
-            string $itemName = ($otlFilePath + "," + $asset);
+            string $itemName = ($assetLibraryFilePath + "," + $asset);
             treeView -e
-                -addItem $itemName $otlFilePath
+                -addItem $itemName $assetLibraryFilePath
                 houdiniEngineAssetTreeView;
             treeView -e
                 -displayLabel $itemName $asset
@@ -61,7 +61,7 @@ houdiniEngineOTLsManager_refreshAssetList()
 }
 
 global proc
-houdiniEngineOTLsManager_loadAsset(string $item)
+houdiniEngineAssetLibraryManager_loadAsset(string $item)
 {
     // if the user double clicked on the OTL file, do nothing
     // check -itemExists because of treeView bug with displayLabel
@@ -78,10 +78,10 @@ houdiniEngineOTLsManager_loadAsset(string $item)
     //string $tokens[];
     //tokenize $item "," $tokens;
 
-    //string $otlFilePath = $tokens[0];
+    //string $assetLibraryFilePath = $tokens[0];
     //string $asset = $tokens[1];
 
-    string $otlFilePath;
+    string $assetLibraryFilePath;
     string $asset;
 
     // workaround the treeView bug
@@ -97,7 +97,7 @@ houdiniEngineOTLsManager_loadAsset(string $item)
 
             if(size($tokens) == 2 && $tokens[1] == $item)
             {
-                $otlFilePath = $tokens[0];
+                $assetLibraryFilePath = $tokens[0];
                 $asset = $tokens[1];
             }
         }
@@ -115,7 +115,7 @@ houdiniEngineOTLsManager_loadAsset(string $item)
 
             if(size($tokens) == 2 && $tokens[1] == $item)
             {
-                $otlFilePath = $tokens[0];
+                $assetLibraryFilePath = $tokens[0];
                 $asset = $tokens[1];
 
                 break;
@@ -129,22 +129,22 @@ houdiniEngineOTLsManager_loadAsset(string $item)
         return;
     }
 
-    houdiniAsset -loadAsset $otlFilePath $asset;
+    houdiniAsset -loadAsset $assetLibraryFilePath $asset;
 }
 
 global proc
-houdiniEngineOTLsManager()
+houdiniEngineAssetLibraryManager()
 {
-    if(`window -exists houdiniEngineOTLsManagerWindow`)
+    if(`window -exists houdiniEngineAssetLibraryManagerWindow`)
     {
-        showWindow houdiniEngineOTLsManagerWindow;
+        showWindow houdiniEngineAssetLibraryManagerWindow;
         return;
     }
 
     window
-        -title "OTLs Manager"
+        -title "Asset Library Manager"
         -menuBar true
-        houdiniEngineOTLsManagerWindow;
+        houdiniEngineAssetLibraryManagerWindow;
 
     // controls
     string $formLayout = `formLayout`;
@@ -159,17 +159,17 @@ houdiniEngineOTLsManager()
         $formLayout;
 
     treeView -e
-        -itemDblClickCommand ("houdiniEngineOTLsManager_loadAsset")
+        -itemDblClickCommand ("houdiniEngineAssetLibraryManager_loadAsset")
         houdiniEngineAssetTreeView;
 
     // menus
     menu -label "File";
         menuItem
             -label "Close"
-            -command ("evalDeferred \"deleteUI -window houdiniEngineOTLsManagerWindow\"");
+            -command ("evalDeferred \"deleteUI -window houdiniEngineAssetLibraryManagerWindow\"");
 
     // populate asset list
-    houdiniEngineOTLsManager_refreshAssetList;
+    houdiniEngineAssetLibraryManager_refreshAssetList;
 
     showWindow;
 }

@@ -1,4 +1,4 @@
-source houdiniEngineOTLsManager;
+source houdiniEngineAssetLibraryManager;
 
 global proc
 houdiniEngine_debugWindowMenuClick()
@@ -65,7 +65,7 @@ global proc
 houdiniEngine_loadAsset(string $assetLibraryFilePath, string $asset)
 {
     houdiniEngine_addRecentAsset $assetLibraryFilePath $asset;
-    houdiniEngineOTLsManager_addLoadedFile $assetLibraryFilePath;
+    houdiniEngineAssetLibraryManager_addLoadedFile $assetLibraryFilePath;
 
     houdiniAsset -loadAsset $assetLibraryFilePath $asset;
 }
@@ -430,7 +430,7 @@ houdiniEngineCreateUI()
     setParent -menu ..;
 
     menuItem -label "Asset Library Manager..."
-	-command "houdiniEngineOTLsManager";
+	-command "houdiniEngineAssetLibraryManager";
 
     menuItem -label "Get Assets from Orbolt..."
         -command "houdiniEngine_launchOrboltPageClick";

@@ -1,5 +1,3 @@
-global string $houdiniEngine_loadedOTLFilePaths[];
-
 source houdiniEngineOTLsManager;
 
 global proc
@@ -30,8 +28,6 @@ houdiniEngine_browseOTL()
 global proc
 houdiniEngine_loadOTL(string $otlFilePath)
 {
-    global string $houdiniEngine_loadedOTLFilePaths[];
-
     if(size(`houdiniAsset -listAssets $otlFilePath`) == 0)
     {
         return;
@@ -39,26 +35,7 @@ houdiniEngine_loadOTL(string $otlFilePath)
 
     houdiniEngine_addRecentOTLFile $otlFilePath;
 
-    // Maya 2012 doesn't have stringArrayFind
-    int $index = -1;
-    for($i = 0; $i < size($houdiniEngine_loadedOTLFilePaths); $i++)
-    {
-        if($otlFilePath == $houdiniEngine_loadedOTLFilePaths[$i])
-        {
-            $index = $i;
-            break;
-        }
-    }
-
-    // does it already exist?
-    if($index == -1)
-    {
-        $houdiniEngine_loadedOTLFilePaths[size($houdiniEngine_loadedOTLFilePaths)] =
-            $otlFilePath;
-        $houdiniEngine_loadedOTLFilePaths = `sort $houdiniEngine_loadedOTLFilePaths`;
-    }
-
-    houdiniEngineOTLsManager_refreshAssetList;
+    houdiniEngineOTLsManager_addLoadedFile $otlFilePath;
 
     houdiniEngine_instantiateAsset($otlFilePath);
 }

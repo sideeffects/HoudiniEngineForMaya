@@ -1,7 +1,35 @@
+global string $houdiniEngineOTLsManager_loadedOTLFilePaths[];
+
+global proc
+houdiniEngineOTLsManager_addLoadedFile(string $assetLibraryFilePath)
+{
+    global string $houdiniEngineOTLsManager_loadedOTLFilePaths[];
+
+    // Maya 2012 doesn't have stringArrayFind
+    int $index = -1;
+    for($i = 0; $i < size($houdiniEngineOTLsManager_loadedOTLFilePaths); $i++)
+    {
+        if($assetLibraryFilePath == $houdiniEngineOTLsManager_loadedOTLFilePaths[$i])
+        {
+            $index = $i;
+            break;
+        }
+    }
+
+    // does it already exist?
+    if($index == -1)
+    {
+        $houdiniEngineOTLsManager_loadedOTLFilePaths[size($houdiniEngineOTLsManager_loadedOTLFilePaths)] =
+            $assetLibraryFilePath;
+        $houdiniEngineOTLsManager_loadedOTLFilePaths = `sort $houdiniEngineOTLsManager_loadedOTLFilePaths`;
+    }
+
+}
+
 global proc
 houdiniEngineOTLsManager_refreshAssetList()
 {
-    global string $houdiniEngine_loadedOTLFilePaths[];
+    global string $houdiniEngineOTLsManager_loadedOTLFilePaths[];
 
     if(!`window -exists houdiniEngineOTLsManagerWindow`)
     {
@@ -10,7 +38,7 @@ houdiniEngineOTLsManager_refreshAssetList()
 
     treeView -edit -removeAll houdiniEngineAssetTreeView;
 
-    for($otlFilePath in $houdiniEngine_loadedOTLFilePaths)
+    for($otlFilePath in $houdiniEngineOTLsManager_loadedOTLFilePaths)
     {
         treeView -e
             -addItem $otlFilePath ""

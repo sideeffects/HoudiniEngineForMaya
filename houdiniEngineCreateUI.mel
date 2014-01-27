@@ -33,11 +33,41 @@ houdiniEngine_loadAssetLibrary(string $assetLibraryFilePath)
         return;
     }
 
-    houdiniEngine_addRecentAsset $assetLibraryFilePath;
+    string $assets[] = `houdiniAsset -listAssets $assetLibraryFilePath`;
+    if(size($assets) == 0)
+    {
+        return;
+    }
 
+    string $asset;
+    if(size($assets) == 1)
+    {
+        // just load the first asset
+        $asset = $assets[0];
+    }
+    else if(size($assets) > 1)
+    {
+        // popup a dialog for the user to choose
+        $asset = `layoutDialog
+            -title "Choose Asset to Instantiate"
+            -uiScript ("houdiniEngine_assetPicker"
+                + " \"" + $assetLibraryFilePath + "\""
+                + " \"The Asset Library contains multiple assets. Please choose one to instantiate.\"")`;
+    }
+
+    if(size($asset))
+    {
+        houdiniEngine_loadAsset($assetLibraryFilePath, $asset);
+    }
+}
+
+global proc
+houdiniEngine_loadAsset(string $assetLibraryFilePath, string $asset)
+{
+    houdiniEngine_addRecentAsset $assetLibraryFilePath $asset;
     houdiniEngineOTLsManager_addLoadedFile $assetLibraryFilePath;
 
-    houdiniEngine_instantiateAsset($assetLibraryFilePath);
+    houdiniAsset -loadAsset $assetLibraryFilePath $asset;
 }
 
 global proc
@@ -95,39 +125,10 @@ houdiniEngine_assetPicker(string $assetLibraryFilePath, string $message)
 }
 
 global proc
-houdiniEngine_instantiateAsset(string $assetLibraryFilePath)
+houdiniEngine_addRecentAsset(string $assetLibraryFilePath, string $asset)
 {
-    string $assets[] = `houdiniAsset -listAssets $assetLibraryFilePath`;
-    if(size($assets) == 0)
-    {
-        return;
-    }
+    string $newRecentAsset = $assetLibraryFilePath + "?" + $asset;
 
-    string $asset;
-    if(size($assets) == 1)
-    {
-        // just load the first asset
-        $asset = $assets[0];
-    }
-    else if(size($assets) > 1)
-    {
-        // popup a dialog for the user to choose
-        $asset = `layoutDialog
-            -title "Choose Asset to Instantiate"
-            -uiScript ("houdiniEngine_assetPicker"
-                + " \"" + $assetLibraryFilePath + "\""
-                + " \"The Asset Library contains multiple assets. Please choose one to instantiate.\"")`;
-    }
-
-    if(size($asset))
-    {
-        houdiniAsset -loadAsset $assetLibraryFilePath $asset;
-    }
-}
-
-global proc
-houdiniEngine_addRecentAsset(string $assetLibraryFilePath)
-{
     int $index = -1;
     if(`optionVar -exists houdiniEngine_recentAssets`)
     {
@@ -135,7 +136,7 @@ houdiniEngine_addRecentAsset(string $assetLibraryFilePath)
         string $recentAssets[] = `optionVar -q houdiniEngine_recentAssets`;
         for($i = 0; $i < size($recentAssets); $i++)
         {
-            if($assetLibraryFilePath == $recentAssets[$i])
+            if($newRecentAsset == $recentAssets[$i])
             {
                 $index = $i;
                 break;
@@ -147,11 +148,11 @@ houdiniEngine_addRecentAsset(string $assetLibraryFilePath)
     if($index != -1)
     {
         optionVar -removeFromArray houdiniEngine_recentAssets $index;
-        optionVar -stringValueAppend houdiniEngine_recentAssets $assetLibraryFilePath;
+        optionVar -stringValueAppend houdiniEngine_recentAssets $newRecentAsset;
     }
     else
     {
-        optionVar -stringValueAppend houdiniEngine_recentAssets $assetLibraryFilePath;
+        optionVar -stringValueAppend houdiniEngine_recentAssets $newRecentAsset;
     }
 
     int $numToRemove = `optionVar -arraySize houdiniEngine_recentAssets` - 20;
@@ -197,10 +198,17 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
 
     for($i = size($recentAssets); $i-- > 0;)
     {
+        string $recentAsset = $recentAssets[$i];
+
+        int $separator = size(match("^.*?", $recentAsset));
+        string $assetLibraryFilePath = substring($recentAsset, 1, $separator - 1);
+        string $assetType = substring($recentAsset, $separator + 1, size($recentAsset));
+
         menuItem
-            -label $recentAssets[$i]
-            -command ("houdiniEngine_loadAssetLibrary"
-                    + " \"" + encodeString($recentAssets[$i]) + "\"");
+            -label ($assetType + " - " + $assetLibraryFilePath)
+            -command ("houdiniEngine_loadAsset"
+                    + " \"" + encodeString($assetLibraryFilePath) + "\""
+                    + " \"" + encodeString($assetType) + "\"");
     }
 }
 

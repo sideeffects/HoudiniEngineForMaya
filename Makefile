@@ -98,14 +98,10 @@ endif
 
 # tools
 ifeq ($(OS), Linux)
-    ifndef CXX
-        CXX = g++
-    endif
+    CXX ?= g++
     LD = $(CXX)
 else ifeq ($(OS), Cygwin)
-    ifndef CXX
-        CXX = $(MSVC_SDK_BIN)/cl
-    endif
+    CXX ?= $(MSVC_SDK_BIN)/cl
     LD = $(MSVC_SDK_BIN)/link
 endif
 

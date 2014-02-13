@@ -362,7 +362,7 @@ Util::getAttributeStringData(int assetId,
     for (int j=0; j<size; j++){
         data[j] = 0;
     }
-    HAPI_GetAttributeStrData( assetId, objectId, geoId, partId, name.asChar(),
+    HAPI_GetAttributeStringData( assetId, objectId, geoId, partId, name.asChar(),
             &attr_info, data, 0, attr_info.count);
 
     for (int j=0; j<size; j++){

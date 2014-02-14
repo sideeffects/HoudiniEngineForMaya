@@ -23,14 +23,6 @@ class AssetInputs
                 MDataBlock &dataBlock,
                 const MPlug &plug
                 );
-	void clearInput(int i);
-
-    private:
-        void prepareAssetInput(
-                int inputIdx,
-                MDataBlock &dataBlock,
-                const MPlug &plug
-                );
 
     private:
 	int myAssetId;

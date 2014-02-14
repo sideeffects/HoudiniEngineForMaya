@@ -81,6 +81,7 @@ class AssetNode: public MPxTransform
     private:
         Asset* myAsset;
         bool myBuiltParms;
+        bool isAssetValid() const;
 	void createAsset();
 	void destroyAsset();
 

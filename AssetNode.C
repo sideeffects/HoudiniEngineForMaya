@@ -24,7 +24,9 @@
 #include "MayaTypeID.h"
 #include "util.h"
 
-MTypeId AssetNode::id(MayaTypeID_HoudiniAssetNode);
+MString AssetNode::typeName("houdiniAsset");
+MTypeId AssetNode::typeId(MayaTypeID_HoudiniAssetNode);
+
 MObject AssetNode::inTime;
 
 MObject AssetNode::otlFilePath;

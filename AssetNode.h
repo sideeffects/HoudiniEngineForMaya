@@ -72,7 +72,8 @@ class AssetNode: public MPxTransform
 	void rebuildAsset();
 
     public:
-        static MTypeId id;
+        static MString typeName;
+        static MTypeId typeId;
 
     private:
 	void setPlugDirty(const MPlug &plug);

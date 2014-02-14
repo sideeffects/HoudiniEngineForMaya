@@ -44,6 +44,32 @@ HAPIError::what() const throw()
 //=============================================================================
 // Util
 //=============================================================================
+void
+Util::displayInfoForNode(
+        const MString &typeName,
+        const MString &message
+        )
+{
+    MGlobal::displayInfo(typeName + ": " + message);
+}
+
+void
+Util::displayWarningForNode(
+        const MString &typeName,
+        const MString &message
+        )
+{
+    MGlobal::displayWarning(typeName + ": " + message);
+}
+
+void
+Util::displayErrorForNode(
+        const MString &typeName,
+        const MString &message
+        )
+{
+    MGlobal::displayError(typeName + ": " + message);
+}
 
 MString
 Util::getString(int handle)

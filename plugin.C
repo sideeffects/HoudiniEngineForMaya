@@ -125,8 +125,8 @@ initializePlugin(MObject obj)
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerTransform(
-	    "houdiniAsset",
-	    AssetNode::id,
+	    AssetNode::typeName,
+	    AssetNode::typeId,
 	    AssetNode::creator,
 	    AssetNode::initialize,
 	    MPxTransformationMatrix::creator,
@@ -136,8 +136,8 @@ initializePlugin(MObject obj)
 
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
-	    "houdiniFluidVelocityConvert",
-	    FluidVelocityConvert::id,
+	    FluidVelocityConvert::typeName,
+	    FluidVelocityConvert::typeId,
 	    FluidVelocityConvert::creator,
 	    FluidVelocityConvert::initialize
 	    );
@@ -156,11 +156,11 @@ uninitializePlugin(MObject obj)
     MStatus status;
     MFnPlugin plugin(obj);
     
-    status = plugin.deregisterNode(AssetNode::id);
+    status = plugin.deregisterNode(AssetNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
 #if MAYA_API_VERSION >= 201400
-    status = plugin.deregisterNode(FluidVelocityConvert::id);
+    status = plugin.deregisterNode(FluidVelocityConvert::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 #endif
 

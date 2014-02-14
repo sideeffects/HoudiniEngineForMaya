@@ -7,6 +7,7 @@
 #include <maya/MDataBlock.h>
 #include <maya/MMatrix.h>
 #include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
 #include <maya/MString.h>
 
 #include <HAPI/HAPI.h>
@@ -88,16 +89,39 @@ AssetInputs::setInput(
 {
     MStatus status;
 
-    MDataHandle dataHandle = dataBlock.inputValue(plug, &status);
-    if(!status)
+    bool isValidInput = true;
+
+    MPlug inputGeoPlug = plug.child(AssetInputs::inputGeo);
+
+    // Check if the plug is actually connected. The MDataHandle could contain
+    // valid geometry from previous connection.
+    if(isValidInput)
     {
-        HAPI_DisconnectAssetGeometry(myAssetId, inputIdx);
-        return;
+        // is the inputGeo connected
+        MPlugArray plugArray;
+        inputGeoPlug.connectedTo(plugArray, true, false);
+
+        isValidInput = plugArray.length() == 1;
     }
 
-    MDataHandle geoDataHandle = dataHandle.child(AssetInputs::inputGeo);
+    MDataHandle geoDataHandle;
+    if(isValidInput)
+    {
+        // has valid data
+        geoDataHandle = dataBlock.inputValue(inputGeoPlug, &status);
+
+        isValidInput = status;
+    }
 
     AssetInput* &assetInput = myAssetInputs[inputIdx];
+
+    if(!isValidInput)
+    {
+        HAPI_DisconnectAssetGeometry(myAssetId, inputIdx);
+	delete assetInput;
+	assetInput = NULL;
+        return;
+    }
 
     // determine the new input type
     AssetInput::AssetInputType newAssetInputType = AssetInput::AssetInputType_Invalid;
@@ -136,10 +160,12 @@ AssetInputs::setInput(
 	return;
     }
 
+    // set input transform
     MPlug transformPlug = plug.child(AssetInputs::inputTransform);
     MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
     assetInput->setInputTransform(transformHandle);
 
+    // set input geo
     MPlug geoPlug = plug.child(AssetInputs::inputGeo);
     assetInput->setInputGeo(dataBlock, geoPlug);
 }

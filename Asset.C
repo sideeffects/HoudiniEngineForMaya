@@ -587,6 +587,11 @@ Asset::computeGeometryObjects(
 
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
+    if(objectsBuilder.elementCount() != myNumObjects)
+    {
+        needToSyncOutputs = true;
+    }
+
     for (int ii = 0; ii < myNumObjects; ii++)
     {
         Object * obj = myObjects[ ii ];        

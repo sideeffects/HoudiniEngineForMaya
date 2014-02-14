@@ -46,6 +46,19 @@ class HAPIError: public std::exception
 
 class Util {
     public:
+        static void displayInfoForNode(
+                const MString &typeName,
+                const MString &message
+                );
+        static void displayWarningForNode(
+                const MString &typeName,
+                const MString &message
+                );
+        static void displayErrorForNode(
+                const MString &typeName,
+                const MString &message
+                );
+
         static MString getString(int handle);
 	static MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
 	static MStringArray getAttributeStringData(int assetId, int objectId,

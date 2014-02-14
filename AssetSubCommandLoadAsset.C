@@ -29,7 +29,7 @@ AssetSubCommandLoadAsset::doIt()
     MStatus status;
 
     // create houdiniAsset node
-    MObject assetNode = myDagModifier.createNode(AssetNode::id, MObject::kNullObj, &status);
+    MObject assetNode = myDagModifier.createNode(AssetNode::typeId, MObject::kNullObj, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node

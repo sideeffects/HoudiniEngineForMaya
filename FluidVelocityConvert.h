@@ -30,7 +30,8 @@ public:
     static void* creator();
     static MStatus initialize();
 
-    static MTypeId id;
+    static MString typeName;
+    static MTypeId typeId;
 
     static MObject resolution;
 

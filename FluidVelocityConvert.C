@@ -13,7 +13,8 @@
 #include <maya/MObject.h>
 
 
-MTypeId FluidVelocityConvert::id = MayaTypeID_HoudiniFluidVelocityConvert;
+MString FluidVelocityConvert::typeName("houdiniFluidVelocityConvert");
+MTypeId FluidVelocityConvert::typeId(MayaTypeID_HoudiniFluidVelocityConvert);
 
 MObject FluidVelocityConvert::resolution;
 

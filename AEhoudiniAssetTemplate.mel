@@ -569,8 +569,9 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
     if ($inputAttr != "")
     {
         editorTemplate -beginLayout "Inputs" -collapse false;
-        editorTemplate -callCustom "AEhoudiniAssetInputsNew" "AEhoudiniAssetInputsReplace"
-            $inputAttr;
+
+            editorTemplate -callCustom "AEhoudiniAssetInputsNew" "AEhoudiniAssetInputsReplace"
+                $inputAttr;
        
         editorTemplate -endLayout;
     }
@@ -590,15 +591,15 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
 
     editorTemplate -beginLayout "Sync Options" -collapse false;
 
-    editorTemplate -addControl "autoSyncOutputs";
-    editorTemplate -addControl "useInstancerNode";
+        editorTemplate -addControl "autoSyncOutputs";
+        editorTemplate -addControl "useInstancerNode";
 
     editorTemplate -endLayout;
 
     editorTemplate -beginLayout "Maya Transform Attributes";
 
-    AEtransformMain $nodeName;
-    AEtransformNoScroll $nodeName;
+        AEtransformMain $nodeName;
+        AEtransformNoScroll $nodeName;
 
     editorTemplate -endLayout;
 

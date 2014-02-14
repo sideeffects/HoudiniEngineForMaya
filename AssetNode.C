@@ -1049,17 +1049,26 @@ AssetNode::setInternalValueInContext(
 {
     MStatus status;
 
-    if(plug == AssetNode::otlFilePath)
+    if(plug == AssetNode::otlFilePath
+            || plug == AssetNode::assetName)
     {
-	myOTLFilePath = dataHandle.asString();
+        if(plug == AssetNode::otlFilePath)
+        {
+            myOTLFilePath = dataHandle.asString();
+        }
+        else if(plug == AssetNode::assetName)
+        {
+            myAssetName = dataHandle.asString();
+        }
 
-	return true;
-    }
-    else if(plug == AssetNode::assetName)
-    {
-	myAssetName = dataHandle.asString();
+        // Create the Asset object as early as possible. We may need it before
+        // the first compute. For example, Maya may call internalArrayCount.
+        if(isAssetValid())
+        {
+            createAsset();
+        }
 
-	return true;
+        return true;
     }
 
     // handle setting multiparm length
@@ -1097,8 +1106,9 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
 {
     if(plug == AssetNode::input)
     {
-	if(!myAsset)
+        if(!isAssetValid())
 	{
+            Util::displayWarningForNode(typeName, "Attempting to get input array size with an invalid asset.");
 	    return 0;
 	}
 
@@ -1128,16 +1138,20 @@ AssetNode::getAsset()
     return myAsset;
 }
 
+bool
+AssetNode::isAssetValid() const
+{
+    return myAsset != NULL
+        && myAsset->getOTLFilePath() == myOTLFilePath
+        && myAsset->getAssetName() == myAssetName;
+}
+
 void
 AssetNode::createAsset()
 {
     MStatus status;
 
-    if(
-            myAsset != NULL
-            && myAsset->getOTLFilePath() == myOTLFilePath
-            && myAsset->getAssetName() == myAssetName
-      )
+    if(isAssetValid())
     {
         return;
     }

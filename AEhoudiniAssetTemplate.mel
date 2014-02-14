@@ -560,9 +560,6 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
 {
     editorTemplate -beginScrollLayout;
 
-    editorTemplate -addControl "otlFilePath";
-    editorTemplate -addControl "assetName";
-
     editorTemplate -callCustom "AEhoudiniAssetOperationNew" "AEhoudiniAssetOperationReplace"
 	"unused";
 
@@ -579,6 +576,17 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
     }
 
     editorTemplate -callCustom "AEhoudiniAssetParmNew" "AEhoudiniAssetParmReplace" "houdiniAssetParm";
+
+    editorTemplate -beginLayout "Asset Information" -collapse false;
+
+        editorTemplate
+            -label "Asset Type"
+            -addControl "assetName";
+        editorTemplate
+            -label "File Path"
+            -addControl "otlFilePath";
+
+    editorTemplate -endLayout;
 
     editorTemplate -beginLayout "Sync Options" -collapse false;
 

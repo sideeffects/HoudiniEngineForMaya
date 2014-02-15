@@ -86,35 +86,6 @@ AssetInputs::setInput(
         const MPlug &plug
         )
 {
-    prepareAssetInput(inputIdx, dataBlock, plug);
-
-    AssetInput* &assetInput = myAssetInputs[inputIdx];
-    if(!assetInput)
-    {
-	return;
-    }
-
-    MPlug transformPlug = plug.child(AssetInputs::inputTransform);
-    MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
-    assetInput->setInputTransform(transformHandle);
-
-    MPlug geoPlug = plug.child(AssetInputs::inputGeo);
-    assetInput->setInputGeo(dataBlock, geoPlug);
-}
-
-void
-AssetInputs::clearInput(int i)
-{
-    HAPI_DisconnectAssetGeometry(myAssetId, i);
-}
-
-void
-AssetInputs::prepareAssetInput(
-        int inputIdx,
-        MDataBlock &dataBlock,
-        const MPlug &plug
-        )
-{
     MStatus status;
 
     MDataHandle dataHandle = dataBlock.inputValue(plug, &status);
@@ -159,6 +130,18 @@ AssetInputs::prepareAssetInput(
     {
 	assetInput = AssetInput::createAssetInput(myAssetId, inputIdx, newAssetInputType);
     }
+
+    if(!assetInput)
+    {
+	return;
+    }
+
+    MPlug transformPlug = plug.child(AssetInputs::inputTransform);
+    MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
+    assetInput->setInputTransform(transformHandle);
+
+    MPlug geoPlug = plug.child(AssetInputs::inputGeo);
+    assetInput->setInputGeo(dataBlock, geoPlug);
 }
 
 AssetInput::AssetInput(int assetId, int inputIdx) :

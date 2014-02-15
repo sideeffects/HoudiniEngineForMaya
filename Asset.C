@@ -495,14 +495,9 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
     for (int i=0; i< myAssetInfo.maxGeoInputCount; i++)
     {
         MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
-	if(status)
-	{
-	    myAssetInputs->setInput(i, data, inputPlug);
-	}
-	else
-	{
-	    myAssetInputs->clearInput(i);
-	}
+        CHECK_MSTATUS(status);
+
+        myAssetInputs->setInput(i, data, inputPlug);
     }
 }
 

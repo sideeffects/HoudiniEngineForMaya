@@ -149,8 +149,14 @@ else ifeq ($(OS), Cygwin)
     # 4407: cast between different pointer to member representations, compiler may generate incorrect code
     WARNINGERROR = -we4265 -we4700 -we4715 -we4717 -we4263 -we4266 -we4390 \
 		   -we4407
+    # -- DISABLED WARNINGS --
+    # 4100: unreferenced formal parameter
+    # 4244: conversion of floating point type possible loss of data
+    # 4267: conversion of integer type possible loss of data
+    # 4389: signed/unsigned mismatch
+    WARNINGDISABLE = -wd4100 -wd4244 -wd4267 -wd4389
 
-    CXXFLAGS += -W4 $(WARNINGENABLE) $(WARNINGERROR)
+    CXXFLAGS += -W4 $(WARNINGENABLE) $(WARNINGERROR) $(WARNINGDISABLE)
     CXXFLAGS += -D_CRT_SECURE_NO_WARNINGS
 
     CPPFLAGS += -I$(MSVC_SDK_INCLUDE) -I$(WIN32_SDK_INCLUDE)

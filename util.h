@@ -117,6 +117,11 @@ class Util {
                 virtual void popMultiparm();
 
                 virtual void leaf(const HAPI_ParmInfo &parmInfo);
+
+	    private:
+		// This class is not copyable so these are not implemented
+		WalkParmOperation(const WalkParmOperation &);
+		WalkParmOperation& operator=(const WalkParmOperation &);
         };
         static void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
 };

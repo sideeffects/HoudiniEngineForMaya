@@ -215,7 +215,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 case HAPI_PARMTYPE_INT:
                 case HAPI_PARMTYPE_BUTTON:
                 case HAPI_PARMTYPE_FLOAT:
-                case HAPI_PARMTYPE_COLOUR:
+                case HAPI_PARMTYPE_COLOR:
                 case HAPI_PARMTYPE_TOGGLE:
                     attrObj = createNumericAttr(parmInfo);
                     break;
@@ -299,7 +299,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
             type = MFnNumericData::kInt;
             break;
         case HAPI_PARMTYPE_FLOAT:
-        case HAPI_PARMTYPE_COLOUR:
+        case HAPI_PARMTYPE_COLOR:
             type = MFnNumericData::kFloat;
             break;
         default:
@@ -311,7 +311,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
         return result;
     }
 
-    if(parm.type == HAPI_PARMTYPE_COLOUR
+    if(parm.type == HAPI_PARMTYPE_COLOR
             && parm.size == 3)
     {
         result = nAttr.createColor(attrName, attrName);

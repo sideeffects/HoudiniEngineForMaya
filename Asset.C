@@ -789,7 +789,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 switch(parmInfo.type)
                 {
                     case HAPI_PARMTYPE_FLOAT:
-                    case HAPI_PARMTYPE_COLOUR:
+                    case HAPI_PARMTYPE_COLOR:
                         {
                             float* values = new float[parmInfo.size];
                             HAPI_GetParmFloatValues(myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
@@ -1023,7 +1023,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 switch(parmInfo.type)
                 {
                     case HAPI_PARMTYPE_FLOAT:
-                    case HAPI_PARMTYPE_COLOUR:
+                    case HAPI_PARMTYPE_COLOR:
                         {
                             float * values = new float[parmInfo.size];
                             if (parmInfo.size == 1)

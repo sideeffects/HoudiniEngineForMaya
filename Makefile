@@ -205,6 +205,8 @@ MELFILES = AEhoudiniAssetTemplate.mel \
 	   houdiniEngineCreateUI.mel \
 	   houdiniEngineDeleteUI.mel \
 	   houdiniEngineAssetLibraryManager.mel \
+	   houdiniEngineUtils.mel \
+	   houdiniEngineAssetSync.mel \
 	   performAssetSync.mel
 
 OBJ_DIR = .obj/maya$(MAYA_VERSION)

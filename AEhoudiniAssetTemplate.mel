@@ -366,7 +366,7 @@ AEhoudiniAssetOperationReplace(string $attr)
     string $nodeName = plugNode($attr);
 
     button -e
-	-c ("houdiniAsset -sync " + $nodeName)
+	-c ("houdiniEngine_syncAsset " + $nodeName)
 	syncButton;
 
     button -e

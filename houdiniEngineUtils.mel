@@ -1,0 +1,16 @@
+global proc string[]
+houdiniEngine_getSelectedAssetNodes()
+{
+    string $selections[] = `ls -selection`;
+
+    string $assetNodes[];
+    for($selection in $selections)
+    {
+        if(`objectType -isAType "houdiniAsset" $selection`)
+        {
+            $assetNodes[size($assetNodes)] = $selection;
+        }
+    }
+
+    return $assetNodes;
+}

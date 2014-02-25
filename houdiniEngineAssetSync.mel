@@ -1,0 +1,46 @@
+global proc
+houdiniEngine_syncSelectedAsset()
+{
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) < 1)
+    {
+        error("Please select at least one houdiniAsset node to sync.");
+    }
+
+    for($assetNode in $assetNodes)
+    {
+        houdiniEngine_syncAsset($assetNode);
+    }
+}
+
+proc
+syncAsset(string $assetNode, int $syncAttributes, int $syncOutputs)
+{
+    string $cmd = "houdiniAsset ";
+
+    if($syncAttributes)
+    {
+        $cmd += "-syncAttributes ";
+    }
+
+    if($syncOutputs)
+    {
+        $cmd += "-syncOutputs ";
+    }
+
+    $cmd += "-sync " + $assetNode;
+
+    eval($cmd);
+}
+
+global proc
+houdiniEngine_syncAssetOutput(string $assetNode)
+{
+    syncAsset($assetNode, 0, 1);
+}
+
+global proc
+houdiniEngine_syncAsset(string $assetNode)
+{
+    syncAsset($assetNode, 0, 0);
+}

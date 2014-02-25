@@ -971,7 +971,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 	myAsset->compute(outputPlug, data, needToSyncOutputs);
         if(autoSyncOutputs && needToSyncOutputs)
         {
-            MGlobal::executeCommandOnIdle("houdiniAsset -sync " + assetNodeFn.name() + " -syncOutputs");
+            MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.name());
         }
 
 	myResultsClean = true;

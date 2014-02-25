@@ -33,7 +33,6 @@
     <None Include="houdiniEngineCreateUI.mel" />
     <None Include="houdiniEngineDeleteUI.mel" />
     <None Include="houdiniEngineOTLsManager.mel" />
-    <None Include="performAssetSync.mel" />
     <None Include="userSetup.mel" />
   </ItemGroup>
   <ItemGroup>

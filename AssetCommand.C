@@ -26,8 +26,8 @@
 #define kSyncAttributesFlagLong "-syncAttributes"
 #define kSyncOutputsFlag "-so"
 #define kSyncOutputsFlagLong "-syncOutputs"
-#define kSyncOnlyVisibleFlag "-sov"
-#define kSyncOnlyVisibleFlagLong "-syncOnlyVisible"
+#define kSyncHiddenFlag "-shi"
+#define kSyncHiddenFlagLong "-syncHidden"
 #define kSyncTemplatedGeosFlag "-stm"
 #define kSyncTemplatedGeosFlagLong "-syncTemplatedGeos"
 
@@ -130,9 +130,9 @@ AssetCommand::newSyntax()
     CHECK_MSTATUS(syntax.addFlag(kSyncAttributesFlag, kSyncAttributesFlagLong));
     CHECK_MSTATUS(syntax.addFlag(kSyncOutputsFlag, kSyncOutputsFlagLong));
 
-    // -syncOnlyVisible will cause only those objects that are visible to be sync'ed
-    CHECK_MSTATUS(syntax.addFlag(kSyncOnlyVisibleFlag, 
-				 kSyncOnlyVisibleFlagLong, 
+    // -syncHidden will cause hidden objects to be sync'ed
+    CHECK_MSTATUS(syntax.addFlag(kSyncHiddenFlag,
+				 kSyncHiddenFlagLong,
 				 MSyntax::kNoArg));
 
 
@@ -283,16 +283,16 @@ AssetCommand::parseArgs(const MArgList &args)
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 	}
 
-	bool syncOnlyVisible = false;
-	if( argData.isFlagSet( kSyncOnlyVisibleFlag ) )
-	    syncOnlyVisible = true;
+	bool syncHidden = false;
+	if( argData.isFlagSet( kSyncHiddenFlag ) )
+	    syncHidden = true;
 
         bool syncTemplatedGeos = false;
 	if( argData.isFlagSet( kSyncTemplatedGeosFlag ) )
 	    syncTemplatedGeos = true;
 
 	AssetSubCommandSync* subCommand = new AssetSubCommandSync(
-		assetNodeObj, syncOnlyVisible, syncTemplatedGeos
+		assetNodeObj, syncHidden, syncTemplatedGeos
 		);
 
 	if(argData.isFlagSet(kSyncAttributesFlag))

@@ -101,6 +101,8 @@ class AssetNode: public MPxTransform
         static MObject assetType;
 
         static MObject autoSyncOutputs;
+        static MObject outputHiddenObjects;
+        static MObject outputTemplateObjects;
 
         static MObject input;
 

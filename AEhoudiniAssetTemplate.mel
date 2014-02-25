@@ -556,6 +556,54 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
     }
 }
 
+global proc AEhoudiniAssetOptionsNew(string $attr)
+{
+    string $nodeName = plugNode($attr);
+
+    attrControlGrp
+        -attribute ($nodeName + ".autoSyncOutputs")
+        autoSyncOutputs;
+
+    attrControlGrp
+        -attribute ($nodeName + ".useInstancerNode")
+        useInstancerNode;
+
+    attrControlGrp
+        -attribute ($nodeName + ".outputHiddenObjects")
+        outputHiddenObjects;
+
+    attrControlGrp
+        -attribute ($nodeName + ".outputTemplateObjects")
+        outputTemplateObjects;
+
+    AEhoudiniAssetOptionsReplace $attr;
+}
+
+global proc AEhoudiniAssetOptionsReplace(string $attr)
+{
+    string $nodeName = plugNode($attr);
+
+    attrControlGrp -e
+        -attribute ($nodeName + ".autoSyncOutputs")
+        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
+        autoSyncOutputs;
+
+    attrControlGrp -e
+        -attribute ($nodeName + ".useInstancerNode")
+        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
+        useInstancerNode;
+
+    attrControlGrp -e
+        -attribute ($nodeName + ".outputHiddenObjects")
+        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
+        outputHiddenObjects;
+
+    attrControlGrp -e
+        -attribute ($nodeName + ".outputTemplateObjects")
+        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
+        outputTemplateObjects;
+}
+
 global proc AEhoudiniAssetTemplate( string $nodeName )
 {
     editorTemplate -beginScrollLayout;
@@ -591,10 +639,12 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
 
     editorTemplate -beginLayout "Asset Options" -collapse false;
 
-        editorTemplate -addControl "autoSyncOutputs";
-        editorTemplate -addControl "useInstancerNode";
-        editorTemplate -addControl "outputHiddenObjects";
-        editorTemplate -addControl "outputTemplateObjects";
+        editorTemplate -callCustom "AEhoudiniAssetOptionsNew" "AEhoudiniAssetOptionsReplace" "unused";
+
+        editorTemplate -suppress "autoSyncOutputs";
+        editorTemplate -suppress "useInstancerNode";
+        editorTemplate -suppress "outputHiddenObjects";
+        editorTemplate -suppress "outputTemplateObjects";
 
     editorTemplate -endLayout;
 

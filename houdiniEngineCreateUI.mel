@@ -1,4 +1,6 @@
 source houdiniEngineAssetLibraryManager;
+source houdiniEngineAssetSync;
+source houdiniEngineUtils;
 
 global proc
 houdiniEngine_debugWindowMenuClick()
@@ -213,40 +215,6 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
 }
 
 global proc
-houdiniEngine_syncAssetOutput(int $syncHidden, int $syncTemplated)
-{
-    string $currSels[] = `ls -sl`;
-    if( size($currSels) < 1 )
-    {
-	error("Please select a houdiniAsset node to sync the output.");
-    }
-    string $currSel = $currSels[0];
-    string $nodeTypeOfSel = `nodeType $currSel`;
-    if( $nodeTypeOfSel == "houdiniAsset" )
-    {
-	string $children[] = `listRelatives -c -pa $currSel`;
-	for( $ii = 0; $ii < size($children); $ii++ )
-	{
-	    delete $children[$ii];
-	}
-	string $cmd = "houdiniAsset";
-	if( $syncHidden )
-	    $cmd = $cmd + " -syncHidden";
-
-        if( $syncTemplated )
-            $cmd = $cmd + " -syncTemplatedGeos";
-
-	$cmd = $cmd + " -sync ";
-	$cmd = $cmd + $currSel;
-	evalEcho($cmd);
-    }
-    else
-    {
-	error("Please select a houdiniAsset node to sync the output.");
-    }
-}
-
-global proc
 houdiniEngine_reloadAsset(string $asset)
 {
     string $assetLibraryFilePath = `getAttr ($asset + ".otlFilePath")`;
@@ -437,10 +405,8 @@ houdiniEngineCreateUI()
 
     menuItem -divider true;
 
-    menuItem -label "Sync Asset Output"
-	-command "performAssetSync 0";
-    menuItem -optionBox true
-	-command "performAssetSync 1";    
+    menuItem -label "Sync Asset"
+	-command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadAssetOutputMenuClick";
     menuItem -label "Save Underlying Houdini Scene..." 

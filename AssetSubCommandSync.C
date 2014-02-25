@@ -13,16 +13,14 @@
 #include "AssetSyncOutputInstance.h"
 
 AssetSubCommandSync::AssetSubCommandSync(
-	const MObject &assetNodeObj,
-	const bool syncHidden,
-        const bool syncTemplatedGeos
+        const MObject &assetNodeObj
 	) :
     AssetSubCommandAsset(assetNodeObj),
     mySyncAll(true),
     mySyncAttributes(false),
     mySyncOutputs(false),
-    mySyncHidden( syncHidden ),
-    mySyncTemplatedGeos( syncTemplatedGeos )
+    mySyncOutputHidden(false),
+    mySyncOutputTemplatedGeos(false)
 {
 }
 
@@ -49,6 +47,18 @@ AssetSubCommandSync::setSyncOutputs()
 {
     mySyncAll = false;
     mySyncOutputs = true;
+}
+
+void
+AssetSubCommandSync::setSyncOutputHidden()
+{
+    mySyncOutputHidden = true;
+}
+
+void
+AssetSubCommandSync::setSyncOutputTemplatedGeos()
+{
+    mySyncOutputTemplatedGeos = true;
 }
 
 MStatus
@@ -108,10 +118,10 @@ AssetSubCommandSync::doIt()
             MPlug instancedPlug = elemPlug.child( AssetNode::outputIsInstanced );
             bool instanced = instancedPlug.asBool();
 
-            if( !mySyncHidden || visible || instanced )
+            if( mySyncOutputHidden || visible || instanced )
             {
                 AssetSubCommand* syncOutput = new AssetSyncOutputObject(elemPlug, 
-						myAssetNodeObj, visible, mySyncTemplatedGeos );
+                        myAssetNodeObj, visible, mySyncOutputTemplatedGeos );
                 syncOutput->doIt();
 
                 myAssetSyncs.push_back(syncOutput);

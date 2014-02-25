@@ -260,7 +260,7 @@ AssetCommand::parseArgs(const MArgList &args)
 	AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
 	assetNode->rebuildAsset();
 
-	myAssetSubCommand = new AssetSubCommandSync( assetNodeObj, false, false );
+        myAssetSubCommand = new AssetSubCommandSync(assetNodeObj);
 
     }    
 
@@ -283,17 +283,9 @@ AssetCommand::parseArgs(const MArgList &args)
 	    CHECK_MSTATUS_AND_RETURN_IT(status);
 	}
 
-	bool syncHidden = false;
-	if( argData.isFlagSet( kSyncHiddenFlag ) )
-	    syncHidden = true;
-
-        bool syncTemplatedGeos = false;
-	if( argData.isFlagSet( kSyncTemplatedGeosFlag ) )
-	    syncTemplatedGeos = true;
-
-	AssetSubCommandSync* subCommand = new AssetSubCommandSync(
-		assetNodeObj, syncHidden, syncTemplatedGeos
-		);
+        AssetSubCommandSync* subCommand = new AssetSubCommandSync(
+                assetNodeObj
+                );
 
 	if(argData.isFlagSet(kSyncAttributesFlag))
         {
@@ -303,6 +295,16 @@ AssetCommand::parseArgs(const MArgList &args)
 	if(argData.isFlagSet(kSyncOutputsFlag))
         {
             subCommand->setSyncOutputs();
+        }
+
+        if(argData.isFlagSet(kSyncHiddenFlag))
+        {
+            subCommand->setSyncOutputHidden();
+        }
+
+        if(argData.isFlagSet(kSyncTemplatedGeosFlag))
+        {
+            subCommand->setSyncOutputTemplatedGeos();
         }
 
 	myAssetSubCommand = subCommand;

@@ -35,6 +35,8 @@ MObject AssetNode::assetName;
 MObject AssetNode::assetType;
 
 MObject AssetNode::autoSyncOutputs;
+MObject AssetNode::outputHiddenObjects;
+MObject AssetNode::outputTemplateObjects;
 
 MObject AssetNode::input;
 
@@ -180,6 +182,8 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::assetType);
         
     AssetNode::autoSyncOutputs = nAttr.create("autoSyncOutputs", "autoSyncOutputs", MFnNumericData::kBoolean);
+    AssetNode::outputHiddenObjects = nAttr.create("outputHiddenObjects", "outputHiddenObjects", MFnNumericData::kBoolean);
+    AssetNode::outputTemplateObjects = nAttr.create("outputTemplateObjects", "outputTemplateObjects", MFnNumericData::kBoolean);
 
     // input
     AssetNode::input = AssetInputs::createInputAttribute();
@@ -718,6 +722,8 @@ AssetNode::initialize()
 
     // add the static attributes to the node
     addAttribute(AssetNode::autoSyncOutputs);
+    addAttribute(AssetNode::outputHiddenObjects);
+    addAttribute(AssetNode::outputTemplateObjects);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);

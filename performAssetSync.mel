@@ -198,7 +198,7 @@ proc string assembleCmd()
 	
     if( $assetSyncMode == 2 )
     {	
-	$cmd = ($cmd + " -syncOnlyVisible");
+	$cmd = ($cmd + " -syncHidden");
     }
 	
     $cmd = $cmd + " -sync ";
@@ -212,13 +212,13 @@ proc string assembleCmd()
 
     int $assetSyncMode = `optionVar -query assetSyncMode`;
 
-    int $syncOnlyVisible = 0;	
+    int $syncHidden = 0;	
     if( $assetSyncMode == 2 )
     {	
-	$syncOnlyVisible = 1;
+	$syncHidden = 1;
     }    
 
-    $cmd = $cmd + $syncOnlyVisible;
+    $cmd = $cmd + $syncHidden;
 
     $cmd += ",";
 

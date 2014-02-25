@@ -13,7 +13,7 @@ class AssetSubCommandSync : public AssetSubCommandAsset
     public:
 	AssetSubCommandSync(
 		const MObject &assetNodeObj,
-		const bool syncOnlyVisible,
+		const bool syncHidden,
                 const bool syncTemplatedGeos
 		);
 	virtual ~AssetSubCommandSync();
@@ -31,7 +31,7 @@ class AssetSubCommandSync : public AssetSubCommandAsset
 	bool mySyncAttributes;
 	bool mySyncOutputs;
 
-	const bool mySyncOnlyVisible;
+	const bool mySyncHidden;
         const bool mySyncTemplatedGeos;
 	MDagModifier myDagModifier;
 

@@ -213,7 +213,7 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
 }
 
 global proc
-houdiniEngine_syncAssetOutput(int $syncOnlyVisible, int $syncTemplated)
+houdiniEngine_syncAssetOutput(int $syncHidden, int $syncTemplated)
 {
     string $currSels[] = `ls -sl`;
     if( size($currSels) < 1 )
@@ -230,8 +230,8 @@ houdiniEngine_syncAssetOutput(int $syncOnlyVisible, int $syncTemplated)
 	    delete $children[$ii];
 	}
 	string $cmd = "houdiniAsset";
-	if( $syncOnlyVisible )
-	    $cmd = $cmd + " -syncOnlyVisible";
+	if( $syncHidden )
+	    $cmd = $cmd + " -syncHidden";
 
         if( $syncTemplated )
             $cmd = $cmd + " -syncTemplatedGeos";

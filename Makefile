@@ -18,6 +18,8 @@ ifneq ($(findstring Linux, $(UNAME)),)
     OS = Linux
 else ifneq ($(findstring CYGWIN, $(UNAME)),)
     OS = Cygwin
+else ifneq ($(findstring Darwin, $(UNAME)),)
+    OS = Darwin
 endif
 
 # output directories
@@ -32,6 +34,8 @@ ifeq ($(OS), Linux)
     SOSUFFIX = so
 else ifeq ($(OS), Cygwin)
     SOSUFFIX = mll
+else ifeq ($(OS), Darwin)
+    SOSUFFIX = bundle
 endif
 SONAME = $(LIBNAME).$(SOSUFFIX)
 
@@ -94,6 +98,8 @@ else ifeq ($(OS), Cygwin)
     # Windows SDK
     WIN32_SDK_INCLUDE = $(WIN32_SDK)/Include
     WIN32_SDK_LIB = $(WIN32_SDK)/Lib/x64
+else ifeq ($(OS), Darwin)
+    MAYA_DIR = /Applications/Autodesk/maya$(MAYA_VERSION)/Maya.app/Contents
 endif
 
 # tools
@@ -103,15 +109,22 @@ ifeq ($(OS), Linux)
 else ifeq ($(OS), Cygwin)
     CXX = $(MSVC_SDK_BIN)/cl
     LD = $(MSVC_SDK_BIN)/link
+else ifeq ($(OS), Darwin)
+    CXX ?= g++
+    LD = $(CXX)
 endif
 
 # Maya flags
-CPPFLAGS += -I$(MAYA_DIR)/include
 CPPFLAGS += -D_BOOL -DREQUIRE_IOSTREAM
 ifeq ($(OS), Linux)
+    CPPFLAGS += -I$(MAYA_DIR)/include
     LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lOpenMayaFX -lFoundation
 else ifeq ($(OS), Cygwin)
+    CPPFLAGS += -I$(MAYA_DIR)/include
     LDLIBS += -LIBPATH:$(MAYA_DIR)/lib OpenMaya.lib OpenMayaFX.lib Foundation.lib
+else ifeq ($(OS), Darwin)
+    CPPFLAGS += -I$(MAYA_DIR)/../../devkit/include
+    LDLIBS += -L$(MAYA_DIR)/MacOS -lOpenMaya -lOpenMayaFX -lFoundation
 endif
 
 # Houdini flags
@@ -122,6 +135,9 @@ ifeq ($(OS), Linux)
     LDLIBS += -L$(HFS)/dsolib -lHAPI
 else ifeq ($(OS), Cygwin)
     LDLIBS += -LIBPATH:$(HFS)/custom/houdini/dsolib libHAPI.a
+else ifeq ($(OS), Darwin)
+    LDLIBS += -F$(HFS)/Frameworks -framework Houdini
+    LDLIBS += -L$(HFS)/Frameworks/Houdini.framework/Libraries
 endif
 
 # general flags
@@ -164,6 +180,8 @@ else ifeq ($(OS), Cygwin)
     LDLIBS += -LIBPATH:$(MSVC_SDK_LIB) -LIBPATH:$(WIN32_SDK_LIB) -DEFAULTLIB:USER32.lib
 
     LDFLAGS += -export:initializePlugin -export:uninitializePlugin
+else ifeq ($(OS), Darwin)
+    CPPFLAGS += -DOSMac_ -DOSMac_MachO_
 endif
 
 # debug/release flags
@@ -178,6 +196,12 @@ else ifeq ($(OS), Cygwin)
 	CXXFLAGS += -Od -MDd
     else ifeq ($(MAKETYPE),Release)
 	CXXFLAGS += -O2 -MD
+    endif
+else ifeq ($(OS), Darwin)
+    ifeq ($(MAKETYPE),)
+	CXXFLAGS += -g
+    else ifeq ($(MAKETYPE),Release)
+	CXXFLAGS += -O3
     endif
 endif
 
@@ -248,6 +272,10 @@ else ifeq ($(OS), Cygwin)
 	    $(realpath $(WIN32_SDK)), \
 	    $(realpath $(MSVC_SDK)), \
 	    1)
+else ifeq ($(OS), Darwin)
+    CAN_BUILD := $(and \
+	    $(realpath $(MAYA_DIR)), \
+	    1)
 endif
 
 .PHONY: all
@@ -302,6 +330,8 @@ ifeq ($(OS), Linux)
 	$(LD) -shared $(LDFLAGS) -o $(@) $(OBJFILES) $(LDLIBS)
 else ifeq ($(OS), Cygwin)
 	$(LD) -DLL $(LDFLAGS) -OUT:$(@) $(OBJFILES) $(LDLIBS)
+else ifeq ($(OS), Darwin)
+	$(LD) -bundle $(LDFLAGS) -o $(@) $(OBJFILES) $(LDLIBS)
 endif
 
 $(OBJ_DIR)/%.o: %.C
@@ -314,6 +344,8 @@ else ifeq ($(OS), Cygwin)
 	    cat $(@).log | ./clShowIncludesToMake $(@); \
 	    rm -f $(@).log; \
 	    exit $$compileStatus
+else ifeq ($(OS), Darwin)
+	$(CXX) -c -MD -MP -MT $(@) $(CPPFLAGS) $(CXXFLAGS) -o $(@) $(<)
 endif
 
 $(DST_SCRIPTS_DIR)/%.mel: %.mel

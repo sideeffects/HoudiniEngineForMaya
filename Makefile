@@ -293,13 +293,6 @@ ifeq ($(OS), Cygwin)
 
         # Set the PATH variable for dynamic library.
 	echo "PATH +:= ..\\..\\..\\bin" >> $(@)
-
-        ifeq ($(MAYA_VERSION), 2014)
-        # Maya 2014 uses python 2.7, and that causes the houdiniEngine plugin
-        # to conflict with the Mayatomr (mentalray) plugin. Workaround the
-        # problem by forcing Houdini to use python 2.6.
-	echo "HOUDINI_PYTHON_VERSION = 2.6" >> $(@)
-        endif
     endif
 endif
 
@@ -312,13 +305,6 @@ ifeq ($(OS), Cygwin)
 
         # Set the PATH variable for dynamic library.
 	echo "PATH += $(shell cygpath -w $(DST_DIR))\\..\\..\\..\\bin" >> $(@)
-
-        ifeq ($(MAYA_VERSION), 2014)
-        # Maya 2014 uses python 2.7, and that causes the houdiniEngine plugin
-        # to conflict with the Mayatomr (mentalray) plugin. Workaround the
-        # problem by forcing Houdini to use python 2.6.
-	echo "HOUDINI_PYTHON_VERSION = 2.6" >> $(@)
-        endif
     endif
 else
 	echo "+ houdiniEngine 1.5 $(DST_DIR)" > $(@)

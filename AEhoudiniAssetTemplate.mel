@@ -149,6 +149,26 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
     }
 }
 
+proc createAttrCheckBox(string $plug, string $label, string $changeCommand)
+{
+    int $value = `getAttr $plug`;
+
+    string $checkBox = `checkBox -label $label -value $value`;
+
+    // stopping playback will trigger the attributeChange scriptJob, so don't
+    // add the changeCommand to the scriptJob
+    scriptJob
+        -parent $checkBox
+        -attributeChange $plug
+        ("checkBox -e -value `getAttr " + $plug + "`"
+         + " \"" + $checkBox + "\";");
+    checkBox -e
+        -changeCommand ("setAttr " + $plug
+                + " `checkBox -q -value \"" + $checkBox + "\"`;"
+                + $changeCommand)
+        $checkBox;
+}
+
 global proc houdiniAssetAdjustMulti(
 	string $parent,
 	string $nodeName,
@@ -558,23 +578,13 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
 
 global proc AEhoudiniAssetOptionsNew(string $attr)
 {
-    string $nodeName = plugNode($attr);
-
-    attrControlGrp
-        -attribute ($nodeName + ".autoSyncOutputs")
-        autoSyncOutputs;
-
-    attrControlGrp
-        -attribute ($nodeName + ".useInstancerNode")
-        useInstancerNode;
-
-    attrControlGrp
-        -attribute ($nodeName + ".outputHiddenObjects")
-        outputHiddenObjects;
-
-    attrControlGrp
-        -attribute ($nodeName + ".outputTemplateObjects")
-        outputTemplateObjects;
+    rowLayout
+        -numberOfColumns 2
+        "optionsRowLayout";
+        text -label "";
+        columnLayout "optionsLayout";
+    setParent ..;
+    setParent ..;
 
     AEhoudiniAssetOptionsReplace $attr;
 }
@@ -583,25 +593,35 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
 {
     string $nodeName = plugNode($attr);
 
-    attrControlGrp -e
-        -attribute ($nodeName + ".autoSyncOutputs")
-        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
-        autoSyncOutputs;
+    // delete existing UI
+    string $parent = `setParent -q`;
+    string $optionsLayoutFull = $parent + "|optionsRowLayout|optionsLayout";
 
-    attrControlGrp -e
-        -attribute ($nodeName + ".useInstancerNode")
-        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
-        useInstancerNode;
+    if(`layout -q -numberOfChildren $optionsLayoutFull`)
+    {
+        for($child in `layout -q -childArray $optionsLayoutFull`)
+        {
+            deleteUI ($optionsLayoutFull + "|" + $child);
+        }
+    }
 
-    attrControlGrp -e
-        -attribute ($nodeName + ".outputHiddenObjects")
-        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
-        outputHiddenObjects;
+    setParent $optionsLayoutFull;
 
-    attrControlGrp -e
-        -attribute ($nodeName + ".outputTemplateObjects")
-        -changeCommand ("houdiniEngine_syncAssetOutput \\\"" + $nodeName + "\\\"")
-        outputTemplateObjects;
+    // Don't use attrControlGrp here, and manually create our own checkBox.
+    // For some reasons, Maya will trigger attrControlGrp's changeCommand at
+    // the end of a playback.
+    createAttrCheckBox($nodeName + ".autoSyncOutputs",
+            "Auto Sync Outputs",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    createAttrCheckBox($nodeName + ".useInstancerNode",
+            "Use Instancer Node",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    createAttrCheckBox($nodeName + ".outputHiddenObjects",
+            "Output Hidden Objects",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    createAttrCheckBox($nodeName + ".outputTemplateObjects",
+            "Output Template Objects",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
 }
 
 global proc AEhoudiniAssetTemplate( string $nodeName )

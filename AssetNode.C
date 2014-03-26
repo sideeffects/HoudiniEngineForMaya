@@ -6,6 +6,7 @@
 #include <maya/MFnDependencyNode.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
+#include <maya/MPlugArray.h>
 
 #include <algorithm>
 

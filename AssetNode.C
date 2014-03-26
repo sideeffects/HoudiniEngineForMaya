@@ -1,19 +1,9 @@
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnTypedAttribute.h>
-#include <maya/MFnEnumAttribute.h>
 #include <maya/MFnUnitAttribute.h>
-#include <maya/MFnMesh.h>
-#include <maya/MFloatPointArray.h>
-#include <maya/MFloatVectorArray.h>
-#include <maya/MFloatVector.h>
-#include <maya/MFloatPoint.h>
-#include <maya/MVectorArray.h>
-#include <maya/MFnMeshData.h>
 #include <maya/MDataHandle.h>
-#include <maya/MTypes.h>
 #include <maya/MFnDependencyNode.h>
-#include <maya/MFnArrayAttrsData.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 

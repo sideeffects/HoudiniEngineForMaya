@@ -1,5 +1,6 @@
 #include "AssetSyncOutputObject.h"
 
+#include <maya/MFloatArray.h>
 #include <maya/MGlobal.h>
 #include <maya/MPlug.h>
 

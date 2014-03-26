@@ -4,15 +4,7 @@
 #include <maya/MPxTransform.h>
 
 #include <maya/MTypeId.h> 
-#include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
-#include <maya/MFloatArray.h>
-#include <maya/MStringArray.h>
-#include <maya/MIntArray.h>
-#include <maya/MDataBlock.h>
-#include <maya/MNodeMessage.h>
-
-#include <HAPI/HAPI.h>
 
 #include <vector>
 

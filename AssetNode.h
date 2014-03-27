@@ -4,7 +4,8 @@
 #include <maya/MPxTransform.h>
 
 #include <maya/MTypeId.h> 
-#include <maya/MPlugArray.h>
+
+class MPlugArray;
 
 #include <vector>
 

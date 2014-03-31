@@ -8,6 +8,7 @@
 
 #include <HAPI/HAPI.h>
 
+#include "Asset.h"
 #include "AssetNode.h"
 #include "util.h"
 

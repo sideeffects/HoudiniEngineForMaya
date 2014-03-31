@@ -3,6 +3,7 @@
 #include <maya/MSelectionList.h>
 #include <maya/MStatus.h>
 
+#include "Asset.h"
 #include "AssetNode.h"
 #include "AssetCommand.h"
 #include "AssetSubCommand.h"

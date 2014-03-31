@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include "Asset.h"
 #include "AssetInput.h"
 #include "AssetNode.h"
 #include "MayaTypeID.h"

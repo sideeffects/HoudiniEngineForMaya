@@ -9,7 +9,7 @@ class MPlugArray;
 
 #include <vector>
 
-#include "Asset.h"
+class Asset;
 
 // -------------------------------------------------------------------------------
 //Overall structure:

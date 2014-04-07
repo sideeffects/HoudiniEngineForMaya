@@ -117,39 +117,8 @@ AssetSyncOutputGeoPart::createOutputPart(
     status = myDagModifier.renameNode(partMesh, partName + "Shape");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    MFnDependencyNode partTransformFn(partTransform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
     MFnDependencyNode partMeshFn(partMesh, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // connect partTransform attributes
-    {
-        //We're at the level of the part, 1 level up is the geo, and another level up is the object,
-        //from which we can get the transform.
-        MPlug geoPlug = myOutputPlug.array().parent();
-        MPlug objPlug = geoPlug.array().parent();
-
-	MPlug transformPlug = objPlug.child(AssetNode::outputObjectTransform);        
-
-	MPlug srcPlug;
-	MPlug dstPlug;
-
-	srcPlug = transformPlug.child(AssetNode::outputObjectTranslate);
-	dstPlug = partTransformFn.findPlug("translate");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = transformPlug.child(AssetNode::outputObjectRotate);
-	dstPlug = partTransformFn.findPlug("rotate");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-
-	srcPlug = transformPlug.child(AssetNode::outputObjectScale);
-	dstPlug = partTransformFn.findPlug("scale");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
 
     // connect partMesh attributes
     {

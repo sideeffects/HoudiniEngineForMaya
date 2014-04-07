@@ -61,6 +61,31 @@ AssetSyncOutputObject::doIt()
 
     MFnDependencyNode objectTransformFn(objectTransform);
 
+    // connect objectTransform attributes
+    {
+        MPlug transformPlug = myOutputPlug.child(AssetNode::outputObjectTransform);
+
+        MPlug srcPlug;
+        MPlug dstPlug;
+
+        srcPlug = transformPlug.child(AssetNode::outputObjectTranslate);
+        dstPlug = objectTransformFn.findPlug("translate");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        srcPlug = transformPlug.child(AssetNode::outputObjectRotate);
+        dstPlug = objectTransformFn.findPlug("rotate");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        srcPlug = transformPlug.child(AssetNode::outputObjectScale);
+        dstPlug = objectTransformFn.findPlug("scale");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        CHECK_MSTATUS_AND_RETURN_IT(myDagModifier.doIt());
+    }
+
     if( !myVisible )
     {
         status = myDagModifier.newPlugValueBool(

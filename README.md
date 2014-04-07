@@ -30,3 +30,13 @@ For support and reporting bugs:
 
 * [SideFX Labs forum](http://www.sidefx.com/index.php?option=com_forum&Itemid=172&page=viewforum&f=46)
 * [Bug Submission](http://www.sidefx.com/index.php?option=com_content&task=view&id=768&Itemid=239)
+
+## Supported Maya versions
+Currently, the supported Maya versions are:
+
+* 2014
+* 2013.5
+* 2013
+* 2012
+
+The plug-in is supported on both Linux and Windows.

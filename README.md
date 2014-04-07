@@ -40,3 +40,44 @@ Currently, the supported Maya versions are:
 * 2012
 
 The plug-in is supported on both Linux and Windows.
+
+## Compiling
+In order to compile and run the plug-in, both Houdini and Maya have to be
+installed. Houdini needs to be installed because the plug-in uses the Houdini
+Engine API, which is currently distributed together with Houdini. Since the
+Houdini Engine API could change between daily builds, the plug-in also needs to
+be compiled with a matching Houdini version.
+
+### GNU Make (Linux, Cygwin on Windows)
+The code can be compiled through the Makefile using GNU Make. This can also be
+done on Windows through the use of Cygwin.
+
+The Makefile can be configured through several variables that are passed to the
+`make` command. The most important variables that need to be set are `HFS` and
+`DST_MODULE_DIR`. For example:
+
+    make \
+        HFS=/opt/hfs13.0.372 \
+        DST_MODULE_DIR=~/HoudiniEngineForMaya/build
+
+* `HFS` specifies the Houdini installation to compile against.
+* `DST_MODULE_DIR` specifies where to output various files of the Maya module,
+such as the plug-in, MEL scripts, and the module description file.
+
+`make` will then create the Maya module that contains all the files necessary
+for loading the plug-in into Maya. When running Maya, the module directory
+needs to be included into the MAYA\_MODULE\_PATH environment variable, so that
+Maya is able to detect the plug-in. For example:
+
+    export MAYA_MODULE_PATH=~/HoudiniEngineForMaya/build
+
+By default, the Makefile compiles against the latest Maya version. The Maya
+version to compile against can be changed by setting the `MAYA_VERSION`
+variable. For example:
+
+    MAYA_VERSION=2013.5
+
+If Maya is installed at a non-standard location, the location can be specified
+by setting the `MAYA_DIR` variable. For example:
+
+    MAYA_DIR=/path/to/autodesk/maya2013.5-x64

@@ -59,14 +59,15 @@ AssetSyncOutputObject::doIt()
     CHECK_MSTATUS_AND_RETURN_IT(status);
     myDagModifier.doIt();
 
+    MFnDependencyNode objectTransformFn(objectTransform);
+
     if( !myVisible )
-    {	
-	MFnDagNode fnDag( objectTransform );
-	MDagPath transformPath;
-	fnDag.getPath( transformPath );
-	MString cmd = "hide ";
-	cmd += fnDag.partialPathName();
-	MGlobal::executeCommand( cmd );
+    {
+        status = myDagModifier.newPlugValueBool(
+                objectTransformFn.findPlug("visibility"),
+                false
+                );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
     
     MPlug geosPlug = myOutputPlug.child( AssetNode::outputGeos );

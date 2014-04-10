@@ -730,6 +730,7 @@ AssetNode::initialize()
     attributeAffects(AssetNode::otlFilePath, AssetNode::output);
     attributeAffects(AssetNode::assetName, AssetNode::output);
     
+    attributeAffects(AssetNode::input, AssetNode::output);
 
     return MS::kSuccess;
 }

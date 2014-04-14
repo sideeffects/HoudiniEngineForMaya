@@ -865,10 +865,14 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
 
         // assume 3 tuple
         vertexArray.setLength(floatArray.size() / 3);
-
-        for(unsigned int i = 0, j = 0; i < vertexArray.length(); i++, j += 3)
+        for(unsigned int i = 0, length = vertexArray.length();
+                i < length; ++i)
         {
-            vertexArray.set(i, floatArray[j], floatArray[j+1], floatArray[j+2]);
+            MFloatPoint &floatPoint = vertexArray[i];
+            floatPoint.x = floatArray[i * 3 + 0];
+            floatPoint.y = floatArray[i * 3 + 1];
+            floatPoint.z = floatArray[i * 3 + 2];
+            floatPoint.w = 1.0f;
         }
     }
 
@@ -953,13 +957,13 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
                 Util::reverseWindingOrder(normals, polygonCounts);
 
                 MIntArray faceList;
-                MIntArray vertexList;
-
-                for(unsigned int i = 0; i < polygonCounts.length(); i++)
+                faceList.setLength(polygonConnects.length());
+                for(unsigned int i = 0, j = 0, length = polygonCounts.length();
+                        i < length; ++i)
                 {
-                    for(int j = 0; j < polygonCounts[i]; j++)
+                    for(int k = 0; k < polygonCounts[i]; ++j, ++k)
                     {
-                        faceList.append(i);
+                        faceList[j] = i;
                     }
                 }
 
@@ -968,10 +972,11 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
             else if(owner == HAPI_ATTROWNER_POINT)
             {
                 MIntArray vertexList;
-
-                for ( unsigned int j = 0; j < vertexArray.length(); ++j )
+                vertexList.setLength(vertexArray.length());
+                for(unsigned int i = 0, length = vertexList.length();
+                        i < length; ++i)
                 {
-                    vertexList.append( j );
+                    vertexList[i] = i;
                 }
 
                 meshFn.setVertexNormals(normals, vertexList);
@@ -997,29 +1002,34 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
             // assume 3 tuple
             MFloatArray uArray;
             MFloatArray vArray;
-            for(size_t i = 0; i < floatArray.size(); i+=3)
+            uArray.setLength(floatArray.size() / 3);
+            vArray.setLength(floatArray.size() / 3);
+            for(unsigned int i = 0, length = uArray.length();
+                    i < length; ++i)
             {
-                uArray.append(floatArray[i]);
-                vArray.append(floatArray[i+1]);
+                uArray[i] = floatArray[i * 3 + 0];
+                vArray[i] = floatArray[i * 3 + 1];
             }
 
             MIntArray vertexList;
-
+            vertexList.setLength(polygonConnects.length());
             if(owner == HAPI_ATTROWNER_VERTEX)
             {
                 Util::reverseWindingOrder(uArray, polygonCounts);
                 Util::reverseWindingOrder(vArray, polygonCounts);
 
-                for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
+                for(unsigned int i = 0, length = polygonConnects.length();
+                        i < length; ++i)
                 {
-                    vertexList.append( j );
+                    vertexList[i] = i;
                 }
             }
             else if(owner == HAPI_ATTROWNER_POINT)
             {
-                for ( unsigned int j = 0; j < polygonConnects.length(); ++j )
+                for(unsigned int i = 0, length = polygonConnects.length();
+                        i < length; ++i)
                 {
-                    vertexList.append( polygonConnects[j] );
+                    vertexList[i] = polygonConnects[i];
                 }
             }
 

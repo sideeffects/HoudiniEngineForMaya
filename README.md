@@ -42,11 +42,41 @@ Currently, the supported Maya versions are:
 The plug-in is supported on both Linux and Windows.
 
 ## Compiling
+
+To get started:
+
+* Fork this repository to your own Github account using the Fork button at the top.
+* Clone the forked repository onto your system.
+
 In order to compile and run the plug-in, both Houdini and Maya have to be
 installed. Houdini needs to be installed because the plug-in uses the Houdini
 Engine API, which is currently distributed together with Houdini. Since the
 Houdini Engine API could change between daily builds, the plug-in also needs to
-be compiled with a matching Houdini version.
+be compiled with a matching Houdini version.  For now, always download and
+install the latest available daily build from www.sidefx.com
+
+
+### Visual Studio Solution (Windows)
+On Windows you can build the plugin by launching the Visual Studio Solution
+named houdiniEnginePlugin.sln.  You will need Visual Studio 2010.  
+
+* Ensure the platform is set to x64.  
+* Right click on the houdiniEngine project to bring up its properties
+* For each of Debug and Release configurations, update the include path
+and linker path (The Additional Include Directories and Additional
+Library Directories) to the proper version of Houdini installed on your
+system.  There is already a path in the project as a place holder - 
+only the version number need to be updated.
+* Go ahead and build!
+
+Finally edit your Maya.env file ( eg. \Documents\maya\2014-x64 ) to include the
+following lines:
+
+PATH = %PATH%;C:\Program Files\Side Effects Software\Houdini xx.y.zzz\bin
+MAYA_PLUG_IN_PATH = <You Path>\HoudiniEngineForMaya\x64\<Release or Debug>
+MAYA_SCRIPT_PATH = <You Path>\HoudiniEngineForMaya
+
+Run Maya!
 
 ### GNU Make (Linux, Cygwin on Windows)
 The code can be compiled through the Makefile using GNU Make. This can also be

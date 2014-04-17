@@ -1,21 +1,21 @@
-#ifndef __AssetInput_h__
-#define __AssetInput_h__
+#ifndef __Input_h__
+#define __Input_h__
 
 #include <vector>
 
 #include <maya/MDataHandle.h>
 
-class AssetInput;
+class Input;
 class MDataBlock;
 
-class AssetInputs
+class Inputs
 {
     public:
 	static MObject createInputAttribute();
 
     public:
-	AssetInputs(int assetId);
-	~AssetInputs();
+	Inputs(int assetId);
+	~Inputs();
 
 	void setNumInputs(int numInputs);
         void setInput(
@@ -27,7 +27,7 @@ class AssetInputs
     private:
 	int myAssetId;
 
-	typedef std::vector<AssetInput*> AssetInputVector;
+	typedef std::vector<Input*> AssetInputVector;
 	AssetInputVector myAssetInputs;
 
     public:
@@ -36,7 +36,7 @@ class AssetInputs
 	static MObject inputGeo;
 };
 
-class AssetInput
+class Input
 {
     public:
 	enum AssetInputType
@@ -48,11 +48,11 @@ class AssetInput
 	    AssetInputType_Particle,
 	};
 
-	static AssetInput* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);
+	static Input* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);
 
     public:
-	AssetInput(int assetId, int inputIdx);
-	virtual ~AssetInput();
+	Input(int assetId, int inputIdx);
+	virtual ~Input();
 
 	virtual AssetInputType assetInputType() const = 0;
 

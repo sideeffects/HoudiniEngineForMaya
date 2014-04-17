@@ -1,4 +1,4 @@
-#include "AssetSyncAttribute.h"
+#include "SyncAttribute.h"
 
 #include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnEnumAttribute.h>
@@ -387,7 +387,7 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
     return result;
 }
 
-AssetSyncAttribute::AssetSyncAttribute(
+SyncAttribute::SyncAttribute(
         const MObject &assetNodeObj
         ) :
     myAssetNodeObj(assetNodeObj)
@@ -398,12 +398,12 @@ AssetSyncAttribute::AssetSyncAttribute(
     myNodeInfo = assetNode->getAsset()->myNodeInfo;
 }
 
-AssetSyncAttribute::~AssetSyncAttribute()
+SyncAttribute::~SyncAttribute()
 {
 }
 
 MStatus
-AssetSyncAttribute::doIt()
+SyncAttribute::doIt()
 {
     MStatus status;
 
@@ -465,7 +465,7 @@ AssetSyncAttribute::doIt()
 }
 
 MStatus
-AssetSyncAttribute::undoIt()
+SyncAttribute::undoIt()
 {
     MStatus status;
 
@@ -476,7 +476,7 @@ AssetSyncAttribute::undoIt()
 }
 
 MStatus
-AssetSyncAttribute::redoIt()
+SyncAttribute::redoIt()
 {
     MStatus status;
 
@@ -487,7 +487,7 @@ AssetSyncAttribute::redoIt()
 }
 
 bool
-AssetSyncAttribute::isUndoable() const
+SyncAttribute::isUndoable() const
 {
     return true;
 }

@@ -7,11 +7,11 @@
 
 #include <HAPI/HAPI.h>
 
-#include "Object.h"
+#include "OutputObject.h"
 
 #include <vector>
 
-class AssetInputs;
+class Inputs;
 class MFnDependencyNode;
 
 class Asset {
@@ -26,9 +26,9 @@ class Asset {
         MString getOTLFilePath() const;
         MString getAssetName() const;
 
-        Object** getObjects();
-        Object* findObjectByName(MString name);
-        Object* findObjectById(int id);
+        OutputObject** getObjects();
+        OutputObject* findObjectByName(MString name);
+        OutputObject* findObjectById(int id);
         HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
 
         // Getters for infos
@@ -95,9 +95,9 @@ class Asset {
         HAPI_AssetInfo 	myAssetInfo;
         MObject myNode;		    //The Maya asset node
 
-	AssetInputs* myAssetInputs;
+	Inputs* myAssetInputs;
 	//TODO: make this a vector.  The double pointer assumes the number of objects is static
-        Object** myObjects;	    //the Object class contains a 1 to 1 map with HAPI_ObjectInfos.
+        OutputObject** myObjects;	    //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
 
         // Arrays of infos that can be accessed when updating objects,
         // keeping them here avoids getting them for individual object.

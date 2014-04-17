@@ -11,10 +11,10 @@
 #include <maya/MGlobal.h>
 
 #include "Asset.h"
-#include "AssetInput.h"
+#include "Input.h"
 #include "AssetNode.h"
-#include "GeometryObject.h"
-#include "InstancerObject.h"
+#include "OutputGeometryObject.h"
+#include "OutputInstancerObject.h"
 #include "util.h"
 
 class AttrOperation : public Util::WalkParmOperation
@@ -383,7 +383,7 @@ Asset::Asset(
     hstat = HAPI_GetNodeInfo( myAssetInfo.nodeId, & myNodeInfo);
     Util::checkHAPIStatus(hstat);
 
-    myAssetInputs = new AssetInputs( myAssetInfo.id);
+    myAssetInputs = new Inputs( myAssetInfo.id);
     myAssetInputs->setNumInputs( myAssetInfo.maxGeoInputCount);
 
     // get the infos
@@ -391,7 +391,7 @@ Asset::Asset(
 
     // objects
     int objCount = myAssetInfo.objectCount;
-    myObjects = new Object*[objCount];
+    myObjects = new OutputObject*[objCount];
     myNumVisibleObjects = 0;
     myNumObjects = objCount;
 
@@ -402,7 +402,7 @@ Asset::Asset(
     for (int i=0; i<objCount; i++)
     {
 	Util::updateProgressWindow( status, (int)( (float) i *100.0f / (float) objCount) );
-        myObjects[i] = Object::createObject( myAssetInfo.id, i, this);
+        myObjects[i] = OutputObject::createObject( myAssetInfo.id, i, this);
     }
 
     Util::hideProgressWindow();
@@ -435,7 +435,7 @@ Asset::getAssetName() const
     return Util::getString(myAssetInfo.fullOpNameSH);
 }
 
-Object*
+OutputObject*
 Asset::findObjectByName(MString name)
 {
     for (int i=0; i< myAssetInfo.objectCount; i++)
@@ -448,7 +448,7 @@ Asset::findObjectByName(MString name)
 }
 
 
-Object*
+OutputObject*
 Asset::findObjectById(int id)
 {
     return myObjects[id];
@@ -519,10 +519,10 @@ Asset::computeInstancerObjects(
     MIntArray instancedObjIds;
     for (int i=0; i< myNumObjects; i++)
     {
-        Object* obj = myObjects[i];
+        OutputObject* obj = myObjects[i];
         //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex( instancerIndex );
 
-        if ( obj->type() == Object::OBJECT_TYPE_INSTANCER )
+        if ( obj->type() == OutputObject::OBJECT_TYPE_INSTANCER )
         {
             MDataHandle instancerElemHandle = instancersBuilder.addElement( instancerIndex );
             stat = obj->compute(instancerElemHandle, needToSyncOutputs);
@@ -531,11 +531,11 @@ Asset::computeInstancerObjects(
                 instancerIndex++;
 
                 // get all the object ids that are instanced
-                MIntArray instIds = dynamic_cast< InstancerObject* >( obj )->getInstancedObjIds();
-                MStringArray instNames = dynamic_cast< InstancerObject* >( obj )->getUniqueInstObjNames();
+                MIntArray instIds = dynamic_cast< OutputInstancerObject* >( obj )->getInstancedObjIds();
+                MStringArray instNames = dynamic_cast< OutputInstancerObject* >( obj )->getUniqueInstObjNames();
                 for ( unsigned int j = 0; j < instNames.length(); ++j )
                 {
-                    Object* o = findObjectByName( instNames[ j ] );
+                    OutputObject* o = findObjectByName( instNames[ j ] );
                     if ( o != NULL )
                         instancedObjIds.append( o->getId() );
                 }
@@ -560,7 +560,7 @@ Asset::computeInstancerObjects(
     // mark instanced objects
     for ( unsigned int i = 0; i < instancedObjIds.length(); ++i )
     {
-        Object* obj = myObjects[ instancedObjIds[ i ] ];
+        OutputObject* obj = myObjects[ instancedObjIds[ i ] ];
         obj->myIsInstanced = true;
     }
 
@@ -589,11 +589,11 @@ Asset::computeGeometryObjects(
 
     for (int ii = 0; ii < myNumObjects; ii++)
     {
-        Object * obj = myObjects[ ii ];        
+        OutputObject * obj = myObjects[ ii ];        
 
 	MDataHandle objectHandle = objectsBuilder.addElement( ii );
 
-        if (obj->type() == Object::OBJECT_TYPE_GEOMETRY)
+        if (obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
             obj->compute(objectHandle, needToSyncOutputs);
 
@@ -659,7 +659,7 @@ Asset::compute(
     float time = (float)currentTime.as(MTime::kSeconds);
     HAPI_SetTime(time);
 
-    //this figures out the Houdini asset inputs (Geo, Transform)
+    //this figures out the Houdini asset inputs (OutputGeometry, Transform)
     //for inter-asset stuff
     computeAssetInputs(plug, data);
 
@@ -684,7 +684,7 @@ Asset::compute(
     return stat;
 }
 
-Object**
+OutputObject**
 Asset::getObjects()
 {
     return myObjects;

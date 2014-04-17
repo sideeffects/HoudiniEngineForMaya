@@ -1,17 +1,17 @@
 
-#include "Geo.h"
-#include "GeometryPart.h"
-#include "Object.h"
+#include "OutputGeometry.h"
+#include "OutputGeometryPart.h"
+#include "OutputObject.h"
 #include "util.h"
 #include "AssetNode.h"
 
 
-Geo::~Geo() 
+OutputGeometry::~OutputGeometry() 
 {    
 }
 
 
-Geo::Geo( int assetId, int objectId, int geoId, Object * parentObject) :
+OutputGeometry::OutputGeometry( int assetId, int objectId, int geoId, OutputObject * parentObject) :
     myParentObject ( parentObject ),    
     myAssetId ( assetId ),
     myObjectId ( objectId ),
@@ -38,7 +38,7 @@ Geo::Geo( int assetId, int objectId, int geoId, Object * parentObject) :
 
             for ( int ii = 0; ii < partCount; ii++)
             {
-                myParts.push_back( GeometryPart( myAssetId, 
+                myParts.push_back( OutputGeometryPart( myAssetId, 
                                                  myObjectId, 
                                                  myGeoId, 
                                                  ii, 
@@ -56,7 +56,7 @@ Geo::Geo( int assetId, int objectId, int geoId, Object * parentObject) :
 }
 
 void
-Geo::update()
+OutputGeometry::update()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
@@ -82,7 +82,7 @@ Geo::update()
                     HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
                     for ( int ii = 0; ii < partCount; ii++ )
                     {	                
-                        myParts.push_back( GeometryPart( myAssetId, 
+                        myParts.push_back( OutputGeometryPart( myAssetId, 
                                                          myObjectId, 
                                                          myGeoId, 
                                                          ii, 
@@ -106,7 +106,7 @@ Geo::update()
 
 
 MStatus 
-Geo::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
+OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
 {
     MStatus stat;    
 
@@ -159,7 +159,7 @@ Geo::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
 }
 
 MStatus 
-Geo::setClean( MPlug& geoPlug, MDataBlock& data )
+OutputGeometry::setClean( MPlug& geoPlug, MDataBlock& data )
 {
     MPlug partsPlug = geoPlug.child( AssetNode::outputParts );
     for (int jj=0; jj < myGeoInfo.partCount; jj++)

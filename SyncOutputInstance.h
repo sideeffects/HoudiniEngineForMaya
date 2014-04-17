@@ -1,5 +1,5 @@
-#ifndef __AssetSyncOutputInstance_h__
-#define __AssetSyncOutputInstance_h__
+#ifndef __SyncOutputInstance_h__
+#define __SyncOutputInstance_h__
 
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
@@ -8,15 +8,15 @@
 
 class MDagPath;
 
-class AssetSyncOutputInstance : public AssetSubCommand
+class SyncOutputInstance : public AssetSubCommand
 {
     public:
-	AssetSyncOutputInstance(
+	SyncOutputInstance(
 		const MPlug &outputPlug,
 		const int parentMultiIndex,
 		const MObject &assetNodeObj
 		);
-	virtual ~AssetSyncOutputInstance();
+	virtual ~SyncOutputInstance();
 
 	virtual MStatus doIt();
 	virtual MStatus undoIt();

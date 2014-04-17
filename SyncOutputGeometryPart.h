@@ -1,19 +1,19 @@
-#ifndef __AssetSyncOutputGeoPart_h__
-#define __AssetSyncOutputGeoPart_h__
+#ifndef __SyncOutputGeometryPart_h__
+#define __SyncOutputGeometryPart_h__
 
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
 
 #include "AssetSubCommand.h"
 
-class AssetSyncOutputGeoPart : public AssetSubCommand
+class SyncOutputGeometryPart : public AssetSubCommand
 {
     public:
-	AssetSyncOutputGeoPart(
+	SyncOutputGeometryPart(
 		const MPlug &outputPlug,
 		const MObject & objectTransform		
 		);
-	virtual ~AssetSyncOutputGeoPart();
+	virtual ~SyncOutputGeometryPart();
 
 	virtual MStatus doIt();
 	virtual MStatus undoIt();

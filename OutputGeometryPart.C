@@ -19,10 +19,10 @@
 
 #include "Asset.h"
 #include "AssetNode.h"
-#include "GeometryPart.h"
+#include "OutputGeometryPart.h"
 #include "util.h"
 
-GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
+OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
         HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo) : 
     myAssetId(assetId),
     myObjectId(objectId),
@@ -60,11 +60,11 @@ GeometryPart::GeometryPart(int assetId, int objectId, int geoId, int partId,
 }
 
 
-GeometryPart::~GeometryPart() {}
+OutputGeometryPart::~OutputGeometryPart() {}
 
 #if MAYA_API_VERSION >= 201400
 void
-GeometryPart::updateVolumeTransform(MDataHandle& handle)
+OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
 {
     HAPI_Transform transform = myVolumeInfo.transform;
 
@@ -120,7 +120,7 @@ GeometryPart::updateVolumeTransform(MDataHandle& handle)
 #endif
 
 void
-GeometryPart::update()
+OutputGeometryPart::update()
 {
     //if (!geoInfo.hasGeoChanged)
         //return;
@@ -148,7 +148,7 @@ GeometryPart::update()
 
 
 void
-GeometryPart::setGeoInfo(HAPI_GeoInfo& info)
+OutputGeometryPart::setGeoInfo(HAPI_GeoInfo& info)
 {
     myGeoInfo = info;
 }
@@ -199,7 +199,7 @@ getAttributeDataWrapper(
 
 template<typename T>
 bool
-GeometryPart::getAttributeData(
+OutputGeometryPart::getAttributeData(
         std::vector<T> &array,
         const char* name,
         HAPI_AttributeOwner owner
@@ -234,7 +234,7 @@ GeometryPart::getAttributeData(
 }
 
 MStatus
-GeometryPart::compute(
+OutputGeometryPart::compute(
         MDataHandle& handle,
         bool &needToSyncOutputs
         )
@@ -251,7 +251,7 @@ GeometryPart::compute(
 
     if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
-        // Object name
+        // OutputObject name
 	MString partName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
         partNameHandle.set(partName);
 
@@ -326,7 +326,7 @@ GeometryPart::compute(
 }
 
 void
-GeometryPart::createCurves(MDataHandle &curvesHandle)
+OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
 {
     MStatus status;
 
@@ -528,7 +528,7 @@ getParticleArray(
 
 template<typename T, typename U>
 void
-GeometryPart::convertParticleAttribute(
+OutputGeometryPart::convertParticleAttribute(
         MFnArrayAttrsData &arrayDataFn,
         const MString &mayaName,
         U &buffer,
@@ -551,7 +551,7 @@ GeometryPart::convertParticleAttribute(
 }
 
 void
-GeometryPart::createParticle(MDataHandle &dataHandle)
+OutputGeometryPart::createParticle(MDataHandle &dataHandle)
 {
     MDataHandle positionsHandle = dataHandle.child(AssetNode::outputPartParticlePositions);
     MDataHandle arrayDataHandle = dataHandle.child(AssetNode::outputPartParticleArrayData);
@@ -777,7 +777,7 @@ GeometryPart::createParticle(MDataHandle &dataHandle)
 
 #if MAYA_API_VERSION >= 201400
 MObject
-GeometryPart::createVolume()
+OutputGeometryPart::createVolume()
 {
     int xres = myVolumeInfo.xLength;
     int yres = myVolumeInfo.yLength;
@@ -837,7 +837,7 @@ GeometryPart::createVolume()
 #endif
 
 void
-GeometryPart::createMesh(MDataHandle &dataHandle)
+OutputGeometryPart::createMesh(MDataHandle &dataHandle)
 {
     MStatus status;
 
@@ -1115,7 +1115,7 @@ GeometryPart::createMesh(MDataHandle &dataHandle)
 
 
 void
-GeometryPart::updateMaterial(MDataHandle& handle)
+OutputGeometryPart::updateMaterial(MDataHandle& handle)
 {
     MDataHandle matExistsHandle = handle.child(AssetNode::outputPartMaterialExists);
     MDataHandle ambientHandle = handle.child(AssetNode::outputPartAmbientColor);

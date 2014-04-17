@@ -1,4 +1,4 @@
-#include "AssetSyncOutputObject.h"
+#include "SyncOutputObject.h"
 
 #include <maya/MFloatArray.h>
 #include <maya/MGlobal.h>
@@ -9,14 +9,14 @@
 #include <maya/MDagPath.h>
 
 #include "AssetNode.h"
-#include "AssetSyncOutputGeoPart.h"
-#include "AssetSyncOutputInstance.h"
+#include "SyncOutputGeometryPart.h"
+#include "SyncOutputInstance.h"
 
 #if MAYA_API_VERSION >= 201400
 	#include <maya/MFnFloatArrayData.h>
 #endif
 
-AssetSyncOutputObject::AssetSyncOutputObject(
+SyncOutputObject::SyncOutputObject(
 	const MPlug &outputPlug,
 	const MObject &assetNodeObj,
 	const bool visible,
@@ -27,7 +27,7 @@ AssetSyncOutputObject::AssetSyncOutputObject(
       mySyncTemplatedGeos( syncTemplatedGeos )
 {}
 
-AssetSyncOutputObject::~AssetSyncOutputObject()
+SyncOutputObject::~SyncOutputObject()
 {
     for(AssetSyncs::const_iterator it = myAssetSyncs.begin();
 	    it != myAssetSyncs.end();
@@ -39,7 +39,7 @@ AssetSyncOutputObject::~AssetSyncOutputObject()
 }
 
 MStatus
-AssetSyncOutputObject::doIt()
+SyncOutputObject::doIt()
 {
     MStatus status;
     // Create our parts.
@@ -131,7 +131,7 @@ AssetSyncOutputObject::doIt()
             CHECK_MSTATUS_AND_RETURN_IT(status);
             for (int jj=0; jj<partCount; jj++)
             {
-	        AssetSubCommand* sync = new AssetSyncOutputGeoPart(partsPlug[jj], partParent );
+	        AssetSubCommand* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent );
 	        sync->doIt();
 	        myAssetSyncs.push_back(sync);
             }
@@ -147,7 +147,7 @@ AssetSyncOutputObject::doIt()
 
 #if MAYA_API_VERSION >= 201400
 MStatus
-AssetSyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
+SyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
 {
     MStatus status;
     transform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
@@ -163,7 +163,7 @@ AssetSyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
 }
 
 MStatus
-AssetSyncOutputObject::createVelocityConverter(MObject& velocityConverter)
+SyncOutputObject::createVelocityConverter(MObject& velocityConverter)
 {
     if (!velocityConverter.isNull())
 	return MS::kSuccess;
@@ -175,7 +175,7 @@ AssetSyncOutputObject::createVelocityConverter(MObject& velocityConverter)
 }
 
 bool
-AssetSyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
+SyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
 {
     MPlug resAPlug = resA.child(AssetNode::outputPartVolumeRes);
     MObject resAObj;
@@ -196,7 +196,7 @@ AssetSyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
 
 
 MStatus
-AssetSyncOutputObject::createFluidShape()
+SyncOutputObject::createFluidShape()
 {
     MStatus status;
 
@@ -418,7 +418,7 @@ AssetSyncOutputObject::createFluidShape()
 #endif
 
 MStatus
-AssetSyncOutputObject::undoIt()
+SyncOutputObject::undoIt()
 {
     for(AssetSyncs::reverse_iterator iter = myAssetSyncs.rbegin();
 	    iter != myAssetSyncs.rend();
@@ -432,7 +432,7 @@ AssetSyncOutputObject::undoIt()
 }
 
 MStatus
-AssetSyncOutputObject::redoIt()
+SyncOutputObject::redoIt()
 {
     myDagModifier.doIt();
     for(AssetSyncs::iterator iter = myAssetSyncs.begin();
@@ -446,7 +446,7 @@ AssetSyncOutputObject::redoIt()
 }
 
 bool
-AssetSyncOutputObject::isUndoable() const
+SyncOutputObject::isUndoable() const
 {
     return true;
 }

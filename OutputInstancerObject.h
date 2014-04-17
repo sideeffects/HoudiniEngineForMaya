@@ -1,20 +1,20 @@
-#ifndef __InstancerObject_h__
-#define __InstancerObject_h__
+#ifndef __OutputInstancerObject_h__
+#define __OutputInstancerObject_h__
 
 //#include <Maya/MIntArray.h>
 
-#include "Object.h"
+#include "OutputObject.h"
 
 
-class InstancerObject: public Object
+class OutputInstancerObject: public OutputObject
 {
     public:
-        InstancerObject(
+        OutputInstancerObject(
                 int assetId,
                 int objectId,
                 Asset* objectControl
                 );
-        virtual ~InstancerObject();
+        virtual ~OutputInstancerObject();
 
         MIntArray getInstancedObjIds();
         MStringArray getUniqueInstObjNames();

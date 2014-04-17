@@ -1,4 +1,4 @@
-#include "AssetInput.h"
+#include "Input.h"
 
 #include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnGenericAttribute.h>
@@ -12,46 +12,46 @@
 
 #include <HAPI/HAPI.h>
 
-#include "AssetInputAsset.h"
-#include "AssetInputMesh.h"
-#include "AssetInputCurve.h"
-#include "AssetInputParticle.h"
+#include "InputAsset.h"
+#include "InputMesh.h"
+#include "InputCurve.h"
+#include "InputParticle.h"
 
-MObject AssetInputs::input;
-MObject AssetInputs::inputTransform;
-MObject AssetInputs::inputGeo;
+MObject Inputs::input;
+MObject Inputs::inputTransform;
+MObject Inputs::inputGeo;
 
 MObject
-AssetInputs::createInputAttribute()
+Inputs::createInputAttribute()
 {
     MFnCompoundAttribute cAttr;
     MFnMatrixAttribute mAttr;
     MFnGenericAttribute gAttr;
 
-    AssetInputs::inputTransform = mAttr.create("inputTransform", "inputTransform");
+    Inputs::inputTransform = mAttr.create("inputTransform", "inputTransform");
 
-    AssetInputs::inputGeo = gAttr.create("inputGeo", "inputGeo");
+    Inputs::inputGeo = gAttr.create("inputGeo", "inputGeo");
     gAttr.addDataAccept(MFnData::kIntArray);
     gAttr.addDataAccept(MFnData::kMesh);
     gAttr.addDataAccept(MFnData::kNurbsCurve);
     gAttr.addDataAccept(MFnData::kVectorArray);
 
-    AssetInputs::input = cAttr.create("input", "input");
-    cAttr.addChild(AssetInputs::inputTransform);
-    cAttr.addChild(AssetInputs::inputGeo);
+    Inputs::input = cAttr.create("input", "input");
+    cAttr.addChild(Inputs::inputTransform);
+    cAttr.addChild(Inputs::inputGeo);
     cAttr.setDisconnectBehavior(MFnAttribute::kReset);
     cAttr.setInternal(true);
     cAttr.setArray(true);
 
-    return AssetInputs::input;
+    return Inputs::input;
 }
 
-AssetInputs::AssetInputs(int assetId) :
+Inputs::Inputs(int assetId) :
     myAssetId(assetId)
 {
 }
 
-AssetInputs::~AssetInputs()
+Inputs::~Inputs()
 {
     for(AssetInputVector::iterator iter = myAssetInputs.begin();
 	    iter != myAssetInputs.end();
@@ -63,12 +63,12 @@ AssetInputs::~AssetInputs()
     myAssetInputs.clear();
 }
 
-void AssetInputs::setNumInputs(int numInputs)
+void Inputs::setNumInputs(int numInputs)
 {
-    // delete any AssetInput that will be removed
+    // delete any Input that will be removed
     for(unsigned int i = numInputs; i < myAssetInputs.size(); i++)
     {
-	AssetInput* &assetInput = myAssetInputs[i];
+	Input* &assetInput = myAssetInputs[i];
 
 	if(assetInput)
 	{
@@ -81,7 +81,7 @@ void AssetInputs::setNumInputs(int numInputs)
 }
 
 void
-AssetInputs::setInput(
+Inputs::setInput(
         int inputIdx,
         MDataBlock &dataBlock,
         const MPlug &plug
@@ -91,7 +91,7 @@ AssetInputs::setInput(
 
     bool isValidInput = true;
 
-    MPlug inputGeoPlug = plug.child(AssetInputs::inputGeo);
+    MPlug inputGeoPlug = plug.child(Inputs::inputGeo);
 
     // Check if the plug is actually connected. The MDataHandle could contain
     // valid geometry from previous connection.
@@ -113,7 +113,7 @@ AssetInputs::setInput(
         isValidInput = status;
     }
 
-    AssetInput* &assetInput = myAssetInputs[inputIdx];
+    Input* &assetInput = myAssetInputs[inputIdx];
 
     if(!isValidInput)
     {
@@ -124,22 +124,22 @@ AssetInputs::setInput(
     }
 
     // determine the new input type
-    AssetInput::AssetInputType newAssetInputType = AssetInput::AssetInputType_Invalid;
+    Input::AssetInputType newAssetInputType = Input::AssetInputType_Invalid;
     if(geoDataHandle.type() == MFnData::kIntArray)
     {
-	newAssetInputType = AssetInput::AssetInputType_Asset;
+	newAssetInputType = Input::AssetInputType_Asset;
     }
     else if(geoDataHandle.type() == MFnData::kMesh)
     {
-	newAssetInputType = AssetInput::AssetInputType_Mesh;
+	newAssetInputType = Input::AssetInputType_Mesh;
     }
     else if(geoDataHandle.type() == MFnData::kNurbsCurve)
     {
-	newAssetInputType = AssetInput::AssetInputType_Curve;
+	newAssetInputType = Input::AssetInputType_Curve;
     }
     else if(geoDataHandle.type() == MFnData::kVectorArray)
     {
-	newAssetInputType = AssetInput::AssetInputType_Particle;
+	newAssetInputType = Input::AssetInputType_Particle;
     }
 
     // if the existing input doesn't match the new input type, delete it
@@ -149,10 +149,10 @@ AssetInputs::setInput(
 	assetInput = NULL;
     }
 
-    // create AssetInput if necessary
+    // create Input if necessary
     if(!assetInput)
     {
-	assetInput = AssetInput::createAssetInput(myAssetId, inputIdx, newAssetInputType);
+	assetInput = Input::createAssetInput(myAssetId, inputIdx, newAssetInputType);
     }
 
     if(!assetInput)
@@ -161,42 +161,42 @@ AssetInputs::setInput(
     }
 
     // set input transform
-    MPlug transformPlug = plug.child(AssetInputs::inputTransform);
+    MPlug transformPlug = plug.child(Inputs::inputTransform);
     MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
     assetInput->setInputTransform(transformHandle);
 
     // set input geo
-    MPlug geoPlug = plug.child(AssetInputs::inputGeo);
+    MPlug geoPlug = plug.child(Inputs::inputGeo);
     assetInput->setInputGeo(dataBlock, geoPlug);
 }
 
-AssetInput::AssetInput(int assetId, int inputIdx) :
+Input::Input(int assetId, int inputIdx) :
     myAssetId(assetId),
     myInputIdx(inputIdx)
 {
 }
 
-AssetInput::~AssetInput()
+Input::~Input()
 {
 }
 
-AssetInput*
-AssetInput::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType)
+Input*
+Input::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType)
 {
-    AssetInput* assetInput = NULL;
+    Input* assetInput = NULL;
     switch(assetInputType)
     {
 	case AssetInputType_Asset:
-	    assetInput = new AssetInputAsset(assetId, inputIdx);
+	    assetInput = new InputAsset(assetId, inputIdx);
 	    break;
 	case AssetInputType_Mesh:
-	    assetInput = new AssetInputMesh(assetId, inputIdx);
+	    assetInput = new InputMesh(assetId, inputIdx);
 	    break;
 	case AssetInputType_Curve:
-	    assetInput = new AssetInputCurve(assetId, inputIdx);
+	    assetInput = new InputCurve(assetId, inputIdx);
 	    break;
 	case AssetInputType_Particle:
-	    assetInput = new AssetInputParticle(assetId, inputIdx);
+	    assetInput = new InputParticle(assetId, inputIdx);
 	    break;
 	case AssetInputType_Invalid:
 	    break;

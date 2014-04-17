@@ -1,15 +1,15 @@
-#ifndef __AssetInputParticle_h__
-#define __AssetInputParticle_h__
+#ifndef __InputParticle_h__
+#define __InputParticle_h__
 
-#include "AssetInput.h"
+#include "Input.h"
 
 #include <HAPI/HAPI.h>
 
-class AssetInputParticle : public AssetInput
+class InputParticle : public Input
 {
     public:
-	AssetInputParticle(int assetId, int inputIdx);
-	virtual ~AssetInputParticle();
+	InputParticle(int assetId, int inputIdx);
+	virtual ~InputParticle();
 
 	virtual AssetInputType assetInputType() const;
 

@@ -1,15 +1,15 @@
-#ifndef __AssetInputMesh_h__
-#define __AssetInputMesh_h__
+#ifndef __InputMesh_h__
+#define __InputMesh_h__
 
-#include "AssetInput.h"
+#include "Input.h"
 
 #include <HAPI/HAPI.h>
 
-class AssetInputMesh : public AssetInput
+class InputMesh : public Input
 {
     public:
-	AssetInputMesh(int assetId, int inputIdx);
-	virtual ~AssetInputMesh();
+	InputMesh(int assetId, int inputIdx);
+	virtual ~InputMesh();
 
 	virtual AssetInputType assetInputType() const;
 

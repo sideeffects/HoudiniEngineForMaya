@@ -1,5 +1,5 @@
-#ifndef __GeometryPart_h__
-#define __GeometryPart_h__
+#ifndef __OutputGeometryPart_h__
+#define __OutputGeometryPart_h__
 
 #include <maya/MIntArray.h>
 #include <maya/MFloatPointArray.h>
@@ -11,12 +11,12 @@ class Asset;
 
 class MFnArrayAttrsData;
 
-class GeometryPart
+class OutputGeometryPart
 {
     public:        
-        GeometryPart(int assetId, int objectId, int geoId, int partId,
+        OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
                 HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo);
-        ~GeometryPart();
+        ~OutputGeometryPart();
 
 
         MStatus compute(

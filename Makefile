@@ -188,21 +188,21 @@ CXXFILES = \
 	   AssetSubCommandLoadAsset.C \
 	   AssetSubCommandSync.C \
 	   Asset.C \
-	   AssetInput.C \
-	   AssetInputAsset.C \
-	   AssetInputMesh.C \
-	   AssetInputCurve.C \
-	   AssetInputParticle.C \
-	   Object.C \
+	   Input.C \
+	   InputAsset.C \
+	   InputMesh.C \
+	   InputCurve.C \
+	   InputParticle.C \
+	   OutputObject.C \
 	   util.C \
-	   GeometryObject.C \
-	   InstancerObject.C \
-	   Geo.C \
-	   GeometryPart.C \
-	   AssetSyncAttribute.C \
-	   AssetSyncOutputObject.C \
-	   AssetSyncOutputGeoPart.C \
-	   AssetSyncOutputInstance.C \
+	   OutputGeometryObject.C \
+	   OutputInstancerObject.C \
+	   OutputGeometry.C \
+	   OutputGeometryPart.C \
+	   SyncAttribute.C \
+	   SyncOutputObject.C \
+	   SyncOutputGeometryPart.C \
+	   SyncOutputInstance.C \
 	   FluidVelocityConvert.C \
 	   plugin.C
 

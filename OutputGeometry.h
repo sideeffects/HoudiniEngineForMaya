@@ -1,5 +1,5 @@
-#ifndef __Geo_h__
-#define __Geo_h__
+#ifndef __OutputGeometry_h__
+#define __OutputGeometry_h__
 
 #include <maya/MStatus.h>
 #include <maya/MDataBlock.h>
@@ -8,16 +8,16 @@
 
 #include <HAPI/HAPI.h>
 
-class Object;
-class GeometryPart;
+class OutputObject;
+class OutputGeometryPart;
 
-class Geo {
+class OutputGeometry {
 
     public:
         
         
-        Geo( int assetId, int objectId, int geoId, Object * parentObject );
-        ~Geo();
+        OutputGeometry( int assetId, int objectId, int geoId, OutputObject * parentObject );
+        ~OutputGeometry();
 
         MStatus setClean( MPlug& geoPlug, MDataBlock& data );
 
@@ -27,13 +27,13 @@ class Geo {
     
     protected:
         
-        Object* myParentObject;        
+        OutputObject* myParentObject;        
         HAPI_GeoInfo myGeoInfo;
         int myAssetId;
         int myObjectId;
         int myGeoId;
 
-        std::vector<GeometryPart> myParts;
+        std::vector<OutputGeometryPart> myParts;
         
 };
 

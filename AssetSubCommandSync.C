@@ -8,9 +8,9 @@
 #include <maya/MFnDagNode.h>
 
 #include "AssetNode.h"
-#include "AssetSyncAttribute.h"
-#include "AssetSyncOutputObject.h"
-#include "AssetSyncOutputInstance.h"
+#include "SyncAttribute.h"
+#include "SyncOutputObject.h"
+#include "SyncOutputInstance.h"
 
 AssetSubCommandSync::AssetSubCommandSync(
         const MObject &assetNodeObj
@@ -73,7 +73,7 @@ AssetSubCommandSync::doIt()
     // attributes
     if(mySyncAll || mySyncAttributes)
     {
-	AssetSubCommand* syncOutput = new AssetSyncAttribute(myAssetNodeObj);
+	AssetSubCommand* syncOutput = new SyncAttribute(myAssetNodeObj);
 	syncOutput->doIt();
 
 	myAssetSyncs.push_back(syncOutput);
@@ -120,7 +120,7 @@ AssetSubCommandSync::doIt()
 
             if( mySyncOutputHidden || visible || instanced )
             {
-                AssetSubCommand* syncOutput = new AssetSyncOutputObject(elemPlug, 
+                AssetSubCommand* syncOutput = new SyncOutputObject(elemPlug, 
                         myAssetNodeObj, visible, mySyncOutputTemplatedGeos );
                 syncOutput->doIt();
 
@@ -137,7 +137,7 @@ AssetSubCommandSync::doIt()
         {
             MPlug elemPlug = instancersPlug[i];
 
-            AssetSubCommand* syncOutput = new AssetSyncOutputInstance(elemPlug, i, myAssetNodeObj);
+            AssetSubCommand* syncOutput = new SyncOutputInstance(elemPlug, i, myAssetNodeObj);
             syncOutput->doIt();
 
             myAssetSyncs.push_back(syncOutput);

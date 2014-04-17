@@ -1,4 +1,4 @@
-#include "AssetInputParticle.h"
+#include "InputParticle.h"
 
 #include <maya/MFnAttribute.h>
 #include <maya/MFnParticleSystem.h>
@@ -12,25 +12,25 @@
 
 #include "util.h"
 
-AssetInputParticle::AssetInputParticle(int assetId, int inputIdx) :
-    AssetInput(assetId, inputIdx),
+InputParticle::InputParticle(int assetId, int inputIdx) :
+    Input(assetId, inputIdx),
     myInputAssetId(0)
 {
     HAPI_CreateGeoInput(myAssetId, myInputIdx, &myInputInfo);
 }
 
-AssetInputParticle::~AssetInputParticle()
+InputParticle::~InputParticle()
 {
 }
 
-AssetInput::AssetInputType
-AssetInputParticle::assetInputType() const
+Input::AssetInputType
+InputParticle::assetInputType() const
 {
-    return AssetInput::AssetInputType_Particle;
+    return Input::AssetInputType_Particle;
 }
 
 void
-AssetInputParticle::setInputTransform(MDataHandle &dataHandle)
+InputParticle::setInputTransform(MDataHandle &dataHandle)
 {
     MMatrix transformMatrix = dataHandle.asMatrix();
 
@@ -43,7 +43,7 @@ AssetInputParticle::setInputTransform(MDataHandle &dataHandle)
 }
 
 void
-AssetInputParticle::setAttributePointData(
+InputParticle::setAttributePointData(
         const char* attributeName,
         HAPI_StorageType storage,
         int count,
@@ -90,7 +90,7 @@ AssetInputParticle::setAttributePointData(
 }
 
 void
-AssetInputParticle::setInputGeo(
+InputParticle::setInputGeo(
         MDataBlock &dataBlock,
         const MPlug &plug
         )

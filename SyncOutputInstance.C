@@ -1,4 +1,4 @@
-#include "AssetSyncOutputInstance.h"
+#include "SyncOutputInstance.h"
 
 #include <maya/MDagModifier.h>
 #include <maya/MDagPath.h>
@@ -10,7 +10,7 @@
 #include "AssetNode.h"
 #include "util.h"
 
-AssetSyncOutputInstance::AssetSyncOutputInstance(
+SyncOutputInstance::SyncOutputInstance(
 	const MPlug &outputPlug,
 	const int parentMultiIndex,
 	const MObject &assetNodeObj
@@ -21,12 +21,12 @@ AssetSyncOutputInstance::AssetSyncOutputInstance(
 {
 }
 
-AssetSyncOutputInstance::~AssetSyncOutputInstance()
+SyncOutputInstance::~SyncOutputInstance()
 {
 }
 
 MStatus
-AssetSyncOutputInstance::doIt()
+SyncOutputInstance::doIt()
 {
     MStatus status;
 
@@ -37,7 +37,7 @@ AssetSyncOutputInstance::doIt()
 }
 
 MStatus
-AssetSyncOutputInstance::undoIt()
+SyncOutputInstance::undoIt()
 {
     MStatus status;
 
@@ -48,7 +48,7 @@ AssetSyncOutputInstance::undoIt()
 }
 
 MStatus
-AssetSyncOutputInstance::redoIt()
+SyncOutputInstance::redoIt()
 {
     MStatus status;
 
@@ -59,13 +59,13 @@ AssetSyncOutputInstance::redoIt()
 }
 
 bool
-AssetSyncOutputInstance::isUndoable() const
+SyncOutputInstance::isUndoable() const
 {
     return true;
 }
 
 void 
-AssetSyncOutputInstance::instanceObject( MDagPath & objToInstance,
+SyncOutputInstance::instanceObject( MDagPath & objToInstance,
 					 MObject instancerTransform,
 					  int pointIndex )
 {
@@ -93,7 +93,7 @@ AssetSyncOutputInstance::instanceObject( MDagPath & objToInstance,
 }
 
 bool 
-AssetSyncOutputInstance::stringStartsWith( const MString & string, const MString & startsWith )
+SyncOutputInstance::stringStartsWith( const MString & string, const MString & startsWith )
 {
     if( string.length() >= startsWith.length() )
     {
@@ -106,7 +106,7 @@ AssetSyncOutputInstance::stringStartsWith( const MString & string, const MString
 }
 
 bool 
-AssetSyncOutputInstance::instanceObjects( MObject searchRoot,
+SyncOutputInstance::instanceObjects( MObject searchRoot,
 					  MObject instancerTransform,
 					  int pointIndex,
 					  const MString & objectToInstanceName,
@@ -161,7 +161,7 @@ AssetSyncOutputInstance::instanceObjects( MObject searchRoot,
 }
 
 MStatus
-AssetSyncOutputInstance::createOutput()
+SyncOutputInstance::createOutput()
 {
     MStatus status;
 

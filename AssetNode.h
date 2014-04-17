@@ -27,9 +27,9 @@ class Asset;
 //  It does this by first calling computeInstancerObjects() then 
 //  computeGeometryObjects().  Each of these will fill out the information in
 //  the output attribute.  For computeInstancerObjects() it will end up doing the
-//  work by calling the compute() function of the InstancerObject class, and
+//  work by calling the compute() function of the OutputInstancerObject class, and
 //  for computeGeometryObjects() it will call the computeParts() function of the
-//  GeometryObject class.  
+//  OutputGeometryObject class.  
 
 
 class AssetNode: public MPxTransform

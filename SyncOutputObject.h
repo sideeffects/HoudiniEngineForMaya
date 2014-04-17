@@ -1,5 +1,5 @@
-#ifndef __AssetSyncOutputObject_h__
-#define __AssetSyncOutputObject_h__
+#ifndef __SyncOutputObject_h__
+#define __SyncOutputObject_h__
 
 #include <vector>
 
@@ -8,16 +8,16 @@
 
 #include "AssetSubCommand.h"
 
-class AssetSyncOutputObject : public AssetSubCommand
+class SyncOutputObject : public AssetSubCommand
 {
     public:
-	AssetSyncOutputObject(
+	SyncOutputObject(
 		const MPlug &outputPlug,
 		const MObject &assetNodeObj,
 		const bool visible,
                 const bool syncTemplatedGeos
 		);
-	virtual ~AssetSyncOutputObject();
+	virtual ~SyncOutputObject();
 
 	virtual MStatus doIt();
 	virtual MStatus undoIt();
@@ -39,7 +39,7 @@ class AssetSyncOutputObject : public AssetSubCommand
 
 	MDagModifier myDagModifier;
 
-	// TODO: change this into an AssetSyncOutputGeoPart
+	// TODO: change this into an SyncOutputGeometryPart
 	typedef std::vector<AssetSubCommand*> AssetSyncs;
 	AssetSyncs myAssetSyncs;
 };

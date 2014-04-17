@@ -1,4 +1,4 @@
-#include "AssetInputCurve.h"
+#include "InputCurve.h"
 
 #include <sstream>
 
@@ -11,8 +11,8 @@
 
 #include "util.h"
 
-AssetInputCurve::AssetInputCurve(int assetId, int inputIdx) :
-    AssetInput( assetId, inputIdx )
+InputCurve::InputCurve(int assetId, int inputIdx) :
+    Input( assetId, inputIdx )
 {
     int curveAssetId;
     HAPI_CreateCurve(&curveAssetId);
@@ -21,21 +21,21 @@ AssetInputCurve::AssetInputCurve(int assetId, int inputIdx) :
     HAPI_GetNodeInfo(myCurveAssetInfo.nodeId, &myCurveNodeInfo);
 }
 
-AssetInputCurve::~AssetInputCurve()
+InputCurve::~InputCurve()
 {
     HAPI_DisconnectAssetGeometry(myAssetId, myInputIdx);
 
     HAPI_DestroyAsset(myCurveAssetInfo.id);
 }
 
-AssetInputCurve::AssetInputType
-AssetInputCurve::assetInputType() const
+InputCurve::AssetInputType
+InputCurve::assetInputType() const
 {
-    return AssetInput::AssetInputType_Curve;
+    return Input::AssetInputType_Curve;
 }
 
 void
-AssetInputCurve::setInputTransform(MDataHandle &dataHandle)
+InputCurve::setInputTransform(MDataHandle &dataHandle)
 {
     MMatrix transformMatrix = dataHandle.asMatrix();
 
@@ -48,7 +48,7 @@ AssetInputCurve::setInputTransform(MDataHandle &dataHandle)
 }
 
 void
-AssetInputCurve::setInputGeo(
+InputCurve::setInputGeo(
         MDataBlock &dataBlock,
         const MPlug &plug
         )

@@ -14,7 +14,7 @@
 
 AssetSubCommandSync::AssetSubCommandSync(
         const MObject &assetNodeObj
-	) :
+        ) :
     AssetSubCommandAsset(assetNodeObj),
     mySyncAll(true),
     mySyncAttributes(false),
@@ -27,10 +27,10 @@ AssetSubCommandSync::AssetSubCommandSync(
 AssetSubCommandSync::~AssetSubCommandSync()
 {
     for(AssetSyncs::const_iterator iter = myAssetSyncs.begin();
-	    iter != myAssetSyncs.end();
-	    iter++)
+            iter != myAssetSyncs.end();
+            iter++)
     {
-	delete *iter;
+        delete *iter;
     }
     myAssetSyncs.clear();
 }
@@ -73,10 +73,10 @@ AssetSubCommandSync::doIt()
     // attributes
     if(mySyncAll || mySyncAttributes)
     {
-	AssetSubCommand* syncOutput = new SyncAttribute(myAssetNodeObj);
-	syncOutput->doIt();
+        AssetSubCommand* syncOutput = new SyncAttribute(myAssetNodeObj);
+        syncOutput->doIt();
 
-	myAssetSyncs.push_back(syncOutput);
+        myAssetSyncs.push_back(syncOutput);
     }
 
     // outputs
@@ -155,10 +155,10 @@ AssetSubCommandSync::redoIt()
 {
     myDagModifier.doIt();
     for(AssetSyncs::iterator iter = myAssetSyncs.begin();
-	    iter != myAssetSyncs.end();
-	    iter++)
+            iter != myAssetSyncs.end();
+            iter++)
     {
-	(*iter)->redoIt();
+        (*iter)->redoIt();
     }
 
     return MStatus::kSuccess;
@@ -168,10 +168,10 @@ MStatus
 AssetSubCommandSync::undoIt()
 {
     for(AssetSyncs::reverse_iterator iter = myAssetSyncs.rbegin();
-	    iter != myAssetSyncs.rend();
-	    iter++)
+            iter != myAssetSyncs.rend();
+            iter++)
     {
-	(*iter)->undoIt();
+        (*iter)->undoIt();
     }
     myDagModifier.undoIt();
 

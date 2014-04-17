@@ -41,8 +41,8 @@ class OutputInstancerObject: public OutputObject
         MStringArray myUniqueInstObjNames;
         MIntArray myInstancedObjectIndices;
 
-	MStringArray myHoudiniInstanceAttribute;
-	MStringArray myHoudiniNameAttribute;
+        MStringArray myHoudiniInstanceAttribute;
+        MStringArray myHoudiniNameAttribute;
 };
 
 #endif

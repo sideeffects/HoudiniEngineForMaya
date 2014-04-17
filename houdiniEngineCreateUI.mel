@@ -226,33 +226,33 @@ houdiniEngine_reloadAsset(string $asset)
     string $inputPlugs[];
     for($ii=0; $ii < size($srcPlugs); $ii++)
     {
-	string $srcPlug = $srcPlugs[$ii];
-	string $inputPlug[] = `listConnections -s 0 -d 1 -p 1 $srcPlug`;
-	$inputPlugs[size($inputPlugs) ] = $inputPlug[0];
+        string $srcPlug = $srcPlugs[$ii];
+        string $inputPlug[] = `listConnections -s 0 -d 1 -p 1 $srcPlug`;
+        $inputPlugs[size($inputPlugs) ] = $inputPlug[0];
     }
 
     string $outputPlugs[];
     for($ii=0; $ii < size($dstPlugs); $ii++)
     {
-	string $dstPlug = $dstPlugs[$ii];
-	string $outputPlug[] = `listConnections -s 1 -d 0 -p 1 $dstPlug`;
-	$outputPlugs[size($outputPlugs) ] = $outputPlug[0];
+        string $dstPlug = $dstPlugs[$ii];
+        string $outputPlug[] = `listConnections -s 1 -d 0 -p 1 $dstPlug`;
+        $outputPlugs[size($outputPlugs) ] = $outputPlug[0];
     }
 
     //disconnect all inputs and outputs first.
 
     for($ii=0; $ii < size($srcPlugs); $ii++)
     {
-	string $srcPlug = $srcPlugs[$ii];
-	string $inputPlug = $inputPlugs[$ii];
-	disconnectAttr $srcPlug $inputPlug;
+        string $srcPlug = $srcPlugs[$ii];
+        string $inputPlug = $inputPlugs[$ii];
+        disconnectAttr $srcPlug $inputPlug;
     }
 
     for($ii=0; $ii < size($dstPlugs); $ii++)
     {
-	string $dstPlug = $dstPlugs[$ii];
-	string $outputPlug = $outputPlugs[$ii];
-	disconnectAttr $outputPlug $dstPlug;
+        string $dstPlug = $dstPlugs[$ii];
+        string $outputPlug = $outputPlugs[$ii];
+        disconnectAttr $outputPlug $dstPlug;
     }
 
     //delete our asset, flush the undo since this operation is not undoable.
@@ -269,28 +269,28 @@ houdiniEngine_reloadAsset(string $asset)
 
     for($ii=0; $ii < size($srcPlugs); $ii++)
     {
-	string $srcPlug = $srcPlugs[$ii];
-	string $inputPlug = $inputPlugs[$ii];
+        string $srcPlug = $srcPlugs[$ii];
+        string $inputPlug = $inputPlugs[$ii];
 
-	string $array[] = stringToStringArray($srcPlug, ".");
-	string $srcNode = $array[0];
-	if(`objExists $srcNode`)
-	{
-	    connectAttr $srcPlug $inputPlug;
-	}
+        string $array[] = stringToStringArray($srcPlug, ".");
+        string $srcNode = $array[0];
+        if(`objExists $srcNode`)
+        {
+            connectAttr $srcPlug $inputPlug;
+        }
     }
 
     for($ii=0; $ii < size($dstPlugs); $ii++)
     {
-	string $dstPlug = $dstPlugs[$ii];
-	string $outputPlug = $outputPlugs[$ii];
+        string $dstPlug = $dstPlugs[$ii];
+        string $outputPlug = $outputPlugs[$ii];
 
-	string $array[] = stringToStringArray($dstPlug, ".");
-	string $dstNode = $array[0];
-	if(`objExists $dstNode`)
-	{
-	    connectAttr $outputPlug $dstPlug;
-	}
+        string $array[] = stringToStringArray($dstPlug, ".");
+        string $dstNode = $array[0];
+        if(`objExists $dstNode`)
+        {
+            connectAttr $outputPlug $dstPlug;
+        }
     }
 
     select -r $asset;
@@ -302,32 +302,32 @@ houdiniEngine_reloadAssetOutputMenuClick()
     string $currSels[] = `ls -sl`;
     if(size($currSels) < 1)
     {
-	error("Please select a houdiniAsset node to reload.");
+        error("Please select a houdiniAsset node to reload.");
     }
     string $currSel = $currSels[0];
     string $nodeTypeOfSel = `nodeType $currSel`;
     if($nodeTypeOfSel == "houdiniAsset")
     {
-	//FIXME: TODO: This is not yet working reliably. use
-	//a workaround for now to reload the asset.
-	//houdiniAsset -reloadAsset $currSel;
-	//refreshEditorTemplates;
+        //FIXME: TODO: This is not yet working reliably. use
+        //a workaround for now to reload the asset.
+        //houdiniAsset -reloadAsset $currSel;
+        //refreshEditorTemplates;
 
-	houdiniEngine_reloadAsset($currSel);
+        houdiniEngine_reloadAsset($currSel);
     }
     else
     {
-	error("Please select a houdiniAsset node to reload.");
+        error("Please select a houdiniAsset node to reload.");
     }
 
 }
 
 global proc
 houdiniEngine_createInstance(string $assetNode,
-			      string $objToInstancePath,
-			      string $parent,
-			      int $instancerIndex,
-			      int $instanceIndex)
+                              string $objToInstancePath,
+                              string $parent,
+                              int $instancerIndex,
+                              int $instanceIndex)
 {
     string $array[] = stringToStringArray($objToInstancePath, "|");
     string $objToInstanceName = $array[size($array) - 1];
@@ -336,7 +336,7 @@ houdiniEngine_createInstance(string $assetNode,
 
     if($parent != "")
     {
-	parent $newInstance[0] $parent;
+        parent $newInstance[0] $parent;
     }
 
     showHidden $newInstance[0];
@@ -377,8 +377,8 @@ houdiniEngineCreateUI()
     setParent $gMainWindow;
 
     menu -label "Houdini Engine"
-	-tearOff true
-	houdiniEngineMenu;
+        -tearOff true
+        houdiniEngineMenu;
 
     menuItem
         -label "Load Asset..."
@@ -390,7 +390,7 @@ houdiniEngineCreateUI()
     setParent -menu ..;
 
     menuItem -label "Asset Library Manager..."
-	-command "houdiniEngineAssetLibraryManager";
+        -command "houdiniEngineAssetLibraryManager";
 
     menuItem -label "Get Assets from Orbolt..."
         -command "houdiniEngine_launchOrboltPageClick";
@@ -398,7 +398,7 @@ houdiniEngineCreateUI()
     menuItem -divider true;
 
     menuItem -label "Sync Asset"
-	-command "houdiniEngine_syncSelectedAsset";
+        -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadAssetOutputMenuClick";
     menuItem -label "Save Underlying Houdini Scene..."

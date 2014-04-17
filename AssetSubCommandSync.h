@@ -11,10 +11,10 @@
 class AssetSubCommandSync : public AssetSubCommandAsset
 {
     public:
-	AssetSubCommandSync(
+        AssetSubCommandSync(
                 const MObject &assetNodeObj
-		);
-	virtual ~AssetSubCommandSync();
+                );
+        virtual ~AssetSubCommandSync();
 
         void setSyncAttributes();
         void setSyncOutputs();
@@ -22,23 +22,23 @@ class AssetSubCommandSync : public AssetSubCommandAsset
         void setSyncOutputHidden();
         void setSyncOutputTemplatedGeos();
 
-	virtual MStatus doIt();
-	virtual MStatus redoIt();
-	virtual MStatus undoIt();
-	virtual bool isUndoable() const;
+        virtual MStatus doIt();
+        virtual MStatus redoIt();
+        virtual MStatus undoIt();
+        virtual bool isUndoable() const;
 
     protected:
-	bool mySyncAll;
-	bool mySyncAttributes;
-	bool mySyncOutputs;
+        bool mySyncAll;
+        bool mySyncAttributes;
+        bool mySyncOutputs;
 
         bool mySyncOutputHidden;
         bool mySyncOutputTemplatedGeos;
 
-	MDagModifier myDagModifier;
+        MDagModifier myDagModifier;
 
-	typedef std::vector<AssetSubCommand*> AssetSyncs;
-	AssetSyncs myAssetSyncs;
+        typedef std::vector<AssetSubCommand*> AssetSyncs;
+        AssetSyncs myAssetSyncs;
 };
 
 #endif

@@ -8,20 +8,20 @@
 class InputCurve : public Input
 {
     public:
-	InputCurve(int assetId, int inputIdx);
-	virtual ~InputCurve();
+        InputCurve(int assetId, int inputIdx);
+        virtual ~InputCurve();
 
-	virtual AssetInputType assetInputType() const;
+        virtual AssetInputType assetInputType() const;
 
-	virtual void setInputTransform(MDataHandle &dataHandle);
+        virtual void setInputTransform(MDataHandle &dataHandle);
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug
                 );
 
     protected:
-	HAPI_AssetInfo myCurveAssetInfo;
-	HAPI_NodeInfo myCurveNodeInfo;
+        HAPI_AssetInfo myCurveAssetInfo;
+        HAPI_NodeInfo myCurveNodeInfo;
 };
 
 #endif

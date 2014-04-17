@@ -25,7 +25,7 @@ OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId, OutputObjec
 
         if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
             myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-	    myGeoInfo.type == HAPI_GEOTYPE_CURVE)
+            myGeoInfo.type == HAPI_GEOTYPE_CURVE)
         {
             int partCount = myGeoInfo.partCount;
             myParts.clear();
@@ -66,7 +66,7 @@ OutputGeometry::update()
 
             if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
                 myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-		myGeoInfo.type == HAPI_GEOTYPE_CURVE)
+                myGeoInfo.type == HAPI_GEOTYPE_CURVE)
             {
                 int partCount = myGeoInfo.partCount;
 
@@ -125,7 +125,7 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
 
     if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
         myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-	myGeoInfo.type == HAPI_GEOTYPE_CURVE)
+        myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
         for(int i=0; i< myGeoInfo.partCount; i++)
         {
@@ -138,10 +138,10 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
         if(partBuilderSizeCheck > myGeoInfo.partCount)
         {
             for(int i = myGeoInfo.partCount; i< partBuilderSizeCheck; i++)
-	    {
-	        stat = partsBuilder.removeElement(i);
-	        CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
-	    }
+            {
+                stat = partsBuilder.removeElement(i);
+                CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
+            }
         }
     }
 
@@ -156,17 +156,17 @@ OutputGeometry::setClean(MPlug& geoPlug, MDataBlock& data)
     MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
     for(int jj=0; jj < myGeoInfo.partCount; jj++)
     {
-	MPlug partPlug = partsPlug[jj];
-	data.setClean(partPlug.child(AssetNode::outputPartName) );
-	data.setClean(partPlug.child(AssetNode::outputPartMesh) );
+        MPlug partPlug = partsPlug[jj];
+        data.setClean(partPlug.child(AssetNode::outputPartName) );
+        data.setClean(partPlug.child(AssetNode::outputPartMesh) );
 
-	data.setClean(partPlug.child(AssetNode::outputPartMaterial) );
-	data.setClean(partPlug.child(AssetNode::outputPartMaterialExists) );
-	data.setClean(partPlug.child(AssetNode::outputPartTexturePath) );
-	data.setClean(partPlug.child(AssetNode::outputPartAmbientColor) );
-	data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor) );
-	data.setClean(partPlug.child(AssetNode::outputPartSpecularColor) );
-	data.setClean(partPlug.child(AssetNode::outputPartAlphaColor) );
+        data.setClean(partPlug.child(AssetNode::outputPartMaterial) );
+        data.setClean(partPlug.child(AssetNode::outputPartMaterialExists) );
+        data.setClean(partPlug.child(AssetNode::outputPartTexturePath) );
+        data.setClean(partPlug.child(AssetNode::outputPartAmbientColor) );
+        data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor) );
+        data.setClean(partPlug.child(AssetNode::outputPartSpecularColor) );
+        data.setClean(partPlug.child(AssetNode::outputPartAlphaColor) );
     }
     return MS::kSuccess;
 }

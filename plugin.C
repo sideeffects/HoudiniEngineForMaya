@@ -71,7 +71,7 @@ initializeHAPI()
 {
     if(HAPI_IsInitialized() == HAPI_RESULT_SUCCESS)
     {
-	return true;
+        return true;
     }
 
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
@@ -83,11 +83,11 @@ initializeHAPI()
     cook_options.maxVerticesPerPrimitive = -1;
     cook_options.refineCurveToLinear = false;
     hstat = HAPI_Initialize(otl_dir.asChar(),
-	    dso_dir.asChar(), cook_options, true, -1);
+            dso_dir.asChar(), cook_options, true, -1);
     if(hstat != HAPI_RESULT_SUCCESS)
     {
-	CHECK_HAPI(hstat);
-	return false;
+        CHECK_HAPI(hstat);
+        return false;
     }
 
     return true;
@@ -113,34 +113,34 @@ initializePlugin(MObject obj)
 
     if(initializeHAPI())
     {
-	MGlobal::displayInfo("Houdini Engine initialized successfully.");
+        MGlobal::displayInfo("Houdini Engine initialized successfully.");
     }
     else
     {
-	MGlobal::displayInfo("Houdini Engine failed to initialize.");
-	return MStatus::kFailure;
+        MGlobal::displayInfo("Houdini Engine failed to initialize.");
+        return MStatus::kFailure;
     }
 
     status = plugin.registerUI("houdiniEngineCreateUI", "houdiniEngineDeleteUI");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerTransform(
-	    AssetNode::typeName,
-	    AssetNode::typeId,
-	    AssetNode::creator,
-	    AssetNode::initialize,
-	    MPxTransformationMatrix::creator,
-	    MPxTransformationMatrix::baseTransformationMatrixId
-	    );
+            AssetNode::typeName,
+            AssetNode::typeId,
+            AssetNode::creator,
+            AssetNode::initialize,
+            MPxTransformationMatrix::creator,
+            MPxTransformationMatrix::baseTransformationMatrixId
+            );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
-	    FluidVelocityConvert::typeName,
-	    FluidVelocityConvert::typeId,
-	    FluidVelocityConvert::creator,
-	    FluidVelocityConvert::initialize
-	    );
+            FluidVelocityConvert::typeName,
+            FluidVelocityConvert::typeId,
+            FluidVelocityConvert::creator,
+            FluidVelocityConvert::initialize
+            );
 #endif
 
     status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);

@@ -10,27 +10,27 @@ class Asset;
 class AssetSubCommand
 {
     public:
-	AssetSubCommand();
-	virtual ~AssetSubCommand();
+        AssetSubCommand();
+        virtual ~AssetSubCommand();
 
-	virtual MStatus doIt();
-	virtual MStatus redoIt();
-	virtual MStatus undoIt();
+        virtual MStatus doIt();
+        virtual MStatus redoIt();
+        virtual MStatus undoIt();
 
-	virtual bool isUndoable() const;
+        virtual bool isUndoable() const;
 };
 
 class AssetSubCommandAsset : public AssetSubCommand
 {
     public:
-	AssetSubCommandAsset(const MObject &assetNodeObj);
+        AssetSubCommandAsset(const MObject &assetNodeObj);
 
     protected:
-	AssetNode* getAssetNode() const;
-	Asset* getAsset() const;
+        AssetNode* getAssetNode() const;
+        Asset* getAsset() const;
 
     protected:
-	MObject myAssetNodeObj;
+        MObject myAssetNodeObj;
 };
 
 #endif

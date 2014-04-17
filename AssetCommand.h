@@ -11,33 +11,33 @@ class AssetCommand: public MPxCommand
 {
     enum AssetOperationType
     {
-	kOperationSubCommand,
-	kOperationSaveHip,
-	kOperationInvalid
+        kOperationSubCommand,
+        kOperationSaveHip,
+        kOperationInvalid
     };
 
     public:
-	static void* creator();
-	static MSyntax newSyntax();
+        static void* creator();
+        static MSyntax newSyntax();
 
     public:
         AssetCommand();
         virtual ~AssetCommand();
 
         MStatus doIt(const MArgList& args);
-	MStatus redoIt();
-	MStatus undoIt();
+        MStatus redoIt();
+        MStatus undoIt();
         bool isUndoable() const;
 
     private:
-	MStatus parseArgs(const MArgList &args);
+        MStatus parseArgs(const MArgList &args);
 
     private:
-	MString myHIPFilePath;
-	int	myResetSimulationAssetId;
-	AssetOperationType myOperationType;
+        MString myHIPFilePath;
+        int        myResetSimulationAssetId;
+        AssetOperationType myOperationType;
 
-	AssetSubCommand* myAssetSubCommand;
+        AssetSubCommand* myAssetSubCommand;
 };
 
 #endif

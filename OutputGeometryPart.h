@@ -32,11 +32,11 @@ class OutputGeometryPart
         void updateMaterial(MDataHandle& handle);
 
         void createMesh(MDataHandle &dataHandle);
-	void createParticle(MDataHandle &dataHandle);
-	void createCurves(MDataHandle &dataHandle);
+        void createParticle(MDataHandle &dataHandle);
+        void createCurves(MDataHandle &dataHandle);
 
-	MObject createVolume();
-	void    updateVolumeTransform(MDataHandle& handle);
+        MObject createVolume();
+        void    updateVolumeTransform(MDataHandle& handle);
 
         template<typename T>
         bool getAttributeData(
@@ -63,8 +63,8 @@ class OutputGeometryPart
         HAPI_ObjectInfo myObjectInfo;
         HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
-	HAPI_VolumeInfo myVolumeInfo;
-	HAPI_CurveInfo myCurveInfo;
+        HAPI_VolumeInfo myVolumeInfo;
+        HAPI_CurveInfo myCurveInfo;
         HAPI_MaterialInfo myMaterialInfo;
 
         bool myNeverBuilt;

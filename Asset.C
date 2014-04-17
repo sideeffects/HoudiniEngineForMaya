@@ -197,7 +197,7 @@ AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
         if(!multiSizeAttrObj.isNull())
         {
-	    multiSizeDataHandle = parentDataHandle.child(multiSizeAttrObj);
+            multiSizeDataHandle = parentDataHandle.child(multiSizeAttrObj);
             multiSizePlug = parentPlug.child(multiSizeAttrObj);
 
             isMulti = true;
@@ -401,7 +401,7 @@ Asset::Asset(
 
     for(int i=0; i<objCount; i++)
     {
-	Util::updateProgressWindow(status, (int)((float) i *100.0f / (float) objCount) );
+        Util::updateProgressWindow(status, (int)((float) i *100.0f / (float) objCount) );
         myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
     }
 
@@ -585,23 +585,23 @@ Asset::computeGeometryObjects(
     {
         OutputObject * obj = myObjects[ii];
 
-	MDataHandle objectHandle = objectsBuilder.addElement(ii);
+        MDataHandle objectHandle = objectsBuilder.addElement(ii);
 
         if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
             obj->compute(objectHandle, needToSyncOutputs);
 
             MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
-	    visibilityHandle.setBool(obj->isVisible() );
-	    visibilityHandle.setClean();
+            visibilityHandle.setBool(obj->isVisible() );
+            visibilityHandle.setClean();
 
-	    MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
-	    isInstancedHandle.setBool(obj->isInstanced() );
-	    isInstancedHandle.setClean();
+            MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
+            isInstancedHandle.setBool(obj->isInstanced() );
+            isInstancedHandle.setClean();
 
             MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
             objectNameHandle.setString(obj->getName() );
-	    objectNameHandle.setClean();
+            objectNameHandle.setClean();
         }
     }
 
@@ -611,10 +611,10 @@ Asset::computeGeometryObjects(
     if(objBuilderSizeCheck > myNumObjects)
     {
         for(int ii = myNumObjects; ii < objBuilderSizeCheck; ii++)
-	{
-	    stat = objectsBuilder.removeElement(ii);
-	    CHECK_MSTATUS(stat);
-	}
+        {
+            stat = objectsBuilder.removeElement(ii);
+            CHECK_MSTATUS(stat);
+        }
     }
     objectsHandle.set(objectsBuilder);
 
@@ -911,16 +911,16 @@ Asset::getParmValues(
 
     // Get value
     {
-	parmInfos.resize(myNodeInfo.parmCount);
-	HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        parmInfos.resize(myNodeInfo.parmCount);
+        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
 
-	GetAttrOperation operation(
-		dataBlock,
-		nodeFn,
-		myNodeInfo,
-		attrs
-		);
-	Util::walkParm(parmInfos, operation);
+        GetAttrOperation operation(
+                dataBlock,
+                nodeFn,
+                myNodeInfo,
+                attrs
+                );
+        Util::walkParm(parmInfos, operation);
     }
 }
 
@@ -1138,16 +1138,16 @@ Asset::setParmValues(
 
     // Set value
     {
-	parmInfos.resize(myNodeInfo.parmCount);
-	HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        parmInfos.resize(myNodeInfo.parmCount);
+        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
 
-	SetAttrOperation operation(
-		dataBlock,
-		nodeFn,
-		myNodeInfo,
-		attrs
-		);
-	Util::walkParm(parmInfos, operation);
+        SetAttrOperation operation(
+                dataBlock,
+                nodeFn,
+                myNodeInfo,
+                attrs
+                );
+        Util::walkParm(parmInfos, operation);
     }
 }
 

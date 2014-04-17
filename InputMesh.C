@@ -75,11 +75,11 @@ InputMesh::setInputGeo(
 
     // Set the data
     HAPI_SetPartInfo(myInputAssetId, myInputInfo.objectId,
-	    myInputInfo.geoId, &partInfo);
+            myInputInfo.geoId, &partInfo);
     HAPI_SetFaceCounts(myInputAssetId, myInputInfo.objectId,
-	    myInputInfo.geoId, fc, 0, partInfo.faceCount);
+            myInputInfo.geoId, fc, 0, partInfo.faceCount);
     HAPI_SetVertexList(myInputAssetId, myInputInfo.objectId,
-	    myInputInfo.geoId, vl, 0, partInfo.vertexCount);
+            myInputInfo.geoId, vl, 0, partInfo.vertexCount);
 
     // Set position attributes.
     HAPI_AttributeInfo pos_attr_info;
@@ -91,7 +91,7 @@ InputMesh::setInputGeo(
     HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info);
 
     HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info,
-	    meshFn.getRawPoints(NULL), 0, meshFn.numVertices());
+            meshFn.getRawPoints(NULL), 0, meshFn.numVertices());
 
     // normals
     {

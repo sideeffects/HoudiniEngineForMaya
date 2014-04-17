@@ -440,19 +440,19 @@ AssetNode::initialize()
 
     // particle
     AssetNode::outputPartParticlePositions = tAttr.create(
-	    "outputPartParticlePositions",
-	    "outputPartParticlePositions",
-	    MFnData::kVectorArray
-	    );
+            "outputPartParticlePositions",
+            "outputPartParticlePositions",
+            MFnData::kVectorArray
+            );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartParticlePositions);
 
     AssetNode::outputPartParticleArrayData = tAttr.create(
-	    "outputPartParticleArrayData",
-	    "outputPartParticleArrayData",
-	    MFnData::kDynArrayAttrs
-	    );
+            "outputPartParticleArrayData",
+            "outputPartParticleArrayData",
+            MFnData::kDynArrayAttrs
+            );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartParticleArrayData);
@@ -766,137 +766,137 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     for(unsigned int i = 0; i < outputObjectsPlug.numElements(); ++i)
     {
         MPlug objPlug = outputObjectsPlug[i];
-	MPlug outputObjectTransformPlug = objPlug.child(AssetNode::outputObjectTransform);
-	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectTranslate));
-	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectRotate));
-	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectScale));
-	affectedPlugs.append(objPlug.child(AssetNode::outputObjectMetaData));
+        MPlug outputObjectTransformPlug = objPlug.child(AssetNode::outputObjectTransform);
+        affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectTranslate));
+        affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectRotate));
+        affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectScale));
+        affectedPlugs.append(objPlug.child(AssetNode::outputObjectMetaData));
 
         MPlug outputGeosPlug = objPlug.child(AssetNode::outputGeos);
         for(unsigned int jj = 0; jj < outputGeosPlug.numElements(); ++jj)
-	{
+        {
             MPlug geoPlug = outputGeosPlug[jj];
 
-	    MPlug outputPartsPlug = geoPlug.child(AssetNode::outputParts);
-	    for(unsigned int kk = 0; kk < outputPartsPlug.numElements(); ++kk)
-	    {
-	        MPlug elemPlug = outputPartsPlug[kk];
+            MPlug outputPartsPlug = geoPlug.child(AssetNode::outputParts);
+            for(unsigned int kk = 0; kk < outputPartsPlug.numElements(); ++kk)
+            {
+                MPlug elemPlug = outputPartsPlug[kk];
 
-	        affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
+                affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
 
-	        // Mesh
-	        MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
-	        affectedPlugs.append(meshPlug);
+                // Mesh
+                MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
+                affectedPlugs.append(meshPlug);
 
-	        // General part attributes
-	        MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
-	        MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
+                // General part attributes
+                MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
+                MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
 
-	        affectedPlugs.append(outputPartNamePlug);
+                affectedPlugs.append(outputPartNamePlug);
 
-	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialExists));
-	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartTexturePath));
-	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAmbientColor));
-	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
-	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
-	        affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
+                affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialExists));
+                affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartTexturePath));
+                affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAmbientColor));
+                affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
+                affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
+                affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
 
-	        // Particle
-	        MPlug outputPartParticle = elemPlug.child(AssetNode::outputPartParticle);
-	        affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticlePositions));
-	        affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleArrayData));
+                // Particle
+                MPlug outputPartParticle = elemPlug.child(AssetNode::outputPartParticle);
+                affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticlePositions));
+                affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleArrayData));
 
 #if MAYA_API_VERSION >= 201400
-	        // Volume
-		MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
-		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
-		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
-		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
-		affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
+                // Volume
+                MPlug outputPartVolume = elemPlug.child(AssetNode::outputPartVolume);
+                affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeName));
+                affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeGrid));
+                affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeRes));
+                affectedPlugs.append(outputPartVolume.child(AssetNode::outputPartVolumeTransform));
 
-		MPlug outputPartVolumeTransform = outputPartVolume.child(AssetNode::outputPartVolumeTransform);
-	        affectedPlugs.append(outputPartVolumeTransform);
-		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeTranslate));
-		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeRotate));
-		affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeScale));
+                MPlug outputPartVolumeTransform = outputPartVolume.child(AssetNode::outputPartVolumeTransform);
+                affectedPlugs.append(outputPartVolumeTransform);
+                affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeTranslate));
+                affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeRotate));
+                affectedPlugs.append(outputPartVolumeTransform.child(AssetNode::outputPartVolumeScale));
 #endif
-		// Curves
-		MPlug outputPartCurves = elemPlug.child(AssetNode::outputPartCurves);
-		for(unsigned int i = 0; i < outputPartCurves.numElements(); ++i)
-		    affectedPlugs.append(outputPartCurves[i]);
+                // Curves
+                MPlug outputPartCurves = elemPlug.child(AssetNode::outputPartCurves);
+                for(unsigned int i = 0; i < outputPartCurves.numElements(); ++i)
+                    affectedPlugs.append(outputPartCurves[i]);
 
-		affectedPlugs.append(elemPlug.child(outputPartCurvesIsBezier));
+                affectedPlugs.append(elemPlug.child(outputPartCurvesIsBezier));
 
-	    }
+            }
         }
     }
 
     MPlug outputInstancersPlug(thisMObject(), AssetNode::outputInstancers);
     for(unsigned int i = 0; i < outputInstancersPlug.numElements(); ++i)
     {
-	MPlug elemPlug = outputInstancersPlug[i];
+        MPlug elemPlug = outputInstancersPlug[i];
 
-	MPlug outputInstancerDataPlug = elemPlug.child(AssetNode::outputInstancerData);
-	MPlug outputInstancedObjectNamesPlug = elemPlug.child(AssetNode::outputInstancedObjectNames);
+        MPlug outputInstancerDataPlug = elemPlug.child(AssetNode::outputInstancerData);
+        MPlug outputInstancedObjectNamesPlug = elemPlug.child(AssetNode::outputInstancedObjectNames);
 
-	affectedPlugs.append(outputInstancerDataPlug);
+        affectedPlugs.append(outputInstancerDataPlug);
 
-	for(unsigned int j = 0; j < outputInstancedObjectNamesPlug.numElements(); ++j)
-	    affectedPlugs.append(outputInstancedObjectNamesPlug[j]);
+        for(unsigned int j = 0; j < outputInstancedObjectNamesPlug.numElements(); ++j)
+            affectedPlugs.append(outputInstancedObjectNamesPlug[j]);
 
-	MPlug outputHoudiniInstancePlug = elemPlug.child(AssetNode::outputHoudiniInstanceAttribute);
-	for(unsigned int jj = 0; jj < outputHoudiniInstancePlug.numElements(); ++jj)
-	    affectedPlugs.append(outputHoudiniInstancePlug[jj]);
+        MPlug outputHoudiniInstancePlug = elemPlug.child(AssetNode::outputHoudiniInstanceAttribute);
+        for(unsigned int jj = 0; jj < outputHoudiniInstancePlug.numElements(); ++jj)
+            affectedPlugs.append(outputHoudiniInstancePlug[jj]);
 
-	MPlug outputHoudiniNamePlug = elemPlug.child(AssetNode::outputHoudiniNameAttribute);
-	for(unsigned int jj = 0; jj < outputHoudiniNamePlug.numElements(); ++jj)
-	    affectedPlugs.append(outputHoudiniNamePlug[jj]);
+        MPlug outputHoudiniNamePlug = elemPlug.child(AssetNode::outputHoudiniNameAttribute);
+        for(unsigned int jj = 0; jj < outputHoudiniNamePlug.numElements(); ++jj)
+            affectedPlugs.append(outputHoudiniNamePlug[jj]);
 
-	MPlug outputInstanceTransformPlug = elemPlug.child(AssetNode::outputInstanceTransform);
-	for(unsigned int jj = 0; jj < outputInstanceTransformPlug.numElements(); ++jj)
-	{
-	    MPlug transformPlug = outputInstanceTransformPlug[jj];
+        MPlug outputInstanceTransformPlug = elemPlug.child(AssetNode::outputInstanceTransform);
+        for(unsigned int jj = 0; jj < outputInstanceTransformPlug.numElements(); ++jj)
+        {
+            MPlug transformPlug = outputInstanceTransformPlug[jj];
 
-	    //translation
-	    MPlug outputInstanceTranslatePlug = transformPlug.child(AssetNode::outputInstanceTranslate);
-	    affectedPlugs.append(outputInstanceTranslatePlug);
+            //translation
+            MPlug outputInstanceTranslatePlug = transformPlug.child(AssetNode::outputInstanceTranslate);
+            affectedPlugs.append(outputInstanceTranslatePlug);
 
-	    MPlug outputInstanceTxPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateX);
-	    affectedPlugs.append(outputInstanceTxPlug);
+            MPlug outputInstanceTxPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateX);
+            affectedPlugs.append(outputInstanceTxPlug);
 
-	    MPlug outputInstanceTyPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateY);
-	    affectedPlugs.append(outputInstanceTyPlug);
+            MPlug outputInstanceTyPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateY);
+            affectedPlugs.append(outputInstanceTyPlug);
 
-	    MPlug outputInstanceTzPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateZ);
-	    affectedPlugs.append(outputInstanceTzPlug);
+            MPlug outputInstanceTzPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateZ);
+            affectedPlugs.append(outputInstanceTzPlug);
 
-	    //rotation
-	    MPlug outputInstanceRotatePlug = transformPlug.child(AssetNode::outputInstanceRotate);
-	    affectedPlugs.append(outputInstanceRotatePlug);
+            //rotation
+            MPlug outputInstanceRotatePlug = transformPlug.child(AssetNode::outputInstanceRotate);
+            affectedPlugs.append(outputInstanceRotatePlug);
 
-	    MPlug outputInstanceRxPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateX);
-	    affectedPlugs.append(outputInstanceRxPlug);
+            MPlug outputInstanceRxPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateX);
+            affectedPlugs.append(outputInstanceRxPlug);
 
-	    MPlug outputInstanceRyPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateY);
-	    affectedPlugs.append(outputInstanceRyPlug);
+            MPlug outputInstanceRyPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateY);
+            affectedPlugs.append(outputInstanceRyPlug);
 
-	    MPlug outputInstanceRzPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateZ);
-	    affectedPlugs.append(outputInstanceRzPlug);
+            MPlug outputInstanceRzPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateZ);
+            affectedPlugs.append(outputInstanceRzPlug);
 
-	    //scale
-	    MPlug outputInstanceScalePlug = transformPlug.child(AssetNode::outputInstanceScale);
-	    affectedPlugs.append(outputInstanceScalePlug);
+            //scale
+            MPlug outputInstanceScalePlug = transformPlug.child(AssetNode::outputInstanceScale);
+            affectedPlugs.append(outputInstanceScalePlug);
 
-	    MPlug outputInstanceSxPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleX);
-	    affectedPlugs.append(outputInstanceSxPlug);
+            MPlug outputInstanceSxPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleX);
+            affectedPlugs.append(outputInstanceSxPlug);
 
-	    MPlug outputInstanceSyPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleY);
-	    affectedPlugs.append(outputInstanceSyPlug);
+            MPlug outputInstanceSyPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleY);
+            affectedPlugs.append(outputInstanceSyPlug);
 
-	    MPlug outputInstanceSzPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleZ);
-	    affectedPlugs.append(outputInstanceSzPlug);
+            MPlug outputInstanceSzPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleZ);
+            affectedPlugs.append(outputInstanceSzPlug);
 
-	}
+        }
     }
 
     return MS::kSuccess;
@@ -922,15 +922,15 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     MStatus status;
 
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
-	!= computeAttributes.end() && !myResultsClean)
+        != computeAttributes.end() && !myResultsClean)
     {
-	// make sure Asset is created
-	createAsset();
+        // make sure Asset is created
+        createAsset();
 
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
 
-	//push parms into Houdini
+        //push parms into Houdini
         if(!parmAttrObj.isNull())
         {
             myAsset->setParmValues(
@@ -941,7 +941,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             myDirtyParmAttributes.clear();
         }
 
-	//updates Maya attrs from Houdini
+        //updates Maya attrs from Houdini
         if(!parmAttrObj.isNull())
         {
             myAsset->getParmValues(
@@ -953,45 +953,45 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         bool autoSyncOutputs = data.inputValue(AssetNode::autoSyncOutputs).asBool();
 
-	MPlug outputPlug(thisMObject(), AssetNode::output);
+        MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
-	myAsset->compute(outputPlug, data, needToSyncOutputs);
+        myAsset->compute(outputPlug, data, needToSyncOutputs);
         if(autoSyncOutputs && needToSyncOutputs)
         {
             MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.name());
         }
 
-	myResultsClean = true;
+        myResultsClean = true;
 
-	data.setClean(plug);
-	return MStatus::kSuccess;
+        data.setClean(plug);
+        return MStatus::kSuccess;
     }
     else
     {
-	return MStatus::kUnknownParameter;
+        return MStatus::kUnknownParameter;
     }
 
 }
 
 bool
 AssetNode::getInternalValueInContext(
-	const MPlug &plug,
-	MDataHandle &dataHandle,
-	MDGContext &ctx)
+        const MPlug &plug,
+        MDataHandle &dataHandle,
+        MDGContext &ctx)
 {
     MStatus status;
 
     if(plug == AssetNode::otlFilePath)
     {
-	dataHandle.setString(myOTLFilePath);
+        dataHandle.setString(myOTLFilePath);
 
-	return true;
+        return true;
     }
     else if(plug == AssetNode::assetName)
     {
-	dataHandle.setString(myAssetName);
+        dataHandle.setString(myAssetName);
 
-	return true;
+        return true;
     }
 
     // handle getting multiparm length
@@ -1029,10 +1029,10 @@ AssetNode::getInternalValueInContext(
 
 bool
 AssetNode::setInternalValueInContext(
-	const MPlug &plug,
-	const MDataHandle &dataHandle,
-	MDGContext &ctx
-	)
+        const MPlug &plug,
+        const MDataHandle &dataHandle,
+        MDGContext &ctx
+        )
 {
     MStatus status;
 
@@ -1094,10 +1094,10 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
     if(plug == AssetNode::input)
     {
         if(!isAssetValid())
-	{
+        {
             Util::displayWarningForNode(typeName, "Attempting to get input array size with an invalid asset.");
-	    return 0;
-	}
+            return 0;
+        }
 
         return myAsset->getAssetInfo().maxGeoInputCount;
     }
@@ -1167,7 +1167,7 @@ AssetNode::destroyAsset()
 {
     if(myAsset)
     {
-	delete myAsset;
-	myAsset = NULL;
+        delete myAsset;
+        myAsset = NULL;
     }
 }

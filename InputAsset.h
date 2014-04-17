@@ -1,13 +1,13 @@
-#ifndef __AssetInputAsset_h__
-#define __AssetInputAsset_h__
+#ifndef __InputAsset_h__
+#define __InputAsset_h__
 
-#include "AssetInput.h"
+#include "Input.h"
 
-class AssetInputAsset : public AssetInput
+class InputAsset : public Input
 {
     public:
-	AssetInputAsset(int assetId, int inputIdx);
-	virtual ~AssetInputAsset();
+	InputAsset(int assetId, int inputIdx);
+	virtual ~InputAsset();
 
 	virtual AssetInputType assetInputType() const;
 

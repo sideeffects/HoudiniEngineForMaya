@@ -1,4 +1,4 @@
-#include "AssetInputAsset.h"
+#include "InputAsset.h"
 
 #include <maya/MFnIntArrayData.h>
 #include <maya/MDataBlock.h>
@@ -6,28 +6,28 @@
 
 #include <HAPI/HAPI.h>
 
-AssetInputAsset::AssetInputAsset(int assetId, int inputIdx) :
-    AssetInput(assetId, inputIdx)
+InputAsset::InputAsset(int assetId, int inputIdx) :
+    Input(assetId, inputIdx)
 {
 }
 
-AssetInputAsset::~AssetInputAsset()
+InputAsset::~InputAsset()
 {
 }
 
-AssetInputAsset::AssetInputType
-AssetInputAsset::assetInputType() const
+InputAsset::AssetInputType
+InputAsset::assetInputType() const
 {
-    return AssetInput::AssetInputType_Asset;
-}
-
-void
-AssetInputAsset::setInputTransform(MDataHandle &dataHandle)
-{
+    return Input::AssetInputType_Asset;
 }
 
 void
-AssetInputAsset::setInputGeo(
+InputAsset::setInputTransform(MDataHandle &dataHandle)
+{
+}
+
+void
+InputAsset::setInputGeo(
         MDataBlock &dataBlock,
         const MPlug &plug
         )

@@ -1,4 +1,4 @@
-#include "AssetSyncOutputGeoPart.h"
+#include "SyncOutputGeometryPart.h"
 
 #include <maya/MDagPath.h>
 #include <maya/MGlobal.h>
@@ -10,7 +10,7 @@
 #include "AssetNode.h"
 #include "util.h"
 
-AssetSyncOutputGeoPart::AssetSyncOutputGeoPart(
+SyncOutputGeometryPart::SyncOutputGeometryPart(
 	const MPlug &outputPlug,
 	const MObject &objectTransform
 	) :
@@ -19,12 +19,12 @@ AssetSyncOutputGeoPart::AssetSyncOutputGeoPart(
 {
 }
 
-AssetSyncOutputGeoPart::~AssetSyncOutputGeoPart()
+SyncOutputGeometryPart::~SyncOutputGeometryPart()
 {
 }
 
 MStatus
-AssetSyncOutputGeoPart::doIt()
+SyncOutputGeometryPart::doIt()
 {
     MStatus status;
     
@@ -65,7 +65,7 @@ AssetSyncOutputGeoPart::doIt()
 }
 
 MStatus
-AssetSyncOutputGeoPart::undoIt()
+SyncOutputGeometryPart::undoIt()
 {
     MStatus status;
 
@@ -76,7 +76,7 @@ AssetSyncOutputGeoPart::undoIt()
 }
 
 MStatus
-AssetSyncOutputGeoPart::redoIt()
+SyncOutputGeometryPart::redoIt()
 {
     MStatus status;
 
@@ -87,13 +87,13 @@ AssetSyncOutputGeoPart::redoIt()
 }
 
 bool
-AssetSyncOutputGeoPart::isUndoable() const
+SyncOutputGeometryPart::isUndoable() const
 {
     return true;
 }
 
 MStatus
-AssetSyncOutputGeoPart::createOutputPart(
+SyncOutputGeometryPart::createOutputPart(
 	const MObject &objectTransform,
 	const MString &partName,
 	MObject &partTransform
@@ -158,7 +158,7 @@ AssetSyncOutputGeoPart::createOutputPart(
 }
 
 MStatus
-AssetSyncOutputGeoPart::createOutputCurves(
+SyncOutputGeometryPart::createOutputCurves(
 	MPlug curvesPlug,
 	const MObject &partTransform,
 	bool isBezier
@@ -187,7 +187,7 @@ AssetSyncOutputGeoPart::createOutputCurves(
 }
 
 MStatus
-AssetSyncOutputGeoPart::createOutputMaterial(
+SyncOutputGeometryPart::createOutputMaterial(
 	const MPlug &materialPlug,
 	const MObject &partTransform
 	)
@@ -287,7 +287,7 @@ AssetSyncOutputGeoPart::createOutputMaterial(
 }
 
 MStatus
-AssetSyncOutputGeoPart::createOutputParticle(
+SyncOutputGeometryPart::createOutputParticle(
 	const MObject &partTransform,
 	const MPlug &particlePlug
 	)

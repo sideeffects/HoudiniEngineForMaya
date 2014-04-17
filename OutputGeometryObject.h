@@ -1,22 +1,22 @@
-#ifndef __GeometryObject_h__
-#define __GeometryObject_h__
+#ifndef __OutputGeometryObject_h__
+#define __OutputGeometryObject_h__
 
-#include "GeometryPart.h"
-#include "Object.h"
+#include "OutputGeometryPart.h"
+#include "OutputObject.h"
 
 #include <vector>
 
-class Geo;
+class OutputGeometry;
 
-class GeometryObject: public Object
+class OutputGeometryObject: public OutputObject
 {
     public:
-        GeometryObject(
+        OutputGeometryObject(
                 int assetId,
                 int objectId,
                 Asset* objectControl
                 );
-        virtual ~GeometryObject();
+        virtual ~OutputGeometryObject();
 
         //MObject createMesh();
 
@@ -42,7 +42,7 @@ class GeometryObject: public Object
     private:
 
         HAPI_Transform myTransformInfo;        
-        std::vector<Geo *> myGeos;
+        std::vector<OutputGeometry *> myGeos;
 
         //HAPI_MaterialInfo materialInfo;
 

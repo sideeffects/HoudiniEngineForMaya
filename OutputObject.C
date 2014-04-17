@@ -5,35 +5,35 @@
 #include <maya/MFnArrayAttrsData.h>
 
 #include "Asset.h"
-#include "GeometryObject.h"
-#include "InstancerObject.h"
-#include "Object.h"
+#include "OutputGeometryObject.h"
+#include "OutputInstancerObject.h"
+#include "OutputObject.h"
 #include "util.h"
 
-Object* 
-Object::createObject(int assetId, int objectId, Asset* objControl)
+OutputObject* 
+OutputObject::createObject(int assetId, int objectId, Asset* objControl)
 {
-    Object* obj;
+    OutputObject* obj;
     
     HAPI_ObjectInfo objInfo;
     //HAPI_GetObjects(assetId, &objInfo, objectId, 1);
     objInfo = objControl->getObjectInfo(objectId);
 
     if (objInfo.isInstancer)
-        obj = new InstancerObject(assetId, objectId, objControl);
+        obj = new OutputInstancerObject(assetId, objectId, objControl);
     else
     {
-        obj = new GeometryObject(assetId, objectId, objControl);
+        obj = new OutputGeometryObject(assetId, objectId, objControl);
     }
 
     return obj;
 }
 
 
-Object::~Object() {}
+OutputObject::~OutputObject() {}
 
 
-Object::Object(
+OutputObject::OutputObject(
         int assetId,
         int objectId,
         Asset* objectControl
@@ -64,12 +64,12 @@ Object::Object(
 
 // Getters ----------------------------------------------------
 
-int Object::getId() { return myObjectId; }
-MString Object::getName() { return Util::getString( myObjectInfo.nameSH); }
+int OutputObject::getId() { return myObjectId; }
+MString OutputObject::getName() { return Util::getString( myObjectInfo.nameSH); }
 
 
 void
-Object::update()
+OutputObject::update()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     myObjectInfo = myObjectControl->getObjectInfo( myObjectId );    
@@ -78,14 +78,14 @@ Object::update()
 
 
 bool	
-Object::isVisible() const
+OutputObject::isVisible() const
 {
     return myObjectInfo.isVisible;
 }
 
 
 bool	
-Object::isInstanced() const
+OutputObject::isInstanced() const
 {
     return myIsInstanced;
 }

@@ -1,5 +1,5 @@
-#ifndef __Object_h__
-#define __Object_h__
+#ifndef __OutputObject_h__
+#define __OutputObject_h__
 
 #include <maya/MStatus.h>
 #include <maya/MFloatArray.h>
@@ -15,7 +15,7 @@
 
 class Asset;
 
-class Object {
+class OutputObject {
 
 
     public:
@@ -25,18 +25,18 @@ class Object {
         };
 
         // static creator
-        static Object* createObject(
+        static OutputObject* createObject(
                 int assetId,
                 int objectId,
                 Asset* objectControl
                 );
 
-        Object(
+        OutputObject(
                 int assetId,
                 int objectId,
                 Asset* objectControl
               );
-        virtual ~Object();
+        virtual ~OutputObject();
 
         int getId();
         MString getName();

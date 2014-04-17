@@ -1,5 +1,5 @@
-#ifndef __AssetSyncAttribute_h__
-#define __AssetSyncAttribute_h__
+#ifndef __SyncAttribute_h__
+#define __SyncAttribute_h__
 
 #include "AssetSubCommand.h"
 
@@ -10,13 +10,13 @@
 
 class MFnCompoundAttribute;
 
-class AssetSyncAttribute : public AssetSubCommand
+class SyncAttribute : public AssetSubCommand
 {
     public:
-	AssetSyncAttribute(
+	SyncAttribute(
 		const MObject &assetNodeObj
 		);
-	virtual ~AssetSyncAttribute();
+	virtual ~SyncAttribute();
 
 	virtual MStatus doIt();
 	virtual MStatus undoIt();

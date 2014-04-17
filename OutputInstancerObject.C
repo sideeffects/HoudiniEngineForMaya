@@ -6,15 +6,15 @@
 
 #include "Asset.h"
 #include "AssetNode.h"
-#include "InstancerObject.h"
+#include "OutputInstancerObject.h"
 #include "util.h"
 
-InstancerObject::InstancerObject(
+OutputInstancerObject::OutputInstancerObject(
         int assetId,
         int objectId,
         Asset* objectControl
         ) :
-    Object(
+    OutputObject(
             assetId,
             objectId,
             objectControl
@@ -24,27 +24,27 @@ InstancerObject::InstancerObject(
     //update();
 }
 
-InstancerObject::~InstancerObject() {}
+OutputInstancerObject::~OutputInstancerObject() {}
 
 
-Object::ObjectType
-InstancerObject::type()
+OutputObject::ObjectType
+OutputInstancerObject::type()
 {
-    return Object::OBJECT_TYPE_INSTANCER;
+    return OutputObject::OBJECT_TYPE_INSTANCER;
 }
 
 
 MStringArray
-InstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
+OutputInstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
 {
     return Util::getAttributeStringData( myAssetId, myObjectId, 0, 0, owner, name );
 }
 
 
 void
-InstancerObject::update()
+OutputInstancerObject::update()
 {
-    Object::update();
+    OutputObject::update();
 
     
     try
@@ -132,7 +132,7 @@ InstancerObject::update()
 
 
 MIntArray
-InstancerObject::getInstancedObjIds()
+OutputInstancerObject::getInstancedObjIds()
 {
     MIntArray ret;
     if ( myObjectInfo.objectToInstanceId >= 0 )
@@ -142,15 +142,15 @@ InstancerObject::getInstancedObjIds()
 
 
 MStringArray
-InstancerObject::getUniqueInstObjNames()
+OutputInstancerObject::getUniqueInstObjNames()
 {
     return myUniqueInstObjNames;
 }
 
 
 MStatus
-//InstancerObject::compute(const MPlug& plug, MDataBlock& data)
-InstancerObject::compute(
+//OutputInstancerObject::compute(const MPlug& plug, MDataBlock& data)
+OutputInstancerObject::compute(
         MDataHandle& handle,
         bool &needToSyncOutputs
         )
@@ -258,7 +258,7 @@ InstancerObject::compute(
         if ( myObjectInfo.objectToInstanceId >= 0 )
         {
             // instancing a single object
-            Object* objToInstance = myObjectControl->findObjectById( myObjectInfo.objectToInstanceId );
+            OutputObject* objToInstance = myObjectControl->findObjectById( myObjectInfo.objectToInstanceId );
             MString name = objToInstance->getName();
 
             MDataHandle h = builder.addElement(0);
@@ -302,7 +302,7 @@ InstancerObject::compute(
 
 
 MStatus
-InstancerObject::setClean(MPlug& plug, MDataBlock& data)
+OutputInstancerObject::setClean(MPlug& plug, MDataBlock& data)
 {
     return MS::kSuccess;
 }

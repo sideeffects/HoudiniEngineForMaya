@@ -3,18 +3,18 @@
 
 #include "Asset.h"
 #include "AssetNode.h"
-#include "GeometryObject.h"
+#include "OutputGeometryObject.h"
 #include "util.h"
-#include "Geo.h"
+#include "OutputGeometry.h"
 
 
 
-GeometryObject::GeometryObject(
+OutputGeometryObject::OutputGeometryObject(
         int assetId,
         int objectId,
         Asset* objectControl
         ) :
-    Object(
+    OutputObject(
             assetId,
             objectId,
             objectControl
@@ -26,14 +26,14 @@ GeometryObject::GeometryObject(
 
     for ( int ii = 0; ii < geoCount; ii++ )
     {	
-        Geo * geo = new Geo( myAssetId, myObjectId, ii, this );
+        OutputGeometry * geo = new OutputGeometry( myAssetId, myObjectId, ii, this );
         myGeos.push_back( geo );
     }
         
 }
 
 
-GeometryObject::~GeometryObject()
+OutputGeometryObject::~OutputGeometryObject()
 {
     for ( int ii = 0; ii < myObjectInfo.geoCount; ii++ )
     {
@@ -43,15 +43,15 @@ GeometryObject::~GeometryObject()
 }
 
 
-Object::ObjectType
-GeometryObject::type()
+OutputObject::ObjectType
+OutputGeometryObject::type()
 {
-    return Object::OBJECT_TYPE_GEOMETRY;
+    return OutputObject::OBJECT_TYPE_GEOMETRY;
 }
 
 
 MStatus
-GeometryObject::compute(
+OutputGeometryObject::compute(
         MDataHandle& objectHandle,
         bool &needToSyncOutputs
         )
@@ -105,7 +105,7 @@ GeometryObject::compute(
 
 
 MStatus
-GeometryObject::setClean(MPlug& plug, MDataBlock& data)
+OutputGeometryObject::setClean(MPlug& plug, MDataBlock& data)
 {
     data.setClean(plug);
 
@@ -127,7 +127,7 @@ GeometryObject::setClean(MPlug& plug, MDataBlock& data)
 
 
 
-void GeometryObject::updateTransform(MDataHandle& handle)
+void OutputGeometryObject::updateTransform(MDataHandle& handle)
 {
     MDataHandle translateHandle = handle.child(AssetNode::outputObjectTranslate);
     MDataHandle rotateHandle = handle.child(AssetNode::outputObjectRotate);

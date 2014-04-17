@@ -1,4 +1,4 @@
-#include "AssetInputMesh.h"
+#include "InputMesh.h"
 
 #include <maya/MFnMesh.h>
 #include <maya/MDataBlock.h>
@@ -10,25 +10,25 @@
 
 #include "util.h"
 
-AssetInputMesh::AssetInputMesh(int assetId, int inputIdx) :
-    AssetInput(assetId, inputIdx),
+InputMesh::InputMesh(int assetId, int inputIdx) :
+    Input(assetId, inputIdx),
     myInputAssetId(0)
 {
     HAPI_CreateGeoInput(myAssetId, myInputIdx, &myInputInfo);
 }
 
-AssetInputMesh::~AssetInputMesh()
+InputMesh::~InputMesh()
 {
 }
 
-AssetInput::AssetInputType
-AssetInputMesh::assetInputType() const
+Input::AssetInputType
+InputMesh::assetInputType() const
 {
-    return AssetInput::AssetInputType_Mesh;
+    return Input::AssetInputType_Mesh;
 }
 
 void
-AssetInputMesh::setInputTransform(MDataHandle &dataHandle)
+InputMesh::setInputTransform(MDataHandle &dataHandle)
 {
     MMatrix transformMatrix = dataHandle.asMatrix();
 
@@ -41,7 +41,7 @@ AssetInputMesh::setInputTransform(MDataHandle &dataHandle)
 }
 
 void
-AssetInputMesh::setInputGeo(
+InputMesh::setInputGeo(
         MDataBlock &dataBlock,
         const MPlug &plug
         )

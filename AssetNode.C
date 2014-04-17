@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "Asset.h"
-#include "AssetInput.h"
+#include "Input.h"
 #include "AssetNode.h"
 #include "MayaTypeID.h"
 #include "util.h"
@@ -178,7 +178,7 @@ AssetNode::initialize()
     AssetNode::outputTemplateObjects = nAttr.create("outputTemplateObjects", "outputTemplateObjects", MFnNumericData::kBoolean);
 
     // input
-    AssetNode::input = AssetInputs::createInputAttribute();
+    AssetNode::input = Inputs::createInputAttribute();
 
     //----------------------------------  instancer compound multi----------------------------------------------
     // instancer data

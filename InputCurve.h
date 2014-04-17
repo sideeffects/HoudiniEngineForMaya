@@ -1,15 +1,15 @@
-#ifndef __AssetInputCurve_h__
-#define __AssetInputCurve_h__
+#ifndef __InputCurve_h__
+#define __InputCurve_h__
 
-#include "AssetInput.h"
+#include "Input.h"
 
 #include <HAPI/HAPI_Common.h>
 
-class AssetInputCurve : public AssetInput
+class InputCurve : public Input
 {
     public:
-	AssetInputCurve(int assetId, int inputIdx);
-	virtual ~AssetInputCurve();
+	InputCurve(int assetId, int inputIdx);
+	virtual ~InputCurve();
 
 	virtual AssetInputType assetInputType() const;
 

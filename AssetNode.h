@@ -41,48 +41,48 @@ class AssetNode: public MPxTransform
 
         virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 
-	virtual bool getInternalValueInContext(
-		const MPlug &plug,
-		MDataHandle &dataHandle,
-		MDGContext &ctx);
-	virtual bool setInternalValueInContext(
-		const MPlug &plug,
-		const MDataHandle &dataHandle,
-		MDGContext &ctx
-		);
-	virtual int internalArrayCount(const MPlug &plug, const MDGContext &ctx) const;
-	virtual void copyInternalData(MPxNode* node);
+        virtual bool getInternalValueInContext(
+                const MPlug &plug,
+                MDataHandle &dataHandle,
+                MDGContext &ctx);
+        virtual bool setInternalValueInContext(
+                const MPlug &plug,
+                const MDataHandle &dataHandle,
+                MDGContext &ctx
+                );
+        virtual int internalArrayCount(const MPlug &plug, const MDGContext &ctx) const;
+        virtual void copyInternalData(MPxNode* node);
 
         virtual MStatus setDependentsDirty(const MPlug& plugBeingDirtied,
                 MPlugArray& affectedPlugs);
 
-	Asset* getAsset();
+        Asset* getAsset();
 
         static void* creator();
         static MStatus initialize();
 
-	void rebuildAsset();
+        void rebuildAsset();
 
     public:
         static MString typeName;
         static MTypeId typeId;
 
     private:
-	void setPlugDirty(const MPlug &plug);
+        void setPlugDirty(const MPlug &plug);
 
     private:
         Asset* myAsset;
         bool myBuiltParms;
         bool isAssetValid() const;
-	void createAsset();
-	void destroyAsset();
+        void createAsset();
+        void destroyAsset();
 
-	MString myOTLFilePath;
-	MString myAssetName;
-	bool myResultsClean;
+        MString myOTLFilePath;
+        MString myAssetName;
+        bool myResultsClean;
 
-	typedef std::vector<MObject> MObjectVector;
-	MObjectVector myDirtyParmAttributes;
+        typedef std::vector<MObject> MObjectVector;
+        MObjectVector myDirtyParmAttributes;
 
     public:
         static MObject inTime;
@@ -117,7 +117,7 @@ class AssetNode: public MPxTransform
         static MObject outputObjectScaleZ;
 
 #if MAYA_API_VERSION >= 201400
-	static MObject outputObjectFluidFromAsset;
+        static MObject outputObjectFluidFromAsset;
 #endif
         static MObject outputObjectMetaData;
 
@@ -133,7 +133,7 @@ class AssetNode: public MPxTransform
         static MObject outputGeoCurveCVZ;
         static MObject outputGeoCurveCVs;
 
-	static MObject outputParts;
+        static MObject outputParts;
         static MObject outputPartName;
         static MObject outputPartMesh;
         static MObject outputPartHasParticles;
@@ -145,18 +145,18 @@ class AssetNode: public MPxTransform
         static MObject outputPartSpecularColor;
         static MObject outputPartAlphaColor;
 
-	static MObject outputPartParticle;
-	static MObject outputPartParticlePositions;
-	static MObject outputPartParticleArrayData;
+        static MObject outputPartParticle;
+        static MObject outputPartParticlePositions;
+        static MObject outputPartParticleArrayData;
 
-	static MObject outputPartCurves;
-	static MObject outputPartCurvesIsBezier;
+        static MObject outputPartCurves;
+        static MObject outputPartCurvesIsBezier;
 
 #if MAYA_API_VERSION >= 201400
-	static MObject outputPartVolume;
-	static MObject outputPartVolumeName;
-	static MObject outputPartVolumeGrid;
-	static MObject outputPartVolumeRes;
+        static MObject outputPartVolume;
+        static MObject outputPartVolumeName;
+        static MObject outputPartVolumeGrid;
+        static MObject outputPartVolumeRes;
         static MObject outputPartVolumeTransform;
         static MObject outputPartVolumeTranslate;
         static MObject outputPartVolumeTranslateX;
@@ -172,17 +172,17 @@ class AssetNode: public MPxTransform
         static MObject outputPartVolumeScaleZ;
 #endif
 
-	static MObject outputVisibility;
-	static MObject outputIsInstanced;
+        static MObject outputVisibility;
+        static MObject outputIsInstanced;
 
         //static MObject numObjects;
         static MObject outputInstancers;
         static MObject outputInstancerData;
         static MObject outputInstancedObjectNames;
-	static MObject outputHoudiniInstanceAttribute;
-	static MObject outputHoudiniNameAttribute;
+        static MObject outputHoudiniInstanceAttribute;
+        static MObject outputHoudiniNameAttribute;
 
-	static MObject outputInstanceTransform;
+        static MObject outputInstanceTransform;
         static MObject outputInstanceTranslate;
         static MObject outputInstanceTranslateX;
         static MObject outputInstanceTranslateY;
@@ -196,7 +196,7 @@ class AssetNode: public MPxTransform
         static MObject outputInstanceScaleY;
         static MObject outputInstanceScaleZ;
 
-	static MObject useInstancerNode;
+        static MObject useInstancerNode;
 };
 
 #endif

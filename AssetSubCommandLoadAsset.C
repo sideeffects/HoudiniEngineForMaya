@@ -10,9 +10,9 @@
 #include "util.h"
 
 AssetSubCommandLoadAsset::AssetSubCommandLoadAsset(
-	const MString &otlFilePath,
-	const MString &assetName
-	) :
+        const MString &otlFilePath,
+        const MString &assetName
+        ) :
     myOTLFilePath(otlFilePath),
     myAssetName(assetName),
     myAssetSubCommandSync(NULL)
@@ -38,26 +38,26 @@ AssetSubCommandLoadAsset::doIt()
 
     // set otl file attribute
     {
-	MPlug plug(assetNode, AssetNode::otlFilePath);
-	status = myDagModifier.newPlugValueString(plug, myOTLFilePath);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        MPlug plug(assetNode, AssetNode::otlFilePath);
+        status = myDagModifier.newPlugValueString(plug, myOTLFilePath);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // set asset name attribute
     {
-	MPlug plug(assetNode, AssetNode::assetName);
-	status = myDagModifier.newPlugValueString(plug, myAssetName);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        MPlug plug(assetNode, AssetNode::assetName);
+        status = myDagModifier.newPlugValueString(plug, myAssetName);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // time1.outTime -> houdiniAsset.inTime
     {
-	MObject srcNode = Util::findNodeByName("time1");
-	MPlug srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
-	MPlug dstPlug(assetNode, AssetNode::inTime);
+        MObject srcNode = Util::findNodeByName("time1");
+        MPlug srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
+        MPlug dstPlug(assetNode, AssetNode::inTime);
 
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // cannot simply call redoIt, because when we use AssetSubCommandSync, we

@@ -11,13 +11,13 @@ class MDataBlock;
 class Inputs
 {
     public:
-	static MObject createInputAttribute();
+        static MObject createInputAttribute();
 
     public:
-	Inputs(int assetId);
-	~Inputs();
+        Inputs(int assetId);
+        ~Inputs();
 
-	void setNumInputs(int numInputs);
+        void setNumInputs(int numInputs);
         void setInput(
                 int inputIdx,
                 MDataBlock &dataBlock,
@@ -25,46 +25,46 @@ class Inputs
                 );
 
     private:
-	int myAssetId;
+        int myAssetId;
 
-	typedef std::vector<Input*> AssetInputVector;
-	AssetInputVector myAssetInputs;
+        typedef std::vector<Input*> AssetInputVector;
+        AssetInputVector myAssetInputs;
 
     public:
-	static MObject input;
-	static MObject inputTransform;
-	static MObject inputGeo;
+        static MObject input;
+        static MObject inputTransform;
+        static MObject inputGeo;
 };
 
 class Input
 {
     public:
-	enum AssetInputType
-	{
-	    AssetInputType_Invalid,
-	    AssetInputType_Asset,
-	    AssetInputType_Mesh,
-	    AssetInputType_Curve,
-	    AssetInputType_Particle,
-	};
+        enum AssetInputType
+        {
+            AssetInputType_Invalid,
+            AssetInputType_Asset,
+            AssetInputType_Mesh,
+            AssetInputType_Curve,
+            AssetInputType_Particle,
+        };
 
-	static Input* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);
+        static Input* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);
 
     public:
-	Input(int assetId, int inputIdx);
-	virtual ~Input();
+        Input(int assetId, int inputIdx);
+        virtual ~Input();
 
-	virtual AssetInputType assetInputType() const = 0;
+        virtual AssetInputType assetInputType() const = 0;
 
-	virtual void setInputTransform(MDataHandle &dataHandle) = 0;
+        virtual void setInputTransform(MDataHandle &dataHandle) = 0;
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug
                 ) = 0;
 
     protected:
-	int myAssetId;
-	int myInputIdx;
+        int myAssetId;
+        int myInputIdx;
 };
 
 #endif

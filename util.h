@@ -19,7 +19,7 @@ class HAPIError: public std::exception
         HAPIError(const HAPIError & error) throw();
         HAPIError(MString msg) throw();
 
-        virtual	   ~HAPIError() throw() {}
+        virtual           ~HAPIError() throw() {}
 
         virtual const char* what() const throw();
 
@@ -33,14 +33,14 @@ class HAPIError: public std::exception
     HAPI_Result hapi_result = (r); \
     if(hapi_result != HAPI_RESULT_SUCCESS) \
     { \
-	std::cerr << "HAPI error in " __FILE__ " at line " << __LINE__ << std::endl; \
-	\
+        std::cerr << "HAPI error in " __FILE__ " at line " << __LINE__ << std::endl; \
+        \
         int bufferLength; \
         HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufferLength); \
         char * buffer = new char[bufferLength]; \
         HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer); \
-	std::cerr << buffer << std::endl; \
-	delete [] buffer; \
+        std::cerr << buffer << std::endl; \
+        delete [] buffer; \
     } \
 }
 
@@ -60,20 +60,20 @@ class Util {
                 );
 
         static MString getString(int handle);
-	static MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
-	static MStringArray getAttributeStringData(int assetId, int objectId,
-						    int geoId, int partId,
-						    HAPI_AttributeOwner owner,
-						    const MString & name);
-	static MString getParmAttrPrefix();
+        static MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
+        static MStringArray getAttributeStringData(int assetId, int objectId,
+                                                    int geoId, int partId,
+                                                    HAPI_AttributeOwner owner,
+                                                    const MString & name);
+        static MString getParmAttrPrefix();
         static bool hasHAPICallFailed(HAPI_Result stat);
 
         // Throws an exception if an error occurred
         static void checkHAPIStatus(HAPI_Result stat);
-	static void statusCheckLoop();
-	static void showProgressWindow(const MString & title, const MString & status, int progress);
-	static void updateProgressWindow(const MString & status, int progress);
-	static void hideProgressWindow();
+        static void statusCheckLoop();
+        static void showProgressWindow(const MString & title, const MString & status, int progress);
+        static void updateProgressWindow(const MString & status, int progress);
+        static void hideProgressWindow();
 
         template <typename T>
         static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)
@@ -91,13 +91,13 @@ class Util {
         }
 
         static MObject findNodeByName(const MString &name);
-	static MObject findDagChild(const MFnDagNode &dag, const MString &name);
-	static MStatus createNodeByModifierCommand(
-		MDGModifier &dgModifier,
-		const MString &command,
-		MObject &object,
-		unsigned int index = 0
-		);
+        static MObject findDagChild(const MFnDagNode &dag, const MString &name);
+        static MStatus createNodeByModifierCommand(
+                MDGModifier &dgModifier,
+                const MString &command,
+                MObject &object,
+                unsigned int index = 0
+                );
         static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
 
         // Returns true if the parm was found.
@@ -118,10 +118,10 @@ class Util {
 
                 virtual void leaf(const HAPI_ParmInfo &parmInfo);
 
-	    private:
-		// This class is not copyable so these are not implemented
-		WalkParmOperation(const WalkParmOperation &);
-		WalkParmOperation& operator=(const WalkParmOperation &);
+            private:
+                // This class is not copyable so these are not implemented
+                WalkParmOperation(const WalkParmOperation &);
+                WalkParmOperation& operator=(const WalkParmOperation &);
         };
         static void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
 };

@@ -12,7 +12,7 @@
 #include "util.h"
 
 //minimum cook time to show the progress bar, in milliseconds
-#define MIN_COOKTIME_FOR_PROGRESSBAR	1000
+#define MIN_COOKTIME_FOR_PROGRESSBAR        1000
 //=============================================================================
 // HAPIError
 //=============================================================================
@@ -138,8 +138,8 @@ void pumpmsgs()
 
     while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
     {
-	TranslateMessage(&msg);
-	DispatchMessage(&msg);
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
     }
 #endif
 }
@@ -205,64 +205,64 @@ Util::statusCheckLoop()
     int elapsedTime = 0;
     while(state != HAPI_STATE_READY)
     {
-	    HAPI_GetStatus(HAPI_STATUS_STATE, &currState);
-	    state = (HAPI_State) currState;
+            HAPI_GetStatus(HAPI_STATUS_STATE, &currState);
+            state = (HAPI_State) currState;
 
 #ifdef _WIN32
-	    elapsedTime = (int)::GetTickCount() - startTime;
+            elapsedTime = (int)::GetTickCount() - startTime;
 #endif
 
-	    if(elapsedTime > MIN_COOKTIME_FOR_PROGRESSBAR && !showProgressWindow)
-	    {
-		MString title("Houdini");
-		MString status("Working...");
-		Util::showProgressWindow(title, status, 0);
-		showProgressWindow = true;
+            if(elapsedTime > MIN_COOKTIME_FOR_PROGRESSBAR && !showProgressWindow)
+            {
+                MString title("Houdini");
+                MString status("Working...");
+                Util::showProgressWindow(title, status, 0);
+                showProgressWindow = true;
 
-	    }
+            }
 
-	    int percent = 0;
-	    if(state == HAPI_STATE_COOKING)
-	    {
-		    HAPI_GetCookingCurrentCount(&currCookCount);
-		    HAPI_GetCookingTotalCount(&totalCookCount);
-		    percent = (int) ((float) currCookCount*100 / (float) totalCookCount);
-	    }
-	    else
-	    {
-		    percent = (int)((elapsedTime / 1000) % 100);
-	    }
+            int percent = 0;
+            if(state == HAPI_STATE_COOKING)
+            {
+                    HAPI_GetCookingCurrentCount(&currCookCount);
+                    HAPI_GetCookingTotalCount(&totalCookCount);
+                    percent = (int) ((float) currCookCount*100 / (float) totalCookCount);
+            }
+            else
+            {
+                    percent = (int)((elapsedTime / 1000) % 100);
+            }
 
-	    int statusBufSize = 0;
-	    HAPI_GetStatusStringBufLength(HAPI_STATUS_STATE,
-					     &statusBufSize);
+            int statusBufSize = 0;
+            HAPI_GetStatusStringBufLength(HAPI_STATUS_STATE,
+                                             &statusBufSize);
 
-	    char * statusBuf = NULL;
+            char * statusBuf = NULL;
 
-	    if(statusBufSize > 0)
-	    {
-		statusBuf = new char[statusBufSize];
-		HAPI_GetStatusString(HAPI_STATUS_STATE, statusBuf);
-	    }
+            if(statusBufSize > 0)
+            {
+                statusBuf = new char[statusBufSize];
+                HAPI_GetStatusString(HAPI_STATUS_STATE, statusBuf);
+            }
 
-	    if(statusBuf != NULL && showProgressWindow)
-	    {
-		MString statusStr = statusBuf;
-		updateProgressWindow(statusStr, percent);
+            if(statusBuf != NULL && showProgressWindow)
+            {
+                MString statusStr = statusBuf;
+                updateProgressWindow(statusStr, percent);
 #ifdef _WIN32
-		::Sleep(100);
+                ::Sleep(100);
 #endif
 
-	    }
+            }
 
-	    if(statusBuf)
-	    {
-		delete[] statusBuf;
-	    }
+            if(statusBuf)
+            {
+                delete[] statusBuf;
+            }
     }
 
     if(showProgressWindow)
-	Util::hideProgressWindow();
+        Util::hideProgressWindow();
 }
 
 MObject
@@ -285,13 +285,13 @@ Util::findDagChild(const MFnDagNode &dag, const MString &name)
 
     for(unsigned int i = 0; i < dag.childCount(); i++)
     {
-	MObject currObj = dag.child(i);
-	MFnDependencyNode currFn(currObj);
-	if(currFn.name() == name)
-	{
-	    childObj = currObj;
-	    break;
-	}
+        MObject currObj = dag.child(i);
+        MFnDependencyNode currFn(currObj);
+        if(currFn.name() == name)
+        {
+            childObj = currObj;
+            break;
+        }
     }
 
     return childObj;
@@ -299,11 +299,11 @@ Util::findDagChild(const MFnDagNode &dag, const MString &name)
 
 MStatus
 Util::createNodeByModifierCommand(
-	MDGModifier &dgModifier,
-	const MString &command,
-	MObject &object,
-	unsigned int index
-	)
+        MDGModifier &dgModifier,
+        const MString &command,
+        MObject &object,
+        unsigned int index
+        )
 {
     MStatus status;
 
@@ -322,7 +322,7 @@ Util::createNodeByModifierCommand(
     MGlobal::getActiveSelectionList(selection);
     if(selection.length() <= index)
     {
-	return MStatus::kInvalidParameter;
+        return MStatus::kInvalidParameter;
     }
 
     status = selection.getDependNode(index, object);
@@ -339,22 +339,22 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
 
     for(;;)
     {
-	int length = remaining.numChars();
-	int index = remaining.indexW(searchStr);
-	if(index < 0)
-	{
-	    index = length;
-	}
-	if(index > 0)
-	{
-	    result += remaining.substringW(0, index - 1);
-	}
-	if(index == length)
-	{
-	    break;
-	}
-	result += replaceStr;
-	remaining = remaining.substringW(index + searchStr.numChars(), length - 1);;
+        int length = remaining.numChars();
+        int index = remaining.indexW(searchStr);
+        if(index < 0)
+        {
+            index = length;
+        }
+        if(index > 0)
+        {
+            result += remaining.substringW(0, index - 1);
+        }
+        if(index == length)
+        {
+            break;
+        }
+        result += replaceStr;
+        remaining = remaining.substringW(index + searchStr.numChars(), length - 1);;
     }
 
     return result;
@@ -362,11 +362,11 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
 
 MStringArray
 Util::getAttributeStringData(int assetId,
-			    int objectId,
-			    int geoId,
-			    int partId,
-			    HAPI_AttributeOwner owner,
-			    const MString & name)
+                            int objectId,
+                            int geoId,
+                            int partId,
+                            HAPI_AttributeOwner owner,
+                            const MString & name)
 {
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;

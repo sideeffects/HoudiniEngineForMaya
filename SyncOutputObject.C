@@ -13,13 +13,13 @@
 #include "SyncOutputInstance.h"
 
 #if MAYA_API_VERSION >= 201400
-	#include <maya/MFnFloatArrayData.h>
+        #include <maya/MFnFloatArrayData.h>
 #endif
 
 SyncOutputObject::SyncOutputObject(
-	const MPlug &outputPlug,
-	const MObject &assetNodeObj,
-	const bool visible,
+        const MPlug &outputPlug,
+        const MObject &assetNodeObj,
+        const bool visible,
         const bool syncTemplatedGeos)
     : myOutputPlug(outputPlug),
       myAssetNodeObj(assetNodeObj),
@@ -30,10 +30,10 @@ SyncOutputObject::SyncOutputObject(
 SyncOutputObject::~SyncOutputObject()
 {
     for(AssetSyncs::const_iterator it = myAssetSyncs.begin();
-	    it != myAssetSyncs.end();
-	    it++)
+            it != myAssetSyncs.end();
+            it++)
     {
-	delete *it;
+        delete *it;
     }
     myAssetSyncs.clear();
 }
@@ -130,9 +130,9 @@ SyncOutputObject::doIt()
             CHECK_MSTATUS_AND_RETURN_IT(status);
             for(int jj=0; jj<partCount; jj++)
             {
-	        AssetSubCommand* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent);
-	        sync->doIt();
-	        myAssetSyncs.push_back(sync);
+                AssetSubCommand* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent);
+                sync->doIt();
+                myAssetSyncs.push_back(sync);
             }
         }
     }
@@ -165,7 +165,7 @@ MStatus
 SyncOutputObject::createVelocityConverter(MObject& velocityConverter)
 {
     if(!velocityConverter.isNull())
-	return MS::kSuccess;
+        return MS::kSuccess;
 
     MStatus status;
     velocityConverter = ((MDGModifier&)myDagModifier).createNode("houdiniFluidVelocityConvert", &status);
@@ -189,8 +189,8 @@ SyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
     MFnFloatArrayData dataB(resBObj, &status);
 
     return dataA[0] == dataB[0] &&
-	   dataA[1] == dataB[1] &&
-	   dataA[2] == dataB[2];
+           dataA[1] == dataB[1] &&
+           dataA[2] == dataB[2];
 }
 
 MStatus
@@ -217,27 +217,27 @@ SyncOutputObject::createFluidShape()
         MPlug referenceVolume;
         for(int jj=0; jj<partCount; jj++)
         {
-	    MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
-	    MPlug outputPartName = partsPlug[jj].child(AssetNode::outputPartName);
-	    MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
+            MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
+            MPlug outputPartName = partsPlug[jj].child(AssetNode::outputPartName);
+            MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
 
-	    MString name = outputVolumeName.asString();
+            MString name = outputVolumeName.asString();
 
-	    if(name == "density"
-		    || name == "temperature"
-		    || name == "fuel"
-		    || name == "vel.x"
-		    || name == "vel.y"
-		    || name == "vel.z")
-	    {
-	        hasFluid = true;
-	        referenceVolume = outputVolume;
-	        break;
-	    }
+            if(name == "density"
+                    || name == "temperature"
+                    || name == "fuel"
+                    || name == "vel.x"
+                    || name == "vel.y"
+                    || name == "vel.z")
+            {
+                hasFluid = true;
+                referenceVolume = outputVolume;
+                break;
+            }
         }
 
         if(!hasFluid)
-	    return MStatus::kSuccess;
+            return MStatus::kSuccess;
 
         MObject transform, fluid;
         createFluidShapeNode(transform, fluid);
@@ -259,141 +259,141 @@ SyncOutputObject::createFluidShape()
         bool doneVelZ = false;
         for(int jj=0; jj<partCount; jj++)
         {
-	    MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
-	    MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
-	    MPlug outputVolumeRes= outputVolume.child(AssetNode::outputPartVolumeRes);
+            MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
+            MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
+            MPlug outputVolumeRes= outputVolume.child(AssetNode::outputPartVolumeRes);
 
-	    // If the transform of the volumes are different, we don't want
-	    // to group them together.
-	    if(!resolutionsEqual(outputVolumeRes, referenceRes))
-	        continue;
+            // If the transform of the volumes are different, we don't want
+            // to group them together.
+            if(!resolutionsEqual(outputVolumeRes, referenceRes))
+                continue;
 
-	    MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);
-	    MString name = outputVolumeName.asString();
-	    if(name == "density" && !doneDensity)
-	    {
-	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inDensity"));
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        status = myDagModifier.newPlugValueInt(
-		        partVolumeFn.findPlug("densityMethod"),
-		        2
-		        );
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        doneDensity = true;
-	    }
-	    else if(name == "temperature" && !doneTemperature)
-	    {
-	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inTemperature"));
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        status = myDagModifier.newPlugValueInt(
-		        partVolumeFn.findPlug("temperatureMethod"),
-		        2
-		        );
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        doneTemperature = true;
-	    }
-	    else if(name == "fuel" && !doneFuel)
-	    {
-	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inReaction"));
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        status = myDagModifier.newPlugValueInt(
-		        partVolumeFn.findPlug("fuelMethod"),
-		        2
-		        );
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        doneFuel = true;
-	    }
-	    else if(name == "vel.x" && !doneVelX)
-	    {
-	        createVelocityConverter(velConverter);
-	        MFnDependencyNode velConverterFn(velConverter, &status);
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridX"));
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        doneVelX = true;
-	    }
-	    else if(name == "vel.y" && !doneVelY)
-	    {
-	        createVelocityConverter(velConverter);
-	        MFnDependencyNode velConverterFn(velConverter, &status);
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridY"));
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        doneVelY = true;
-	    }
-	    else if(name == "vel.z" && !doneVelZ)
-	    {
-	        createVelocityConverter(velConverter);
-	        MFnDependencyNode velConverterFn(velConverter, &status);
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridZ"));
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	        doneVelZ = true;
-	    }
+            MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);
+            MString name = outputVolumeName.asString();
+            if(name == "density" && !doneDensity)
+            {
+                status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inDensity"));
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                status = myDagModifier.newPlugValueInt(
+                        partVolumeFn.findPlug("densityMethod"),
+                        2
+                        );
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                doneDensity = true;
+            }
+            else if(name == "temperature" && !doneTemperature)
+            {
+                status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inTemperature"));
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                status = myDagModifier.newPlugValueInt(
+                        partVolumeFn.findPlug("temperatureMethod"),
+                        2
+                        );
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                doneTemperature = true;
+            }
+            else if(name == "fuel" && !doneFuel)
+            {
+                status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inReaction"));
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                status = myDagModifier.newPlugValueInt(
+                        partVolumeFn.findPlug("fuelMethod"),
+                        2
+                        );
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                doneFuel = true;
+            }
+            else if(name == "vel.x" && !doneVelX)
+            {
+                createVelocityConverter(velConverter);
+                MFnDependencyNode velConverterFn(velConverter, &status);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridX"));
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                doneVelX = true;
+            }
+            else if(name == "vel.y" && !doneVelY)
+            {
+                createVelocityConverter(velConverter);
+                MFnDependencyNode velConverterFn(velConverter, &status);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridY"));
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                doneVelY = true;
+            }
+            else if(name == "vel.z" && !doneVelZ)
+            {
+                createVelocityConverter(velConverter);
+                MFnDependencyNode velConverterFn(velConverter, &status);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                status = myDagModifier.connect(srcPlug, velConverterFn.findPlug("inGridZ"));
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+                doneVelZ = true;
+            }
         }
 
         // Connect the transform, resolution, playFromCache; set inOffset and dimensions
         {
-	    MPlug srcPlug;
-	    MPlug dstPlug;
+            MPlug srcPlug;
+            MPlug dstPlug;
 
-	    MPlug densityTransform = referenceVolume.child(AssetNode::outputPartVolumeTransform);
+            MPlug densityTransform = referenceVolume.child(AssetNode::outputPartVolumeTransform);
 
-	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeTranslate);
-	    dstPlug = partFluidTransformFn.findPlug("translate");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
+            srcPlug = densityTransform.child(AssetNode::outputPartVolumeTranslate);
+            dstPlug = partFluidTransformFn.findPlug("translate");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
-	    dstPlug = partVolumeFn.findPlug("inResolution");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
+            srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
+            dstPlug = partVolumeFn.findPlug("inResolution");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeRotate);
-	    dstPlug = partFluidTransformFn.findPlug("rotate");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
+            srcPlug = densityTransform.child(AssetNode::outputPartVolumeRotate);
+            dstPlug = partFluidTransformFn.findPlug("rotate");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    srcPlug = densityTransform.child(AssetNode::outputPartVolumeScale);
-	    dstPlug = partFluidTransformFn.findPlug("scale");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
+            srcPlug = densityTransform.child(AssetNode::outputPartVolumeScale);
+            dstPlug = partFluidTransformFn.findPlug("scale");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    // Velocity needs an additional step: since houdini may output
-	    // individual grids for each component, we use a dependency node
-	    // to append and extrapolate the components
-	    if(!velConverter.isNull())
-	    {
-	        MFnDependencyNode velConverterFn(velConverter, &status);
+            // Velocity needs an additional step: since houdini may output
+            // individual grids for each component, we use a dependency node
+            // to append and extrapolate the components
+            if(!velConverter.isNull())
+            {
+                MFnDependencyNode velConverterFn(velConverter, &status);
 
-	        srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
-	        dstPlug = velConverterFn.findPlug("resolution");
-	        status = myDagModifier.connect(srcPlug, dstPlug);
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
+                srcPlug = referenceVolume.child(AssetNode::outputPartVolumeRes);
+                dstPlug = velConverterFn.findPlug("resolution");
+                status = myDagModifier.connect(srcPlug, dstPlug);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	        srcPlug = velConverterFn.findPlug("outGrid");
-	        dstPlug = partVolumeFn.findPlug("inVelocity");
-	        status = myDagModifier.connect(srcPlug, dstPlug);
-	        CHECK_MSTATUS_AND_RETURN_IT(status);
-	    }
+                srcPlug = velConverterFn.findPlug("outGrid");
+                dstPlug = partVolumeFn.findPlug("inVelocity");
+                status = myDagModifier.connect(srcPlug, dstPlug);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+            }
 
-	    srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
-	    dstPlug = partVolumeFn.findPlug("playFromCache");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
+            srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
+            dstPlug = partVolumeFn.findPlug("playFromCache");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    // inOffset must be initialized or bugs will be had; and the math is
-	    // simpler with dimensions all equal to 1.
-	    MFloatArray offset;
-	    offset.append(0);
-	    offset.append(0);
-	    offset.append(0);
-	    MFnFloatArrayData offsetCreator;
-	    MObject data = offsetCreator.create(offset);
-	    partVolumeFn.findPlug("inOffset").setValue(data);
-	    partVolumeFn.findPlug("dimensionsW").setValue(1);
-	    partVolumeFn.findPlug("dimensionsH").setValue(1);
-	    partVolumeFn.findPlug("dimensionsD").setValue(1);
+            // inOffset must be initialized or bugs will be had; and the math is
+            // simpler with dimensions all equal to 1.
+            MFloatArray offset;
+            offset.append(0);
+            offset.append(0);
+            offset.append(0);
+            MFnFloatArrayData offsetCreator;
+            MObject data = offsetCreator.create(offset);
+            partVolumeFn.findPlug("inOffset").setValue(data);
+            partVolumeFn.findPlug("dimensionsW").setValue(1);
+            partVolumeFn.findPlug("dimensionsH").setValue(1);
+            partVolumeFn.findPlug("dimensionsD").setValue(1);
         }
 
         // doIt so that we can access the fullPathName
@@ -418,10 +418,10 @@ MStatus
 SyncOutputObject::undoIt()
 {
     for(AssetSyncs::reverse_iterator iter = myAssetSyncs.rbegin();
-	    iter != myAssetSyncs.rend();
-	    iter++)
+            iter != myAssetSyncs.rend();
+            iter++)
     {
-	(*iter)->undoIt();
+        (*iter)->undoIt();
     }
     myDagModifier.undoIt();
 
@@ -433,10 +433,10 @@ SyncOutputObject::redoIt()
 {
     myDagModifier.doIt();
     for(AssetSyncs::iterator iter = myAssetSyncs.begin();
-	    iter != myAssetSyncs.end();
-	    iter++)
+            iter != myAssetSyncs.end();
+            iter++)
     {
-	(*iter)->redoIt();
+        (*iter)->redoIt();
     }
 
     return MStatus::kSuccess;

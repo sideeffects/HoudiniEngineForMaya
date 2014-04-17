@@ -13,23 +13,23 @@ class MFnCompoundAttribute;
 class SyncAttribute : public AssetSubCommand
 {
     public:
-	SyncAttribute(
-		const MObject &assetNodeObj
-		);
-	virtual ~SyncAttribute();
+        SyncAttribute(
+                const MObject &assetNodeObj
+                );
+        virtual ~SyncAttribute();
 
-	virtual MStatus doIt();
-	virtual MStatus undoIt();
-	virtual MStatus redoIt();
+        virtual MStatus doIt();
+        virtual MStatus undoIt();
+        virtual MStatus redoIt();
 
-	virtual bool isUndoable() const;
+        virtual bool isUndoable() const;
 
     protected:
-	const MObject myAssetNodeObj;
+        const MObject myAssetNodeObj;
 
-	HAPI_NodeInfo myNodeInfo;
+        HAPI_NodeInfo myNodeInfo;
 
-	MDGModifier myDGModifier;
+        MDGModifier myDGModifier;
 };
 
 #endif

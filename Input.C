@@ -54,11 +54,11 @@ Inputs::Inputs(int assetId) :
 Inputs::~Inputs()
 {
     for(AssetInputVector::iterator iter = myAssetInputs.begin();
-	    iter != myAssetInputs.end();
-	    iter++)
+            iter != myAssetInputs.end();
+            iter++)
     {
-	delete *iter;
-	*iter = NULL;
+        delete *iter;
+        *iter = NULL;
     }
     myAssetInputs.clear();
 }
@@ -68,13 +68,13 @@ void Inputs::setNumInputs(int numInputs)
     // delete any Input that will be removed
     for(unsigned int i = numInputs; i < myAssetInputs.size(); i++)
     {
-	Input* &assetInput = myAssetInputs[i];
+        Input* &assetInput = myAssetInputs[i];
 
-	if(assetInput)
-	{
-	    delete assetInput;
-	    assetInput = NULL;
-	}
+        if(assetInput)
+        {
+            delete assetInput;
+            assetInput = NULL;
+        }
     }
 
     myAssetInputs.resize(numInputs, NULL);
@@ -118,8 +118,8 @@ Inputs::setInput(
     if(!isValidInput)
     {
         HAPI_DisconnectAssetGeometry(myAssetId, inputIdx);
-	delete assetInput;
-	assetInput = NULL;
+        delete assetInput;
+        assetInput = NULL;
         return;
     }
 
@@ -127,37 +127,37 @@ Inputs::setInput(
     Input::AssetInputType newAssetInputType = Input::AssetInputType_Invalid;
     if(geoDataHandle.type() == MFnData::kIntArray)
     {
-	newAssetInputType = Input::AssetInputType_Asset;
+        newAssetInputType = Input::AssetInputType_Asset;
     }
     else if(geoDataHandle.type() == MFnData::kMesh)
     {
-	newAssetInputType = Input::AssetInputType_Mesh;
+        newAssetInputType = Input::AssetInputType_Mesh;
     }
     else if(geoDataHandle.type() == MFnData::kNurbsCurve)
     {
-	newAssetInputType = Input::AssetInputType_Curve;
+        newAssetInputType = Input::AssetInputType_Curve;
     }
     else if(geoDataHandle.type() == MFnData::kVectorArray)
     {
-	newAssetInputType = Input::AssetInputType_Particle;
+        newAssetInputType = Input::AssetInputType_Particle;
     }
 
     // if the existing input doesn't match the new input type, delete it
     if(assetInput && assetInput->assetInputType() != newAssetInputType)
     {
-	delete assetInput;
-	assetInput = NULL;
+        delete assetInput;
+        assetInput = NULL;
     }
 
     // create Input if necessary
     if(!assetInput)
     {
-	assetInput = Input::createAssetInput(myAssetId, inputIdx, newAssetInputType);
+        assetInput = Input::createAssetInput(myAssetId, inputIdx, newAssetInputType);
     }
 
     if(!assetInput)
     {
-	return;
+        return;
     }
 
     // set input transform
@@ -186,20 +186,20 @@ Input::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType
     Input* assetInput = NULL;
     switch(assetInputType)
     {
-	case AssetInputType_Asset:
-	    assetInput = new InputAsset(assetId, inputIdx);
-	    break;
-	case AssetInputType_Mesh:
-	    assetInput = new InputMesh(assetId, inputIdx);
-	    break;
-	case AssetInputType_Curve:
-	    assetInput = new InputCurve(assetId, inputIdx);
-	    break;
-	case AssetInputType_Particle:
-	    assetInput = new InputParticle(assetId, inputIdx);
-	    break;
-	case AssetInputType_Invalid:
-	    break;
+        case AssetInputType_Asset:
+            assetInput = new InputAsset(assetId, inputIdx);
+            break;
+        case AssetInputType_Mesh:
+            assetInput = new InputMesh(assetId, inputIdx);
+            break;
+        case AssetInputType_Curve:
+            assetInput = new InputCurve(assetId, inputIdx);
+            break;
+        case AssetInputType_Particle:
+            assetInput = new InputParticle(assetId, inputIdx);
+            break;
+        case AssetInputType_Invalid:
+            break;
     }
     return assetInput;
 }

@@ -11,25 +11,25 @@ class AssetSubCommandSync;
 class AssetSubCommandLoadAsset : public AssetSubCommand
 {
     public:
-	AssetSubCommandLoadAsset(
-		const MString &otlFilePath,
-		const MString &assetName
-		);
-	virtual ~AssetSubCommandLoadAsset();
+        AssetSubCommandLoadAsset(
+                const MString &otlFilePath,
+                const MString &assetName
+                );
+        virtual ~AssetSubCommandLoadAsset();
 
-	virtual MStatus doIt();
-	virtual MStatus redoIt();
-	virtual MStatus undoIt();
+        virtual MStatus doIt();
+        virtual MStatus redoIt();
+        virtual MStatus undoIt();
 
-	virtual bool isUndoable() const;
+        virtual bool isUndoable() const;
 
     protected:
-	MString myOTLFilePath;
-	MString myAssetName;
+        MString myOTLFilePath;
+        MString myAssetName;
 
-	MDagModifier myDagModifier;
+        MDagModifier myDagModifier;
 
-	AssetSubCommandSync* myAssetSubCommandSync;
+        AssetSubCommandSync* myAssetSubCommandSync;
 };
 
 #endif

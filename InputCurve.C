@@ -60,7 +60,7 @@ InputCurve::setInputGeo(
     MObject inputMesh = dataHandle.asNurbsCurve();
     if(inputMesh.isNull())
     {
-	return;
+        return;
     }
 
     // find coords parm
@@ -71,11 +71,11 @@ InputCurve::setInputGeo(
     int orderParmIndex = Util::findParm(parms, "order");
     int closeParmIndex = Util::findParm(parms, "close");
     if(coordsParmIndex < 0
-	    || coordsParmIndex < 0
-	    || orderParmIndex < 0
-	    || closeParmIndex < 0)
+            || coordsParmIndex < 0
+            || orderParmIndex < 0
+            || closeParmIndex < 0)
     {
-	return;
+        return;
     }
 
     const HAPI_ParmInfo &typeParm = parms[typeParmIndex];
@@ -87,64 +87,64 @@ InputCurve::setInputGeo(
 
     // type
     {
-	HAPI_ParmChoiceInfo* choices = new HAPI_ParmChoiceInfo[typeParm.choiceCount];
-	HAPI_GetParmChoiceLists(myCurveNodeInfo.id, choices,
-		typeParm.choiceIndex, typeParm.choiceCount);
+        HAPI_ParmChoiceInfo* choices = new HAPI_ParmChoiceInfo[typeParm.choiceCount];
+        HAPI_GetParmChoiceLists(myCurveNodeInfo.id, choices,
+                typeParm.choiceIndex, typeParm.choiceCount);
 
-	int nurbsIdx = -1;
-	for(int i = 0; i < typeParm.choiceCount; i++)
-	{
-	    if(Util::getString(choices[i].valueSH) == "nurbs")
-	    {
-		nurbsIdx = i;
-		break;
-	    }
-	}
+        int nurbsIdx = -1;
+        for(int i = 0; i < typeParm.choiceCount; i++)
+        {
+            if(Util::getString(choices[i].valueSH) == "nurbs")
+            {
+                nurbsIdx = i;
+                break;
+            }
+        }
 
-	delete [] choices;
+        delete [] choices;
 
-	if(nurbsIdx < 0)
-	{
-	    return;
-	}
+        if(nurbsIdx < 0)
+        {
+            return;
+        }
 
-	HAPI_SetParmIntValues(myCurveNodeInfo.id, &nurbsIdx,
-		typeParm.intValuesIndex, 1);
+        HAPI_SetParmIntValues(myCurveNodeInfo.id, &nurbsIdx,
+                typeParm.intValuesIndex, 1);
     }
 
     // coords
     {
-	MPointArray cvs;
-	fnCurve.getCVs(cvs);
+        MPointArray cvs;
+        fnCurve.getCVs(cvs);
 
-	// Maya has fnCurve.degree() more cvs in it's data definition
-	// than houdini for periodic curves--but they are conincident
-	// with the first ones. Houdini ignores them, so we don't
-	// output them.
-	int num_houdini_cvs = cvs.length();
-	if(fnCurve.form() == MFnNurbsCurve::kPeriodic)
-	    num_houdini_cvs -= fnCurve.degree();
+        // Maya has fnCurve.degree() more cvs in it's data definition
+        // than houdini for periodic curves--but they are conincident
+        // with the first ones. Houdini ignores them, so we don't
+        // output them.
+        int num_houdini_cvs = cvs.length();
+        if(fnCurve.form() == MFnNurbsCurve::kPeriodic)
+            num_houdini_cvs -= fnCurve.degree();
 
-	std::ostringstream coords;
-	for(unsigned int i = 0; i < (unsigned int) num_houdini_cvs; i++)
-	{
-	    const MPoint &pt = cvs[i];
+        std::ostringstream coords;
+        for(unsigned int i = 0; i < (unsigned int) num_houdini_cvs; i++)
+        {
+            const MPoint &pt = cvs[i];
 
-	    coords << pt.x << "," << pt.y << "," << pt.z << " ";
-	}
-	HAPI_SetParmStringValue(myCurveNodeInfo.id, coords.str().c_str(), coordsParm.id, coordsParm.stringValuesIndex);
+            coords << pt.x << "," << pt.y << "," << pt.z << " ";
+        }
+        HAPI_SetParmStringValue(myCurveNodeInfo.id, coords.str().c_str(), coordsParm.id, coordsParm.stringValuesIndex);
     }
 
     // order
     {
-	int order = fnCurve.degree() + 1;
+        int order = fnCurve.degree() + 1;
 
-	HAPI_SetParmIntValues(myCurveNodeInfo.id, &order, orderParm.intValuesIndex, 1);
+        HAPI_SetParmIntValues(myCurveNodeInfo.id, &order, orderParm.intValuesIndex, 1);
     }
 
     // periodicity
     {
-	int close = fnCurve.form() == MFnNurbsCurve::kPeriodic;
-	HAPI_SetParmIntValues(myCurveNodeInfo.id, &close, closeParm.intValuesIndex, 1);
+        int close = fnCurve.form() == MFnNurbsCurve::kPeriodic;
+        HAPI_SetParmIntValues(myCurveNodeInfo.id, &close, closeParm.intValuesIndex, 1);
     }
 }

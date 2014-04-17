@@ -34,7 +34,7 @@ class Asset {
         // Getters for infos
         HAPI_ObjectInfo getObjectInfo(int id);
 
-	void resetSimulation();
+        void resetSimulation();
 
         MStatus compute(
                 const MPlug& plug,
@@ -69,7 +69,7 @@ class Asset {
                 );
 
     public:
-        HAPI_NodeInfo	myNodeInfo;
+        HAPI_NodeInfo        myNodeInfo;
         int myNumVisibleObjects;
         int myNumObjects;
 
@@ -90,12 +90,12 @@ class Asset {
                 );
 
     private:
-        HAPI_AssetInfo 	myAssetInfo;
-        MObject myNode;		    //The Maya asset node
+        HAPI_AssetInfo         myAssetInfo;
+        MObject myNode;                    //The Maya asset node
 
-	Inputs* myAssetInputs;
-	//TODO: make this a vector.  The double pointer assumes the number of objects is static
-        OutputObject** myObjects;	    //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
+        Inputs* myAssetInputs;
+        //TODO: make this a vector.  The double pointer assumes the number of objects is static
+        OutputObject** myObjects;            //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
 
         // Arrays of infos that can be accessed when updating objects,
         // keeping them here avoids getting them for individual object.

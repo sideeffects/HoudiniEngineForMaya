@@ -170,11 +170,11 @@ proc createAttrCheckBox(string $plug, string $label, string $changeCommand)
 }
 
 global proc houdiniAssetAdjustMulti(
-	string $parent,
-	string $nodeName,
-	string $attr,
-	string $fullAttr
-	)
+        string $parent,
+        string $nodeName,
+        string $attr,
+        string $fullAttr
+        )
 {
     setParent $parent;
 
@@ -223,10 +223,10 @@ global proc houdiniAssetAdjustMulti(
 proc int isSupportedInput(string $object)
 {
     string $supportedTypes[] = {
-	"houdiniAsset",
-	"mesh",
-	"nurbsCurve",
-	"particle"
+        "houdiniAsset",
+        "mesh",
+        "nurbsCurve",
+        "particle"
     };
 
     for($supportedType in $supportedTypes)
@@ -247,10 +247,10 @@ proc string[] getValidAssetInputs(string $objects[])
 
     for($object in $objects)
     {
-	int $found = 0;
+        int $found = 0;
 
-	// check if the object is a supported node
-	if(!$found)
+        // check if the object is a supported node
+        if(!$found)
         {
             if(isSupportedInput($object))
             {
@@ -259,8 +259,8 @@ proc string[] getValidAssetInputs(string $objects[])
             }
         }
 
-	// check if there are any supported nodes in immediate children
-	if(!$found)
+        // check if there are any supported nodes in immediate children
+        if(!$found)
         {
             string $tempObjects[] = `listRelatives
                 -fullPath
@@ -291,10 +291,10 @@ proc clearInput(string $inputAttr)
     string $inTransformPlug = `connectionInfo -sfd $inputTransformAttr`;
     if($inPlug != "")
     {
-	disconnectAttr $inPlug $inputGeoAttr;
-	disconnectAttr $inTransformPlug $inputTransformAttr;
-	//string $inMesh = plugNode($inPlug);
-	//showHidden $inMesh;
+        disconnectAttr $inPlug $inputGeoAttr;
+        disconnectAttr $inTransformPlug $inputTransformAttr;
+        //string $inMesh = plugNode($inPlug);
+        //showHidden $inMesh;
     }
 }
 
@@ -305,47 +305,47 @@ proc setInput(string $inputAttr, string $object)
 
     if(`objectType -isAType "houdiniAsset" $object`)
     {
-	// if we just got the houdiniAsset, just assume the first output
-	connectAttr -force ($object + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
-	connectAttr -force ($object + ".worldMatrix") $inputTransformAttr;
+        // if we just got the houdiniAsset, just assume the first output
+        connectAttr -force ($object + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
+        connectAttr -force ($object + ".worldMatrix") $inputTransformAttr;
     }
     else if(`objectType -isAType "mesh" $object`)
     {
-	string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
-	string $histNode = plugNode($histPlug);
+        string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
+        string $histNode = plugNode($histPlug);
 
-	if($histNode != ""
-		&& `nodeType $histNode` == "houdiniAsset")
-	{
-	    // TODO: Assume that assets with inputs are SOPs
-	    // *** A bit of a hack, plugNode just takes a substring of
-	    // everything before the first '.', even if the substring is
-	    // not a node.
-	    string $obj = plugNode(plugAttr($histPlug));
+        if($histNode != ""
+                && `nodeType $histNode` == "houdiniAsset")
+        {
+            // TODO: Assume that assets with inputs are SOPs
+            // *** A bit of a hack, plugNode just takes a substring of
+            // everything before the first '.', even if the substring is
+            // not a node.
+            string $obj = plugNode(plugAttr($histPlug));
 
-	    connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputGeoAttr;
-	    connectAttr -force ($histNode + ".worldMatrix") $inputTransformAttr;
-	}
-	else
-	{
-	    connectAttr -force ($object + ".outMesh") $inputGeoAttr;
-	    string $parent[] = `listRelatives -fullPath -parent $object`;
-	    if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
-	    {
-		string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
-		connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
-	    }
-	}
+            connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputGeoAttr;
+            connectAttr -force ($histNode + ".worldMatrix") $inputTransformAttr;
+        }
+        else
+        {
+            connectAttr -force ($object + ".outMesh") $inputGeoAttr;
+            string $parent[] = `listRelatives -fullPath -parent $object`;
+            if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
+            {
+                string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
+                connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
+            }
+        }
     }
     else if(`objectType -isAType "nurbsCurve" $object`)
     {
-	connectAttr -force ($object + ".local") $inputGeoAttr;
-	string $parent[] = `listRelatives -fullPath -parent $object`;
-	if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
-	{
-	    string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
-	    connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
-	}
+        connectAttr -force ($object + ".local") $inputGeoAttr;
+        string $parent[] = `listRelatives -fullPath -parent $object`;
+        if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
+        {
+            string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
+            connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
+        }
     }
     else if(`objectType -isAType "particle" $object`)
     {
@@ -359,7 +359,7 @@ proc setInput(string $inputAttr, string $object)
     }
     else
     {
-	error("Cannot handle object:" + $object + "\n");
+        error("Cannot handle object:" + $object + "\n");
     }
 }
 
@@ -367,13 +367,13 @@ global proc
 AEhoudiniAssetOperationNew(string $attr)
 {
     rowLayout
-	-numberOfColumns 2;
+        -numberOfColumns 2;
 
-	button -label "Sync"
-	    syncButton;
+        button -label "Sync"
+            syncButton;
 
-	button -label "Reset Simulation"
-	    resetSimulationButton;
+        button -label "Reset Simulation"
+            resetSimulationButton;
 
     setParent ..;
 
@@ -386,12 +386,12 @@ AEhoudiniAssetOperationReplace(string $attr)
     string $nodeName = plugNode($attr);
 
     button -e
-	-c ("houdiniEngine_syncAsset " + $nodeName)
-	syncButton;
+        -c ("houdiniEngine_syncAsset " + $nodeName)
+        syncButton;
 
     button -e
-	-c ("houdiniAsset -resetSimulation " + $nodeName)
-	resetSimulationButton;
+        -c ("houdiniAsset -resetSimulation " + $nodeName)
+        resetSimulationButton;
 }
 
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
@@ -403,31 +403,31 @@ global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
     // make sure we don't include the houdiniAsset node itself if it's selected last
     if(size($selection))
     {
-	int $lastSelectionIndex = size($selection) - 1;
-	if(plugNode($inputAttr) == $selection[$lastSelectionIndex])
-	{
-	    stringArrayRemoveAtIndex($lastSelectionIndex, $selection);
-	}
+        int $lastSelectionIndex = size($selection) - 1;
+        if(plugNode($inputAttr) == $selection[$lastSelectionIndex])
+        {
+            stringArrayRemoveAtIndex($lastSelectionIndex, $selection);
+        }
     }
 
     if(size($selection) == 0)
     {
-	clearInput($inputAttr);
-	return;
+        clearInput($inputAttr);
+        return;
     }
     else if(size($selection) > 1)
     {
-	error("Please select exactly one object to be used for input.");
+        error("Please select exactly one object to be used for input.");
     }
 
     $validInputs = getValidAssetInputs($selection);
     if(size($validInputs) > 1)
     {
-	error("Selection contains multiple supported objects. Please select exactly one object to be used for input.");
+        error("Selection contains multiple supported objects. Please select exactly one object to be used for input.");
     }
     else if(size($validInputs) == 0)
     {
-	error("Selection has no supported object that can be used for input.");
+        error("Selection has no supported object that can be used for input.");
     }
 
     setInput($inputAttr, $validInputs[0]);
@@ -440,22 +440,22 @@ global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
     string $str = `textField -q -text $textField`;
     if($str == "")
     {
-	clearInput($inputAttr);
-	return;
+        clearInput($inputAttr);
+        return;
     }
     else if(!`objExists $str`)
     {
-	error("Entered object doesn't exist.");
+        error("Entered object doesn't exist.");
     }
 
     $validInputs = getValidAssetInputs({$str});
     if(size($validInputs) > 1)
     {
-	error("Entered object contains multiple supported objects. Please enter the exact object to be used for input.");
+        error("Entered object contains multiple supported objects. Please enter the exact object to be used for input.");
     }
     else if(size($validInputs) == 0)
     {
-	error("Entered object has no supported object that can be used for input.");
+        error("Entered object has no supported object that can be used for input.");
     }
 
     setInput($inputAttr, $validInputs[0]);
@@ -476,10 +476,10 @@ global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
 
     if(`layout -q -numberOfChildren $inputsLayoutFull`)
     {
-	for($child in `layout -q -childArray $inputsLayoutFull`)
-	{
-	    deleteUI ($inputsLayoutFull + "|" + $child);
-	}
+        for($child in `layout -q -childArray $inputsLayoutFull`)
+        {
+            deleteUI ($inputsLayoutFull + "|" + $child);
+        }
     }
 
     setParent $inputsLayoutFull;
@@ -488,46 +488,46 @@ global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
     for($i=0; $i < size($multiIndices); $i++)
     {
         int $index = $multiIndices[$i];
-	string $inputAttribute = $inputsAttribute + "[" + $index + "]";
+        string $inputAttribute = $inputsAttribute + "[" + $index + "]";
 
         string $inputLayout = "input" + ($index + 1) + "Layout";
-	string $inputLayoutFull = $inputsLayoutFull + "|" + $inputLayout;
-	rowLayout
-	    -numberOfColumns 3
+        string $inputLayoutFull = $inputsLayoutFull + "|" + $inputLayout;
+        rowLayout
+            -numberOfColumns 3
             -columnWidth3 50 150 50
             -adjustableColumn 2
             -columnAlign  1 "right"
             -columnAttach 1 "both"     2
             -columnAttach 2 "both"  2
             -columnAttach 3 "left"  2
-	    $inputLayout;
+            $inputLayout;
 
             text -label ("Input " + ($index + 1));
             string $inputTextFieldFull = ($inputLayoutFull + "|inputTextField");
-	    textField
-		-alwaysInvokeEnterCommandOnReturn true
-		-enterCommand ("AEhoudiniAssetSetInputToText \"" + $inputTextFieldFull + "\" \""
-		 + $inputAttribute + "\"")
-		"inputTextField";
+            textField
+                -alwaysInvokeEnterCommandOnReturn true
+                -enterCommand ("AEhoudiniAssetSetInputToText \"" + $inputTextFieldFull + "\" \""
+                 + $inputAttribute + "\"")
+                "inputTextField";
             button
-		-label "Set to Selection"
+                -label "Set to Selection"
                 -command ("AEhoudiniAssetSetInputToSelection \"" + $inputAttribute + "\"");
 
-	setParent ..;
+        setParent ..;
 
-	scriptJob
-	    -parent $inputLayoutFull
-	    -replacePrevious
-	    -attributeChange ($inputAttribute + ".inputGeo")
-	    ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
+        scriptJob
+            -parent $inputLayoutFull
+            -replacePrevious
+            -attributeChange ($inputAttribute + ".inputGeo")
+            ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
 
-	scriptJob
-	    -parent $inputLayoutFull
-	    -replacePrevious
-	    -attributeChange ($inputAttribute + ".inputTransform")
-	    ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
+        scriptJob
+            -parent $inputLayoutFull
+            -replacePrevious
+            -attributeChange ($inputAttribute + ".inputTransform")
+            ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
 
-	AEhoudiniAssetUpdateInput $inputLayoutFull $inputAttribute;
+        AEhoudiniAssetUpdateInput $inputLayoutFull $inputAttribute;
     }
 
     setParent ..;
@@ -558,10 +558,10 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
 
     if(`layout -q -numberOfChildren $parmLayoutFull`)
     {
-	for($child in `layout -q -childArray $parmLayoutFull`)
-	{
-	    deleteUI ($parmLayoutFull + "|" + $child);
-	}
+        for($child in `layout -q -childArray $parmLayoutFull`)
+        {
+            deleteUI ($parmLayoutFull + "|" + $child);
+        }
     }
 
     setParent $parmLayoutFull;
@@ -628,7 +628,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
     editorTemplate -beginScrollLayout;
 
     editorTemplate -callCustom "AEhoudiniAssetOperationNew" "AEhoudiniAssetOperationReplace"
-	"unused";
+        "unused";
 
     // special ui for inputs
     string $inputAttrArray[] = `listAttr -st "input" $nodeName`;

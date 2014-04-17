@@ -11,9 +11,9 @@
 #include "util.h"
 
 SyncOutputGeometryPart::SyncOutputGeometryPart(
-	const MPlug &outputPlug,
-	const MObject &objectTransform
-	) :
+        const MPlug &outputPlug,
+        const MObject &objectTransform
+        ) :
     myOutputPlug(outputPlug),
     myObjectTransform(objectTransform)
 {
@@ -30,9 +30,9 @@ SyncOutputGeometryPart::doIt()
 
     MString partName;
     {
-	MString outputPartName = myOutputPlug.child(AssetNode::outputPartName).asString();
-	int separatorIndex = outputPartName.rindexW('/');
-	partName = outputPartName.substringW(separatorIndex + 1, outputPartName.numChars() - 1);
+        MString outputPartName = myOutputPlug.child(AssetNode::outputPartName).asString();
+        int separatorIndex = outputPartName.rindexW('/');
+        partName = outputPartName.substringW(separatorIndex + 1, outputPartName.numChars() - 1);
     }
 
     MFnDagNode objectTransformFn(myObjectTransform);
@@ -41,7 +41,7 @@ SyncOutputGeometryPart::doIt()
     MObject partTransform = Util::findDagChild(objectTransformFn, partName);
     if(partTransform.isNull())
     {
-	status = createOutputPart(myObjectTransform, partName, partTransform);
+        status = createOutputPart(myObjectTransform, partName, partTransform);
     }
 
     // create material
@@ -49,15 +49,15 @@ SyncOutputGeometryPart::doIt()
     MPlug materialExistsPlug = materialPlug.child(AssetNode::outputPartMaterialExists);
     if(materialExistsPlug.asBool())
     {
-	//TODO: check if material already exists
-	status = createOutputMaterial(materialPlug, partTransform);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        //TODO: check if material already exists
+        status = createOutputMaterial(materialPlug, partTransform);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
     else
     {
-	MFnDagNode partTransformFn(partTransform);
-	status = myDagModifier.commandToExecute("assignSG \"lambert1\" \"" + partTransformFn.fullPathName() + "\";");
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        MFnDagNode partTransformFn(partTransform);
+        status = myDagModifier.commandToExecute("assignSG \"lambert1\" \"" + partTransformFn.fullPathName() + "\";");
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     return redoIt();
@@ -93,10 +93,10 @@ SyncOutputGeometryPart::isUndoable() const
 
 MStatus
 SyncOutputGeometryPart::createOutputPart(
-	const MObject &objectTransform,
-	const MString &partName,
-	MObject &partTransform
-	)
+        const MObject &objectTransform,
+        const MString &partName,
+        MObject &partTransform
+        )
 {
     MStatus status;
 
@@ -121,31 +121,31 @@ SyncOutputGeometryPart::createOutputPart(
 
     // connect partMesh attributes
     {
-	MPlug srcPlug;
-	MPlug dstPlug;
+        MPlug srcPlug;
+        MPlug dstPlug;
 
-	srcPlug = myOutputPlug.child(AssetNode::outputPartMesh);
-	dstPlug = partMeshFn.findPlug("inMesh");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        srcPlug = myOutputPlug.child(AssetNode::outputPartMesh);
+        dstPlug = partMeshFn.findPlug("inMesh");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // create particle
     MPlug particleExistsPlug = myOutputPlug.child(AssetNode::outputPartHasParticles);
     if(particleExistsPlug.asBool())
     {
-	status = createOutputParticle(
-		partTransform,
-		myOutputPlug.child(AssetNode::outputPartParticle)
-		);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        status = createOutputParticle(
+                partTransform,
+                myOutputPlug.child(AssetNode::outputPartParticle)
+                );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // create curves
     MPlug curveIsBezier = myOutputPlug.child(AssetNode::outputPartCurvesIsBezier);
     createOutputCurves(myOutputPlug.child(AssetNode::outputPartCurves),
-		       partTransform,
-		       curveIsBezier.asBool());
+                       partTransform,
+                       curveIsBezier.asBool());
 
     // doIt
     // Need to do it here right away because otherwise the top level
@@ -158,28 +158,28 @@ SyncOutputGeometryPart::createOutputPart(
 
 MStatus
 SyncOutputGeometryPart::createOutputCurves(
-	MPlug curvesPlug,
-	const MObject &partTransform,
-	bool isBezier
-	)
+        MPlug curvesPlug,
+        const MObject &partTransform,
+        bool isBezier
+        )
 {
     MStatus status;
 
     int numCurves = curvesPlug.evaluateNumElements();
     for(int i=0; i<numCurves; i++)
     {
-	MPlug curve = curvesPlug[i];
+        MPlug curve = curvesPlug[i];
 
-	MObject partCurve =
-	    myDagModifier.createNode(isBezier ? "bezierCurve" : "nurbsCurve",
-				     partTransform, &status);
-	CHECK_MSTATUS(status);
+        MObject partCurve =
+            myDagModifier.createNode(isBezier ? "bezierCurve" : "nurbsCurve",
+                                     partTransform, &status);
+        CHECK_MSTATUS(status);
 
-	MFnDependencyNode partCurveFn(partCurve, &status);
-	MPlug dstPlug = partCurveFn.findPlug("create");
-	CHECK_MSTATUS(status);
+        MFnDependencyNode partCurveFn(partCurve, &status);
+        MPlug dstPlug = partCurveFn.findPlug("create");
+        CHECK_MSTATUS(status);
 
-	myDagModifier.connect(curve, dstPlug);
+        myDagModifier.connect(curve, dstPlug);
     }
 
     return MStatus::kSuccess;
@@ -187,9 +187,9 @@ SyncOutputGeometryPart::createOutputCurves(
 
 MStatus
 SyncOutputGeometryPart::createOutputMaterial(
-	const MPlug &materialPlug,
-	const MObject &partTransform
-	)
+        const MPlug &materialPlug,
+        const MObject &partTransform
+        )
 {
     MStatus status;
 
@@ -198,22 +198,22 @@ SyncOutputGeometryPart::createOutputMaterial(
     // create shader
     MFnDependencyNode shaderFn;
     {
-	MObject shader;
-	status = Util::createNodeByModifierCommand(
-		myDagModifier,
-		"shadingNode -asShader phong",
-		shader
-		);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        MObject shader;
+        status = Util::createNodeByModifierCommand(
+                myDagModifier,
+                "shadingNode -asShader phong",
+                shader
+                );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	status = shaderFn.setObject(shader);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        status = shaderFn.setObject(shader);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // assign shader
     status = myDagModifier.commandToExecute(
-	    "assignSG " + shaderFn.name() + " " + partTransformFn.fullPathName()
-	    );
+            "assignSG " + shaderFn.name() + " " + partTransformFn.fullPathName()
+            );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // create file node if texture exists
@@ -222,60 +222,60 @@ SyncOutputGeometryPart::createOutputMaterial(
     MFnDependencyNode textureFileFn;
     if(texturePath.length())
     {
-	MObject textureFile;
-	status = Util::createNodeByModifierCommand(
-		myDagModifier,
-		"shadingNode -asTexture file",
-		textureFile
-		);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        MObject textureFile;
+        status = Util::createNodeByModifierCommand(
+                myDagModifier,
+                "shadingNode -asTexture file",
+                textureFile
+                );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	status = textureFileFn.setObject(textureFile);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        status = textureFileFn.setObject(textureFile);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // connect shader attributse
     {
-	MPlug srcPlug;
-	MPlug dstPlug;
+        MPlug srcPlug;
+        MPlug dstPlug;
 
-	// color
-	if(textureFileFn.object().isNull())
-	{
-	    srcPlug = materialPlug.child(AssetNode::outputPartDiffuseColor);
-	    dstPlug = shaderFn.findPlug("color");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	}
-	else
-	{
-	    dstPlug = textureFileFn.findPlug("fileTextureName");
-	    status = myDagModifier.connect(texturePathPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
+        // color
+        if(textureFileFn.object().isNull())
+        {
+            srcPlug = materialPlug.child(AssetNode::outputPartDiffuseColor);
+            dstPlug = shaderFn.findPlug("color");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
+        else
+        {
+            dstPlug = textureFileFn.findPlug("fileTextureName");
+            status = myDagModifier.connect(texturePathPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	    srcPlug = textureFileFn.findPlug("outColor");
-	    dstPlug = shaderFn.findPlug("color");
-	    status = myDagModifier.connect(srcPlug, dstPlug);
-	    CHECK_MSTATUS_AND_RETURN_IT(status);
-	}
+            srcPlug = textureFileFn.findPlug("outColor");
+            dstPlug = shaderFn.findPlug("color");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
 
-	// specularColor
-	srcPlug = materialPlug.child(AssetNode::outputPartSpecularColor);
-	dstPlug = shaderFn.findPlug("specularColor");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        // specularColor
+        srcPlug = materialPlug.child(AssetNode::outputPartSpecularColor);
+        dstPlug = shaderFn.findPlug("specularColor");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	// ambientColor
-	srcPlug = materialPlug.child(AssetNode::outputPartAmbientColor);
-	dstPlug = shaderFn.findPlug("ambientColor");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        // ambientColor
+        srcPlug = materialPlug.child(AssetNode::outputPartAmbientColor);
+        dstPlug = shaderFn.findPlug("ambientColor");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	// transparency
-	srcPlug = materialPlug.child(AssetNode::outputPartAlphaColor);
-	dstPlug = shaderFn.findPlug("transparency");
-	status = myDagModifier.connect(srcPlug, dstPlug);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        // transparency
+        srcPlug = materialPlug.child(AssetNode::outputPartAlphaColor);
+        dstPlug = shaderFn.findPlug("transparency");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // doIt
@@ -287,19 +287,19 @@ SyncOutputGeometryPart::createOutputMaterial(
 
 MStatus
 SyncOutputGeometryPart::createOutputParticle(
-	const MObject &partTransform,
-	const MPlug &particlePlug
-	)
+        const MObject &partTransform,
+        const MPlug &particlePlug
+        )
 {
     MStatus status;
 
     // create nParticle
     MObject particleTransformObj;
     status = Util::createNodeByModifierCommand(
-	    myDagModifier,
-	    "nParticle",
-	    particleTransformObj
-	    );
+            myDagModifier,
+            "nParticle",
+            particleTransformObj
+            );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // reparent it under partTransform
@@ -308,11 +308,11 @@ SyncOutputGeometryPart::createOutputParticle(
     // get nParticleShape
     MObject particleShapeObj;
     {
-	MDagPath particleTrasnformDag;
-	status = MDagPath::getAPathTo(particleTransformObj, particleTrasnformDag);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
-	particleShapeObj = particleTrasnformDag.child(0, &status);
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+        MDagPath particleTrasnformDag;
+        status = MDagPath::getAPathTo(particleTransformObj, particleTrasnformDag);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        particleShapeObj = particleTrasnformDag.child(0, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     MPlug srcPlug;
@@ -333,14 +333,14 @@ SyncOutputGeometryPart::createOutputParticle(
 
     // set particleRenderType to points
     status = myDagModifier.newPlugValueInt(
-	    particleShapeFn.findPlug("particleRenderType"),
-	    3);
+            particleShapeFn.findPlug("particleRenderType"),
+            3);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set playFromCache to true
     status = myDagModifier.newPlugValueBool(
-	    particleShapeFn.findPlug("playFromCache"),
-	    true);
+            particleShapeFn.findPlug("playFromCache"),
+            true);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return MStatus::kSuccess;

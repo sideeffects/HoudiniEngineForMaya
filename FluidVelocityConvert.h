@@ -43,11 +43,11 @@ public:
 
 public:
     MFloatArray extrapolateX(const MFloatArray& vel,
-			     int resX, int resY, int resZ);
+                             int resX, int resY, int resZ);
     MFloatArray extrapolateY(const MFloatArray& vel,
-			     int resX, int resY, int resZ);
+                             int resX, int resY, int resZ);
     MFloatArray extrapolateZ(const MFloatArray& vel,
-			     int resX, int resY, int resZ);
+                             int resX, int resY, int resZ);
 };
 
 #endif // MAYA_API_VERSION check

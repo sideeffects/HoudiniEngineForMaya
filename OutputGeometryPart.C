@@ -10,7 +10,7 @@
 #include <maya/MFnNurbsCurveData.h>
 #include <maya/MPointArray.h>
 #if MAYA_API_VERSION >= 201400
-	#include <maya/MFnFloatArrayData.h>
+        #include <maya/MFnFloatArrayData.h>
 #endif
 #include <maya/MFnVectorArrayData.h>
 
@@ -39,17 +39,17 @@ OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int
         hstat = HAPI_GetPartInfo(assetId, objectId, geoId, partId, & myPartInfo);
         Util::checkHAPIStatus(hstat);
 
-	if(myPartInfo.hasVolume)
-	{
-	    hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
-	    Util::checkHAPIStatus(hstat);
-	}
+        if(myPartInfo.hasVolume)
+        {
+            hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
+            Util::checkHAPIStatus(hstat);
+        }
 
-	if(myPartInfo.isCurve)
-	{
-	    hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
-	    Util::checkHAPIStatus(hstat);
-	}
+        if(myPartInfo.isCurve)
+        {
+            hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
+            Util::checkHAPIStatus(hstat);
+        }
     }
     catch (HAPIError& e)
     {
@@ -72,9 +72,9 @@ OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
     MDataHandle scaleHandle = handle.child(AssetNode::outputPartVolumeScale);
 
     MEulerRotation r = MQuaternion(transform.rotationQuaternion[0],
-				   transform.rotationQuaternion[1],
-				   transform.rotationQuaternion[2],
-				   transform.rotationQuaternion[3]).asEulerRotation();
+                                   transform.rotationQuaternion[1],
+                                   transform.rotationQuaternion[2],
+                                   transform.rotationQuaternion[3]).asEulerRotation();
 
     const double rot[3] = {r[0], r[1], r[2]};
     const double scale[3] = {transform.scale[0], transform.scale[1], transform.scale[2]};
@@ -83,8 +83,8 @@ OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
     matrix.addScale(scale, MSpace::kTransform);
     matrix.addRotation(rot, MTransformationMatrix::kXYZ, MSpace::kTransform);
     matrix.addTranslation(MVector(transform.position[0],
-				  transform.position[1],
-				  transform.position[2]), MSpace::kTransform);
+                                  transform.position[1],
+                                  transform.position[2]), MSpace::kTransform);
 
     double xoffset = myVolumeInfo.xLength/2.0 + myVolumeInfo.minX;
     double yoffset = myVolumeInfo.yLength/2.0 + myVolumeInfo.minY;
@@ -96,9 +96,9 @@ OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
     matrix.addTranslation(MVector(xoffset, yoffset, zoffset), MSpace::kPreTransform);
 
     const double scale3[3] = {
-	static_cast<double>(myVolumeInfo.xLength),
-	static_cast<double>(myVolumeInfo.yLength),
-	static_cast<double>(myVolumeInfo.zLength)
+        static_cast<double>(myVolumeInfo.xLength),
+        static_cast<double>(myVolumeInfo.yLength),
+        static_cast<double>(myVolumeInfo.zLength)
     };
     matrix.addScale(scale3, MSpace::kPreTransform);
 
@@ -132,11 +132,11 @@ OutputGeometryPart::update()
         hstat = HAPI_GetPartInfo(myAssetId, myObjectId, myGeoId, myPartId, &myPartInfo);
         Util::checkHAPIStatus(hstat);
 
-	if(myPartInfo.hasVolume)
-	{
-	    hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
-	    Util::checkHAPIStatus(hstat);
-	}
+        if(myPartInfo.hasVolume)
+        {
+            hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
+            Util::checkHAPIStatus(hstat);
+        }
     }
     catch (HAPIError& e)
     {
@@ -249,63 +249,63 @@ OutputGeometryPart::compute(
     if(myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
         // OutputObject name
-	MString partName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
+        MString partName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
         partNameHandle.set(partName);
 
         // Mesh
         createMesh(meshHandle);
 
-	// Particle
-	if(myPartInfo.pointCount != 0
-		&& myPartInfo.vertexCount == 0
-		&& myPartInfo.faceCount == 0)
-	{
-	    MDataHandle partHasParticlesHandle = handle.child(AssetNode::outputPartHasParticles);
-	    partHasParticlesHandle.setBool(true);
+        // Particle
+        if(myPartInfo.pointCount != 0
+                && myPartInfo.vertexCount == 0
+                && myPartInfo.faceCount == 0)
+        {
+            MDataHandle partHasParticlesHandle = handle.child(AssetNode::outputPartHasParticles);
+            partHasParticlesHandle.setBool(true);
 
-	    MDataHandle partParticleHandle = handle.child(AssetNode::outputPartParticle);
-	    createParticle(partParticleHandle);
-	}
+            MDataHandle partParticleHandle = handle.child(AssetNode::outputPartParticle);
+            createParticle(partParticleHandle);
+        }
 
 #if MAYA_API_VERSION >= 201400
-	// Volume
-	if(myPartInfo.hasVolume)
-	{
-	    MDataHandle partVolumeHandle = handle.child(AssetNode::outputPartVolume);
+        // Volume
+        if(myPartInfo.hasVolume)
+        {
+            MDataHandle partVolumeHandle = handle.child(AssetNode::outputPartVolume);
 
-	    MDataHandle partVolumeTransformHandle = partVolumeHandle.child(AssetNode::outputPartVolumeTransform);
-	    updateVolumeTransform(partVolumeTransformHandle);
+            MDataHandle partVolumeTransformHandle = partVolumeHandle.child(AssetNode::outputPartVolumeTransform);
+            updateVolumeTransform(partVolumeTransformHandle);
 
-	    MDataHandle partVolumeGridHandle = partVolumeHandle.child(AssetNode::outputPartVolumeGrid);
-	    partVolumeGridHandle.set(createVolume());
+            MDataHandle partVolumeGridHandle = partVolumeHandle.child(AssetNode::outputPartVolumeGrid);
+            partVolumeGridHandle.set(createVolume());
 
-	    MFloatArray resolution;
-	    resolution.append(myVolumeInfo.xLength);
-	    resolution.append(myVolumeInfo.yLength);
-	    resolution.append(myVolumeInfo.zLength);
-	    MDataHandle partVolumeResHandle = partVolumeHandle.child(AssetNode::outputPartVolumeRes);
-	    MFnFloatArrayData resCreator;
-	    partVolumeResHandle.set(resCreator.create(resolution));
+            MFloatArray resolution;
+            resolution.append(myVolumeInfo.xLength);
+            resolution.append(myVolumeInfo.yLength);
+            resolution.append(myVolumeInfo.zLength);
+            MDataHandle partVolumeResHandle = partVolumeHandle.child(AssetNode::outputPartVolumeRes);
+            MFnFloatArrayData resCreator;
+            partVolumeResHandle.set(resCreator.create(resolution));
 
-	    MDataHandle partVolumeNameHandle = partVolumeHandle.child(AssetNode::outputPartVolumeName);
-	    partVolumeNameHandle.set(Util::getString(myVolumeInfo.nameSH));
+            MDataHandle partVolumeNameHandle = partVolumeHandle.child(AssetNode::outputPartVolumeName);
+            partVolumeNameHandle.set(Util::getString(myVolumeInfo.nameSH));
 
-	    partVolumeHandle.setClean();
-	    partVolumeTransformHandle.setClean();
-	    partVolumeGridHandle.setClean();
-	    partVolumeResHandle.setClean();
-	    partVolumeNameHandle.setClean();
-	}
+            partVolumeHandle.setClean();
+            partVolumeTransformHandle.setClean();
+            partVolumeGridHandle.setClean();
+            partVolumeResHandle.setClean();
+            partVolumeNameHandle.setClean();
+        }
 #endif
 
-	// Curve
-	if(myPartInfo.isCurve)
-	{
-	    createCurves(curvesHandle);
-	    MDataHandle isBezierHandle =
-		handle.child(AssetNode::outputPartCurvesIsBezier);
-	    isBezierHandle.setBool(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER);
-	}
+        // Curve
+        if(myPartInfo.isCurve)
+        {
+            createCurves(curvesHandle);
+            MDataHandle isBezierHandle =
+                handle.child(AssetNode::outputPartCurvesIsBezier);
+            isBezierHandle.setBool(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER);
+        }
     }
 
     if(myNeverBuilt || myGeoInfo.hasMaterialChanged)
@@ -334,92 +334,92 @@ OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
     int knotOffset = 0;
     for(int i=0; i<myCurveInfo.curveCount; i++)
     {
-	MDataHandle curve = curvesBuilder.addElement(i);
-	MObject curveDataObj = curve.data();
-	MFnNurbsCurveData curveDataFn(curveDataObj);
-	if(curve.data().isNull())
-	{
-	    // set the MDataHandle
-	    curveDataObj = curveDataFn.create();
-	    curve.setMObject(curveDataObj);
+        MDataHandle curve = curvesBuilder.addElement(i);
+        MObject curveDataObj = curve.data();
+        MFnNurbsCurveData curveDataFn(curveDataObj);
+        if(curve.data().isNull())
+        {
+            // set the MDataHandle
+            curveDataObj = curveDataFn.create();
+            curve.setMObject(curveDataObj);
 
-	    // then get the copy from MDataHandle
-	    curveDataObj = curve.data();
-	    curveDataFn.setObject(curveDataObj);
-	}
+            // then get the copy from MDataHandle
+            curveDataObj = curve.data();
+            curveDataFn.setObject(curveDataObj);
+        }
 
-	// Number of CVs
-	int numVertices;
-	HAPI_GetCurveCounts(myAssetId, myObjectId, myGeoId, myPartId,
-			    &numVertices, i, 1);
+        // Number of CVs
+        int numVertices;
+        HAPI_GetCurveCounts(myAssetId, myObjectId, myGeoId, myPartId,
+                            &numVertices, i, 1);
 
-	// Order of this particular curve
-	int order;
-	if(myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
-	    && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID)
-	    order = myCurveInfo.order;
-	else
-	    HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId, &order, i, 1);
+        // Order of this particular curve
+        int order;
+        if(myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
+            && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID)
+            order = myCurveInfo.order;
+        else
+            HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId, &order, i, 1);
 
-	std::vector<float> vertices;
-	vertices.resize(numVertices * HAPI_CV_VECTOR_SIZE);
-	HAPI_GetCurveVertices(myAssetId, myObjectId, myGeoId, myPartId,
-			      &vertices.front(), vertexOffset,
-			      numVertices * HAPI_CV_VECTOR_SIZE);
-	MPointArray controlVertices(numVertices);
-	for(int j=0; j<numVertices; j++)
-	{
-	    controlVertices[j] = MPoint(vertices[j*HAPI_CV_VECTOR_SIZE],
-					vertices[j*HAPI_CV_VECTOR_SIZE + 1],
-					vertices[j*HAPI_CV_VECTOR_SIZE + 2],
-					vertices[j*HAPI_CV_VECTOR_SIZE + 3]);
-	}
+        std::vector<float> vertices;
+        vertices.resize(numVertices * HAPI_CV_VECTOR_SIZE);
+        HAPI_GetCurveVertices(myAssetId, myObjectId, myGeoId, myPartId,
+                              &vertices.front(), vertexOffset,
+                              numVertices * HAPI_CV_VECTOR_SIZE);
+        MPointArray controlVertices(numVertices);
+        for(int j=0; j<numVertices; j++)
+        {
+            controlVertices[j] = MPoint(vertices[j*HAPI_CV_VECTOR_SIZE],
+                                        vertices[j*HAPI_CV_VECTOR_SIZE + 1],
+                                        vertices[j*HAPI_CV_VECTOR_SIZE + 2],
+                                        vertices[j*HAPI_CV_VECTOR_SIZE + 3]);
+        }
 
-	MDoubleArray knotSequences;
-	if(myCurveInfo.hasKnots)
-	{
-	    std::vector<float> knots;
-	    knots.resize(numVertices + order);
-	    // The Maya knot vector has two fewer knots;
-	    // the first and last houdini knot are excluded
-	    knotSequences.setLength(numVertices + order - 2);
-	    HAPI_GetCurveKnots(myAssetId, myObjectId, myGeoId, myPartId,
-			       &knots.front(), knotOffset, numVertices + order);
-	    // Maya doesn't need the first and last knots
-	    for(int j=0; j<numVertices + order - 2; j++)
-		knotSequences[j] = knots[j+1];
-	}
-	else if(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
-	{
-	    // Bezier knot vector needs to still be passed in
-	    knotSequences.setLength(numVertices + order - 2);
-	    for(int j=0; j<numVertices + order - 2; j++)
-		knotSequences[j] = j / (order - 1);
-	}
-	else
-	{
-	    knotSequences.setLength(numVertices + order - 2);
-	    for(int j=0; j<numVertices + order - 2; j++)
-		knotSequences[j] = 0;
-	}
+        MDoubleArray knotSequences;
+        if(myCurveInfo.hasKnots)
+        {
+            std::vector<float> knots;
+            knots.resize(numVertices + order);
+            // The Maya knot vector has two fewer knots;
+            // the first and last houdini knot are excluded
+            knotSequences.setLength(numVertices + order - 2);
+            HAPI_GetCurveKnots(myAssetId, myObjectId, myGeoId, myPartId,
+                               &knots.front(), knotOffset, numVertices + order);
+            // Maya doesn't need the first and last knots
+            for(int j=0; j<numVertices + order - 2; j++)
+                knotSequences[j] = knots[j+1];
+        }
+        else if(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
+        {
+            // Bezier knot vector needs to still be passed in
+            knotSequences.setLength(numVertices + order - 2);
+            for(int j=0; j<numVertices + order - 2; j++)
+                knotSequences[j] = j / (order - 1);
+        }
+        else
+        {
+            knotSequences.setLength(numVertices + order - 2);
+            for(int j=0; j<numVertices + order - 2; j++)
+                knotSequences[j] = 0;
+        }
 
-	// NOTE: Periodicity is always constant, so periodic and
-	//  	 non-periodic curve meshes will have different parts.
-	MFnNurbsCurve curveFn;
-	MObject nurbsCurve =
-	    curveFn.create(controlVertices, knotSequences, order-1,
-			   myCurveInfo.isPeriodic ?
-				      MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
-			   false /* 2d? */,
-			   myCurveInfo.isRational /* rational? */,
-			   curveDataObj, &status);
-	CHECK_MSTATUS(status);
+        // NOTE: Periodicity is always constant, so periodic and
+        //           non-periodic curve meshes will have different parts.
+        MFnNurbsCurve curveFn;
+        MObject nurbsCurve =
+            curveFn.create(controlVertices, knotSequences, order-1,
+                           myCurveInfo.isPeriodic ?
+                                      MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
+                           false /* 2d? */,
+                           myCurveInfo.isRational /* rational? */,
+                           curveDataObj, &status);
+        CHECK_MSTATUS(status);
 
-	// The curve at i will have numVertices vertices, and may have
-	// some knots. The knot count will be numVertices + order for
-	// nurbs curves
-	vertexOffset += numVertices * 4;
-	knotOffset += numVertices + order;
+        // The curve at i will have numVertices vertices, and may have
+        // some knots. The knot count will be numVertices + order for
+        // nurbs curves
+        vertexOffset += numVertices * 4;
+        knotOffset += numVertices + order;
     }
 
     curvesArrayHandle.set(curvesBuilder);
@@ -561,8 +561,8 @@ OutputGeometryPart::createParticle(MDataHandle &dataHandle)
     MFnVectorArrayData positionDataFn(positionsObj);
     if(positionsObj.isNull())
     {
-	positionsObj = positionDataFn.create();
-	positionsHandle.setMObject(positionsObj);
+        positionsObj = positionDataFn.create();
+        positionsHandle.setMObject(positionsObj);
     }
 
     MVectorArray positions = positionDataFn.array();
@@ -577,8 +577,8 @@ OutputGeometryPart::createParticle(MDataHandle &dataHandle)
     MFnArrayAttrsData arrayDataFn(arrayDataObj);
     if(arrayDataObj.isNull())
     {
-	arrayDataObj = arrayDataFn.create();
-	arrayDataHandle.setMObject(arrayDataObj);
+        arrayDataObj = arrayDataFn.create();
+        arrayDataHandle.setMObject(arrayDataObj);
     }
 
     // id
@@ -785,7 +785,7 @@ OutputGeometryPart::createVolume()
     float* tileValues = new float[tileSize * tileSize * tileSize];
     std::fill(tileValues, tileValues + tileSize * tileSize * tileSize - 1, 0.0f);
     for(unsigned int i=0; i<grid.length(); i++)
-	grid[i] = 0.0f;
+        grid[i] = 0.0f;
 
     HAPI_VolumeTileInfo tile;
     HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
@@ -795,33 +795,33 @@ OutputGeometryPart::createVolume()
 #endif
 
     while(tile.minX != std::numeric_limits<int>::max() &&
-	   tile.minY != std::numeric_limits<int>::max() &&
-	   tile.minZ != std::numeric_limits<int>::max())
+           tile.minY != std::numeric_limits<int>::max() &&
+           tile.minZ != std::numeric_limits<int>::max())
     {
-	HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tile, tileValues);
+        HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tile, tileValues);
 
-	for(int k=0; k<tileSize; k++)
-	    for(int j=0; j<tileSize; j++)
-		for(int i=0; i<tileSize; i++)
-		{
-		    int z = k + tile.minZ - myVolumeInfo.minZ,
-			y = j + tile.minY - myVolumeInfo.minY,
-			x = i + tile.minX - myVolumeInfo.minX;
+        for(int k=0; k<tileSize; k++)
+            for(int j=0; j<tileSize; j++)
+                for(int i=0; i<tileSize; i++)
+                {
+                    int z = k + tile.minZ - myVolumeInfo.minZ,
+                        y = j + tile.minY - myVolumeInfo.minY,
+                        x = i + tile.minX - myVolumeInfo.minX;
 
-		    int index =
-			xres *  yres * z +
-			xres * y +
-			x;
+                    int index =
+                        xres *  yres * z +
+                        xres * y +
+                        x;
 
-		    float value = tileValues[k * tileSize*tileSize + j * tileSize + i];
-		    if(x < xres && y < yres && z < zres
-			&& x > 0 && y > 0 && z > 0)
-		    {
-			grid[index] = value;
-		    }
-		}
+                    float value = tileValues[k * tileSize*tileSize + j * tileSize + i];
+                    if(x < xres && y < yres && z < zres
+                        && x > 0 && y > 0 && z > 0)
+                    {
+                        grid[index] = value;
+                    }
+                }
 
-	HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
+        HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
     }
 
     delete[] tileValues;
@@ -1141,97 +1141,97 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
 
         matExistsHandle.set(true);
 
-	if(ambientParmIndex >= 0)
-	{
-	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-		    parms[ambientParmIndex].floatValuesIndex, 4);
-	    ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
-	}
+        if(ambientParmIndex >= 0)
+        {
+            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
+                    parms[ambientParmIndex].floatValuesIndex, 4);
+            ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+        }
 
-	if(specularParmIndex >= 0)
-	{
-	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-		    parms[specularParmIndex].floatValuesIndex, 4);
-	    specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
-	}
+        if(specularParmIndex >= 0)
+        {
+            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
+                    parms[specularParmIndex].floatValuesIndex, 4);
+            specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+        }
 
-	if(diffuseParmIndex >= 0)
-	{
-	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-		    parms[diffuseParmIndex].floatValuesIndex, 4);
-	    diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
-	}
+        if(diffuseParmIndex >= 0)
+        {
+            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
+                    parms[diffuseParmIndex].floatValuesIndex, 4);
+            diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+        }
 
-	if(alphaParmIndex >= 0)
-	{
-	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-		    parms[alphaParmIndex].floatValuesIndex, 1);
-	    float alpha = 1 - valueHolder[0];
-	    alphaHandle.set3Float(alpha, alpha, alpha);
-	}
+        if(alphaParmIndex >= 0)
+        {
+            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
+                    parms[alphaParmIndex].floatValuesIndex, 1);
+            float alpha = 1 - valueHolder[0];
+            alphaHandle.set3Float(alpha, alpha, alpha);
+        }
 
-	if(texturePathSHParmIndex >= 0)
-	{
-	    HAPI_ParmInfo texturePathParm;
-	    HAPI_GetParameters(
-		    myMaterialInfo.nodeId,
-		    &texturePathParm,
-		    texturePathSHParmIndex,
-		    1
-		    );
+        if(texturePathSHParmIndex >= 0)
+        {
+            HAPI_ParmInfo texturePathParm;
+            HAPI_GetParameters(
+                    myMaterialInfo.nodeId,
+                    &texturePathParm,
+                    texturePathSHParmIndex,
+                    1
+                    );
 
-	    int texturePathSH;
-	    HAPI_GetParmStringValues(
-		    myMaterialInfo.nodeId,
-		    true,
-		    &texturePathSH,
-		    texturePathParm.stringValuesIndex,
-		    1
-		    );
+            int texturePathSH;
+            HAPI_GetParmStringValues(
+                    myMaterialInfo.nodeId,
+                    true,
+                    &texturePathSH,
+                    texturePathParm.stringValuesIndex,
+                    1
+                    );
 
-	    bool hasTextureSource = Util::getString(texturePathSH).length() > 0;
-	    bool canRenderTexture = false;
-	    if(hasTextureSource)
-	    {
-		HAPI_Result hapiResult;
+            bool hasTextureSource = Util::getString(texturePathSH).length() > 0;
+            bool canRenderTexture = false;
+            if(hasTextureSource)
+            {
+                HAPI_Result hapiResult;
 
-		// this could fail if texture parameter is empty
-		hapiResult = HAPI_RenderTextureToImage(
-			myAssetId,
-			myMaterialInfo.id,
-			texturePathSHParmIndex
-			);
+                // this could fail if texture parameter is empty
+                hapiResult = HAPI_RenderTextureToImage(
+                        myAssetId,
+                        myMaterialInfo.id,
+                        texturePathSHParmIndex
+                        );
 
-		canRenderTexture = hapiResult == HAPI_RESULT_SUCCESS;
-	    }
+                canRenderTexture = hapiResult == HAPI_RESULT_SUCCESS;
+            }
 
-	    int destinationFilePathSH = 0;
-	    if(canRenderTexture)
-	    {
-		HAPI_Result hapiResult;
+            int destinationFilePathSH = 0;
+            if(canRenderTexture)
+            {
+                HAPI_Result hapiResult;
 
-		MString destinationFolderPath;
-		MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
-			destinationFolderPath);
+                MString destinationFolderPath;
+                MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
+                        destinationFolderPath);
 
-		// this could fail if the image planes don't exist
-		hapiResult = HAPI_ExtractImageToFile(
-			myAssetId,
-			myMaterialInfo.id,
-			HAPI_PNG_FORMAT_NAME,
-			"C A",
-			destinationFolderPath.asChar(),
-			NULL,
-			&destinationFilePathSH
-			);
-	    }
+                // this could fail if the image planes don't exist
+                hapiResult = HAPI_ExtractImageToFile(
+                        myAssetId,
+                        myMaterialInfo.id,
+                        HAPI_PNG_FORMAT_NAME,
+                        "C A",
+                        destinationFolderPath.asChar(),
+                        NULL,
+                        &destinationFilePathSH
+                        );
+            }
 
-	    if(destinationFilePathSH > 0)
-	    {
-		MString texturePath = Util::getString(destinationFilePathSH);
-		texturePathHandle.set(texturePath);
-	    }
-	}
+            if(destinationFilePathSH > 0)
+            {
+                MString texturePath = Util::getString(destinationFilePathSH);
+                texturePathHandle.set(texturePath);
+            }
+        }
     }
 
     handle.setClean();

@@ -8,20 +8,20 @@
 class InputMesh : public Input
 {
     public:
-	InputMesh(int assetId, int inputIdx);
-	virtual ~InputMesh();
+        InputMesh(int assetId, int inputIdx);
+        virtual ~InputMesh();
 
-	virtual AssetInputType assetInputType() const;
+        virtual AssetInputType assetInputType() const;
 
-	virtual void setInputTransform(MDataHandle &dataHandle);
+        virtual void setInputTransform(MDataHandle &dataHandle);
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug
                 );
 
     protected:
-	int myInputAssetId;
-	HAPI_GeoInputInfo myInputInfo;
+        int myInputAssetId;
+        HAPI_GeoInputInfo myInputInfo;
 };
 
 #endif

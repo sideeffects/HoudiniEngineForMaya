@@ -50,8 +50,8 @@ class OutputObject {
         virtual MStatus setClean(MPlug& plug, MDataBlock& data) = 0;
         virtual ObjectType type() = 0;
 
-	bool	isVisible() const;
-	bool	isInstanced() const;
+        bool        isVisible() const;
+        bool        isInstanced() const;
 
     public:
         Asset* myObjectControl;

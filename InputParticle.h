@@ -8,12 +8,12 @@
 class InputParticle : public Input
 {
     public:
-	InputParticle(int assetId, int inputIdx);
-	virtual ~InputParticle();
+        InputParticle(int assetId, int inputIdx);
+        virtual ~InputParticle();
 
-	virtual AssetInputType assetInputType() const;
+        virtual AssetInputType assetInputType() const;
 
-	virtual void setInputTransform(MDataHandle &dataHandle);
+        virtual void setInputTransform(MDataHandle &dataHandle);
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug
@@ -29,8 +29,8 @@ class InputParticle : public Input
                 );
 
     protected:
-	int myInputAssetId;
-	HAPI_GeoInputInfo myInputInfo;
+        int myInputAssetId;
+        HAPI_GeoInputInfo myInputInfo;
 };
 
 #endif

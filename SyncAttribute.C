@@ -123,17 +123,17 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     if(!invisible)
     {
         MString attrName = Util::getAttrNameFromParm(parmInfo);
-	MString label = Util::getString(parmInfo.labelSH);
+        MString label = Util::getString(parmInfo.labelSH);
 
-	MFnNumericAttribute sizeAttrFn;
-	sizeAttrFn.create(attrName + "__multiSize", attrName + "__multiSize", MFnNumericData::kInt);
-	sizeAttrFn.setNiceNameOverride(label);
+        MFnNumericAttribute sizeAttrFn;
+        sizeAttrFn.create(attrName + "__multiSize", attrName + "__multiSize", MFnNumericData::kInt);
+        sizeAttrFn.setNiceNameOverride(label);
         sizeAttrFn.setInternal(true);
-	parentAttrFn->addChild(sizeAttrFn.object());
+        parentAttrFn->addChild(sizeAttrFn.object());
 
         attrFn = new MFnCompoundAttribute();
         MObject compoundAttrObj = attrFn->create(attrName, attrName);
-	attrFn->setNiceNameOverride(label);
+        attrFn->setNiceNameOverride(label);
         attrFn->setArray(true);
         attrFn->setUsesArrayDataBuilder(true);
     }

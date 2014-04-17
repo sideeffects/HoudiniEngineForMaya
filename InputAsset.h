@@ -6,12 +6,12 @@
 class InputAsset : public Input
 {
     public:
-	InputAsset(int assetId, int inputIdx);
-	virtual ~InputAsset();
+        InputAsset(int assetId, int inputIdx);
+        virtual ~InputAsset();
 
-	virtual AssetInputType assetInputType() const;
+        virtual AssetInputType assetInputType() const;
 
-	virtual void setInputTransform(MDataHandle &dataHandle);
+        virtual void setInputTransform(MDataHandle &dataHandle);
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug

@@ -57,17 +57,17 @@ OutputInstancerObject::update()
 
     if(myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
-	// clear the arrays
+        // clear the arrays
         myInstancedObjectNames.clear();
         myInstancedObjectIndices.clear();
         myUniqueInstObjNames.clear();
-	myHoudiniInstanceAttribute.clear();
-	myHoudiniNameAttribute.clear();
+        myHoudiniInstanceAttribute.clear();
+        myHoudiniNameAttribute.clear();
 
         try
         {
-	    if(myGeoInfo.partCount <= 0)
-		return;
+            if(myGeoInfo.partCount <= 0)
+                return;
 
             HAPI_Result hstat = HAPI_RESULT_SUCCESS;
             hstat = HAPI_GetPartInfo(myAssetId, myObjectId, 0, 0, &myPartInfo);
@@ -91,13 +91,13 @@ OutputInstancerObject::update()
             MStringArray splitObjName;
             instanceAttrs[i].split('/', splitObjName);
             myInstancedObjectNames.append(splitObjName[splitObjName.length()-1]);
-	    myHoudiniInstanceAttribute.append(instanceAttrs[i]);
+            myHoudiniInstanceAttribute.append(instanceAttrs[i]);
         }
 
-	MStringArray nameAttrs = getAttributeStringData(HAPI_ATTROWNER_POINT, "name");
-	for(unsigned int ii = 0; ii < nameAttrs.length(); ii++)
+        MStringArray nameAttrs = getAttributeStringData(HAPI_ATTROWNER_POINT, "name");
+        for(unsigned int ii = 0; ii < nameAttrs.length(); ii++)
         {
-	    myHoudiniNameAttribute.append(nameAttrs[ii]);
+            myHoudiniNameAttribute.append(nameAttrs[ii]);
         }
 
         // get a list of unique instanced names, and compute the object indices that would
@@ -146,15 +146,15 @@ OutputInstancerObject::compute(
     update();
 
     if(myGeoInfo.partCount <= 0)
-	return MS::kFailure;
+        return MS::kFailure;
 
     if(myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
         MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);
-	MArrayDataHandle houdiniInstanceAttributeHandle = handle.child(AssetNode::outputHoudiniInstanceAttribute);
-	MArrayDataHandle houdiniNameAttributeHandle = handle.child(AssetNode::outputHoudiniNameAttribute);
-	MArrayDataHandle instanceTransformHandle = handle.child(AssetNode::outputInstanceTransform);
+        MArrayDataHandle houdiniInstanceAttributeHandle = handle.child(AssetNode::outputHoudiniInstanceAttribute);
+        MArrayDataHandle houdiniNameAttributeHandle = handle.child(AssetNode::outputHoudiniNameAttribute);
+        MArrayDataHandle instanceTransformHandle = handle.child(AssetNode::outputInstanceTransform);
 
         //MDataHandle instHandle = data.outputValue(instancerDataPlug);
         MFnArrayAttrsData fnAAD;
@@ -168,9 +168,9 @@ OutputInstancerObject::compute(
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
         HAPI_GetInstanceTransforms(myAssetId, myObjectInfo.id, 0, HAPI_SRT, instTransforms, 0, size);
 
-	MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
-	MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
-	MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
+        MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
+        MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
+        MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
 
         for(int j=0; j<size; j++)
         {
@@ -188,55 +188,55 @@ OutputInstancerObject::compute(
             scales.append(s);
             objectIndices.append(objIndex);
 
-	    if(myHoudiniInstanceAttribute.length() == size)
-	    {
-		MDataHandle intanceAttributeHandle = houdiniInstanceAttributeBuilder.addElement(j);
-		intanceAttributeHandle.set(myHoudiniInstanceAttribute[j]);
-	    }
+            if(myHoudiniInstanceAttribute.length() == size)
+            {
+                MDataHandle intanceAttributeHandle = houdiniInstanceAttributeBuilder.addElement(j);
+                intanceAttributeHandle.set(myHoudiniInstanceAttribute[j]);
+            }
 
-	    if(myHoudiniNameAttribute.length() == size)
-	    {
-		MDataHandle nameAttributeHandle = houdiniNameAttributeBuilder.addElement(j);
-		nameAttributeHandle.set(myHoudiniNameAttribute[j]);
-	    }
+            if(myHoudiniNameAttribute.length() == size)
+            {
+                MDataHandle nameAttributeHandle = houdiniNameAttributeBuilder.addElement(j);
+                nameAttributeHandle.set(myHoudiniNameAttribute[j]);
+            }
 
-	    MDataHandle transformHandle = instanceTransformBuilder.addElement(j);
-	    MDataHandle translateHandle = transformHandle.child(AssetNode::outputInstanceTranslate);
-	    MDataHandle rotateHandle = transformHandle.child(AssetNode::outputInstanceRotate);
-	    MDataHandle scaleHandle = transformHandle.child(AssetNode::outputInstanceScale);
+            MDataHandle transformHandle = instanceTransformBuilder.addElement(j);
+            MDataHandle translateHandle = transformHandle.child(AssetNode::outputInstanceTranslate);
+            MDataHandle rotateHandle = transformHandle.child(AssetNode::outputInstanceRotate);
+            MDataHandle scaleHandle = transformHandle.child(AssetNode::outputInstanceScale);
 
-	    MDataHandle txHandle = translateHandle.child(AssetNode::outputInstanceTranslateX);
-	    txHandle.set(p.x);
-	    MDataHandle tyHandle = translateHandle.child(AssetNode::outputInstanceTranslateY);
-	    tyHandle.set(p.y);
-	    MDataHandle tzHandle = translateHandle.child(AssetNode::outputInstanceTranslateZ);
-	    tzHandle.set(p.z);
+            MDataHandle txHandle = translateHandle.child(AssetNode::outputInstanceTranslateX);
+            txHandle.set(p.x);
+            MDataHandle tyHandle = translateHandle.child(AssetNode::outputInstanceTranslateY);
+            tyHandle.set(p.y);
+            MDataHandle tzHandle = translateHandle.child(AssetNode::outputInstanceTranslateZ);
+            tzHandle.set(p.z);
 
-	    MDataHandle rxHandle = rotateHandle.child(AssetNode::outputInstanceRotateX);
-	    rxHandle.set(r.x);
-	    MDataHandle ryHandle = rotateHandle.child(AssetNode::outputInstanceRotateY);
-	    ryHandle.set(r.y);
-	    MDataHandle rzHandle = rotateHandle.child(AssetNode::outputInstanceRotateZ);
-	    rzHandle.set(r.z);
+            MDataHandle rxHandle = rotateHandle.child(AssetNode::outputInstanceRotateX);
+            rxHandle.set(r.x);
+            MDataHandle ryHandle = rotateHandle.child(AssetNode::outputInstanceRotateY);
+            ryHandle.set(r.y);
+            MDataHandle rzHandle = rotateHandle.child(AssetNode::outputInstanceRotateZ);
+            rzHandle.set(r.z);
 
-	    MDataHandle sxHandle = scaleHandle.child(AssetNode::outputInstanceScaleX);
-	    sxHandle.set(s.x);
-	    MDataHandle syHandle = scaleHandle.child(AssetNode::outputInstanceScaleY);
-	    syHandle.set(s.y);
-	    MDataHandle szHandle = scaleHandle.child(AssetNode::outputInstanceScaleZ);
-	    szHandle.set(s.z);
+            MDataHandle sxHandle = scaleHandle.child(AssetNode::outputInstanceScaleX);
+            sxHandle.set(s.x);
+            MDataHandle syHandle = scaleHandle.child(AssetNode::outputInstanceScaleY);
+            syHandle.set(s.y);
+            MDataHandle szHandle = scaleHandle.child(AssetNode::outputInstanceScaleZ);
+            szHandle.set(s.z);
         }
 
-	houdiniInstanceAttributeHandle.set(houdiniInstanceAttributeBuilder);
-	houdiniInstanceAttributeHandle.setAllClean();
+        houdiniInstanceAttributeHandle.set(houdiniInstanceAttributeBuilder);
+        houdiniInstanceAttributeHandle.setAllClean();
 
-	houdiniNameAttributeHandle.set(houdiniNameAttributeBuilder);
-	houdiniNameAttributeHandle.setAllClean();
+        houdiniNameAttributeHandle.set(houdiniNameAttributeBuilder);
+        houdiniNameAttributeHandle.setAllClean();
 
-	instanceTransformHandle.set(instanceTransformBuilder);
-	instanceTransformHandle.setAllClean();
+        instanceTransformHandle.set(instanceTransformBuilder);
+        instanceTransformHandle.setAllClean();
 
-	delete[] instTransforms;
+        delete[] instTransforms;
 
         instancerDataHandle.set(instOutput);
 

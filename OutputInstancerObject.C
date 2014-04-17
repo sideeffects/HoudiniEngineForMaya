@@ -19,7 +19,7 @@ OutputInstancerObject::OutputInstancerObject(
             objectId,
             objectControl
           ),
-    myGeoInfo(HAPI_GeoInfo_Create() )
+    myGeoInfo(HAPI_GeoInfo_Create())
 {
     //update();
 }

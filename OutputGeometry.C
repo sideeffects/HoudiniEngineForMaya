@@ -157,16 +157,16 @@ OutputGeometry::setClean(MPlug& geoPlug, MDataBlock& data)
     for(int jj=0; jj < myGeoInfo.partCount; jj++)
     {
         MPlug partPlug = partsPlug[jj];
-        data.setClean(partPlug.child(AssetNode::outputPartName) );
-        data.setClean(partPlug.child(AssetNode::outputPartMesh) );
+        data.setClean(partPlug.child(AssetNode::outputPartName));
+        data.setClean(partPlug.child(AssetNode::outputPartMesh));
 
-        data.setClean(partPlug.child(AssetNode::outputPartMaterial) );
-        data.setClean(partPlug.child(AssetNode::outputPartMaterialExists) );
-        data.setClean(partPlug.child(AssetNode::outputPartTexturePath) );
-        data.setClean(partPlug.child(AssetNode::outputPartAmbientColor) );
-        data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor) );
-        data.setClean(partPlug.child(AssetNode::outputPartSpecularColor) );
-        data.setClean(partPlug.child(AssetNode::outputPartAlphaColor) );
+        data.setClean(partPlug.child(AssetNode::outputPartMaterial));
+        data.setClean(partPlug.child(AssetNode::outputPartMaterialExists));
+        data.setClean(partPlug.child(AssetNode::outputPartTexturePath));
+        data.setClean(partPlug.child(AssetNode::outputPartAmbientColor));
+        data.setClean(partPlug.child(AssetNode::outputPartDiffuseColor));
+        data.setClean(partPlug.child(AssetNode::outputPartSpecularColor));
+        data.setClean(partPlug.child(AssetNode::outputPartAlphaColor));
     }
     return MS::kSuccess;
 }

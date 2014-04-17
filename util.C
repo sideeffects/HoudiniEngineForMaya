@@ -218,7 +218,6 @@ Util::statusCheckLoop()
                 MString status("Working...");
                 Util::showProgressWindow(title, status, 0);
                 showProgressWindow = true;
-
             }
 
             int percent = 0;
@@ -252,7 +251,6 @@ Util::statusCheckLoop()
 #ifdef _WIN32
                 ::Sleep(100);
 #endif
-
             }
 
             if(statusBuf)

@@ -228,7 +228,7 @@ houdiniEngine_reloadAsset(string $asset)
     {
         string $srcPlug = $srcPlugs[$ii];
         string $inputPlug[] = `listConnections -s 0 -d 1 -p 1 $srcPlug`;
-        $inputPlugs[size($inputPlugs) ] = $inputPlug[0];
+        $inputPlugs[size($inputPlugs)] = $inputPlug[0];
     }
 
     string $outputPlugs[];
@@ -236,7 +236,7 @@ houdiniEngine_reloadAsset(string $asset)
     {
         string $dstPlug = $dstPlugs[$ii];
         string $outputPlug[] = `listConnections -s 1 -d 0 -p 1 $dstPlug`;
-        $outputPlugs[size($outputPlugs) ] = $outputPlug[0];
+        $outputPlugs[size($outputPlugs)] = $outputPlug[0];
     }
 
     //disconnect all inputs and outputs first.

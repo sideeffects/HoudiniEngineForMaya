@@ -95,7 +95,7 @@ SyncOutputInstance::instanceObject(MDagPath & objToInstance,
 bool
 SyncOutputInstance::stringStartsWith(const MString & string, const MString & startsWith)
 {
-    if(string.length() >= startsWith.length() )
+    if(string.length() >= startsWith.length())
     {
         if(string.substring(0, startsWith.length() -1) == startsWith)
         {
@@ -128,7 +128,7 @@ SyncOutputInstance::instanceObjects(MObject searchRoot,
         MString nodeName = fnNode.name();
 
         if(objectToInstanceName.length() > 0 &&
-            stringStartsWith(nodeName, objectToInstanceName) )
+            stringStartsWith(nodeName, objectToInstanceName))
         {
             instanceObject(currPath, instancerTransform, pointIndex);
             return true;
@@ -139,7 +139,7 @@ SyncOutputInstance::instanceObjects(MObject searchRoot,
             MStringArray splitObjName;
             houdiniInstanceAttr.split('/', splitObjName);
             MString instanceAttrObjectName = splitObjName[splitObjName.length()-1];
-            if(stringStartsWith(nodeName, instanceAttrObjectName) )
+            if(stringStartsWith(nodeName, instanceAttrObjectName))
             {
                 instanceObject(currPath, instancerTransform, pointIndex);
                 return true;
@@ -148,7 +148,7 @@ SyncOutputInstance::instanceObjects(MObject searchRoot,
 
         if(houdiniNameAttr.length() > 0)
         {
-            if(stringStartsWith(nodeName, houdiniNameAttr) )
+            if(stringStartsWith(nodeName, houdiniNameAttr))
             {
                 instanceObject(currPath, instancerTransform, pointIndex);
                 return true;
@@ -259,7 +259,6 @@ SyncOutputInstance::createOutput()
             bool doneInstancing = false;
 
             instanceObjects(myAssetNodeObj, instancerTransform, ii, objectToInstanceName, instanceAttrStr, nameAttrStr);
-
         }
     }
 

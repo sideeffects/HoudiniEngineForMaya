@@ -3,7 +3,7 @@
 
 #include <maya/MPxTransform.h>
 
-#include <maya/MTypeId.h> 
+#include <maya/MTypeId.h>
 
 class MPlugArray;
 
@@ -15,32 +15,31 @@ class Asset;
 //Overall structure:
 //
 //  The AssetNode is a Maya node that wraps the functionality of a Houdini asset.
-//  It has input attributes (dynamically created) that mirror the input parms of the asset.  
-//  The input attributes are created dynamically at compute time, by the function 
+//  It has input attributes (dynamically created) that mirror the input parms of the asset.
+//  The input attributes are created dynamically at compute time, by the function
 //  Asset::getParmAttributes()
 //  At compute time, the input attributes are read and pushed into HAPI, then it
 //  calls on the Asset class (a helper, contained as a member) to compute itself.
 //  The Asset class knows how to compute itself - it will first deal with inputs
 //  to the asset, whether from another asset (inter-asset workflow) or from the
-//  Maya scene (geometry marshalling).  It will then call HAPI_CookAsset() and 
+//  Maya scene (geometry marshalling).  It will then call HAPI_CookAsset() and
 //  then extract the results from Houidni to update all the Maya output attributes.
-//  It does this by first calling computeInstancerObjects() then 
+//  It does this by first calling computeInstancerObjects() then
 //  computeGeometryObjects().  Each of these will fill out the information in
 //  the output attribute.  For computeInstancerObjects() it will end up doing the
 //  work by calling the compute() function of the OutputInstancerObject class, and
 //  for computeGeometryObjects() it will call the computeParts() function of the
-//  OutputGeometryObject class.  
-
+//  OutputGeometryObject class.
 
 class AssetNode: public MPxTransform
 {
     public:
         AssetNode();
-        virtual ~AssetNode(); 
+        virtual ~AssetNode();
 
         virtual void postConstructor();
 
-        virtual MStatus compute( const MPlug& plug, MDataBlock& data );
+        virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 
 	virtual bool getInternalValueInContext(
 		const MPlug &plug,
@@ -115,7 +114,7 @@ class AssetNode: public MPxTransform
         static MObject outputObjectScale;
         static MObject outputObjectScaleX;
         static MObject outputObjectScaleY;
-        static MObject outputObjectScaleZ;        
+        static MObject outputObjectScaleZ;
 
 #if MAYA_API_VERSION >= 201400
 	static MObject outputObjectFluidFromAsset;
@@ -132,7 +131,7 @@ class AssetNode: public MPxTransform
         static MObject outputGeoCurveCVX;
         static MObject outputGeoCurveCVY;
         static MObject outputGeoCurveCVZ;
-        static MObject outputGeoCurveCVs;        
+        static MObject outputGeoCurveCVs;
 
 	static MObject outputParts;
         static MObject outputPartName;

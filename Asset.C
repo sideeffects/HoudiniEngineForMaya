@@ -324,7 +324,7 @@ AttrOperation::containsParm(const HAPI_ParmInfo &parm) const
         // If the parm is a tuple, then we also need to check the parent plug.
         // We need to check if it's int, float, or string, because non-values
         // like folders also use parm.size.
-        if(( HAPI_ParmInfo_IsInt( &parm ) || HAPI_ParmInfo_IsFloat( &parm ) || HAPI_ParmInfo_IsString( &parm ) )
+        if((HAPI_ParmInfo_IsInt(&parm) || HAPI_ParmInfo_IsFloat(&parm) || HAPI_ParmInfo_IsString(&parm) )
                 && parm.size > 1
                 && plug.isChild() && parmPlug == plug.parent())
         {
@@ -344,7 +344,7 @@ Asset::Asset(
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    myObjectInfos = NULL;    
+    myObjectInfos = NULL;
 
     // load the otl
     int libraryId;
@@ -380,14 +380,14 @@ Asset::Asset(
     Util::checkHAPIStatus(hstat);
     hstat = HAPI_GetAssetInfo(assetId, &myAssetInfo);
     Util::checkHAPIStatus(hstat);
-    hstat = HAPI_GetNodeInfo( myAssetInfo.nodeId, & myNodeInfo);
+    hstat = HAPI_GetNodeInfo(myAssetInfo.nodeId, & myNodeInfo);
     Util::checkHAPIStatus(hstat);
 
-    myAssetInputs = new Inputs( myAssetInfo.id);
-    myAssetInputs->setNumInputs( myAssetInfo.maxGeoInputCount);
+    myAssetInputs = new Inputs(myAssetInfo.id);
+    myAssetInputs->setNumInputs(myAssetInfo.maxGeoInputCount);
 
     // get the infos
-    update();   
+    update();
 
     // objects
     int objCount = myAssetInfo.objectCount;
@@ -397,26 +397,25 @@ Asset::Asset(
 
     MString title = "Houdini";
     MString status = "Creating Objects...";
-    Util::showProgressWindow( title, status, 0 );
+    Util::showProgressWindow(title, status, 0);
 
-    for (int i=0; i<objCount; i++)
+    for(int i=0; i<objCount; i++)
     {
-	Util::updateProgressWindow( status, (int)( (float) i *100.0f / (float) objCount) );
-        myObjects[i] = OutputObject::createObject( myAssetInfo.id, i, this);
+	Util::updateProgressWindow(status, (int)((float) i *100.0f / (float) objCount) );
+        myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
     }
 
     Util::hideProgressWindow();
 }
 
-
 Asset::~Asset()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    for (int i=0; i< myNumObjects; i++)
+    for(int i=0; i< myNumObjects; i++)
         delete myObjects[i];
     delete[] myObjects;
-    delete[] myObjectInfos;    
+    delete[] myObjectInfos;
     delete myAssetInputs;
 
     hstat = HAPI_DestroyAsset(myAssetInfo.id);
@@ -438,22 +437,20 @@ Asset::getAssetName() const
 OutputObject*
 Asset::findObjectByName(MString name)
 {
-    for (int i=0; i< myAssetInfo.objectCount; i++)
+    for(int i=0; i< myAssetInfo.objectCount; i++)
     {
-        if ( myObjects[i]->getName() == name )
+        if(myObjects[i]->getName() == name)
             return myObjects[i];
     }
 
     return NULL;
 }
 
-
 OutputObject*
 Asset::findObjectById(int id)
 {
     return myObjects[id];
 }
-
 
 // Getters for infos
 HAPI_ObjectInfo
@@ -470,8 +467,8 @@ Asset::update()
 {
     // update object infos
     delete[] myObjectInfos;
-    myObjectInfos = new HAPI_ObjectInfo[ myAssetInfo.objectCount];
-    HAPI_GetObjects( myAssetInfo.id, myObjectInfos, 0, myAssetInfo.objectCount);
+    myObjectInfos = new HAPI_ObjectInfo[myAssetInfo.objectCount];
+    HAPI_GetObjects(myAssetInfo.id, myObjectInfos, 0, myAssetInfo.objectCount);
 
     // update transform infos
     //delete[] transformInfos;
@@ -484,7 +481,6 @@ Asset::update()
     //HAPI_GetMaterials(assetInfo.id, materialInfos, 0, assetInfo.materialCount);
 }
 
-
 void
 Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 {
@@ -492,7 +488,7 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 
     MPlug inputsPlug(myNode, AssetNode::input);
 
-    for (int i=0; i< myAssetInfo.maxGeoInputCount; i++)
+    for(int i=0; i< myAssetInfo.maxGeoInputCount; i++)
     {
         MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
         CHECK_MSTATUS(status);
@@ -500,7 +496,6 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
         myAssetInputs->setInput(i, data, inputPlug);
     }
 }
-
 
 void
 Asset::computeInstancerObjects(
@@ -517,40 +512,40 @@ Asset::computeInstancerObjects(
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
     MArrayDataBuilder instancersBuilder = instancersHandle.builder();
     MIntArray instancedObjIds;
-    for (int i=0; i< myNumObjects; i++)
+    for(int i=0; i< myNumObjects; i++)
     {
         OutputObject* obj = myObjects[i];
-        //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex( instancerIndex );
+        //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
 
-        if ( obj->type() == OutputObject::OBJECT_TYPE_INSTANCER )
+        if(obj->type() == OutputObject::OBJECT_TYPE_INSTANCER)
         {
-            MDataHandle instancerElemHandle = instancersBuilder.addElement( instancerIndex );
+            MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
             stat = obj->compute(instancerElemHandle, needToSyncOutputs);
-            if ( MS::kSuccess == stat )
+            if(MS::kSuccess == stat)
             {
                 instancerIndex++;
 
                 // get all the object ids that are instanced
-                MIntArray instIds = dynamic_cast< OutputInstancerObject* >( obj )->getInstancedObjIds();
-                MStringArray instNames = dynamic_cast< OutputInstancerObject* >( obj )->getUniqueInstObjNames();
-                for ( unsigned int j = 0; j < instNames.length(); ++j )
+                MIntArray instIds = dynamic_cast< OutputInstancerObject* >(obj)->getInstancedObjIds();
+                MStringArray instNames = dynamic_cast< OutputInstancerObject* >(obj)->getUniqueInstObjNames();
+                for(unsigned int j = 0; j < instNames.length(); ++j)
                 {
-                    OutputObject* o = findObjectByName( instNames[ j ] );
-                    if ( o != NULL )
-                        instancedObjIds.append( o->getId() );
+                    OutputObject* o = findObjectByName(instNames[j]);
+                    if(o != NULL)
+                        instancedObjIds.append(o->getId() );
                 }
-                for ( unsigned int j = 0; j < instIds.length(); ++j )
+                for(unsigned int j = 0; j < instIds.length(); ++j)
                 {
-                    instancedObjIds.append( instIds[ j ] );
+                    instancedObjIds.append(instIds[j]);
                 }
             }
         }
     }
     // clean up extra elements
     int instBuilderSizeCheck = instancersBuilder.elementCount();
-    if (instBuilderSizeCheck > instancerIndex)
+    if(instBuilderSizeCheck > instancerIndex)
     {
-        for (int i=instancerIndex; i<instBuilderSizeCheck; i++)
+        for(int i=instancerIndex; i<instBuilderSizeCheck; i++)
         {
             instancersBuilder.removeElement(i);
         }
@@ -558,16 +553,15 @@ Asset::computeInstancerObjects(
     instancersHandle.set(instancersBuilder);
 
     // mark instanced objects
-    for ( unsigned int i = 0; i < instancedObjIds.length(); ++i )
+    for(unsigned int i = 0; i < instancedObjIds.length(); ++i)
     {
-        OutputObject* obj = myObjects[ instancedObjIds[ i ] ];
+        OutputObject* obj = myObjects[instancedObjIds[i] ];
         obj->myIsInstanced = true;
     }
 
     instancersHandle.setAllClean();
-    data.setClean( instancersPlug );
+    data.setClean(instancersPlug);
 }
-
 
 void
 Asset::computeGeometryObjects(
@@ -578,7 +572,7 @@ Asset::computeGeometryObjects(
 {
     MStatus stat;
 
-    MPlug objectsPlug = plug.child(AssetNode::outputObjects);    
+    MPlug objectsPlug = plug.child(AssetNode::outputObjects);
 
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
@@ -587,26 +581,26 @@ Asset::computeGeometryObjects(
         needToSyncOutputs = true;
     }
 
-    for (int ii = 0; ii < myNumObjects; ii++)
+    for(int ii = 0; ii < myNumObjects; ii++)
     {
-        OutputObject * obj = myObjects[ ii ];        
+        OutputObject * obj = myObjects[ii];
 
-	MDataHandle objectHandle = objectsBuilder.addElement( ii );
+	MDataHandle objectHandle = objectsBuilder.addElement(ii);
 
-        if (obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
+        if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
             obj->compute(objectHandle, needToSyncOutputs);
 
-            MDataHandle visibilityHandle = objectHandle.child( AssetNode::outputVisibility );
-	    visibilityHandle.setBool( obj->isVisible() );
+            MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
+	    visibilityHandle.setBool(obj->isVisible() );
 	    visibilityHandle.setClean();
 
-	    MDataHandle isInstancedHandle = objectHandle.child( AssetNode::outputIsInstanced );
-	    isInstancedHandle.setBool( obj->isInstanced() );
+	    MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
+	    isInstancedHandle.setBool(obj->isInstanced() );
 	    isInstancedHandle.setClean();
 
-            MDataHandle objectNameHandle = objectHandle.child( AssetNode::outputObjectName );
-            objectNameHandle.setString( obj->getName() );
+            MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
+            objectNameHandle.setString(obj->getName() );
 	    objectNameHandle.setClean();
         }
     }
@@ -614,11 +608,11 @@ Asset::computeGeometryObjects(
     // clean up extra elements
     // in case the number of objects shrinks
     int objBuilderSizeCheck = objectsBuilder.elementCount();
-    if (objBuilderSizeCheck > myNumObjects)
+    if(objBuilderSizeCheck > myNumObjects)
     {
-        for (int ii = myNumObjects; ii < objBuilderSizeCheck; ii++)
+        for(int ii = myNumObjects; ii < objBuilderSizeCheck; ii++)
 	{
-	    stat = objectsBuilder.removeElement( ii );
+	    stat = objectsBuilder.removeElement(ii);
 	    CHECK_MSTATUS(stat);
 	}
     }
@@ -628,7 +622,6 @@ Asset::computeGeometryObjects(
 
     data.setClean(objectsPlug);
 }
-
 
 MStatus
 Asset::compute(
@@ -640,15 +633,15 @@ Asset::compute(
     MStatus stat(MS::kSuccess);
 
     // Set the type
-    MPlug typePlug( myNode, AssetNode::assetType);
+    MPlug typePlug(myNode, AssetNode::assetType);
     MDataHandle typeHandle = data.outputValue(typePlug);
 
     //The asset info struct (info) was set at the constructor
     //of this class, which is at asset load time.
-    typeHandle.set( myAssetInfo.type);
+    typeHandle.set(myAssetInfo.type);
 
     // Set the time
-    MPlug timePlug( myNode, AssetNode::inTime);
+    MPlug timePlug(myNode, AssetNode::inTime);
     MDataHandle timeHandle = data.inputValue(timePlug);
     MTime currentTime = timeHandle.asTime();
     // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
@@ -663,18 +656,17 @@ Asset::compute(
     //for inter-asset stuff
     computeAssetInputs(plug, data);
 
-    HAPI_CookAsset( myAssetInfo.id, NULL );
-
+    HAPI_CookAsset(myAssetInfo.id, NULL);
 
     Util::statusCheckLoop();
 
     update();
 
     // first pass - instancers
-    // There is a reason that instancers are computed first.  
+    // There is a reason that instancers are computed first.
     // computeInstancerObjects will mark instanced geometry objects as
-    // instanced.  In computeGeometryObjects, each object will check 
-    // if it is instanced or not, and will compute an output or not 
+    // instanced.  In computeGeometryObjects, each object will check
+    // if it is instanced or not, and will compute an output or not
     // depending on whether it is instanced and whether it is visible
     computeInstancerObjects(plug, data, needToSyncOutputs);
 
@@ -1009,7 +1001,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                     MString valueString = Util::getString(choiceInfos[enumIndex].valueSH);
 
-                    HAPI_SetParmStringValue( myNodeInfo.id, valueString.asChar(), parmInfo.id, 0);
+                    HAPI_SetParmStringValue(myNodeInfo.id, valueString.asChar(), parmInfo.id, 0);
 
                     delete[] choiceInfos;
                 }
@@ -1026,19 +1018,19 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_COLOR:
                         {
                             float * values = new float[parmInfo.size];
-                            if (parmInfo.size == 1)
+                            if(parmInfo.size == 1)
                             {
                                 values[0] = dataHandle.asFloat();
                             } else
                             {
                                 MFnCompoundAttribute attrFn(attrObj);
-                                for (int i=0; i<parmInfo.size; i++)
+                                for(int i=0; i<parmInfo.size; i++)
                                 {
                                     MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
                                     values[i] = elementHandle.asFloat();
                                 }
                             }
-                            HAPI_SetParmFloatValues( myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+                            HAPI_SetParmFloatValues(myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
 
                             delete[] values;
                         }
@@ -1048,7 +1040,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_BUTTON:
                         {
                             int * values = new int[parmInfo.size];
-                            if (parmInfo.size == 1)
+                            if(parmInfo.size == 1)
                             {
                                 if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
                                 {
@@ -1061,7 +1053,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             } else
                             {
                                 MFnCompoundAttribute attrFn(attrObj);
-                                for (int i=0; i<parmInfo.size; i++)
+                                for(int i=0; i<parmInfo.size; i++)
                                 {
                                     MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
                                     if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
@@ -1100,7 +1092,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             }
                             else
                             {
-                                HAPI_SetParmIntValues( myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size );
+                                HAPI_SetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
                             }
 
                             delete[] values;
@@ -1109,18 +1101,18 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_STRING:
                     case HAPI_PARMTYPE_FILE:
                         {
-                            if (parmInfo.size == 1)
+                            if(parmInfo.size == 1)
                             {
                                 const char* val = dataHandle.asString().asChar();
-                                HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, 0);
+                                HAPI_SetParmStringValue(myNodeInfo.id, val, parmInfo.id, 0);
                             } else
                             {
                                 MFnCompoundAttribute attrFn(attrObj);
-                                for (int i=0; i<parmInfo.size; i++)
+                                for(int i=0; i<parmInfo.size; i++)
                                 {
                                     MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
                                     const char* val = elementHandle.asString().asChar();
-                                    HAPI_SetParmStringValue( myNodeInfo.id, val, parmInfo.id, i);
+                                    HAPI_SetParmStringValue(myNodeInfo.id, val, parmInfo.id, i);
                                 }
                             }
                         }
@@ -1323,7 +1315,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
             // If the multiparm has more instances than the multiDataHandle, then
             // we need to remove from the multiparm.
-            for(int i = parmInfo.instanceCount; i-- > myMultiSize; )
+            for(int i = parmInfo.instanceCount; i-- > myMultiSize;)
             {
                 HAPI_RemoveMultiparmInstance(
                         myNodeInfo.id,
@@ -1349,7 +1341,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
             // If the builder has more elements than the multiparm, then we need to
             // remove from the builder.
-            for(int i = builderCount; i-- > myMultiSize; )
+            for(int i = builderCount; i-- > myMultiSize;)
             {
                 builder.removeElement(i);
             }
@@ -1386,7 +1378,7 @@ Asset::setMultiparmLength(
         Util::walkParm(parmInfos, operation);
 
         // multiparm length could change, so we need to get the new parmCount
-        HAPI_GetNodeInfo( myAssetInfo.nodeId, &myNodeInfo);
+        HAPI_GetNodeInfo(myAssetInfo.nodeId, &myNodeInfo);
     }
 
     getParmValues(dataBlock, nodeFn, NULL);

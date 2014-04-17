@@ -23,7 +23,7 @@
 #include "util.h"
 
 OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
-        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo) : 
+        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo) :
     myAssetId(assetId),
     myObjectId(objectId),
     myGeoId(geoId),
@@ -39,13 +39,13 @@ OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int
         hstat = HAPI_GetPartInfo(assetId, objectId, geoId, partId, & myPartInfo);
         Util::checkHAPIStatus(hstat);
 
-	if (myPartInfo.hasVolume)
+	if(myPartInfo.hasVolume)
 	{
 	    hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
 	    Util::checkHAPIStatus(hstat);
 	}
 
-	if (myPartInfo.isCurve)
+	if(myPartInfo.isCurve)
 	{
 	    hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
 	    Util::checkHAPIStatus(hstat);
@@ -54,11 +54,10 @@ OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int
     catch (HAPIError& e)
     {
         cerr << e.what() << endl;
-        HAPI_PartInfo_Init( &myPartInfo );
+        HAPI_PartInfo_Init(&myPartInfo);
     }
-    
-}
 
+}
 
 OutputGeometryPart::~OutputGeometryPart() {}
 
@@ -122,7 +121,7 @@ OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
 void
 OutputGeometryPart::update()
 {
-    //if (!geoInfo.hasGeoChanged)
+    //if(!geoInfo.hasGeoChanged)
         //return;
 
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
@@ -130,10 +129,10 @@ OutputGeometryPart::update()
     {
         //hstat = HAPI_GetGeoInfo(assetId, objectId, geoId, &geoInfo);
         //Util::checkHAPIStatus(hstat);
-        hstat = HAPI_GetPartInfo( myAssetId, myObjectId, myGeoId, myPartId, &myPartInfo);
+        hstat = HAPI_GetPartInfo(myAssetId, myObjectId, myGeoId, myPartId, &myPartInfo);
         Util::checkHAPIStatus(hstat);
 
-	if (myPartInfo.hasVolume)
+	if(myPartInfo.hasVolume)
 	{
 	    hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
 	    Util::checkHAPIStatus(hstat);
@@ -142,10 +141,9 @@ OutputGeometryPart::update()
     catch (HAPIError& e)
     {
         cerr << e.what() << endl;
-        HAPI_PartInfo_Init( &myPartInfo );
+        HAPI_PartInfo_Init(&myPartInfo);
     }
 }
-
 
 void
 OutputGeometryPart::setGeoInfo(HAPI_GeoInfo& info)
@@ -214,7 +212,7 @@ OutputGeometryPart::getAttributeData(
             &attr_info
             );
 
-    if (!attr_info.exists)
+    if(!attr_info.exists)
     {
         array.clear();
         return false;
@@ -248,8 +246,7 @@ OutputGeometryPart::compute(
     //MDataHandle transformHandle = handle.child(AssetNode::transform);
     MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
 
-
-    if ( myNeverBuilt || myGeoInfo.hasGeoChanged)
+    if(myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
         // OutputObject name
 	MString partName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
@@ -272,7 +269,7 @@ OutputGeometryPart::compute(
 
 #if MAYA_API_VERSION >= 201400
 	// Volume
-	if (myPartInfo.hasVolume)
+	if(myPartInfo.hasVolume)
 	{
 	    MDataHandle partVolumeHandle = handle.child(AssetNode::outputPartVolume);
 
@@ -302,7 +299,7 @@ OutputGeometryPart::compute(
 #endif
 
 	// Curve
-	if (myPartInfo.isCurve)
+	if(myPartInfo.isCurve)
 	{
 	    createCurves(curvesHandle);
 	    MDataHandle isBezierHandle =
@@ -311,7 +308,7 @@ OutputGeometryPart::compute(
 	}
     }
 
-    if ( myNeverBuilt || myGeoInfo.hasMaterialChanged)
+    if(myNeverBuilt || myGeoInfo.hasMaterialChanged)
     {
         updateMaterial(materialHandle);
     }
@@ -335,12 +332,12 @@ OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
 
     int vertexOffset = 0;
     int knotOffset = 0;
-    for (int i=0; i<myCurveInfo.curveCount; i++)
+    for(int i=0; i<myCurveInfo.curveCount; i++)
     {
 	MDataHandle curve = curvesBuilder.addElement(i);
 	MObject curveDataObj = curve.data();
 	MFnNurbsCurveData curveDataFn(curveDataObj);
-	if (curve.data().isNull())
+	if(curve.data().isNull())
 	{
 	    // set the MDataHandle
 	    curveDataObj = curveDataFn.create();
@@ -358,8 +355,8 @@ OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
 
 	// Order of this particular curve
 	int order;
-	if (myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
-	    && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID) 
+	if(myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
+	    && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID)
 	    order = myCurveInfo.order;
 	else
 	    HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId, &order, i, 1);
@@ -370,7 +367,7 @@ OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
 			      &vertices.front(), vertexOffset,
 			      numVertices * HAPI_CV_VECTOR_SIZE);
 	MPointArray controlVertices(numVertices);
-	for (int j=0; j<numVertices; j++)
+	for(int j=0; j<numVertices; j++)
 	{
 	    controlVertices[j] = MPoint(vertices[j*HAPI_CV_VECTOR_SIZE],
 					vertices[j*HAPI_CV_VECTOR_SIZE + 1],
@@ -378,31 +375,31 @@ OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
 					vertices[j*HAPI_CV_VECTOR_SIZE + 3]);
 	}
 
-	MDoubleArray knotSequences; 
-	if (myCurveInfo.hasKnots)
+	MDoubleArray knotSequences;
+	if(myCurveInfo.hasKnots)
 	{
 	    std::vector<float> knots;
 	    knots.resize(numVertices + order);
-	    // The Maya knot vector has two fewer knots; 
+	    // The Maya knot vector has two fewer knots;
 	    // the first and last houdini knot are excluded
 	    knotSequences.setLength(numVertices + order - 2);
 	    HAPI_GetCurveKnots(myAssetId, myObjectId, myGeoId, myPartId,
 			       &knots.front(), knotOffset, numVertices + order);
 	    // Maya doesn't need the first and last knots
-	    for (int j=0; j<numVertices + order - 2; j++)
+	    for(int j=0; j<numVertices + order - 2; j++)
 		knotSequences[j] = knots[j+1];
 	}
-	else if (myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
+	else if(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
 	{
 	    // Bezier knot vector needs to still be passed in
 	    knotSequences.setLength(numVertices + order - 2);
-	    for (int j=0; j<numVertices + order - 2; j++)
+	    for(int j=0; j<numVertices + order - 2; j++)
 		knotSequences[j] = j / (order - 1);
 	}
 	else
 	{
 	    knotSequences.setLength(numVertices + order - 2);
-	    for (int j=0; j<numVertices + order - 2; j++)
+	    for(int j=0; j<numVertices + order - 2; j++)
 		knotSequences[j] = 0;
 	}
 
@@ -418,13 +415,11 @@ OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
 			   curveDataObj, &status);
 	CHECK_MSTATUS(status);
 
-
 	// The curve at i will have numVertices vertices, and may have
 	// some knots. The knot count will be numVertices + order for
 	// nurbs curves
 	vertexOffset += numVertices * 4;
 	knotOffset += numVertices + order;
-
     }
 
     curvesArrayHandle.set(curvesBuilder);
@@ -789,7 +784,7 @@ OutputGeometryPart::createVolume()
 
     float* tileValues = new float[tileSize * tileSize * tileSize];
     std::fill(tileValues, tileValues + tileSize * tileSize * tileSize - 1, 0.0f);
-    for (unsigned int i=0; i<grid.length(); i++)
+    for(unsigned int i=0; i<grid.length(); i++)
 	grid[i] = 0.0f;
 
     HAPI_VolumeTileInfo tile;
@@ -799,15 +794,15 @@ OutputGeometryPart::createVolume()
 #undef max
 #endif
 
-    while (tile.minX != std::numeric_limits<int>::max() &&
+    while(tile.minX != std::numeric_limits<int>::max() &&
 	   tile.minY != std::numeric_limits<int>::max() &&
 	   tile.minZ != std::numeric_limits<int>::max())
     {
 	HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tile, tileValues);
 
-	for (int k=0; k<tileSize; k++)
-	    for (int j=0; j<tileSize; j++)
-		for (int i=0; i<tileSize; i++)
+	for(int k=0; k<tileSize; k++)
+	    for(int j=0; j<tileSize; j++)
+		for(int i=0; i<tileSize; i++)
 		{
 		    int z = k + tile.minZ - myVolumeInfo.minZ,
 			y = j + tile.minY - myVolumeInfo.minY,
@@ -819,7 +814,7 @@ OutputGeometryPart::createVolume()
 			x;
 
 		    float value = tileValues[k * tileSize*tileSize + j * tileSize + i];
-		    if (x < xres && y < yres && z < zres
+		    if(x < xres && y < yres && z < zres
 			&& x > 0 && y > 0 && z > 0)
 		    {
 			grid[index] = value;
@@ -1101,7 +1096,7 @@ OutputGeometryPart::createMesh(MDataHandle &dataHandle)
             {
                 MIntArray vertexList;
                 vertexList.setLength(vertexArray.length());
-                for (unsigned int i = 0, length = vertexList.length();
+                for(unsigned int i = 0, length = vertexList.length();
                         i < length; ++i)
                 {
                     vertexList[i] = i;
@@ -1113,7 +1108,6 @@ OutputGeometryPart::createMesh(MDataHandle &dataHandle)
     }
 }
 
-
 void
 OutputGeometryPart::updateMaterial(MDataHandle& handle)
 {
@@ -1124,14 +1118,14 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
     MDataHandle alphaHandle = handle.child(AssetNode::outputPartAlphaColor);
     MDataHandle texturePathHandle = handle.child(AssetNode::outputPartTexturePath);
 
-    if ( myPartInfo.materialId < 0)
+    if(myPartInfo.materialId < 0)
     {
         matExistsHandle.set(false);
     } else
     {
         // get material info
         int matId = myPartInfo.materialId;
-        HAPI_GetMaterial( myAssetId, matId, &myMaterialInfo );
+        HAPI_GetMaterial(myAssetId, matId, &myMaterialInfo);
         HAPI_NodeInfo materialNodeInfo;
         HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
 
@@ -1149,21 +1143,21 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
 
 	if(ambientParmIndex >= 0)
 	{
-	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
 		    parms[ambientParmIndex].floatValuesIndex, 4);
 	    ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
 	}
 
 	if(specularParmIndex >= 0)
 	{
-	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
 		    parms[specularParmIndex].floatValuesIndex, 4);
 	    specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
 	}
-        
+
 	if(diffuseParmIndex >= 0)
 	{
-	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder, 
+	    HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
 		    parms[diffuseParmIndex].floatValuesIndex, 4);
 	    diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
 	}
@@ -1175,7 +1169,7 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
 	    float alpha = 1 - valueHolder[0];
 	    alphaHandle.set3Float(alpha, alpha, alpha);
 	}
-        
+
 	if(texturePathSHParmIndex >= 0)
 	{
 	    HAPI_ParmInfo texturePathParm;
@@ -1240,7 +1234,6 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
 	}
     }
 
-    
     handle.setClean();
     matExistsHandle.setClean();
     ambientHandle.setClean();

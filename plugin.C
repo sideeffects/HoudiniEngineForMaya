@@ -97,7 +97,7 @@ MStatus
 initializePlugin(MObject obj)
 {
     printHAPIVersion();
-    
+
     char engine_version[32];
     sprintf(engine_version, "%d.%d (API: %d)",
             HAPI_VERSION_HOUDINI_ENGINE_MAJOR,
@@ -149,13 +149,12 @@ initializePlugin(MObject obj)
     return status;
 }
 
-
 MStatus
 uninitializePlugin(MObject obj)
 {
     MStatus status;
     MFnPlugin plugin(obj);
-    
+
     status = plugin.deregisterNode(AssetNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 

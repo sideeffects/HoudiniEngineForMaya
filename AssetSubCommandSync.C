@@ -112,16 +112,16 @@ AssetSubCommandSync::doIt()
         {
             MPlug elemPlug = objectsPlug[i];
 
-            MPlug visibilityPlug = elemPlug.child( AssetNode::outputVisibility );
+            MPlug visibilityPlug = elemPlug.child(AssetNode::outputVisibility);
             bool visible = visibilityPlug.asBool();
 
-            MPlug instancedPlug = elemPlug.child( AssetNode::outputIsInstanced );
+            MPlug instancedPlug = elemPlug.child(AssetNode::outputIsInstanced);
             bool instanced = instancedPlug.asBool();
 
-            if( mySyncOutputHidden || visible || instanced )
+            if(mySyncOutputHidden || visible || instanced)
             {
-                AssetSubCommand* syncOutput = new SyncOutputObject(elemPlug, 
-                        myAssetNodeObj, visible, mySyncOutputTemplatedGeos );
+                AssetSubCommand* syncOutput = new SyncOutputObject(elemPlug,
+                        myAssetNodeObj, visible, mySyncOutputTemplatedGeos);
                 syncOutput->doIt();
 
                 myAssetSyncs.push_back(syncOutput);

@@ -212,7 +212,7 @@ global proc houdiniAssetAdjustMulti(
     }
 
     string $layoutChildArray[] = `layout -q -childArray $parent`;
-    for($i = $curMultiSize; $i-- > $multiSize; )
+    for($i = $curMultiSize; $i-- > $multiSize;)
     {
         deleteUI $layoutChildArray[$i + 1];
     }
@@ -289,7 +289,7 @@ proc clearInput(string $inputAttr)
     // remove input if cleared
     string $inPlug = `connectionInfo -sfd $inputGeoAttr`;
     string $inTransformPlug = `connectionInfo -sfd $inputTransformAttr`;
-    if ($inPlug != "")
+    if($inPlug != "")
     {
 	disconnectAttr $inPlug $inputGeoAttr;
 	disconnectAttr $inTransformPlug $inputTransformAttr;
@@ -314,7 +314,7 @@ proc setInput(string $inputAttr, string $object)
 	string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
 	string $histNode = plugNode($histPlug);
 
-	if ($histNode != ""
+	if($histNode != ""
 		&& `nodeType $histNode` == "houdiniAsset")
 	{
 	    // TODO: Assume that assets with inputs are SOPs
@@ -330,7 +330,7 @@ proc setInput(string $inputAttr, string $object)
 	{
 	    connectAttr -force ($object + ".outMesh") $inputGeoAttr;
 	    string $parent[] = `listRelatives -fullPath -parent $object`;
-	    if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
+	    if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
 	    {
 		string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
 		connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
@@ -341,7 +341,7 @@ proc setInput(string $inputAttr, string $object)
     {
 	connectAttr -force ($object + ".local") $inputGeoAttr;
 	string $parent[] = `listRelatives -fullPath -parent $object`;
-	if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
+	if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
 	{
 	    string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
 	    connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
@@ -351,7 +351,7 @@ proc setInput(string $inputAttr, string $object)
     {
         connectAttr -force ($object + ".position") $inputGeoAttr;
         string $parent[] = `listRelatives -fullPath -parent $object`;
-        if( size($parent) > 0 && `nodeType $parent[0]` == "transform" )
+        if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
         {
             string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
             connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
@@ -397,7 +397,7 @@ AEhoudiniAssetOperationReplace(string $attr)
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 {
     string $validInputs[];
-    
+
     string $selection[] = `ls -selection`;
 
     // make sure we don't include the houdiniAsset node itself if it's selected last
@@ -434,7 +434,7 @@ global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 }
 
 global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
-{    
+{
     string $validInputs[];
 
     string $str = `textField -q -text $textField`;
@@ -468,7 +468,6 @@ global proc AEhoudiniAssetInputsNew(string $inputsAttribute)
 
     AEhoudiniAssetInputsReplace $inputsAttribute;
 }
-
 
 global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
 {
@@ -624,7 +623,7 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
 }
 
-global proc AEhoudiniAssetTemplate( string $nodeName )
+global proc AEhoudiniAssetTemplate(string $nodeName)
 {
     editorTemplate -beginScrollLayout;
 
@@ -634,13 +633,13 @@ global proc AEhoudiniAssetTemplate( string $nodeName )
     // special ui for inputs
     string $inputAttrArray[] = `listAttr -st "input" $nodeName`;
     string $inputAttr = $inputAttrArray[0];
-    if ($inputAttr != "")
+    if($inputAttr != "")
     {
         editorTemplate -beginLayout "Inputs" -collapse false;
 
             editorTemplate -callCustom "AEhoudiniAssetInputsNew" "AEhoudiniAssetInputsReplace"
                 $inputAttr;
-       
+
         editorTemplate -endLayout;
     }
 

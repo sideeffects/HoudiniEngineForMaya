@@ -27,18 +27,18 @@ class SyncOutputInstance : public AssetSubCommand
     protected:
 	MStatus createOutput();
 
-	bool instanceObjects(	MObject searchRoot,
+	bool instanceObjects(MObject searchRoot,
 				MObject instancerTransform,
 				 int pointIndex,
 				 const MString & objectToInstanceName,
 				 const MString & houdiniInstanceAttr,
-				 const MString & houdiniNameAttr );
+				 const MString & houdiniNameAttr);
 
-	void  instanceObject(	MDagPath & objToInstance,
+	void  instanceObject(MDagPath & objToInstance,
 				MObject instancerTransform,
 				int pointIndex);
 
-	bool stringStartsWith( const MString & string, const MString & startsWith );
+	bool stringStartsWith(const MString & string, const MString & startsWith);
 
     protected:
 	//This is the output plug from the asset node that is connected
@@ -48,7 +48,7 @@ class SyncOutputInstance : public AssetSubCommand
 	//the transform of the HAPI Asset
 	const MObject myAssetNodeObj;
 
-	//the multi-index of the parent attribute.  We'll need this 
+	//the multi-index of the parent attribute.  We'll need this
 	//to effectively evaluate any of the multi-attributes
 	const int myParentMultiIndex;
 

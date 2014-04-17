@@ -5,7 +5,6 @@
 
 #include "OutputObject.h"
 
-
 class OutputInstancerObject: public OutputObject
 {
     public:

@@ -11,7 +11,7 @@ class SyncOutputGeometryPart : public AssetSubCommand
     public:
 	SyncOutputGeometryPart(
 		const MPlug &outputPlug,
-		const MObject & objectTransform		
+		const MObject & objectTransform
 		);
 	virtual ~SyncOutputGeometryPart();
 
@@ -47,7 +47,7 @@ class SyncOutputGeometryPart : public AssetSubCommand
 	const MPlug myOutputPlug;
 
 	//the transform of the HAPI Asset
-	const MObject myObjectTransform;	
+	const MObject myObjectTransform;
 
 	MDagModifier myDagModifier;
 };

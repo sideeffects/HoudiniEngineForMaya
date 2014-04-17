@@ -12,7 +12,6 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MObject.h>
 
-
 MString FluidVelocityConvert::typeName("houdiniFluidVelocityConvert");
 MTypeId FluidVelocityConvert::typeId(MayaTypeID_HoudiniFluidVelocityConvert);
 
@@ -93,11 +92,11 @@ FluidVelocityConvert::extrapolateZ(const MFloatArray& vel,
     // First interpolate
     MFloatArray result;
     result.setLength(resX * resY * (resZ+1));
-    for (int k=1; k<resZ; k++)
+    for(int k=1; k<resZ; k++)
     {
-	for (int j=0; j<resY; j++)
+	for(int j=0; j<resY; j++)
 	{
-	    for (int i=0; i<resX; i++)
+	    for(int i=0; i<resX; i++)
 	    {
 		int before = index(i, j, k-1, resX, resY);
 		int after  = index(i, j, k,  resX, resY);
@@ -107,9 +106,9 @@ FluidVelocityConvert::extrapolateZ(const MFloatArray& vel,
 	}
     }
 
-    for (int j=0; j<resY; j++)
+    for(int j=0; j<resY; j++)
     {
-	for (int i=0; i<resX; i++)
+	for(int i=0; i<resX; i++)
 	{
 	    int start        = index(i, j, 0, resX, resY);
 	    int start_before = index(i, j, 0, resX, resY);
@@ -132,11 +131,11 @@ FluidVelocityConvert::extrapolateY(const MFloatArray& vel,
     // First interpolate
     MFloatArray result;
     result.setLength(resX * (resY+1) * resZ);
-    for (int k=0; k<resZ; k++)
+    for(int k=0; k<resZ; k++)
     {
-	for (int j=1; j<resY; j++)
+	for(int j=1; j<resY; j++)
 	{
-	    for (int i=0; i<resX; i++)
+	    for(int i=0; i<resX; i++)
 	    {
 		int before = index(i, j-1, k, resX, resY);
 		int after  = index(i, j,   k, resX, resY);
@@ -147,9 +146,9 @@ FluidVelocityConvert::extrapolateY(const MFloatArray& vel,
     }
 
     // Then extrapolate the edges
-    for (int k=0; k<resZ; k++)
+    for(int k=0; k<resZ; k++)
     {
-	for (int i=0; i<resX; i++)
+	for(int i=0; i<resX; i++)
 	{
 	    int start        = index(i, 0, k, resX, resY+1);
 	    int start_before = index(i, 0, k, resX, resY);
@@ -172,11 +171,11 @@ FluidVelocityConvert::extrapolateX(const MFloatArray& vel,
     // First interpolate
     MFloatArray result;
     result.setLength((resX+1) * resY * resZ);
-    for (int k=0; k<resZ; k++)
+    for(int k=0; k<resZ; k++)
     {
-	for (int j=0; j<resY; j++)
+	for(int j=0; j<resY; j++)
 	{
-	    for (int i=1; i<resX; i++)
+	    for(int i=1; i<resX; i++)
 	    {
 		int before = index(i-1, j, k, resX,   resY);
 		int after  = index(i,   j, k, resX,   resY);
@@ -186,9 +185,9 @@ FluidVelocityConvert::extrapolateX(const MFloatArray& vel,
 	}
     }
     // Then extrapolate the edges
-    for (int k=0; k<resZ; k++)
+    for(int k=0; k<resZ; k++)
     {
-	for (int j=0; j<resY; j++)
+	for(int j=0; j<resY; j++)
 	{
 	    int start        = index(0, j, k, resX+1, resY);
 	    int start_before = index(0, j, k, resX,   resY);
@@ -207,7 +206,7 @@ FluidVelocityConvert::extrapolateX(const MFloatArray& vel,
 MStatus
 FluidVelocityConvert::compute(const MPlug& plug, MDataBlock& data)
 {
-    if (plug != MPlug(thisMObject(), outGrid))
+    if(plug != MPlug(thisMObject(), outGrid))
 	return MS::kSuccess;
 
     MStatus status;
@@ -246,17 +245,17 @@ FluidVelocityConvert::compute(const MPlug& plug, MDataBlock& data)
 		     extrapolatedY.length() +
 		     extrapolatedZ.length());
     int j = 0;
-    for (unsigned int i=0; i<extrapolatedX.length(); i++)
+    for(unsigned int i=0; i<extrapolatedX.length(); i++)
     {
 	result[j] = extrapolatedX[i];
 	j++;
     }
-    for (unsigned int i=0; i<extrapolatedY.length(); i++)
+    for(unsigned int i=0; i<extrapolatedY.length(); i++)
     {
 	result[j] = extrapolatedY[i];
 	j++;
     }
-    for (unsigned int i=0; i<extrapolatedZ.length(); i++)
+    for(unsigned int i=0; i<extrapolatedZ.length(); i++)
     {
 	result[j] = extrapolatedZ[i];
 	j++;

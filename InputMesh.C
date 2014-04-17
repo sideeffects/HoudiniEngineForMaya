@@ -50,7 +50,7 @@ InputMesh::setInputGeo(
 
     // extract mesh data from Maya
     MObject meshObj = dataHandle.asMesh();
-    
+
     MFnMesh meshFn(meshObj);
 
     // get face data
@@ -74,11 +74,11 @@ InputMesh::setInputGeo(
     faceCounts.get(fc);
 
     // Set the data
-    HAPI_SetPartInfo(myInputAssetId, myInputInfo.objectId, 
+    HAPI_SetPartInfo(myInputAssetId, myInputInfo.objectId,
 	    myInputInfo.geoId, &partInfo);
-    HAPI_SetFaceCounts(myInputAssetId, myInputInfo.objectId, 
+    HAPI_SetFaceCounts(myInputAssetId, myInputInfo.objectId,
 	    myInputInfo.geoId, fc, 0, partInfo.faceCount);
-    HAPI_SetVertexList(myInputAssetId, myInputInfo.objectId, 
+    HAPI_SetVertexList(myInputAssetId, myInputInfo.objectId,
 	    myInputInfo.geoId, vl, 0, partInfo.vertexCount);
 
     // Set position attributes.
@@ -88,7 +88,7 @@ InputMesh::setInputGeo(
     pos_attr_info.storage            = HAPI_STORAGETYPE_FLOAT;
     pos_attr_info.count              = meshFn.numVertices();
     pos_attr_info.tupleSize          = 3;
-    HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info );
+    HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info);
 
     HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info,
 	    meshFn.getRawPoints(NULL), 0, meshFn.numVertices());

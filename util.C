@@ -12,7 +12,7 @@
 #include "util.h"
 
 //minimum cook time to show the progress bar, in milliseconds
-#define MIN_COOKTIME_FOR_PROGRESSBAR	1000 
+#define MIN_COOKTIME_FOR_PROGRESSBAR	1000
 //=============================================================================
 // HAPIError
 //=============================================================================
@@ -22,12 +22,12 @@ HAPIError::HAPIError() throw()
     , myMessage("")
 {}
 
-HAPIError::HAPIError( const HAPIError & error ) throw()
+HAPIError::HAPIError(const HAPIError & error) throw()
     : exception()
     , myMessage(error.myMessage)
 {}
 
-HAPIError::HAPIError( MString msg ) throw()
+HAPIError::HAPIError(MString msg) throw()
     : exception()
     , myMessage(msg)
 {}
@@ -104,8 +104,7 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
     return getParmAttrPrefix() + "_" + name;
 }
 
-
-MString 
+MString
 Util::getParmAttrPrefix()
 {
     MString ret = "houdiniAssetParm";
@@ -118,11 +117,10 @@ Util::hasHAPICallFailed(HAPI_Result stat)
     return stat > 0;
 }
 
-
 void
 Util::checkHAPIStatus(HAPI_Result stat)
 {
-    if (hasHAPICallFailed(stat))
+    if(hasHAPICallFailed(stat))
     {
         int bufLen;
         HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufLen);
@@ -137,17 +135,17 @@ void pumpmsgs()
 {
 #ifdef _WIN32
     MSG msg;
-    
-    while( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0 )
-    {	    	
+
+    while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
+    {
 	TranslateMessage(&msg);
-	DispatchMessage(&msg);	
-    }        
+	DispatchMessage(&msg);
+    }
 #endif
 }
 
-void 
-Util::showProgressWindow( const MString & title, const MString & status, int progress )
+void
+Util::showProgressWindow(const MString & title, const MString & status, int progress)
 {
 #ifdef _WIN32
     MString cmdStr = "progressWindow -t \"";
@@ -157,117 +155,114 @@ Util::showProgressWindow( const MString & title, const MString & status, int pro
     cmdStr += " -status \"";
     cmdStr += status;
     cmdStr += "\" -ii false";
-    MGlobal::executeCommand( cmdStr );
-    pumpmsgs();    
+    MGlobal::executeCommand(cmdStr);
+    pumpmsgs();
 #endif
 }
 
-void 
-Util::updateProgressWindow( const MString & status, int progress )
+void
+Util::updateProgressWindow(const MString & status, int progress)
 {
 #ifdef _WIN32
     MString cmdStr;
-    cmdStr = "progressWindow -e -progress ";	    	    
+    cmdStr = "progressWindow -e -progress ";
     cmdStr += progress;
 
     cmdStr += " -st \"";
     cmdStr += status;
     cmdStr += "\"";
-        	    
-    MGlobal::executeCommand( cmdStr );	
+
+    MGlobal::executeCommand(cmdStr);
     pumpmsgs();
-#endif    
+#endif
 }
 
-void 
+void
 Util::hideProgressWindow()
 {
 #ifdef _WIN32
     MString cmdStr = "progressWindow -endProgress";
-    MGlobal::executeCommand( cmdStr );
+    MGlobal::executeCommand(cmdStr);
     pumpmsgs();
 #endif
-    
 }
 
 void
 Util::statusCheckLoop()
-{        
+{
     bool showProgressWindow = false;
-    HAPI_State state = HAPI_STATE_STARTING_LOAD;    
+    HAPI_State state = HAPI_STATE_STARTING_LOAD;
     int currState = (int) state;
     int currCookCount = 0;
-    int totalCookCount = 1;       
-    
+    int totalCookCount = 1;
+
 #ifdef _WIN32
     int startTime = 0;
-    
+
     startTime = ::GetTickCount();
 #endif
 
     int elapsedTime = 0;
-    while ( state != HAPI_STATE_READY )
+    while(state != HAPI_STATE_READY)
     {
-	    HAPI_GetStatus( HAPI_STATUS_STATE, &currState );
+	    HAPI_GetStatus(HAPI_STATUS_STATE, &currState);
 	    state = (HAPI_State) currState;
 
-	    
 #ifdef _WIN32
 	    elapsedTime = (int)::GetTickCount() - startTime;
 #endif
 
-	    if( elapsedTime > MIN_COOKTIME_FOR_PROGRESSBAR && !showProgressWindow )
+	    if(elapsedTime > MIN_COOKTIME_FOR_PROGRESSBAR && !showProgressWindow)
 	    {
 		MString title("Houdini");
-		MString status("Working...");    
-		Util::showProgressWindow( title, status, 0 );
+		MString status("Working...");
+		Util::showProgressWindow(title, status, 0);
 		showProgressWindow = true;
 
 	    }
 
 	    int percent = 0;
-	    if ( state == HAPI_STATE_COOKING )
+	    if(state == HAPI_STATE_COOKING)
 	    {
-		    HAPI_GetCookingCurrentCount( &currCookCount ); 
-		    HAPI_GetCookingTotalCount( &totalCookCount );		    
-		    percent = (int) ( (float) currCookCount*100 / (float) totalCookCount);
+		    HAPI_GetCookingCurrentCount(&currCookCount);
+		    HAPI_GetCookingTotalCount(&totalCookCount);
+		    percent = (int) ((float) currCookCount*100 / (float) totalCookCount);
 	    }
 	    else
-	    {		    
+	    {
 		    percent = (int)((elapsedTime / 1000) % 100);
 	    }
-	    
+
 	    int statusBufSize = 0;
-	    HAPI_GetStatusStringBufLength( HAPI_STATUS_STATE, 
-					     &statusBufSize );
+	    HAPI_GetStatusStringBufLength(HAPI_STATUS_STATE,
+					     &statusBufSize);
 
 	    char * statusBuf = NULL;
 
-	    if( statusBufSize > 0 )
+	    if(statusBufSize > 0)
 	    {
-		statusBuf = new char[ statusBufSize ];	        
-		HAPI_GetStatusString( HAPI_STATUS_STATE, statusBuf );		
+		statusBuf = new char[statusBufSize];
+		HAPI_GetStatusString(HAPI_STATUS_STATE, statusBuf);
 	    }
-	        	    	    
 
-	    if( statusBuf != NULL && showProgressWindow )
+	    if(statusBuf != NULL && showProgressWindow)
 	    {
 		MString statusStr = statusBuf;
-		updateProgressWindow( statusStr, percent );
+		updateProgressWindow(statusStr, percent);
 #ifdef _WIN32
-		::Sleep( 100 );
+		::Sleep(100);
 #endif
 
-	    }	    
+	    }
 
 	    if(statusBuf)
 	    {
 		delete[] statusBuf;
 	    }
-    }    
+    }
 
-    if( showProgressWindow )
-	Util::hideProgressWindow();    
+    if(showProgressWindow)
+	Util::hideProgressWindow();
 }
 
 MObject
@@ -365,33 +360,32 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
     return result;
 }
 
-
 MStringArray
-Util::getAttributeStringData(int assetId, 
+Util::getAttributeStringData(int assetId,
 			    int objectId,
 			    int geoId,
 			    int partId,
-			    HAPI_AttributeOwner owner, 
+			    HAPI_AttributeOwner owner,
 			    const MString & name)
 {
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
-    HAPI_GetAttributeInfo( assetId, objectId, geoId, partId, name.asChar(), owner, &attr_info);
+    HAPI_GetAttributeInfo(assetId, objectId, geoId, partId, name.asChar(), owner, &attr_info);
 
     MStringArray ret;
-    if (!attr_info.exists)
+    if(!attr_info.exists)
         return ret;
 
     int size = attr_info.count * attr_info.tupleSize;
     int * data = new int[size];
     // zero the array
-    for (int j=0; j<size; j++){
+    for(int j=0; j<size; j++){
         data[j] = 0;
     }
-    HAPI_GetAttributeStringData( assetId, objectId, geoId, partId, name.asChar(),
+    HAPI_GetAttributeStringData(assetId, objectId, geoId, partId, name.asChar(),
             &attr_info, data, 0, attr_info.count);
 
-    for (int j=0; j<size; j++){
+    for(int j=0; j<size; j++){
         ret.append(Util::getString(data[j]));
     }
 
@@ -403,7 +397,7 @@ Util::getAttributeStringData(int assetId,
 int
 Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
 {
-    for (size_t i = 0; i < parms.size(); i++)
+    for(size_t i = 0; i < parms.size(); i++)
     {
         if(getString(parms[i].templateNameSH) == name
                 && (instanceNum < 0 || parms[i].instanceNum == instanceNum)
@@ -498,7 +492,6 @@ walkParmOne(
                     );
             folderParmInfos += folderConsumed;
             consumed += folderConsumed;
-
 
             operation.popFolder();
         }

@@ -14,27 +14,25 @@ class OutputGeometryPart;
 class OutputGeometry {
 
     public:
-        
-        
-        OutputGeometry( int assetId, int objectId, int geoId, OutputObject * parentObject );
+
+        OutputGeometry(int assetId, int objectId, int geoId, OutputObject * parentObject);
         ~OutputGeometry();
 
-        MStatus setClean( MPlug& geoPlug, MDataBlock& data );
+        MStatus setClean(MPlug& geoPlug, MDataBlock& data);
 
         MStatus compute(MDataHandle &geoHandle, bool &needToSyncOutputs);
-    
+
         void update();
-    
+
     protected:
-        
-        OutputObject* myParentObject;        
+
+        OutputObject* myParentObject;
         HAPI_GeoInfo myGeoInfo;
         int myAssetId;
         int myObjectId;
         int myGeoId;
 
         std::vector<OutputGeometryPart> myParts;
-        
 };
 
 #endif

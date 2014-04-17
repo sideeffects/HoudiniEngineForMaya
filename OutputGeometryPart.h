@@ -13,11 +13,10 @@ class MFnArrayAttrsData;
 
 class OutputGeometryPart
 {
-    public:        
+    public:
         OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
                 HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo);
         ~OutputGeometryPart();
-
 
         MStatus compute(
                 MDataHandle& handle,

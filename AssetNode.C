@@ -67,7 +67,6 @@ MObject AssetNode::outputGeoCurveCVY;
 MObject AssetNode::outputGeoCurveCVZ;
 MObject AssetNode::outputGeoCurveCVs;
 
-
 MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
 MObject AssetNode::outputPartMesh;
@@ -170,9 +169,9 @@ AssetNode::initialize()
     // This maps to the underlying Houdini asset type: OBJ, SOP, etc. (see HAPI_AssetType)
     AssetNode::assetType = nAttr.create("assetType", "assetType", MFnNumericData::kInt);
     nAttr.setStorable(false);
-    nAttr.setWritable(false);    
+    nAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::assetType);
-        
+
     AssetNode::autoSyncOutputs = nAttr.create("autoSyncOutputs", "autoSyncOutputs", MFnNumericData::kBoolean);
     AssetNode::outputHiddenObjects = nAttr.create("outputHiddenObjects", "outputHiddenObjects", MFnNumericData::kBoolean);
     AssetNode::outputTemplateObjects = nAttr.create("outputTemplateObjects", "outputTemplateObjects", MFnNumericData::kBoolean);
@@ -278,11 +277,10 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputInstanceScale);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    cAttr.setArray( true );
+    cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputInstanceTransform);
 
-    
     // instancers
     AssetNode::outputInstancers = cAttr.create("outputInstancers", "outputInstancers");
     cAttr.addChild(AssetNode::outputInstancerData);
@@ -295,8 +293,6 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputInstancers);
-
-
 
     //--------------------------------End instancer compound multi----------------------------------------------
 
@@ -574,15 +570,15 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolume);
-#endif   
+#endif
 
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
     cAttr.addChild(AssetNode::outputPartHasParticles);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
-    cAttr.addChild(AssetNode::outputPartParticle);    
-    cAttr.addChild(AssetNode::outputPartCurves);    
+    cAttr.addChild(AssetNode::outputPartParticle);
+    cAttr.addChild(AssetNode::outputPartCurves);
     cAttr.addChild(AssetNode::outputPartCurvesIsBezier);
 
 #if MAYA_API_VERSION >= 201400
@@ -604,17 +600,17 @@ AssetNode::initialize()
     AssetNode::outputGeoName = tAttr.create("outputGeoName", "outputGeoName", MFnData::kString);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputGeoName);        
+    computeAttributes.push_back(AssetNode::outputGeoName);
 
     AssetNode::outputGeoIsTemplated = nAttr.create("outputGeoIsTemplated", "outputGeoIsTemplated", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoIsTemplated);        
+    computeAttributes.push_back(AssetNode::outputGeoIsTemplated);
 
     AssetNode::outputGeoIsDisplayGeo = nAttr.create("outputGeoIsDisplayGeo", "outputGeoIsDisplayGeo", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoIsDisplayGeo);        
+    computeAttributes.push_back(AssetNode::outputGeoIsDisplayGeo);
 
     AssetNode::outputGeoCurveType = tAttr.create("outputGeoCurveType", "outputGeoCurveType", MFnData::kString);
     tAttr.setWritable(false);
@@ -635,7 +631,7 @@ AssetNode::initialize()
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputGeoCurveCVY);
-    
+
     AssetNode::outputGeoCurveCVZ = nAttr.create("outputGeoCurveCVZ", "outputGeoCurveCVZ", MFnNumericData::kDouble, 0.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
@@ -645,20 +641,20 @@ AssetNode::initialize()
             AssetNode::outputGeoCurveCVY, AssetNode::outputGeoCurveCVZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    nAttr.setArray( true );
-    nAttr.setIndexMatters( true );
-    nAttr.setUsesArrayDataBuilder( true );
+    nAttr.setArray(true);
+    nAttr.setIndexMatters(true);
+    nAttr.setUsesArrayDataBuilder(true);
     computeAttributes.push_back(AssetNode::outputGeoCurveCVs);
 
     AssetNode::outputGeos = cAttr.create("outputGeos", "outputGeos");
-    cAttr.addChild( AssetNode::outputGeoType );
-    cAttr.addChild( AssetNode::outputGeoName );
-    cAttr.addChild( AssetNode::outputGeoIsTemplated );
-    cAttr.addChild( AssetNode::outputGeoIsDisplayGeo );
-    cAttr.addChild( AssetNode::outputGeoCurveType );
-    cAttr.addChild( AssetNode::outputGeoCurveOrder );
-    cAttr.addChild( AssetNode::outputGeoCurveCVs );
-    cAttr.addChild( AssetNode::outputParts );
+    cAttr.addChild(AssetNode::outputGeoType);
+    cAttr.addChild(AssetNode::outputGeoName);
+    cAttr.addChild(AssetNode::outputGeoIsTemplated);
+    cAttr.addChild(AssetNode::outputGeoIsDisplayGeo);
+    cAttr.addChild(AssetNode::outputGeoCurveType);
+    cAttr.addChild(AssetNode::outputGeoCurveOrder);
+    cAttr.addChild(AssetNode::outputGeoCurveCVs);
+    cAttr.addChild(AssetNode::outputParts);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
@@ -672,12 +668,12 @@ AssetNode::initialize()
 
     AssetNode::outputIsInstanced = nAttr.create("outputIsInstanced", "outputIsInstanced", MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
-    nAttr.setWritable(false);     
+    nAttr.setWritable(false);
 
     AssetNode::outputObjectName = tAttr.create("outputObjectName", "outputObjectName", MFnData::kString);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputObjectName);    
+    computeAttributes.push_back(AssetNode::outputObjectName);
 
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputGeos);
@@ -700,17 +696,17 @@ AssetNode::initialize()
     //------------------------------- END  objects compound multi------------------------------------------------
 
     // output
-    AssetNode::output = cAttr.create("output", "out");    
+    AssetNode::output = cAttr.create("output", "out");
     cAttr.addChild(AssetNode::outputObjects);
     cAttr.addChild(AssetNode::outputInstancers);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::output);
-    
+
     AssetNode::useInstancerNode = nAttr.create("useInstancerNode", "useInstancerNode", MFnNumericData::kBoolean, false);
     nAttr.setStorable(true);
     nAttr.setWritable(true);
-    nAttr.setDefault( false );
+    nAttr.setDefault(false);
 
     // add the static attributes to the node
     addAttribute(AssetNode::autoSyncOutputs);
@@ -724,20 +720,18 @@ AssetNode::initialize()
     addAttribute(AssetNode::output);
     addAttribute(AssetNode::useInstancerNode);
 
-    
     //most of the dependencies between attrs are set via the AssetNode::setDependentsDirty() call
     //this call may not even be necessary.
     attributeAffects(AssetNode::otlFilePath, AssetNode::output);
     attributeAffects(AssetNode::assetName, AssetNode::output);
-    
+
     attributeAffects(AssetNode::input, AssetNode::output);
 
     return MS::kSuccess;
 }
 
-
 AssetNode::AssetNode()
-{    
+{
     myAsset = NULL;
 
     myBuiltParms = false;
@@ -745,51 +739,48 @@ AssetNode::AssetNode()
     myResultsClean = false;
 }
 
-
 AssetNode::~AssetNode()
 {
     destroyAsset();
 }
-
 
 void
 AssetNode::postConstructor()
 {
 }
 
-
 MStatus
 AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlugArray& affectedPlugs)
 {
-    if (plugBeingDirtied == AssetNode::otlFilePath
+    if(plugBeingDirtied == AssetNode::otlFilePath
         || plugBeingDirtied == AssetNode::assetName)
         return MS::kSuccess;
 
     myResultsClean = false;
     setPlugDirty(plugBeingDirtied);
-    
+
     affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
 
     MPlug outputObjectsPlug(thisMObject(), AssetNode::outputObjects);
-    for ( unsigned int i = 0; i < outputObjectsPlug.numElements(); ++i )
+    for(unsigned int i = 0; i < outputObjectsPlug.numElements(); ++i)
     {
-        MPlug objPlug = outputObjectsPlug[ i ];
+        MPlug objPlug = outputObjectsPlug[i];
 	MPlug outputObjectTransformPlug = objPlug.child(AssetNode::outputObjectTransform);
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectTranslate));
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectRotate));
 	affectedPlugs.append(outputObjectTransformPlug.child(AssetNode::outputObjectScale));
 	affectedPlugs.append(objPlug.child(AssetNode::outputObjectMetaData));
 
-        MPlug outputGeosPlug = objPlug.child( AssetNode::outputGeos );
-        for ( unsigned int jj = 0; jj < outputGeosPlug.numElements(); ++jj )
+        MPlug outputGeosPlug = objPlug.child(AssetNode::outputGeos);
+        for(unsigned int jj = 0; jj < outputGeosPlug.numElements(); ++jj)
 	{
-            MPlug geoPlug = outputGeosPlug[ jj ];
+            MPlug geoPlug = outputGeosPlug[jj];
 
 	    MPlug outputPartsPlug = geoPlug.child(AssetNode::outputParts);
-	    for ( unsigned int kk = 0; kk < outputPartsPlug.numElements(); ++kk )
+	    for(unsigned int kk = 0; kk < outputPartsPlug.numElements(); ++kk)
 	    {
-	        MPlug elemPlug = outputPartsPlug[ kk ];
+	        MPlug elemPlug = outputPartsPlug[kk];
 
 	        affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
 
@@ -831,8 +822,8 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 #endif
 		// Curves
 		MPlug outputPartCurves = elemPlug.child(AssetNode::outputPartCurves);
-		for ( unsigned int i = 0; i < outputPartCurves.numElements(); ++i )
-		    affectedPlugs.append(outputPartCurves[ i ]);
+		for(unsigned int i = 0; i < outputPartCurves.numElements(); ++i)
+		    affectedPlugs.append(outputPartCurves[i]);
 
 		affectedPlugs.append(elemPlug.child(outputPartCurvesIsBezier));
 
@@ -841,73 +832,71 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     }
 
     MPlug outputInstancersPlug(thisMObject(), AssetNode::outputInstancers);
-    for ( unsigned int i = 0; i < outputInstancersPlug.numElements(); ++i )
+    for(unsigned int i = 0; i < outputInstancersPlug.numElements(); ++i)
     {
-	MPlug elemPlug = outputInstancersPlug[ i ];
+	MPlug elemPlug = outputInstancersPlug[i];
 
-	MPlug outputInstancerDataPlug = elemPlug.child( AssetNode::outputInstancerData );
-	MPlug outputInstancedObjectNamesPlug = elemPlug.child( AssetNode::outputInstancedObjectNames );
+	MPlug outputInstancerDataPlug = elemPlug.child(AssetNode::outputInstancerData);
+	MPlug outputInstancedObjectNamesPlug = elemPlug.child(AssetNode::outputInstancedObjectNames);
 
-	affectedPlugs.append( outputInstancerDataPlug );
+	affectedPlugs.append(outputInstancerDataPlug);
 
-	for ( unsigned int j = 0; j < outputInstancedObjectNamesPlug.numElements(); ++j )
-	    affectedPlugs.append(outputInstancedObjectNamesPlug[ j ] );
+	for(unsigned int j = 0; j < outputInstancedObjectNamesPlug.numElements(); ++j)
+	    affectedPlugs.append(outputInstancedObjectNamesPlug[j]);
 
-	
-	MPlug outputHoudiniInstancePlug = elemPlug.child( AssetNode::outputHoudiniInstanceAttribute );
-	for ( unsigned int jj = 0; jj < outputHoudiniInstancePlug.numElements(); ++jj )
-	    affectedPlugs.append( outputHoudiniInstancePlug[ jj ] );
+	MPlug outputHoudiniInstancePlug = elemPlug.child(AssetNode::outputHoudiniInstanceAttribute);
+	for(unsigned int jj = 0; jj < outputHoudiniInstancePlug.numElements(); ++jj)
+	    affectedPlugs.append(outputHoudiniInstancePlug[jj]);
 
-	MPlug outputHoudiniNamePlug = elemPlug.child( AssetNode::outputHoudiniNameAttribute );
-	for ( unsigned int jj = 0; jj < outputHoudiniNamePlug.numElements(); ++jj )
-	    affectedPlugs.append( outputHoudiniNamePlug[ jj ] );
+	MPlug outputHoudiniNamePlug = elemPlug.child(AssetNode::outputHoudiniNameAttribute);
+	for(unsigned int jj = 0; jj < outputHoudiniNamePlug.numElements(); ++jj)
+	    affectedPlugs.append(outputHoudiniNamePlug[jj]);
 
-	MPlug outputInstanceTransformPlug = elemPlug.child( AssetNode::outputInstanceTransform );
-	for ( unsigned int jj = 0; jj < outputInstanceTransformPlug.numElements(); ++jj )
+	MPlug outputInstanceTransformPlug = elemPlug.child(AssetNode::outputInstanceTransform);
+	for(unsigned int jj = 0; jj < outputInstanceTransformPlug.numElements(); ++jj)
 	{
-	    MPlug transformPlug = outputInstanceTransformPlug[ jj ];
+	    MPlug transformPlug = outputInstanceTransformPlug[jj];
 
 	    //translation
-	    MPlug outputInstanceTranslatePlug = transformPlug.child( AssetNode::outputInstanceTranslate );
-	    affectedPlugs.append( outputInstanceTranslatePlug );
+	    MPlug outputInstanceTranslatePlug = transformPlug.child(AssetNode::outputInstanceTranslate);
+	    affectedPlugs.append(outputInstanceTranslatePlug);
 
-	    MPlug outputInstanceTxPlug = outputInstanceTranslatePlug.child( AssetNode::outputInstanceTranslateX );
-	    affectedPlugs.append( outputInstanceTxPlug );
+	    MPlug outputInstanceTxPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateX);
+	    affectedPlugs.append(outputInstanceTxPlug);
 
-	    MPlug outputInstanceTyPlug = outputInstanceTranslatePlug.child( AssetNode::outputInstanceTranslateY );
-	    affectedPlugs.append( outputInstanceTyPlug );
+	    MPlug outputInstanceTyPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateY);
+	    affectedPlugs.append(outputInstanceTyPlug);
 
-	    MPlug outputInstanceTzPlug = outputInstanceTranslatePlug.child( AssetNode::outputInstanceTranslateZ );
-	    affectedPlugs.append( outputInstanceTzPlug );
+	    MPlug outputInstanceTzPlug = outputInstanceTranslatePlug.child(AssetNode::outputInstanceTranslateZ);
+	    affectedPlugs.append(outputInstanceTzPlug);
 
 	    //rotation
-	    MPlug outputInstanceRotatePlug = transformPlug.child( AssetNode::outputInstanceRotate );
-	    affectedPlugs.append( outputInstanceRotatePlug );
+	    MPlug outputInstanceRotatePlug = transformPlug.child(AssetNode::outputInstanceRotate);
+	    affectedPlugs.append(outputInstanceRotatePlug);
 
-	    MPlug outputInstanceRxPlug = outputInstanceRotatePlug.child( AssetNode::outputInstanceRotateX );
-	    affectedPlugs.append( outputInstanceRxPlug );
+	    MPlug outputInstanceRxPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateX);
+	    affectedPlugs.append(outputInstanceRxPlug);
 
-	    MPlug outputInstanceRyPlug = outputInstanceRotatePlug.child( AssetNode::outputInstanceRotateY );
-	    affectedPlugs.append( outputInstanceRyPlug );
+	    MPlug outputInstanceRyPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateY);
+	    affectedPlugs.append(outputInstanceRyPlug);
 
-	    MPlug outputInstanceRzPlug = outputInstanceRotatePlug.child( AssetNode::outputInstanceRotateZ );
-	    affectedPlugs.append( outputInstanceRzPlug );
+	    MPlug outputInstanceRzPlug = outputInstanceRotatePlug.child(AssetNode::outputInstanceRotateZ);
+	    affectedPlugs.append(outputInstanceRzPlug);
 
 	    //scale
-	    MPlug outputInstanceScalePlug = transformPlug.child( AssetNode::outputInstanceScale );
-	    affectedPlugs.append( outputInstanceScalePlug );
+	    MPlug outputInstanceScalePlug = transformPlug.child(AssetNode::outputInstanceScale);
+	    affectedPlugs.append(outputInstanceScalePlug);
 
-	    MPlug outputInstanceSxPlug = outputInstanceScalePlug.child( AssetNode::outputInstanceScaleX );
-	    affectedPlugs.append( outputInstanceSxPlug );
+	    MPlug outputInstanceSxPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleX);
+	    affectedPlugs.append(outputInstanceSxPlug);
 
-	    MPlug outputInstanceSyPlug = outputInstanceScalePlug.child( AssetNode::outputInstanceScaleY );
-	    affectedPlugs.append( outputInstanceSyPlug );
+	    MPlug outputInstanceSyPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleY);
+	    affectedPlugs.append(outputInstanceSyPlug);
 
-	    MPlug outputInstanceSzPlug = outputInstanceScalePlug.child( AssetNode::outputInstanceScaleZ );
-	    affectedPlugs.append( outputInstanceSzPlug );
+	    MPlug outputInstanceSzPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleZ);
+	    affectedPlugs.append(outputInstanceSzPlug);
 
 	}
-
     }
 
     return MS::kSuccess;
@@ -919,7 +908,6 @@ AssetNode::rebuildAsset()
     destroyAsset();
     myAsset = new Asset(myOTLFilePath, myAssetName, thisMObject());
     myResultsClean = false;
-
 }
 
 void
@@ -934,7 +922,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     MStatus status;
 
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
-	!= computeAttributes.end() && !myResultsClean )
+	!= computeAttributes.end() && !myResultsClean)
     {
 	// make sure Asset is created
 	createAsset();
@@ -975,14 +963,14 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
 	myResultsClean = true;
 
-	data.setClean( plug );
+	data.setClean(plug);
 	return MStatus::kSuccess;
     }
     else
-    {		
+    {
 	return MStatus::kUnknownParameter;
     }
-    
+
 }
 
 bool

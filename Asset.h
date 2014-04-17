@@ -32,7 +32,7 @@ class Asset {
         HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
 
         // Getters for infos
-        HAPI_ObjectInfo getObjectInfo(int id);        
+        HAPI_ObjectInfo getObjectInfo(int id);
 
 	void resetSimulation();
 
@@ -68,11 +68,10 @@ class Asset {
                 const MFnDependencyNode &nodeFn
                 );
 
-    public:        
+    public:
         HAPI_NodeInfo	myNodeInfo;
         int myNumVisibleObjects;
         int myNumObjects;
-
 
     private:
 
@@ -90,7 +89,6 @@ class Asset {
                 bool &needToSyncOutputs
                 );
 
-
     private:
         HAPI_AssetInfo 	myAssetInfo;
         MObject myNode;		    //The Maya asset node
@@ -101,7 +99,7 @@ class Asset {
 
         // Arrays of infos that can be accessed when updating objects,
         // keeping them here avoids getting them for individual object.
-        HAPI_ObjectInfo* myObjectInfos;       
+        HAPI_ObjectInfo* myObjectInfos;
 };
 
 #endif

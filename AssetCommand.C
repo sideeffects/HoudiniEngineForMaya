@@ -32,7 +32,6 @@
 #define kSyncTemplatedGeosFlag "-stm"
 #define kSyncTemplatedGeosFlagLong "-syncTemplatedGeos"
 
-
 class AssetSubCommandResetSimulation : public AssetSubCommandAsset
 {
     public:
@@ -112,20 +111,18 @@ AssetCommand::newSyntax()
     // expected arguments: hip_file_name - the name of the hip file to save
     CHECK_MSTATUS(syntax.addFlag(kSaveHIPFlag, kSaveHIPFlagLong, MSyntax::kString));
 
-
     // -resetSimulation resets the simulation state for an asset.  This will clear
     // the DOPs cache for the asset.
-    CHECK_MSTATUS(syntax.addFlag(kResetSimulationFlag, 
-				 kResetSimulationFlagLong, 
+    CHECK_MSTATUS(syntax.addFlag(kResetSimulationFlag,
+				 kResetSimulationFlagLong,
 				 MSyntax::kSelectionItem));
 
-
     // -reloadAsset will unload and immediate reload the asset.  If an otl file
-    // has changed due to an edit in Houdini, this should pick up the change    
+    // has changed due to an edit in Houdini, this should pick up the change
 	// Note that this won't refresh the AE, you need to that separately after
 	// running this, with refreshEditorTemplates
-    CHECK_MSTATUS(syntax.addFlag(kReloadAssetFlag, 
-				 kReloadAssetFlagLong, 
+    CHECK_MSTATUS(syntax.addFlag(kReloadAssetFlag,
+				 kReloadAssetFlagLong,
 				 MSyntax::kString));
 
     CHECK_MSTATUS(syntax.addFlag(kSyncAttributesFlag, kSyncAttributesFlagLong));
@@ -136,10 +133,9 @@ AssetCommand::newSyntax()
 				 kSyncHiddenFlagLong,
 				 MSyntax::kNoArg));
 
-
     // -syncTemplatedGeos will cause templated geos to be sync'ed
-    CHECK_MSTATUS(syntax.addFlag(kSyncTemplatedGeosFlag, 
-				 kSyncTemplatedGeosFlagLong, 
+    CHECK_MSTATUS(syntax.addFlag(kSyncTemplatedGeosFlag,
+				 kSyncTemplatedGeosFlagLong,
 				 MSyntax::kNoArg));
 
     return syntax;
@@ -151,7 +147,6 @@ AssetCommand::AssetCommand() :
 {
 }
 
-
 AssetCommand::~AssetCommand()
 {
     if(myOperationType == kOperationSubCommand)
@@ -159,7 +154,6 @@ AssetCommand::~AssetCommand()
 	delete myAssetSubCommand;
     }
 }
-
 
 MStatus
 AssetCommand::parseArgs(const MArgList &args)
@@ -253,7 +247,7 @@ AssetCommand::parseArgs(const MArgList &args)
 	MSelectionList selList;
 	MObject assetNodeObj;
 
-	selList.add( assetPath );
+	selList.add(assetPath);
 	selList.getDependNode(0, assetNodeObj);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -262,8 +256,7 @@ AssetCommand::parseArgs(const MArgList &args)
 	assetNode->rebuildAsset();
 
         myAssetSubCommand = new AssetSubCommandSync(assetNodeObj);
-
-    }    
+    }
 
     if(argData.isFlagSet(kSyncFlag))
     {
@@ -348,7 +341,7 @@ AssetCommand::parseArgs(const MArgList &args)
     return MStatus::kSuccess;
 }
 
-MStatus AssetCommand::doIt( const MArgList& args )
+MStatus AssetCommand::doIt(const MArgList& args)
 {
     MStatus status;
 
@@ -364,26 +357,25 @@ MStatus AssetCommand::doIt( const MArgList& args )
     }
 
     return redoIt();
-    
 }
 
-MStatus AssetCommand::redoIt() 
+MStatus AssetCommand::redoIt()
 {
     if(myOperationType == kOperationSubCommand)
     {
 	return myAssetSubCommand->redoIt();
     }
 
-    if( myOperationType == kOperationSaveHip )
+    if(myOperationType == kOperationSaveHip)
     {
-	HAPI_SaveHIPFile( myHIPFilePath.asChar() );
-	return MS::kSuccess;            
+	HAPI_SaveHIPFile(myHIPFilePath.asChar() );
+	return MS::kSuccess;
     }
 
     return MS::kFailure;
 }
 
-MStatus AssetCommand::undoIt() 
+MStatus AssetCommand::undoIt()
 {
     if(myOperationType == kOperationSubCommand)
     {
@@ -393,8 +385,8 @@ MStatus AssetCommand::undoIt()
     return MS::kSuccess;
 }
 
-bool AssetCommand::isUndoable() const 
-{    
+bool AssetCommand::isUndoable() const
+{
     if(myOperationType == kOperationSubCommand)
     {
 	return myAssetSubCommand->isUndoable();

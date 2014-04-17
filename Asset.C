@@ -324,7 +324,7 @@ AttrOperation::containsParm(const HAPI_ParmInfo &parm) const
         // If the parm is a tuple, then we also need to check the parent plug.
         // We need to check if it's int, float, or string, because non-values
         // like folders also use parm.size.
-        if((HAPI_ParmInfo_IsInt(&parm) || HAPI_ParmInfo_IsFloat(&parm) || HAPI_ParmInfo_IsString(&parm) )
+        if((HAPI_ParmInfo_IsInt(&parm) || HAPI_ParmInfo_IsFloat(&parm) || HAPI_ParmInfo_IsString(&parm))
                 && parm.size > 1
                 && plug.isChild() && parmPlug == plug.parent())
         {
@@ -401,7 +401,7 @@ Asset::Asset(
 
     for(int i=0; i<objCount; i++)
     {
-        Util::updateProgressWindow(status, (int)((float) i *100.0f / (float) objCount) );
+        Util::updateProgressWindow(status, (int)((float) i *100.0f / (float) objCount));
         myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
     }
 
@@ -532,7 +532,7 @@ Asset::computeInstancerObjects(
                 {
                     OutputObject* o = findObjectByName(instNames[j]);
                     if(o != NULL)
-                        instancedObjIds.append(o->getId() );
+                        instancedObjIds.append(o->getId());
                 }
                 for(unsigned int j = 0; j < instIds.length(); ++j)
                 {
@@ -555,7 +555,7 @@ Asset::computeInstancerObjects(
     // mark instanced objects
     for(unsigned int i = 0; i < instancedObjIds.length(); ++i)
     {
-        OutputObject* obj = myObjects[instancedObjIds[i] ];
+        OutputObject* obj = myObjects[instancedObjIds[i]];
         obj->myIsInstanced = true;
     }
 
@@ -592,15 +592,15 @@ Asset::computeGeometryObjects(
             obj->compute(objectHandle, needToSyncOutputs);
 
             MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
-            visibilityHandle.setBool(obj->isVisible() );
+            visibilityHandle.setBool(obj->isVisible());
             visibilityHandle.setClean();
 
             MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
-            isInstancedHandle.setBool(obj->isInstanced() );
+            isInstancedHandle.setBool(obj->isInstanced());
             isInstancedHandle.setClean();
 
             MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
-            objectNameHandle.setString(obj->getName() );
+            objectNameHandle.setString(obj->getName());
             objectNameHandle.setClean();
         }
     }

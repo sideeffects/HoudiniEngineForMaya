@@ -826,7 +826,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                     affectedPlugs.append(outputPartCurves[i]);
 
                 affectedPlugs.append(elemPlug.child(outputPartCurvesIsBezier));
-
             }
         }
     }
@@ -895,7 +894,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
             MPlug outputInstanceSzPlug = outputInstanceScalePlug.child(AssetNode::outputInstanceScaleZ);
             affectedPlugs.append(outputInstanceSzPlug);
-
         }
     }
 

@@ -368,7 +368,7 @@ MStatus AssetCommand::redoIt()
 
     if(myOperationType == kOperationSaveHip)
     {
-        HAPI_SaveHIPFile(myHIPFilePath.asChar() );
+        HAPI_SaveHIPFile(myHIPFilePath.asChar());
         return MS::kSuccess;
     }
 

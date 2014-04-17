@@ -107,7 +107,7 @@ SyncOutputObject::doIt()
 
         MPlug isTemplatedPlug = geoPlug.child(AssetNode::outputGeoIsTemplated);
         MPlug isDisplayGeoPlug = geoPlug.child(AssetNode::outputGeoIsDisplayGeo);
-        if(mySyncTemplatedGeos || !isTemplatedPlug.asBool() || isDisplayGeoPlug.asBool() )
+        if(mySyncTemplatedGeos || !isTemplatedPlug.asBool() || isDisplayGeoPlug.asBool())
         {
             if(geoCount > 1)
             {

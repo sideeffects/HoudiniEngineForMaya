@@ -17,7 +17,7 @@ SyncOutputInstance::SyncOutputInstance(
 	) :
     myOutputPlug(outputPlug),
     myAssetNodeObj(assetNodeObj),
-    myParentMultiIndex( parentMultiIndex )
+    myParentMultiIndex(parentMultiIndex)
 {
 }
 
@@ -64,20 +64,20 @@ SyncOutputInstance::isUndoable() const
     return true;
 }
 
-void 
-SyncOutputInstance::instanceObject( MDagPath & objToInstance,
+void
+SyncOutputInstance::instanceObject(MDagPath & objToInstance,
 					 MObject instancerTransform,
-					  int pointIndex )
+					  int pointIndex)
 {
-    MFnDagNode fnAsset( myAssetNodeObj );
+    MFnDagNode fnAsset(myAssetNodeObj);
     MDagPath assetPath;
-    fnAsset.getPath( assetPath );
+    fnAsset.getPath(assetPath);
 
-    MFnDagNode fnInstancerTransform( instancerTransform );
+    MFnDagNode fnInstancerTransform(instancerTransform);
     MDagPath instancerTransformPath;
-    fnInstancerTransform.getPath( instancerTransformPath );
+    fnInstancerTransform.getPath(instancerTransformPath);
 
-    MString cmd = "houdiniEngine_createInstance( \"";
+    MString cmd = "houdiniEngine_createInstance(\"";
     cmd += assetPath.partialPathName();
     cmd += "\",\"";
     cmd += objToInstance.partialPathName();
@@ -88,73 +88,72 @@ SyncOutputInstance::instanceObject( MDagPath & objToInstance,
     cmd += ",";
     cmd += pointIndex;
     cmd += ");";
-    
-    MGlobal::executeCommand( cmd );
+
+    MGlobal::executeCommand(cmd);
 }
 
-bool 
-SyncOutputInstance::stringStartsWith( const MString & string, const MString & startsWith )
+bool
+SyncOutputInstance::stringStartsWith(const MString & string, const MString & startsWith)
 {
-    if( string.length() >= startsWith.length() )
+    if(string.length() >= startsWith.length() )
     {
-	if( string.substring( 0, startsWith.length() -1 ) == startsWith )
-	{	  
+	if(string.substring(0, startsWith.length() -1) == startsWith)
+	{
 	    return true;
 	}
     }
     return false;
 }
 
-bool 
-SyncOutputInstance::instanceObjects( MObject searchRoot,
+bool
+SyncOutputInstance::instanceObjects(MObject searchRoot,
 					  MObject instancerTransform,
 					  int pointIndex,
 					  const MString & objectToInstanceName,
 					  const MString & houdiniInstanceAttr,
-					  const MString & houdiniNameAttr )
+					  const MString & houdiniNameAttr)
 {
-    MItDag dagIt( MItDag::kDepthFirst, MFn::kTransform );
-    dagIt.reset( searchRoot );
-    for (; !dagIt.isDone(); dagIt.next()) 
+    MItDag dagIt(MItDag::kDepthFirst, MFn::kTransform);
+    dagIt.reset(searchRoot);
+    for(; !dagIt.isDone(); dagIt.next())
     {
 	MDagPath currPath;
-	if (dagIt.getPath (currPath) != MS::kSuccess) 
+	if(dagIt.getPath (currPath) != MS::kSuccess)
 	{
 	    continue;
 	}
-	    	    
+
 	MObject node = currPath.node();
-	MFnDagNode fnNode( node );
+	MFnDagNode fnNode(node);
 	MString nodeName = fnNode.name();
 
-	if( objectToInstanceName.length() > 0 && 
-	    stringStartsWith( nodeName, objectToInstanceName ) )	    
-	{	    
-	    instanceObject( currPath, instancerTransform, pointIndex );
-	    return true;	    
+	if(objectToInstanceName.length() > 0 &&
+	    stringStartsWith(nodeName, objectToInstanceName) )
+	{
+	    instanceObject(currPath, instancerTransform, pointIndex);
+	    return true;
 	}
 
-	if( houdiniInstanceAttr.length() > 0 )
+	if(houdiniInstanceAttr.length() > 0)
 	{
 	    MStringArray splitObjName;
-	    houdiniInstanceAttr.split( '/', splitObjName );
-	    MString instanceAttrObjectName = splitObjName[ splitObjName.length()-1 ];
-	    if( stringStartsWith( nodeName, instanceAttrObjectName ) )
+	    houdiniInstanceAttr.split('/', splitObjName);
+	    MString instanceAttrObjectName = splitObjName[splitObjName.length()-1];
+	    if(stringStartsWith(nodeName, instanceAttrObjectName) )
 	    {
-		instanceObject( currPath, instancerTransform, pointIndex );
-		return true;	    
+		instanceObject(currPath, instancerTransform, pointIndex);
+		return true;
 	    }
 	}
 
-	if ( houdiniNameAttr.length() > 0 )
+	if(houdiniNameAttr.length() > 0)
 	{
-	    if( stringStartsWith( nodeName, houdiniNameAttr ) )
+	    if(stringStartsWith(nodeName, houdiniNameAttr) )
 	    {
-		instanceObject( currPath, instancerTransform, pointIndex );
-		return true;	    
+		instanceObject(currPath, instancerTransform, pointIndex);
+		return true;
 	    }
-	}        
-
+	}
     }
 
     return false;
@@ -167,10 +166,10 @@ SyncOutputInstance::createOutput()
 
     MFnDagNode assetNodeFn(myAssetNodeObj);
 
-    MPlug useInstanceNodePlug = assetNodeFn.findPlug( AssetNode::useInstancerNode );
+    MPlug useInstanceNodePlug = assetNodeFn.findPlug(AssetNode::useInstancerNode);
     bool useInstanceNode = useInstanceNodePlug.asBool();
 
-    if( useInstanceNode )
+    if(useInstanceNode)
     {
 	// create the instancer node
 	MObject instancer = myDagModifier.createNode("instancer", myAssetNodeObj, &status);
@@ -215,59 +214,54 @@ SyncOutputInstance::createOutput()
     }
     else
     {
-
 	MObject instancerTransform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	myDagModifier.renameNode(instancerTransform, "instancer");
-	
+
 	myDagModifier.doIt();
 
-	MPlug instanceTransformPlug = assetNodeFn.findPlug( AssetNode::outputInstanceTransform );
-	instanceTransformPlug.selectAncestorLogicalIndex ( myParentMultiIndex, AssetNode::outputInstancers );
+	MPlug instanceTransformPlug = assetNodeFn.findPlug(AssetNode::outputInstanceTransform);
+	instanceTransformPlug.selectAncestorLogicalIndex (myParentMultiIndex, AssetNode::outputInstancers);
 	unsigned int numPoints = instanceTransformPlug.numElements();
 
 	MString objectToInstanceName("");
-	MPlug instanceObjectNamesPlug = assetNodeFn.findPlug( AssetNode::outputInstancedObjectNames );
-	instanceObjectNamesPlug.selectAncestorLogicalIndex ( myParentMultiIndex, AssetNode::outputInstancers );
+	MPlug instanceObjectNamesPlug = assetNodeFn.findPlug(AssetNode::outputInstancedObjectNames);
+	instanceObjectNamesPlug.selectAncestorLogicalIndex (myParentMultiIndex, AssetNode::outputInstancers);
 	unsigned int numInstanceObjects = instanceObjectNamesPlug.numElements();
-	    
-	if( numInstanceObjects == 1 )
+
+	if(numInstanceObjects == 1)
 	{
-	    MPlug namePlug = instanceObjectNamesPlug.elementByLogicalIndex( 0 );
+	    MPlug namePlug = instanceObjectNamesPlug.elementByLogicalIndex(0);
 	    objectToInstanceName = namePlug.asString();
 	}
 
-	MPlug houdiniInstanceAttributesPlug = assetNodeFn.findPlug( AssetNode::outputHoudiniInstanceAttribute );
-	houdiniInstanceAttributesPlug.selectAncestorLogicalIndex( myParentMultiIndex, AssetNode::outputInstancers );
+	MPlug houdiniInstanceAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniInstanceAttribute);
+	houdiniInstanceAttributesPlug.selectAncestorLogicalIndex(myParentMultiIndex, AssetNode::outputInstancers);
 	int numHoudiniInstanceAttributes = houdiniInstanceAttributesPlug.numElements();
 
-	MPlug houdiniNameAttributesPlug = assetNodeFn.findPlug( AssetNode::outputHoudiniNameAttribute );
-	houdiniNameAttributesPlug.selectAncestorLogicalIndex( myParentMultiIndex, AssetNode::outputInstancers );
+	MPlug houdiniNameAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniNameAttribute);
+	houdiniNameAttributesPlug.selectAncestorLogicalIndex(myParentMultiIndex, AssetNode::outputInstancers);
 	int numHoudiniNameAttributes = houdiniNameAttributesPlug.numElements();
 
-	for( unsigned int ii = 0; ii < numPoints; ii++ )
+	for(unsigned int ii = 0; ii < numPoints; ii++)
 	{
-	    
-	    MPlug houdiniInstanceAttrPlug = houdiniInstanceAttributesPlug.elementByLogicalIndex( ii );
+	    MPlug houdiniInstanceAttrPlug = houdiniInstanceAttributesPlug.elementByLogicalIndex(ii);
 	    MString instanceAttrStr("");
-	    if( numHoudiniInstanceAttributes == numPoints )
+	    if(numHoudiniInstanceAttributes == numPoints)
 		instanceAttrStr = houdiniInstanceAttrPlug.asString();
 
-	    MPlug houdiniNameAttrPlug = houdiniNameAttributesPlug.elementByLogicalIndex( ii );
+	    MPlug houdiniNameAttrPlug = houdiniNameAttributesPlug.elementByLogicalIndex(ii);
 	    MString nameAttrStr("");
-	    if( numHoudiniNameAttributes == numPoints )
+	    if(numHoudiniNameAttributes == numPoints)
 		nameAttrStr = houdiniNameAttrPlug.asString();
 
 	    bool doneInstancing = false;
-	    
-	    instanceObjects( myAssetNodeObj, instancerTransform, ii, objectToInstanceName, instanceAttrStr, nameAttrStr );
+
+	    instanceObjects(myAssetNodeObj, instancerTransform, ii, objectToInstanceName, instanceAttrStr, nameAttrStr);
 
 	}
-
-	
     }
-
 
     // doIt
     status = myDagModifier.doIt();

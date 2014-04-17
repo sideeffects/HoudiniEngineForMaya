@@ -28,7 +28,6 @@ class OutputGeometryObject: public OutputObject
         virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 
         virtual ObjectType type();
-        
 
     private:
         void updateTransform(MDataHandle& handle);
@@ -41,7 +40,7 @@ class OutputGeometryObject: public OutputObject
 
     private:
 
-        HAPI_Transform myTransformInfo;        
+        HAPI_Transform myTransformInfo;
         std::vector<OutputGeometry *> myGeos;
 
         //HAPI_MaterialInfo materialInfo;
@@ -52,7 +51,6 @@ class OutputGeometryObject: public OutputObject
         //MVectorArray normals;
         //MFloatArray us;
         //MFloatArray vs;
-    
 };
 
 #endif

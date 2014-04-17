@@ -17,7 +17,7 @@ houdiniEngine_browseAssetLibrary()
         -okCaption "Open"
         -fileFilter $filter
         -fileMode 1`;
-    if (size($results) == 0)
+    if(size($results) == 0)
     {
         return;
     }
@@ -176,18 +176,18 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
     // same as existing menuItems?
     string $existingMenus[] = `menu -query -itemArray $menuItem`;
     int $numExistingMenus = size($existingMenus);
-    if ($numExistingMenus == size($recentAssets))
+    if($numExistingMenus == size($recentAssets))
     {
-        for ($i = 0; $i < $numExistingMenus; $i++)
+        for($i = 0; $i < $numExistingMenus; $i++)
         {
             string $label = `menuItem -query -label $existingMenus[$i]`;
-            if ($label != $recentAssets[$numExistingMenus-$i-1])
+            if($label != $recentAssets[$numExistingMenus-$i-1])
             {
                 break;
             }
         }
 
-        if ($i == $numExistingMenus)
+        if($i == $numExistingMenus)
         {
             return;
         }
@@ -224,53 +224,50 @@ houdiniEngine_reloadAsset(string $asset)
     string $dstPlugs[] = `listConnections -s 0 -d 1 -p 1 $asset`;
 
     string $inputPlugs[];
-    for( $ii=0; $ii < size($srcPlugs); $ii++ )
+    for($ii=0; $ii < size($srcPlugs); $ii++)
     {
 	string $srcPlug = $srcPlugs[$ii];
 	string $inputPlug[] = `listConnections -s 0 -d 1 -p 1 $srcPlug`;
-	$inputPlugs[ size($inputPlugs) ] = $inputPlug[0];
-	
+	$inputPlugs[size($inputPlugs) ] = $inputPlug[0];
     }
 
     string $outputPlugs[];
-    for( $ii=0; $ii < size($dstPlugs); $ii++ )
+    for($ii=0; $ii < size($dstPlugs); $ii++)
     {
 	string $dstPlug = $dstPlugs[$ii];
 	string $outputPlug[] = `listConnections -s 1 -d 0 -p 1 $dstPlug`;
-	$outputPlugs[ size($outputPlugs) ] = $outputPlug[0];		
+	$outputPlugs[size($outputPlugs) ] = $outputPlug[0];
     }
-
 
     //disconnect all inputs and outputs first.
 
-    for( $ii=0; $ii < size($srcPlugs); $ii++ )
+    for($ii=0; $ii < size($srcPlugs); $ii++)
     {
 	string $srcPlug = $srcPlugs[$ii];
 	string $inputPlug = $inputPlugs[$ii];
-	disconnectAttr $srcPlug $inputPlug;	
+	disconnectAttr $srcPlug $inputPlug;
     }
 
-    for( $ii=0; $ii < size($dstPlugs); $ii++ )
+    for($ii=0; $ii < size($dstPlugs); $ii++)
     {
 	string $dstPlug = $dstPlugs[$ii];
 	string $outputPlug = $outputPlugs[$ii];
-	disconnectAttr $outputPlug $dstPlug;	
-    }    
+	disconnectAttr $outputPlug $dstPlug;
+    }
 
     //delete our asset, flush the undo since this operation is not undoable.
     //and it also force the deleted node to fall off the undo queue so it gets
     // actually destructed and thus remove the corresponding asset on the houdini side
-    delete $asset;		
+    delete $asset;
     flushUndo;
 
     //reload the asset and restore connections:
 
     houdiniAsset -loadAsset $assetLibraryFilePath $assetName;
-    
 
     refreshEditorTemplates;
-    
-    for( $ii=0; $ii < size($srcPlugs); $ii++ )
+
+    for($ii=0; $ii < size($srcPlugs); $ii++)
     {
 	string $srcPlug = $srcPlugs[$ii];
 	string $inputPlug = $inputPlugs[$ii];
@@ -279,11 +276,11 @@ houdiniEngine_reloadAsset(string $asset)
 	string $srcNode = $array[0];
 	if(`objExists $srcNode`)
 	{
-	    connectAttr $srcPlug $inputPlug;	
+	    connectAttr $srcPlug $inputPlug;
 	}
     }
 
-    for( $ii=0; $ii < size($dstPlugs); $ii++ )
+    for($ii=0; $ii < size($dstPlugs); $ii++)
     {
 	string $dstPlug = $dstPlugs[$ii];
 	string $outputPlug = $outputPlugs[$ii];
@@ -292,33 +289,31 @@ houdiniEngine_reloadAsset(string $asset)
 	string $dstNode = $array[0];
 	if(`objExists $dstNode`)
 	{
-	    connectAttr $outputPlug $dstPlug;	
+	    connectAttr $outputPlug $dstPlug;
 	}
     }
-    
-    select -r $asset;  
-    
+
+    select -r $asset;
 }
 
 global proc
 houdiniEngine_reloadAssetOutputMenuClick()
 {
     string $currSels[] = `ls -sl`;
-    if( size($currSels) < 1 )
+    if(size($currSels) < 1)
     {
 	error("Please select a houdiniAsset node to reload.");
     }
     string $currSel = $currSels[0];
     string $nodeTypeOfSel = `nodeType $currSel`;
-    if( $nodeTypeOfSel == "houdiniAsset" )
+    if($nodeTypeOfSel == "houdiniAsset")
     {
-		
 	//FIXME: TODO: This is not yet working reliably. use
 	//a workaround for now to reload the asset.
 	//houdiniAsset -reloadAsset $currSel;
 	//refreshEditorTemplates;
 
-	houdiniEngine_reloadAsset( $currSel );
+	houdiniEngine_reloadAsset($currSel);
     }
     else
     {
@@ -328,26 +323,25 @@ houdiniEngine_reloadAssetOutputMenuClick()
 }
 
 global proc
-houdiniEngine_createInstance( string $assetNode, 
+houdiniEngine_createInstance(string $assetNode,
 			      string $objToInstancePath,
-			      string $parent, 
-			      int $instancerIndex, 
-			      int $instanceIndex )
+			      string $parent,
+			      int $instancerIndex,
+			      int $instanceIndex)
 {
-    
     string $array[] = stringToStringArray($objToInstancePath, "|");
-    string $objToInstanceName = $array[ size($array) - 1 ];
+    string $objToInstanceName = $array[size($array) - 1];
     string $newInstanceName = $objToInstanceName + "_instance" + $instanceIndex;
     string $newInstance[] = `instance -name $newInstanceName $objToInstancePath`;
 
-    if( $parent != "" )
+    if($parent != "")
     {
 	parent $newInstance[0] $parent;
     }
-    
+
     showHidden $newInstance[0];
 
-    string $outputTransformPlug = $assetNode + ".outputInstancers[" + $instancerIndex + "]" + ".outputInstanceTransform[" + $instanceIndex + "]";    
+    string $outputTransformPlug = $assetNode + ".outputInstancers[" + $instancerIndex + "]" + ".outputInstanceTransform[" + $instanceIndex + "]";
     string $outputTranslatePlug = $outputTransformPlug + ".outputInstanceTranslate";
     string $newInstanceTranslatePlug = $newInstance[0] + ".t";
     connectAttr $outputTranslatePlug $newInstanceTranslatePlug;
@@ -359,8 +353,6 @@ houdiniEngine_createInstance( string $assetNode,
     string $outputScalePlug = $outputTransformPlug + ".outputInstanceScale";
     string $newInstanceScalePlug = $newInstance[0] + ".s";
     connectAttr $outputScalePlug $newInstanceScalePlug;
-    
-
 }
 
 global proc
@@ -409,7 +401,7 @@ houdiniEngineCreateUI()
 	-command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadAssetOutputMenuClick";
-    menuItem -label "Save Underlying Houdini Scene..." 
+    menuItem -label "Save Underlying Houdini Scene..."
         -command "saveHipFile";
 
     menuItem -divider true;
@@ -420,5 +412,4 @@ houdiniEngineCreateUI()
     menuItem -e -postMenuCommand ("houdiniEngine_buildRecentAssetsMenu"
             + " \"" + $recentAssetsMenu + "\"")
         $recentAssetsMenu;
-
 }

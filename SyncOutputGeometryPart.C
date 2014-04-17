@@ -15,7 +15,7 @@ SyncOutputGeometryPart::SyncOutputGeometryPart(
 	const MObject &objectTransform
 	) :
     myOutputPlug(outputPlug),
-    myObjectTransform(objectTransform)    
+    myObjectTransform(objectTransform)
 {
 }
 
@@ -27,22 +27,21 @@ MStatus
 SyncOutputGeometryPart::doIt()
 {
     MStatus status;
-    
+
     MString partName;
     {
 	MString outputPartName = myOutputPlug.child(AssetNode::outputPartName).asString();
 	int separatorIndex = outputPartName.rindexW('/');
 	partName = outputPartName.substringW(separatorIndex + 1, outputPartName.numChars() - 1);
-    }    
-           
+    }
 
-    MFnDagNode objectTransformFn( myObjectTransform );
+    MFnDagNode objectTransformFn(myObjectTransform);
 
     // create part
-    MObject partTransform = Util::findDagChild( objectTransformFn, partName );
+    MObject partTransform = Util::findDagChild(objectTransformFn, partName);
     if(partTransform.isNull())
     {
-	status = createOutputPart( myObjectTransform, partName, partTransform);
+	status = createOutputPart(myObjectTransform, partName, partTransform);
     }
 
     // create material
@@ -143,13 +142,13 @@ SyncOutputGeometryPart::createOutputPart(
     }
 
     // create curves
-    MPlug curveIsBezier = myOutputPlug.child(AssetNode::outputPartCurvesIsBezier); 
+    MPlug curveIsBezier = myOutputPlug.child(AssetNode::outputPartCurvesIsBezier);
     createOutputCurves(myOutputPlug.child(AssetNode::outputPartCurves),
 		       partTransform,
 		       curveIsBezier.asBool());
 
     // doIt
-    // Need to do it here right away because otherwise the top level 
+    // Need to do it here right away because otherwise the top level
     // transform won't be shared.
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -167,7 +166,7 @@ SyncOutputGeometryPart::createOutputCurves(
     MStatus status;
 
     int numCurves = curvesPlug.evaluateNumElements();
-    for (int i=0; i<numCurves; i++)
+    for(int i=0; i<numCurves; i++)
     {
 	MPlug curve = curvesPlug[i];
 

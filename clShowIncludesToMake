@@ -30,7 +30,7 @@ for line in sys.stdin:
     else:
 	print line
 
-def uniq(seq): 
+def uniq(seq):
     seen = {}
     result = []
     for item in seq:

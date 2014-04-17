@@ -16,8 +16,8 @@ class HAPIError: public std::exception
 {
     public:
         HAPIError() throw();
-        HAPIError( const HAPIError & error ) throw();
-        HAPIError( MString msg ) throw();
+        HAPIError(const HAPIError & error) throw();
+        HAPIError(MString msg) throw();
 
         virtual	   ~HAPIError() throw() {}
 

@@ -44,6 +44,4 @@ class SyncOutputObject : public AssetSubCommand
 	AssetSyncs myAssetSyncs;
 };
 
-
-
 #endif

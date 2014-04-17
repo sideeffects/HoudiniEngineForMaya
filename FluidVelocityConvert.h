@@ -3,13 +3,13 @@
 
 #include <maya/MGlobal.h>
 
-#include <maya/MPxNode.h> 
+#include <maya/MPxNode.h>
 
 #include <maya/MFnNumericAttribute.h>
 
-#include <maya/MString.h> 
-#include <maya/MFloatArray.h> 
-#include <maya/MTypeId.h> 
+#include <maya/MString.h>
+#include <maya/MFloatArray.h>
+#include <maya/MTypeId.h>
 #include <maya/MPlug.h>
 #include <maya/MVector.h>
 #include <maya/MDataBlock.h>
@@ -23,7 +23,7 @@ class FluidVelocityConvert : public MPxNode
 {
 public:
     FluidVelocityConvert();
-    virtual ~FluidVelocityConvert(); 
+    virtual ~FluidVelocityConvert();
 
     virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 

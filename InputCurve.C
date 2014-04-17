@@ -12,7 +12,7 @@
 #include "util.h"
 
 InputCurve::InputCurve(int assetId, int inputIdx) :
-    Input( assetId, inputIdx )
+    Input(assetId, inputIdx)
 {
     int curveAssetId;
     HAPI_CreateCurve(&curveAssetId);
@@ -122,7 +122,7 @@ InputCurve::setInputGeo(
 	// with the first ones. Houdini ignores them, so we don't
 	// output them.
 	int num_houdini_cvs = cvs.length();
-	if (fnCurve.form() == MFnNurbsCurve::kPeriodic)
+	if(fnCurve.form() == MFnNurbsCurve::kPeriodic)
 	    num_houdini_cvs -= fnCurve.degree();
 
 	std::ostringstream coords;

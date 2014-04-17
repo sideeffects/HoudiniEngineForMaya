@@ -55,21 +55,20 @@ Houdini Engine API could change between daily builds, the plug-in also needs to
 be compiled with a matching Houdini version.  For now, always download and
 install the latest available daily build from www.sidefx.com
 
-
 ### Visual Studio Solution (Windows)
 On Windows you can build the plugin by launching the Visual Studio Solution
-named houdiniEnginePlugin.sln.  You will need Visual Studio 2010.  
+named houdiniEnginePlugin.sln.  You will need Visual Studio 2010.
 
-* Ensure the platform is set to x64.  
+* Ensure the platform is set to x64.
 * Right click on the houdiniEngine project to bring up its properties
 * For each of Debug and Release configurations, update the include path
 and linker path (The Additional Include Directories and Additional
 Library Directories) to the proper version of Houdini installed on your
-system.  There is already a path in the project as a place holder - 
+system.  There is already a path in the project as a place holder -
 only the version number need to be updated.
 * Go ahead and build!
 
-Finally edit your Maya.env file ( eg. \Documents\maya\2014-x64 ) to include the
+Finally edit your Maya.env file (eg. \Documents\maya\2014-x64) to include the
 following lines:
 
 PATH = %PATH%;C:\Program Files\Side Effects Software\Houdini xx.y.zzz\bin

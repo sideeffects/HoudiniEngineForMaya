@@ -3,7 +3,7 @@
 #     clean - clean up the generated files for the Maya version set by MAYA_VERSION
 #     all_maya - build the plugin for all the Maya versions listed in ALL_MAYA_VERSIONS
 #     all_maya_clean - clean up the generated files for all the Maya versions
-# 
+#
 # Useful variables:
 #     HFS - directory to the Houdini installation
 #     DST_MODULE_DIR - directory for the module description file
@@ -139,7 +139,7 @@ else ifeq ($(OS), Cygwin)
     # 4996: Deprecation usage
     WARNINGENABLE = -w14101 -w14996
     # -- WARNINGS TREATED AS ERRORS --
-    # 4265: 'class' has virtual functions but destructor is not virtual 
+    # 4265: 'class' has virtual functions but destructor is not virtual
     # 4700: uninitialized local variable used
     # 4715: not all control paths return a value
     # 4717: recursive on all control paths, function will cause runtime stack overflow

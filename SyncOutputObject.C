@@ -20,11 +20,11 @@ SyncOutputObject::SyncOutputObject(
 	const MPlug &outputPlug,
 	const MObject &assetNodeObj,
 	const bool visible,
-        const bool syncTemplatedGeos )
+        const bool syncTemplatedGeos)
     : myOutputPlug(outputPlug),
       myAssetNodeObj(assetNodeObj),
-      myVisible( visible ),
-      mySyncTemplatedGeos( syncTemplatedGeos )
+      myVisible(visible),
+      mySyncTemplatedGeos(syncTemplatedGeos)
 {}
 
 SyncOutputObject::~SyncOutputObject()
@@ -48,14 +48,14 @@ SyncOutputObject::doIt()
     MFnDependencyNode assetNodeFn(myAssetNodeObj, &status);
 
     MObject objectTransform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);        
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename objectTransform
-    MPlug objectNamePlug = myOutputPlug.child( AssetNode::outputObjectName );
+    MPlug objectNamePlug = myOutputPlug.child(AssetNode::outputObjectName);
 
     MString objectName = objectNamePlug.asString();
-    if( objectName.length() > 0 )
-        status = myDagModifier.renameNode( objectTransform, objectName );
+    if(objectName.length() > 0)
+        status = myDagModifier.renameNode(objectTransform, objectName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
     myDagModifier.doIt();
 
@@ -86,7 +86,7 @@ SyncOutputObject::doIt()
         CHECK_MSTATUS_AND_RETURN_IT(myDagModifier.doIt());
     }
 
-    if( !myVisible )
+    if(!myVisible)
     {
         status = myDagModifier.newPlugValueBool(
                 objectTransformFn.findPlug("visibility"),
@@ -94,44 +94,43 @@ SyncOutputObject::doIt()
                 );
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
-    
-    MPlug geosPlug = myOutputPlug.child( AssetNode::outputGeos );
-    int geoCount = geosPlug.evaluateNumElements( &status );
+
+    MPlug geosPlug = myOutputPlug.child(AssetNode::outputGeos);
+    int geoCount = geosPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
-    for( int ii = 0; ii < geoCount; ii++ )
+    for(int ii = 0; ii < geoCount; ii++)
     {
-        MPlug geoPlug = geosPlug[ ii ];
+        MPlug geoPlug = geosPlug[ii];
 
         MObject geoTransform = MObject::kNullObj;
-        MObject partParent = objectTransform;    
+        MObject partParent = objectTransform;
 
-        MPlug isTemplatedPlug = geoPlug.child( AssetNode::outputGeoIsTemplated );
-        MPlug isDisplayGeoPlug = geoPlug.child( AssetNode::outputGeoIsDisplayGeo );
-        if( mySyncTemplatedGeos || !isTemplatedPlug.asBool() || isDisplayGeoPlug.asBool() )
+        MPlug isTemplatedPlug = geoPlug.child(AssetNode::outputGeoIsTemplated);
+        MPlug isDisplayGeoPlug = geoPlug.child(AssetNode::outputGeoIsDisplayGeo);
+        if(mySyncTemplatedGeos || !isTemplatedPlug.asBool() || isDisplayGeoPlug.asBool() )
         {
-            if( geoCount > 1 )
-            {                       
+            if(geoCount > 1)
+            {
                 geoTransform = myDagModifier.createNode("transform", objectTransform, &status);
-                CHECK_MSTATUS_AND_RETURN_IT(status);        
+                CHECK_MSTATUS_AND_RETURN_IT(status);
 
                 // rename geoTransform
-                MPlug geoNamePlug = geoPlug.child( AssetNode::outputGeoName );
+                MPlug geoNamePlug = geoPlug.child(AssetNode::outputGeoName);
                 MString geoName = geoNamePlug.asString();
-                if( geoName.length() > 0 )
-                    status = myDagModifier.renameNode( geoTransform, geoName );
+                if(geoName.length() > 0)
+                    status = myDagModifier.renameNode(geoTransform, geoName);
                 CHECK_MSTATUS_AND_RETURN_IT(status);
                 myDagModifier.doIt();
 
                 partParent = geoTransform;
             }
 
-
             MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
             int partCount = partsPlug.evaluateNumElements(&status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
-            for (int jj=0; jj<partCount; jj++)
+            for(int jj=0; jj<partCount; jj++)
             {
-	        AssetSubCommand* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent );
+	        AssetSubCommand* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent);
 	        sync->doIt();
 	        myAssetSyncs.push_back(sync);
             }
@@ -165,7 +164,7 @@ SyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
 MStatus
 SyncOutputObject::createVelocityConverter(MObject& velocityConverter)
 {
-    if (!velocityConverter.isNull())
+    if(!velocityConverter.isNull())
 	return MS::kSuccess;
 
     MStatus status;
@@ -194,18 +193,17 @@ SyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
 	   dataA[2] == dataB[2];
 }
 
-
 MStatus
 SyncOutputObject::createFluidShape()
 {
     MStatus status;
 
-    MPlug geosPlug = myOutputPlug.child( AssetNode::outputGeos );
-    int geoCount = geosPlug.evaluateNumElements( &status );
+    MPlug geosPlug = myOutputPlug.child(AssetNode::outputGeos);
+    int geoCount = geosPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
-    for( int ii = 0; ii < geoCount; ii++ )
+    for(int ii = 0; ii < geoCount; ii++)
     {
-        MPlug geoPlug = geosPlug[ ii ];
+        MPlug geoPlug = geosPlug[ii];
 
         MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
         int partCount = partsPlug.evaluateNumElements(&status);
@@ -217,7 +215,7 @@ SyncOutputObject::createFluidShape()
         // fluidShape.
         bool hasFluid = false;
         MPlug referenceVolume;
-        for (int jj=0; jj<partCount; jj++)
+        for(int jj=0; jj<partCount; jj++)
         {
 	    MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
 	    MPlug outputPartName = partsPlug[jj].child(AssetNode::outputPartName);
@@ -225,7 +223,7 @@ SyncOutputObject::createFluidShape()
 
 	    MString name = outputVolumeName.asString();
 
-	    if (name == "density"
+	    if(name == "density"
 		    || name == "temperature"
 		    || name == "fuel"
 		    || name == "vel.x"
@@ -238,7 +236,7 @@ SyncOutputObject::createFluidShape()
 	    }
         }
 
-        if (!hasFluid)
+        if(!hasFluid)
 	    return MStatus::kSuccess;
 
         MObject transform, fluid;
@@ -259,7 +257,7 @@ SyncOutputObject::createFluidShape()
         bool doneVelX = false;
         bool doneVelY = false;
         bool doneVelZ = false;
-        for (int jj=0; jj<partCount; jj++)
+        for(int jj=0; jj<partCount; jj++)
         {
 	    MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
 	    MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
@@ -267,12 +265,12 @@ SyncOutputObject::createFluidShape()
 
 	    // If the transform of the volumes are different, we don't want
 	    // to group them together.
-	    if (!resolutionsEqual(outputVolumeRes, referenceRes))
+	    if(!resolutionsEqual(outputVolumeRes, referenceRes))
 	        continue;
 
 	    MPlug srcPlug = outputVolume.child(AssetNode::outputPartVolumeGrid);
 	    MString name = outputVolumeName.asString();
-	    if (name == "density" && !doneDensity)
+	    if(name == "density" && !doneDensity)
 	    {
 	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inDensity"));
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -283,7 +281,7 @@ SyncOutputObject::createFluidShape()
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
 	        doneDensity = true;
 	    }
-	    else if (name == "temperature" && !doneTemperature)
+	    else if(name == "temperature" && !doneTemperature)
 	    {
 	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inTemperature"));
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -294,7 +292,7 @@ SyncOutputObject::createFluidShape()
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
 	        doneTemperature = true;
 	    }
-	    else if (name == "fuel" && !doneFuel)
+	    else if(name == "fuel" && !doneFuel)
 	    {
 	        status = myDagModifier.connect(srcPlug, partVolumeFn.findPlug("inReaction"));
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -305,7 +303,7 @@ SyncOutputObject::createFluidShape()
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
 	        doneFuel = true;
 	    }
-	    else if (name == "vel.x" && !doneVelX)
+	    else if(name == "vel.x" && !doneVelX)
 	    {
 	        createVelocityConverter(velConverter);
 	        MFnDependencyNode velConverterFn(velConverter, &status);
@@ -314,7 +312,7 @@ SyncOutputObject::createFluidShape()
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
 	        doneVelX = true;
 	    }
-	    else if (name == "vel.y" && !doneVelY)
+	    else if(name == "vel.y" && !doneVelY)
 	    {
 	        createVelocityConverter(velConverter);
 	        MFnDependencyNode velConverterFn(velConverter, &status);
@@ -323,7 +321,7 @@ SyncOutputObject::createFluidShape()
 	        CHECK_MSTATUS_AND_RETURN_IT(status);
 	        doneVelY = true;
 	    }
-	    else if (name == "vel.z" && !doneVelZ)
+	    else if(name == "vel.z" && !doneVelZ)
 	    {
 	        createVelocityConverter(velConverter);
 	        MFnDependencyNode velConverterFn(velConverter, &status);
@@ -364,7 +362,7 @@ SyncOutputObject::createFluidShape()
 	    // Velocity needs an additional step: since houdini may output
 	    // individual grids for each component, we use a dependency node
 	    // to append and extrapolate the components
-	    if (!velConverter.isNull())
+	    if(!velConverter.isNull())
 	    {
 	        MFnDependencyNode velConverterFn(velConverter, &status);
 
@@ -408,7 +406,6 @@ SyncOutputObject::createFluidShape()
                 );
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
-
 
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);

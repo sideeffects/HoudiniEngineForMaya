@@ -246,12 +246,12 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
 
     MObject result;
 
-    if (size > 1)
+    if(size > 1)
     {
         result = cAttr.create(attrName, attrName);
         cAttr.setStorable(true);
         cAttr.setNiceNameOverride(niceName);
-        for (int i=0; i<size; i++)
+        for(int i=0; i<size; i++)
         {
             MString childAttrName = attrName + "__tuple" + i;
             MString childNiceName = niceName + " " + i;
@@ -262,7 +262,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
                     );
             tAttr.setNiceNameOverride(childNiceName);
             tAttr.setStorable(true);
-            if (parm.type == HAPI_PARMTYPE_FILE)
+            if(parm.type == HAPI_PARMTYPE_FILE)
                 tAttr.setUsedAsFilename(true);
             cAttr.addChild(child);
         }
@@ -272,7 +272,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
     result = tAttr.create(attrName, attrName, MFnData::kString);
     tAttr.setStorable(true);
     tAttr.setNiceNameOverride(niceName);
-    if (parm.type == HAPI_PARMTYPE_FILE)
+    if(parm.type == HAPI_PARMTYPE_FILE)
         tAttr.setUsedAsFilename(true);
 
     return result;
@@ -323,7 +323,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
     {
         result = cAttr.create(attrName, attrName);
         cAttr.setNiceNameOverride(niceName);
-        for (int i = 0; i < parm.size; i++)
+        for(int i = 0; i < parm.size; i++)
         {
             MString childAttrName = attrName + "__tuple" + i;
             MString childNiceName = niceName + " " + i;
@@ -342,13 +342,13 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
     nAttr.setNiceNameOverride(niceName);
 
     // TODO: support min/max for all sizes
-    if (parm.hasMin)
+    if(parm.hasMin)
         nAttr.setMin(parm.min);
-    if (parm.hasMax)
+    if(parm.hasMax)
         nAttr.setMax(parm.max);
-    if (parm.hasUIMin)
+    if(parm.hasUIMin)
         nAttr.setSoftMin(parm.UIMin);
-    if (parm.hasUIMax)
+    if(parm.hasUIMax)
         nAttr.setSoftMax(parm.UIMax);
 
     return result;
@@ -377,7 +377,7 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
         eAttr.addField(niceName, enumIndex++);
     }
 
-    for (int i = 0; i < parm.choiceCount; i++)
+    for(int i = 0; i < parm.choiceCount; i++)
     {
         MString field = Util::getString(choiceInfos[i].labelSH);
         eAttr.addField(field, static_cast<short>(enumIndex++));

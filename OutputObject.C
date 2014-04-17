@@ -10,16 +10,16 @@
 #include "OutputObject.h"
 #include "util.h"
 
-OutputObject* 
+OutputObject*
 OutputObject::createObject(int assetId, int objectId, Asset* objControl)
 {
     OutputObject* obj;
-    
+
     HAPI_ObjectInfo objInfo;
     //HAPI_GetObjects(assetId, &objInfo, objectId, 1);
     objInfo = objControl->getObjectInfo(objectId);
 
-    if (objInfo.isInstancer)
+    if(objInfo.isInstancer)
         obj = new OutputInstancerObject(assetId, objectId, objControl);
     else
     {
@@ -29,9 +29,7 @@ OutputObject::createObject(int assetId, int objectId, Asset* objControl)
     return obj;
 }
 
-
 OutputObject::~OutputObject() {}
-
 
 OutputObject::OutputObject(
         int assetId,
@@ -51,9 +49,7 @@ OutputObject::OutputObject(
         // update object
         //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
         //Util::checkHAPIStatus(hstat);
-        myObjectInfo = myObjectControl->getObjectInfo( myObjectId );        
-        
-
+        myObjectInfo = myObjectControl->getObjectInfo(myObjectId);
     }
     catch (HAPIError& e)
     {
@@ -61,30 +57,25 @@ OutputObject::OutputObject(
     }
 }
 
-
 // Getters ----------------------------------------------------
 
 int OutputObject::getId() { return myObjectId; }
-MString OutputObject::getName() { return Util::getString( myObjectInfo.nameSH); }
-
+MString OutputObject::getName() { return Util::getString(myObjectInfo.nameSH); }
 
 void
 OutputObject::update()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    myObjectInfo = myObjectControl->getObjectInfo( myObjectId );    
-    
+    myObjectInfo = myObjectControl->getObjectInfo(myObjectId);
 }
 
-
-bool	
+bool
 OutputObject::isVisible() const
 {
     return myObjectInfo.isVisible;
 }
 
-
-bool	
+bool
 OutputObject::isInstanced() const
 {
     return myIsInstanced;

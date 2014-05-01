@@ -20,45 +20,45 @@ OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId, OutputObjec
 void
 OutputGeometry::update()
 {
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    try
+    HAPI_Result hapiResult;
+
+    hapiResult = HAPI_GetGeoInfo(myAssetId,
+            myObjectId,
+            myGeoId,
+            &myGeoInfo);
+    if(HAPI_FAIL(hapiResult))
     {
-        // update geometry
-        hstat = HAPI_GetGeoInfo(myAssetId, myObjectId, myGeoId, &myGeoInfo);
-        Util::checkHAPIStatus(hstat);
+        // Make sre myGeoInfo is properly initialized.
+        HAPI_GeoInfo_Init(&myGeoInfo);
 
-        if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
-            myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-            myGeoInfo.type == HAPI_GEOTYPE_CURVE)
+        // Even when HAPI_GetGeoInfo() failed, there's always at least one
+        // part. So we want the below code to initialize myParts.
+    }
+
+    if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT
+            || myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE
+            || myGeoInfo.type == HAPI_GEOTYPE_CURVE)
+    {
+        int partCount = myGeoInfo.partCount;
+
+        // If partCount is different, recreate the array.
+        if(myParts.size() != partCount)
         {
-            int partCount = myGeoInfo.partCount;
-
-            // if partCount is different, we clear out the array and make a new
-            // one.
-            if(myParts.size() != partCount)
+            myParts.clear();
+            myParts.reserve(partCount);
+            HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
+            for(int i = 0; i < partCount; i++)
             {
-                myParts.clear();
-                myParts.reserve(partCount);
-                HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
-                for(int ii = 0; ii < partCount; ii++)
-                {
-                    myParts.push_back(OutputGeometryPart(myAssetId,
-                                                     myObjectId,
-                                                     myGeoId,
-                                                     ii,
-                                                     objectInfo,
-                                                     myGeoInfo
-                                                     ));
-                }
+                myParts.push_back(OutputGeometryPart(myAssetId,
+                            myObjectId,
+                            myGeoId,
+                            i,
+                            objectInfo,
+                            myGeoInfo
+                            ));
             }
         }
     }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-        HAPI_GeoInfo_Init(&myGeoInfo);
-    }
-
 }
 
 MStatus

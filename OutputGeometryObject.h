@@ -25,8 +25,6 @@ class OutputGeometryObject: public OutputObject
                 bool &needToSyncOutputs
                 );
 
-        virtual MStatus setClean(MPlug& plug, MDataBlock& data);
-
         virtual ObjectType type();
 
     private:

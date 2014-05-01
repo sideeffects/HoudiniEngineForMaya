@@ -47,7 +47,7 @@ class OutputObject {
                 MDataHandle& handle,
                 bool &needToSyncOutputs
                 ) = 0;
-        virtual MStatus setClean(MPlug& plug, MDataBlock& data) = 0;
+
         virtual ObjectType type() = 0;
 
         bool        isVisible() const;

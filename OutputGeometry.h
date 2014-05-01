@@ -18,8 +18,6 @@ class OutputGeometry {
         OutputGeometry(int assetId, int objectId, int geoId, OutputObject * parentObject);
         ~OutputGeometry();
 
-        MStatus setClean(MPlug& geoPlug, MDataBlock& data);
-
         MStatus compute(MDataHandle &geoHandle, bool &needToSyncOutputs);
 
         void update();

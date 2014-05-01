@@ -281,9 +281,3 @@ OutputInstancerObject::compute(
 
     return MS::kSuccess;
 }
-
-MStatus
-OutputInstancerObject::setClean(MPlug& plug, MDataBlock& data)
-{
-    return MS::kSuccess;
-}

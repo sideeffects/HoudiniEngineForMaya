@@ -28,10 +28,19 @@ class HAPIError: public std::exception
         MString myMessage;
 };
 
+#define HAPI_FAIL(r) \
+    ((r) != HAPI_RESULT_SUCCESS)
+
+#define CHECK_HAPI_AND_RETURN(r, returnValue) \
+    CHECK_HAPI_AND(r, return returnValue;)
+
 #define CHECK_HAPI(r) \
+    CHECK_HAPI_AND(r, )
+
+#define CHECK_HAPI_AND(r, footer) \
 { \
-    HAPI_Result hapi_result = (r); \
-    if(hapi_result != HAPI_RESULT_SUCCESS) \
+    HAPI_Result _hapi_result = (r); \
+    if(HAPI_FAIL(_hapi_result)) \
     { \
         std::cerr << "HAPI error in " __FILE__ " at line " << __LINE__ << std::endl; \
         \
@@ -41,6 +50,8 @@ class HAPIError: public std::exception
         HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer); \
         std::cerr << buffer << std::endl; \
         delete [] buffer; \
+        \
+        footer \
     } \
 }
 

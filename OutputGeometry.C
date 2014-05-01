@@ -58,34 +58,31 @@ OutputGeometry::update()
     try
     {
         // update geometry
-        if(myParentObject->getObjectInfo().haveGeosChanged)
+        HAPI_GeoInfo oldGeoInfo = myGeoInfo;
+        hstat = HAPI_GetGeoInfo(myAssetId, myObjectId, myGeoId, &myGeoInfo);
+        Util::checkHAPIStatus(hstat);
+
+        if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
+            myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
+            myGeoInfo.type == HAPI_GEOTYPE_CURVE)
         {
-            HAPI_GeoInfo oldGeoInfo = myGeoInfo;
-            hstat = HAPI_GetGeoInfo(myAssetId, myObjectId, myGeoId, &myGeoInfo);
-            Util::checkHAPIStatus(hstat);
+            int partCount = myGeoInfo.partCount;
 
-            if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
-                myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-                myGeoInfo.type == HAPI_GEOTYPE_CURVE)
+            // if partCount changed, we clear out the array and make a new one.
+            if(oldGeoInfo.partCount != partCount)
             {
-                int partCount = myGeoInfo.partCount;
-
-                // if partCount changed, we clear out the array and make a new one.
-                if(oldGeoInfo.partCount != partCount)
+                myParts.clear();
+                myParts.reserve(partCount);
+                HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
+                for(int ii = 0; ii < partCount; ii++)
                 {
-                    myParts.clear();
-                    myParts.reserve(partCount);
-                    HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
-                    for(int ii = 0; ii < partCount; ii++)
-                    {
-                        myParts.push_back(OutputGeometryPart(myAssetId,
-                                                         myObjectId,
-                                                         myGeoId,
-                                                         ii,
-                                                         objectInfo,
-                                                         myGeoInfo
-                                                         ));
-                    }
+                    myParts.push_back(OutputGeometryPart(myAssetId,
+                                                     myObjectId,
+                                                     myGeoId,
+                                                     ii,
+                                                     objectInfo,
+                                                     myGeoInfo
+                                                     ));
                 }
             }
         }

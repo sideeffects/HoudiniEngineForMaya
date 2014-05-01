@@ -60,9 +60,12 @@ OutputGeometryObject::compute(
     MObject newMetaData = ffIAD.create(metaDataArray);
     metaDataHandle.set(newMetaData);
 
-    for(int ii = 0; ii < myObjectInfo.geoCount; ii++)
+    if(myObjectInfo.haveGeosChanged)
     {
-        myGeos[ii]->update();
+        for(int ii = 0; ii < myObjectInfo.geoCount; ii++)
+        {
+            myGeos[ii]->update();
+        }
     }
 
     MStatus stat = MS::kSuccess;

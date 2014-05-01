@@ -22,7 +22,6 @@ class OutputInstancerObject: public OutputObject
                 MDataHandle& handle,
                 bool &needToSyncOutputs
                 );
-        virtual MStatus setClean(MPlug& plug, MDataBlock& data);
 
         virtual ObjectType type();
 

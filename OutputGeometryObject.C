@@ -100,27 +100,6 @@ OutputGeometryObject::compute(
     return stat;
 }
 
-MStatus
-OutputGeometryObject::setClean(MPlug& plug, MDataBlock& data)
-{
-    data.setClean(plug);
-
-    MPlug transformPlug = plug.child(AssetNode::outputObjectTransform);
-    data.setClean(transformPlug.child(AssetNode::outputObjectTranslate));
-    data.setClean(transformPlug.child(AssetNode::outputObjectRotate));
-    data.setClean(transformPlug.child(AssetNode::outputObjectScale));
-    data.setClean(plug.child(AssetNode::outputObjectMetaData));
-
-    MPlug geosPlug = plug.child(AssetNode::outputGeos);
-    for(int ii = 0; ii < myObjectInfo.geoCount; ii++)
-    {
-        MPlug geoPlug = geosPlug[ii];
-        myGeos[ii]->setClean(geoPlug, data);
-    }
-
-    return MS::kSuccess;
-}
-
 void OutputGeometryObject::updateTransform(MDataHandle& handle)
 {
     MDataHandle translateHandle = handle.child(AssetNode::outputObjectTranslate);

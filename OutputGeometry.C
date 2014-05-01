@@ -14,41 +14,7 @@ OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId, OutputObjec
     myObjectId (objectId),
     myGeoId (geoId)
 {
-    HAPI_GeoInfo_Init(&myGeoInfo);
-
-    // Do a full update, ignoring what has changed
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    try
-    {
-        hstat = HAPI_GetGeoInfo(myAssetId, myObjectId, myGeoId, &myGeoInfo);
-        Util::checkHAPIStatus(hstat);
-
-        if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
-            myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-            myGeoInfo.type == HAPI_GEOTYPE_CURVE)
-        {
-            int partCount = myGeoInfo.partCount;
-            myParts.clear();
-            myParts.reserve(partCount);
-
-            HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
-
-            for(int ii = 0; ii < partCount; ii++)
-            {
-                myParts.push_back(OutputGeometryPart(myAssetId,
-                                                 myObjectId,
-                                                 myGeoId,
-                                                 ii,
-                                                 objectInfo,
-                                                 myGeoInfo
-                                                 ));
-            }
-        }
-    }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-    }
+    update();
 }
 
 void
@@ -58,7 +24,6 @@ OutputGeometry::update()
     try
     {
         // update geometry
-        HAPI_GeoInfo oldGeoInfo = myGeoInfo;
         hstat = HAPI_GetGeoInfo(myAssetId, myObjectId, myGeoId, &myGeoInfo);
         Util::checkHAPIStatus(hstat);
 
@@ -68,8 +33,9 @@ OutputGeometry::update()
         {
             int partCount = myGeoInfo.partCount;
 
-            // if partCount changed, we clear out the array and make a new one.
-            if(oldGeoInfo.partCount != partCount)
+            // if partCount is different, we clear out the array and make a new
+            // one.
+            if(myParts.size() != partCount)
             {
                 myParts.clear();
                 myParts.reserve(partCount);

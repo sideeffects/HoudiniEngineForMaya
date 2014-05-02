@@ -27,6 +27,10 @@ class SyncOutputGeometryPart : public AssetSubCommand
                 const MString &partName,
                 MObject &partTransform
                 );
+        MStatus createOutputMesh(
+                const MObject &partTransform,
+                const MPlug &meshPlug
+                );
         MStatus createOutputMaterial(
                 const MPlug &materialPlug,
                 const MObject &partTransform

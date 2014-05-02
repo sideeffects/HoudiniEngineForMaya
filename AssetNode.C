@@ -69,6 +69,7 @@ MObject AssetNode::outputGeoCurveCVs;
 
 MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
+MObject AssetNode::outputPartHasMesh;
 MObject AssetNode::outputPartMesh;
 MObject AssetNode::outputPartHasParticles;
 MObject AssetNode::outputPartMaterial;
@@ -384,6 +385,9 @@ AssetNode::initialize()
     tAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputPartName);
 
+    AssetNode::outputPartHasMesh = nAttr.create("outputPartHasMesh", "outputPartHasMesh", MFnNumericData::kBoolean, false);
+    computeAttributes.push_back(AssetNode::outputPartHasMesh);
+
     AssetNode::outputPartHasParticles = nAttr.create("outputPartHasParticles", "outputPartHasParticles", MFnNumericData::kBoolean, false);
     computeAttributes.push_back(AssetNode::outputPartHasParticles);
 
@@ -574,6 +578,7 @@ AssetNode::initialize()
 
     AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
+    cAttr.addChild(AssetNode::outputPartHasMesh);
     cAttr.addChild(AssetNode::outputPartHasParticles);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
@@ -782,6 +787,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
             {
                 MPlug elemPlug = outputPartsPlug[kk];
 
+                affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasMesh));
                 affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
 
                 // Mesh

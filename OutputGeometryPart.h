@@ -35,7 +35,7 @@ class OutputGeometryPart
         void createParticle(MDataHandle &dataHandle);
         void createCurves(MDataHandle &dataHandle);
 
-        MObject createVolume();
+        void createVolume(MDataHandle &dataHandle);
         void    updateVolumeTransform(MDataHandle& handle);
 
         template<typename T>

@@ -759,12 +759,15 @@ OutputGeometryPart::createParticle(MDataHandle &dataHandle)
 MObject
 OutputGeometryPart::createVolume()
 {
+    MFnFloatArrayData gridDataFn;
+    MObject gridDataObj = gridDataFn.create();
+    MFloatArray grid = gridDataFn.array();
+
     int xres = myVolumeInfo.xLength;
     int yres = myVolumeInfo.yLength;
     int zres = myVolumeInfo.zLength;
     int tileSize = myVolumeInfo.tileSize;
 
-    MFloatArray grid;
     grid.setLength(xres * yres * zres);
 
     float* tileValues = new float[tileSize * tileSize * tileSize];
@@ -811,8 +814,7 @@ OutputGeometryPart::createVolume()
 
     delete[] tileValues;
 
-    MFnFloatArrayData volumeCreator;
-    return volumeCreator.create(grid);
+    return gridDataObj;
 }
 #endif
 

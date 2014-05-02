@@ -108,26 +108,14 @@ SyncOutputGeometryPart::createOutputPart(
     status = myDagModifier.renameNode(partTransform, partName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    // create partMesh
-    MObject partMesh = myDagModifier.createNode("mesh", partTransform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // rename partMesh
-    status = myDagModifier.renameNode(partMesh, partName + "Shape");
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    MFnDependencyNode partMeshFn(partMesh, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // connect partMesh attributes
+    // create mesh
+    MPlug hasMeshPlug = myOutputPlug.child(AssetNode::outputPartHasMesh);
+    if(hasMeshPlug.asBool())
     {
-        MPlug srcPlug;
-        MPlug dstPlug;
-
-        srcPlug = myOutputPlug.child(AssetNode::outputPartMesh);
-        dstPlug = partMeshFn.findPlug("inMesh");
-        status = myDagModifier.connect(srcPlug, dstPlug);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
+        status = createOutputMesh(
+                partTransform,
+                myOutputPlug.child(AssetNode::outputPartMesh)
+                );
     }
 
     // create particle
@@ -152,6 +140,47 @@ SyncOutputGeometryPart::createOutputPart(
     // transform won't be shared.
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return MStatus::kSuccess;
+}
+
+MStatus
+SyncOutputGeometryPart::createOutputMesh(
+        const MObject &partTransform,
+        const MPlug &meshPlug
+        )
+{
+    MStatus status;
+
+    // create mesh transform
+    MObject meshTransform = myDagModifier.createNode("transform", partTransform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // rename mesh transform
+    status = myDagModifier.renameNode(meshTransform, "mesh");
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // create mesh
+    MObject mesh = myDagModifier.createNode("mesh", meshTransform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // rename mesh
+    status = myDagModifier.renameNode(mesh, "meshShape");
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    MFnDependencyNode partMeshFn(mesh, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // connect mesh attributes
+    {
+        MPlug srcPlug;
+        MPlug dstPlug;
+
+        srcPlug = myOutputPlug.child(AssetNode::outputPartMesh);
+        dstPlug = partMeshFn.findPlug("inMesh");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
     return MStatus::kSuccess;
 }

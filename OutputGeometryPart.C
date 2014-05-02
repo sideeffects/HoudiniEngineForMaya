@@ -230,7 +230,15 @@ OutputGeometryPart::compute(
         partNameHandle.set(partName);
 
         // Mesh
-        createMesh(meshHandle);
+        if(myPartInfo.pointCount != 0
+                && myPartInfo.vertexCount != 0
+                && myPartInfo.faceCount != 0)
+        {
+            MDataHandle hasMeshHandle = handle.child(AssetNode::outputPartHasMesh);
+            hasMeshHandle.setBool(true);
+
+            createMesh(meshHandle);
+        }
 
         // Particle
         if(myPartInfo.pointCount != 0

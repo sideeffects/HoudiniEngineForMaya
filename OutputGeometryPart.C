@@ -32,31 +32,7 @@ OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int
     myGeoInfo(geoInfo),
     myNeverBuilt(true)
 {
-    // Do a full update
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    try
-    {
-        hstat = HAPI_GetPartInfo(assetId, objectId, geoId, partId, & myPartInfo);
-        Util::checkHAPIStatus(hstat);
-
-        if(myPartInfo.hasVolume)
-        {
-            hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
-            Util::checkHAPIStatus(hstat);
-        }
-
-        if(myPartInfo.isCurve)
-        {
-            hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
-            Util::checkHAPIStatus(hstat);
-        }
-    }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-        HAPI_PartInfo_Init(&myPartInfo);
-    }
-
+    update();
 }
 
 OutputGeometryPart::~OutputGeometryPart() {}
@@ -121,20 +97,21 @@ OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
 void
 OutputGeometryPart::update()
 {
-    //if(!geoInfo.hasGeoChanged)
-        //return;
-
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
-        //hstat = HAPI_GetGeoInfo(assetId, objectId, geoId, &geoInfo);
-        //Util::checkHAPIStatus(hstat);
         hstat = HAPI_GetPartInfo(myAssetId, myObjectId, myGeoId, myPartId, &myPartInfo);
         Util::checkHAPIStatus(hstat);
 
         if(myPartInfo.hasVolume)
         {
             hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
+            Util::checkHAPIStatus(hstat);
+        }
+
+        if(myPartInfo.isCurve)
+        {
+            hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
             Util::checkHAPIStatus(hstat);
         }
     }

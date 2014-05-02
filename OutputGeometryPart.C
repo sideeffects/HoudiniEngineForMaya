@@ -769,39 +769,39 @@ OutputGeometryPart::createVolume()
     int tileSize = myVolumeInfo.tileSize;
 
     grid.setLength(xres * yres * zres);
-
-    float* tileValues = new float[tileSize * tileSize * tileSize];
-    std::fill(tileValues, tileValues + tileSize * tileSize * tileSize - 1, 0.0f);
     for(unsigned int i=0; i<grid.length(); i++)
         grid[i] = 0.0f;
 
-    HAPI_VolumeTileInfo tile;
-    HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
+    std::vector<float> tile;
+    tile.resize(tileSize * tileSize * tileSize);
+
+    HAPI_VolumeTileInfo tileInfo;
+    HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
 
 #ifdef max
 #undef max
 #endif
 
-    while(tile.minX != std::numeric_limits<int>::max() &&
-           tile.minY != std::numeric_limits<int>::max() &&
-           tile.minZ != std::numeric_limits<int>::max())
+    while(tileInfo.minX != std::numeric_limits<int>::max() &&
+           tileInfo.minY != std::numeric_limits<int>::max() &&
+           tileInfo.minZ != std::numeric_limits<int>::max())
     {
-        HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tile, tileValues);
+        HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo, &tile.front());
 
         for(int k=0; k<tileSize; k++)
             for(int j=0; j<tileSize; j++)
                 for(int i=0; i<tileSize; i++)
                 {
-                    int z = k + tile.minZ - myVolumeInfo.minZ,
-                        y = j + tile.minY - myVolumeInfo.minY,
-                        x = i + tile.minX - myVolumeInfo.minX;
+                    int z = k + tileInfo.minZ - myVolumeInfo.minZ,
+                        y = j + tileInfo.minY - myVolumeInfo.minY,
+                        x = i + tileInfo.minX - myVolumeInfo.minX;
 
                     int index =
                         xres *  yres * z +
                         xres * y +
                         x;
 
-                    float value = tileValues[k * tileSize*tileSize + j * tileSize + i];
+                    float value = tile[k * tileSize*tileSize + j * tileSize + i];
                     if(x < xres && y < yres && z < zres
                         && x > 0 && y > 0 && z > 0)
                     {
@@ -809,10 +809,8 @@ OutputGeometryPart::createVolume()
                     }
                 }
 
-        HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tile);
+        HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
     }
-
-    delete[] tileValues;
 
     return gridDataObj;
 }

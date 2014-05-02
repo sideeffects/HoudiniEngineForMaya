@@ -257,29 +257,7 @@ OutputGeometryPart::compute(
         if(myPartInfo.hasVolume)
         {
             MDataHandle partVolumeHandle = handle.child(AssetNode::outputPartVolume);
-
-            MDataHandle partVolumeTransformHandle = partVolumeHandle.child(AssetNode::outputPartVolumeTransform);
-            updateVolumeTransform(partVolumeTransformHandle);
-
-            MDataHandle partVolumeGridHandle = partVolumeHandle.child(AssetNode::outputPartVolumeGrid);
-            partVolumeGridHandle.set(createVolume());
-
-            MFloatArray resolution;
-            resolution.append(myVolumeInfo.xLength);
-            resolution.append(myVolumeInfo.yLength);
-            resolution.append(myVolumeInfo.zLength);
-            MDataHandle partVolumeResHandle = partVolumeHandle.child(AssetNode::outputPartVolumeRes);
-            MFnFloatArrayData resCreator;
-            partVolumeResHandle.set(resCreator.create(resolution));
-
-            MDataHandle partVolumeNameHandle = partVolumeHandle.child(AssetNode::outputPartVolumeName);
-            partVolumeNameHandle.set(Util::getString(myVolumeInfo.nameSH));
-
-            partVolumeHandle.setClean();
-            partVolumeTransformHandle.setClean();
-            partVolumeGridHandle.setClean();
-            partVolumeResHandle.setClean();
-            partVolumeNameHandle.setClean();
+            createVolume(partVolumeHandle);
         }
 #endif
 
@@ -756,63 +734,85 @@ OutputGeometryPart::createParticle(MDataHandle &dataHandle)
 }
 
 #if MAYA_API_VERSION >= 201400
-MObject
-OutputGeometryPart::createVolume()
+void
+OutputGeometryPart::createVolume(MDataHandle &dataHandle)
 {
-    MFnFloatArrayData gridDataFn;
-    MObject gridDataObj = gridDataFn.create();
-    MFloatArray grid = gridDataFn.array();
+    MDataHandle gridHandle = dataHandle.child(AssetNode::outputPartVolumeGrid);
+    MDataHandle transformHandle = dataHandle.child(AssetNode::outputPartVolumeTransform);
+    MDataHandle resHandle = dataHandle.child(AssetNode::outputPartVolumeRes);
+    MDataHandle nameHandle = dataHandle.child(AssetNode::outputPartVolumeName);
 
-    int xres = myVolumeInfo.xLength;
-    int yres = myVolumeInfo.yLength;
-    int zres = myVolumeInfo.zLength;
-    int tileSize = myVolumeInfo.tileSize;
+    // grid
+    {
+        MFnFloatArrayData gridDataFn;
+        MObject gridDataObj = gridDataFn.create();
+        MFloatArray grid = gridDataFn.array();
 
-    grid.setLength(xres * yres * zres);
-    for(unsigned int i=0; i<grid.length(); i++)
-        grid[i] = 0.0f;
+        int xres = myVolumeInfo.xLength;
+        int yres = myVolumeInfo.yLength;
+        int zres = myVolumeInfo.zLength;
+        int tileSize = myVolumeInfo.tileSize;
 
-    std::vector<float> tile;
-    tile.resize(tileSize * tileSize * tileSize);
+        grid.setLength(xres * yres * zres);
+        for(unsigned int i=0; i<grid.length(); i++)
+            grid[i] = 0.0f;
 
-    HAPI_VolumeTileInfo tileInfo;
-    HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
+        std::vector<float> tile;
+        tile.resize(tileSize * tileSize * tileSize);
+
+        HAPI_VolumeTileInfo tileInfo;
+        HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
 
 #ifdef max
 #undef max
 #endif
 
-    while(tileInfo.minX != std::numeric_limits<int>::max() &&
-           tileInfo.minY != std::numeric_limits<int>::max() &&
-           tileInfo.minZ != std::numeric_limits<int>::max())
-    {
-        HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo, &tile.front());
+        while(tileInfo.minX != std::numeric_limits<int>::max() &&
+                tileInfo.minY != std::numeric_limits<int>::max() &&
+                tileInfo.minZ != std::numeric_limits<int>::max())
+        {
+            HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo, &tile.front());
 
-        for(int k=0; k<tileSize; k++)
-            for(int j=0; j<tileSize; j++)
-                for(int i=0; i<tileSize; i++)
-                {
-                    int z = k + tileInfo.minZ - myVolumeInfo.minZ,
-                        y = j + tileInfo.minY - myVolumeInfo.minY,
-                        x = i + tileInfo.minX - myVolumeInfo.minX;
-
-                    int index =
-                        xres *  yres * z +
-                        xres * y +
-                        x;
-
-                    float value = tile[k * tileSize*tileSize + j * tileSize + i];
-                    if(x < xres && y < yres && z < zres
-                        && x > 0 && y > 0 && z > 0)
+            for(int k=0; k<tileSize; k++)
+                for(int j=0; j<tileSize; j++)
+                    for(int i=0; i<tileSize; i++)
                     {
-                        grid[index] = value;
-                    }
-                }
+                        int z = k + tileInfo.minZ - myVolumeInfo.minZ,
+                            y = j + tileInfo.minY - myVolumeInfo.minY,
+                            x = i + tileInfo.minX - myVolumeInfo.minX;
 
-        HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
+                        int index =
+                            xres *  yres * z +
+                            xres * y +
+                            x;
+
+                        float value = tile[k * tileSize*tileSize + j * tileSize + i];
+                        if(x < xres && y < yres && z < zres
+                                && x > 0 && y > 0 && z > 0)
+                        {
+                            grid[index] = value;
+                        }
+                    }
+
+            HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
+        }
+
+        gridHandle.setMObject(gridDataObj);
     }
 
-    return gridDataObj;
+    // transform
+    updateVolumeTransform(transformHandle);
+
+    // resolution
+    MFloatArray resolution;
+    resolution.append(myVolumeInfo.xLength);
+    resolution.append(myVolumeInfo.yLength);
+    resolution.append(myVolumeInfo.zLength);
+    MFnFloatArrayData resCreator;
+    resHandle.set(resCreator.create(resolution));
+
+    // name
+    nameHandle.set(Util::getString(myVolumeInfo.nameSH));
 }
 #endif
 

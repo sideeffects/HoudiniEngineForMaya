@@ -744,8 +744,14 @@ OutputGeometryPart::createVolume(MDataHandle &dataHandle)
 
     // grid
     {
-        MFnFloatArrayData gridDataFn;
-        MObject gridDataObj = gridDataFn.create();
+        MObject gridDataObj = gridHandle.data();
+        MFnFloatArrayData gridDataFn(gridDataObj);
+        if(gridDataObj.isNull())
+        {
+            gridDataObj = gridDataFn.create();
+            gridHandle.setMObject(gridDataObj);
+        }
+
         MFloatArray grid = gridDataFn.array();
 
         int xres = myVolumeInfo.xLength;
@@ -796,8 +802,6 @@ OutputGeometryPart::createVolume(MDataHandle &dataHandle)
 
             HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
         }
-
-        gridHandle.setMObject(gridDataObj);
     }
 
     // transform

@@ -6,6 +6,8 @@
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 
+#include <maya/MPlugArray.h>
+
 #include <HAPI/HAPI.h>
 
 #include "Asset.h"
@@ -387,6 +389,47 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
     return result;
 }
 
+static void
+getConnectedChildrenPlugs(MPlugArray &connections, const MPlug &parentPlug)
+{
+    unsigned int numChildren = parentPlug.numChildren();
+    for(unsigned int i = 0; i < numChildren; i++)
+    {
+        MPlug childPlug = parentPlug.child(i);
+
+        // as destination
+        {
+            MPlugArray connectedPlugs;
+            childPlug.connectedTo(connectedPlugs, true, false);
+
+            unsigned int connectedPlugsLength = connectedPlugs.length();
+            for(unsigned int j = 0; j < connectedPlugsLength; ++j)
+            {
+                connections.append(connectedPlugs[j]);
+                connections.append(childPlug);
+            }
+        }
+
+        // as source
+        {
+            MPlugArray connectedPlugs;
+            childPlug.connectedTo(connectedPlugs, false, true);
+
+            unsigned int connectedPlugsLength = connectedPlugs.length();
+            for(unsigned int j = 0; j < connectedPlugsLength; ++j)
+            {
+                connections.append(childPlug);
+                connections.append(connectedPlugs[j]);
+            }
+        }
+
+        if(childPlug.isCompound())
+        {
+            getConnectedChildrenPlugs(connections, childPlug);
+        }
+    }
+}
+
 SyncAttribute::SyncAttribute(
         const MObject &assetNodeObj
         ) :
@@ -409,13 +452,32 @@ SyncAttribute::doIt()
 
     MFnDagNode assetNodeFn(myAssetNodeObj);
 
-    // save the existing parameter values
+    // Save the current state of the parameters
     MStringArray setAttrCmds;
+    MStringArray connectAttrCmds;
     {
         MPlug houdiniAssetParmPlug = assetNodeFn.findPlug(Util::getParmAttrPrefix(), &status);
         if(status)
         {
+            // Save the parameter values
             houdiniAssetParmPlug.getSetAttrCmds(setAttrCmds, MPlug::kAll, true);
+
+            // Save the connections
+            {
+                MPlugArray connections;
+                getConnectedChildrenPlugs(connections, houdiniAssetParmPlug);
+
+                MString connectAttrFormat = "connectAttr ^1s ^2s;";
+                unsigned int connectionsLength = connections.length();
+                for(unsigned int i = 0; i < connections.length(); i += 2)
+                {
+                    MString connectAttrCmd;
+                    connectAttrCmd.format(connectAttrFormat,
+                            connections[i].name(),
+                            connections[i+1].name());
+                    connectAttrCmds.append(connectAttrCmd);
+                }
+            }
         }
     }
 
@@ -453,11 +515,19 @@ SyncAttribute::doIt()
         }
     }
 
-    // restore old parameter values
+    // Restore the parameter values
     status = myDGModifier.commandToExecute("select " + assetNodeFn.fullPathName());
     for(unsigned int i = 0; i< setAttrCmds.length(); i++)
     {
         status = myDGModifier.commandToExecute(setAttrCmds[i]);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
+    // Restore the connections
+    unsigned int connectAttrCmdsLength = connectAttrCmds.length();
+    for(unsigned int i = 0; i < connectAttrCmdsLength; ++i)
+    {
+        status = myDGModifier.commandToExecute(connectAttrCmds[i]);
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 

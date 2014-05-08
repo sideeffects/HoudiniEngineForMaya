@@ -490,19 +490,19 @@ global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
         int $index = $multiIndices[$i];
         string $inputAttribute = $inputsAttribute + "[" + $index + "]";
 
+        string $inputName = `getAttr ($inputAttribute + ".inputName")`;
+        text -align left -label $inputName;
+
         string $inputLayout = "input" + ($index + 1) + "Layout";
         string $inputLayoutFull = $inputsLayoutFull + "|" + $inputLayout;
         rowLayout
-            -numberOfColumns 3
-            -columnWidth3 50 150 50
-            -adjustableColumn 2
+            -numberOfColumns 2
+            -adjustableColumn 1
             -columnAlign  1 "right"
             -columnAttach 1 "both"     2
-            -columnAttach 2 "both"  2
-            -columnAttach 3 "left"  2
+            -columnAttach 2 "left"  2
             $inputLayout;
 
-            text -label ("Input " + ($index + 1));
             string $inputTextFieldFull = ($inputLayoutFull + "|inputTextField");
             textField
                 -alwaysInvokeEnterCommandOnReturn true
@@ -528,6 +528,11 @@ global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
             ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
 
         AEhoudiniAssetUpdateInput $inputLayoutFull $inputAttribute;
+
+        if($i < size($multiIndices) - 1)
+        {
+            separator;
+        }
     }
 
     setParent ..;

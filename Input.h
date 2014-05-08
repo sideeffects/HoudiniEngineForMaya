@@ -17,6 +17,8 @@ class Inputs
         Inputs(int assetId);
         ~Inputs();
 
+        MStatus compute(MDataBlock &dataBlock);
+
         void setNumInputs(int numInputs);
         void setInput(
                 int inputIdx,
@@ -32,6 +34,7 @@ class Inputs
 
     public:
         static MObject input;
+        static MObject inputName;
         static MObject inputTransform;
         static MObject inputGeo;
 };

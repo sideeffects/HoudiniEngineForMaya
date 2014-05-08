@@ -3,6 +3,7 @@
 #include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
+#include <maya/MFnTypedAttribute.h>
 
 #include <maya/MDataBlock.h>
 #include <maya/MMatrix.h>
@@ -16,8 +17,10 @@
 #include "InputMesh.h"
 #include "InputCurve.h"
 #include "InputParticle.h"
+#include "util.h"
 
 MObject Inputs::input;
+MObject Inputs::inputName;
 MObject Inputs::inputTransform;
 MObject Inputs::inputGeo;
 
@@ -27,8 +30,11 @@ Inputs::createInputAttribute()
     MFnCompoundAttribute cAttr;
     MFnMatrixAttribute mAttr;
     MFnGenericAttribute gAttr;
+    MFnTypedAttribute tAttr;
 
     Inputs::inputTransform = mAttr.create("inputTransform", "inputTransform");
+
+    Inputs::inputName = tAttr.create("inputName", "inputName", MFnData::kString);
 
     Inputs::inputGeo = gAttr.create("inputGeo", "inputGeo");
     gAttr.addDataAccept(MFnData::kIntArray);
@@ -37,11 +43,13 @@ Inputs::createInputAttribute()
     gAttr.addDataAccept(MFnData::kVectorArray);
 
     Inputs::input = cAttr.create("input", "input");
+    cAttr.addChild(Inputs::inputName);
     cAttr.addChild(Inputs::inputTransform);
     cAttr.addChild(Inputs::inputGeo);
     cAttr.setDisconnectBehavior(MFnAttribute::kReset);
     cAttr.setInternal(true);
     cAttr.setArray(true);
+    cAttr.setUsesArrayDataBuilder(true);
 
     return Inputs::input;
 }
@@ -61,6 +69,38 @@ Inputs::~Inputs()
         *iter = NULL;
     }
     myAssetInputs.clear();
+}
+
+MStatus
+Inputs::compute(MDataBlock &dataBlock)
+{
+    MStatus status;
+
+    MArrayDataHandle inputArrayHandle = dataBlock.outputArrayValue(Inputs::input, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    MArrayDataBuilder inputArrayBuilder = inputArrayHandle.builder(&status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    for(unsigned int i = 0; i < myAssetInputs.size(); ++i)
+    {
+        MDataHandle inputHandle = inputArrayBuilder.addElement(i, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+
+        MDataHandle inputNameHandle = inputHandle.child(Inputs::inputName);
+
+        HAPI_StringHandle nameSH;
+        HAPI_GetInputName(myAssetId, i,
+                HAPI_INPUT_GEOMETRY,
+                &nameSH);
+
+        inputNameHandle.set(
+                Util::getString(nameSH)
+                );
+    }
+
+    status = inputArrayHandle.set(inputArrayBuilder);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 }
 
 void Inputs::setNumInputs(int numInputs)

@@ -488,6 +488,8 @@ Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 
     MPlug inputsPlug(myNode, AssetNode::input);
 
+    myAssetInputs->compute(data);
+
     for(int i=0; i< myAssetInfo.maxGeoInputCount; i++)
     {
         MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);

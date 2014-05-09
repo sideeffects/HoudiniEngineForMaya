@@ -101,6 +101,7 @@ Inputs::compute(MDataBlock &dataBlock)
 
     status = inputArrayHandle.set(inputArrayBuilder);
     CHECK_MSTATUS_AND_RETURN_IT(status);
+    return MStatus::kSuccess;
 }
 
 void Inputs::setNumInputs(int numInputs)

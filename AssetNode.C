@@ -739,8 +739,6 @@ AssetNode::AssetNode()
 {
     myAsset = NULL;
 
-    myBuiltParms = false;
-    //myAssetPathChanged = true;
     myResultsClean = false;
 }
 
@@ -1116,7 +1114,6 @@ AssetNode::copyInternalData(MPxNode* node)
 
     myOTLFilePath = assetNode->myOTLFilePath;
     myAssetName = assetNode->myAssetName;
-    //myAssetPathChanged = true;
 
     MPxTransform::copyInternalData(node);
 }

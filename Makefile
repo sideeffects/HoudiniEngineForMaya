@@ -152,8 +152,7 @@ else ifeq ($(OS), Cygwin)
 
     # -- ENABLED WARNINGS --
     # 4101: unreferenced local variable
-    # 4996: Deprecation usage
-    WARNINGENABLE = -w14101 -w14996
+    WARNINGENABLE = -w14101
     # -- WARNINGS TREATED AS ERRORS --
     # 4265: 'class' has virtual functions but destructor is not virtual
     # 4700: uninitialized local variable used
@@ -170,7 +169,9 @@ else ifeq ($(OS), Cygwin)
     # 4244: conversion of floating point type possible loss of data
     # 4267: conversion of integer type possible loss of data
     # 4389: signed/unsigned mismatch
-    WARNINGDISABLE = -wd4100 -wd4244 -wd4267 -wd4389
+    # === Turn off deprecation warnings until we can fix the HAPI usages ===
+    # 4996: Deprecation usage
+    WARNINGDISABLE = -wd4100 -wd4244 -wd4267 -wd4389 -wd4996
 
     CXXFLAGS += -W4 $(WARNINGENABLE) $(WARNINGERROR) $(WARNINGDISABLE)
     CXXFLAGS += -D_CRT_SECURE_NO_WARNINGS

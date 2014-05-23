@@ -1107,14 +1107,16 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
     MDataHandle alphaHandle = handle.child(AssetNode::outputPartAlphaColor);
     MDataHandle texturePathHandle = handle.child(AssetNode::outputPartTexturePath);
 
-    if(myPartInfo.materialId < 0)
+    HAPI_GetMaterialOnPart( myAssetId, myObjectId, myGeoId, myPartId, &myMaterialInfo );
+
+    if(!myMaterialInfo.exists)
     {
         matExistsHandle.set(false);
-    } else
+    }
+    else
     {
         // get material info
-        int matId = myPartInfo.materialId;
-        HAPI_GetMaterial(myAssetId, matId, &myMaterialInfo);
+        int matId = myMaterialInfo.id;
         HAPI_NodeInfo materialNodeInfo;
         HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
 

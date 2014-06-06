@@ -929,6 +929,12 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         // make sure Asset is created
         createAsset();
 
+        // make sure asset was created properly
+        if(!isAssetValid())
+        {
+            return MStatus::kFailure;
+        }
+
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
 

@@ -23,6 +23,8 @@ class Asset {
              );
         ~Asset();
 
+        bool isValid() const;
+
         MString getOTLFilePath() const;
         MString getAssetName() const;
 

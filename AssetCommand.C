@@ -58,16 +58,27 @@ class AssetSubCommandListAssets : public AssetSubCommand
 
         virtual MStatus doIt()
         {
-            int libraryId;
-            HAPI_LoadAssetLibraryFromFile(myOTLFilePath.asChar(), &libraryId);
+            HAPI_Result hapiResult;
 
-            int assetCount;
-            HAPI_GetAvailableAssetCount(libraryId, &assetCount);
+            int libraryId = -1;
+            hapiResult = HAPI_LoadAssetLibraryFromFile(myOTLFilePath.asChar(), &libraryId);
+            if(HAPI_FAIL(hapiResult))
+            {
+                DISPLAY_ERROR("Could not load OTL file: ^1s", myOTLFilePath);
+                DISPLAY_ERROR_HAPI_STATUS();
+
+                return MStatus::kFailure;
+            }
+
+            int assetCount = 0;
+            hapiResult = HAPI_GetAvailableAssetCount(libraryId, &assetCount);
+            CHECK_HAPI_AND_RETURN(hapiResult, MStatus::kFailure);
 
             std::vector<HAPI_StringHandle> assetNamesSH(assetCount);
-            HAPI_GetAvailableAssets(libraryId,
+            hapiResult = HAPI_GetAvailableAssets(libraryId,
                     &assetNamesSH.front(),
                     assetNamesSH.size());
+            CHECK_HAPI_AND_RETURN(hapiResult, MStatus::kFailure);
 
             for(unsigned int i = 0; i < assetNamesSH.size(); i++)
             {

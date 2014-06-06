@@ -1,6 +1,7 @@
 #ifndef __util_h__
 #define __util_h__
 
+#include <maya/MGlobal.h>
 #include <maya/MObject.h>
 #include <maya/MString.h>
 #include <maya/MIntArray.h>
@@ -28,8 +29,46 @@ class HAPIError: public std::exception
         MString myMessage;
 };
 
+#define DISPLAY_MSG(displayMethod, msgFormat, ...) \
+    { \
+        MString msg; \
+        msg.format((msgFormat), __VA_ARGS__); \
+        MGlobal::displayMethod(msg); \
+    }
+
+#define DISPLAY_ERROR(msg, ...) \
+    DISPLAY_MSG(displayError, msg, __VA_ARGS__)
+#define DISPLAY_WARNING(msg, ...) \
+    DISPLAY_MSG(displayWarning, msg, __VA_ARGS__)
+#define DISPLAY_INFO(msg, ...) \
+    DISPLAY_MSG(displayInfo, msg, __VA_ARGS__)
+
 #define HAPI_FAIL(r) \
     ((r) != HAPI_RESULT_SUCCESS)
+
+#define GET_HAPI_STATUS() \
+    std::vector<char> _hapiStatusBuffer; \
+    { \
+        int bufferLength; \
+        HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufferLength); \
+        _hapiStatusBuffer.resize(bufferLength); \
+        HAPI_GetStatusString(HAPI_STATUS_RESULT, &_hapiStatusBuffer.front()); \
+    } \
+    const char * hapiStatus = &_hapiStatusBuffer.front();
+
+
+#define DISPLAY_ERROR_HAPI_STATUS() \
+    DISPLAY_HAPI_STATUS(displayError)
+#define DISPLAY_WARNING_HAPI_STATUS() \
+    DISPLAY_HAPI_STATUS(displayWarning)
+#define DISPLAY_INFO_HAPI_STATUS() \
+    DISPLAY_HAPI_STATUS(displayInfo)
+
+#define DISPLAY_HAPI_STATUS(displayMethod) \
+{ \
+    GET_HAPI_STATUS(); \
+    MGlobal::displayMethod(hapiStatus); \
+}
 
 #define CHECK_HAPI_AND_RETURN(r, returnValue) \
     CHECK_HAPI_AND(r, return returnValue;)
@@ -44,12 +83,9 @@ class HAPIError: public std::exception
     { \
         std::cerr << "HAPI error in " __FILE__ " at line " << __LINE__ << std::endl; \
         \
-        int bufferLength; \
-        HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufferLength); \
-        char * buffer = new char[bufferLength]; \
-        HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer); \
-        std::cerr << buffer << std::endl; \
-        delete [] buffer; \
+        GET_HAPI_STATUS(); \
+        \
+        std::cerr << hapiStatus << std::endl; \
         \
         footer \
     } \

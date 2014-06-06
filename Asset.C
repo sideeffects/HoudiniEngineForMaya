@@ -17,6 +17,8 @@
 #include "OutputInstancerObject.h"
 #include "util.h"
 
+#include <cassert>
+
 class AttrOperation : public Util::WalkParmOperation
 {
     public:
@@ -495,6 +497,8 @@ Asset::getAssetName() const
 OutputObject*
 Asset::findObjectByName(MString name)
 {
+    assert(myAssetInfo.id >= 0);
+
     for(int i=0; i< myAssetInfo.objectCount; i++)
     {
         if(myObjects[i]->getName() == name)
@@ -517,12 +521,16 @@ Asset::getObjectInfo(int id) { return myObjectInfos[id]; }
 void
 Asset::resetSimulation()
 {
+    assert(myAssetInfo.id >= 0);
+
     HAPI_ResetSimulation(myAssetInfo.id);
 }
 
 void
 Asset::update()
 {
+    assert(myAssetInfo.id >= 0);
+
     // update object infos
     delete[] myObjectInfos;
     myObjectInfos = new HAPI_ObjectInfo[myAssetInfo.objectCount];
@@ -542,6 +550,8 @@ Asset::update()
 void
 Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
 {
+    assert(myAssetInfo.id >= 0);
+
     MStatus status;
 
     MPlug inputsPlug(myNode, AssetNode::input);
@@ -690,6 +700,8 @@ Asset::compute(
         bool &needToSyncOutputs
         )
 {
+    assert(myAssetInfo.id >= 0);
+
     MStatus stat(MS::kSuccess);
 
     // Set the type
@@ -1419,6 +1431,8 @@ Asset::setMultiparmLength(
         const MFnDependencyNode &nodeFn
         )
 {
+    assert(myAssetInfo.id >= 0);
+
     MStatus status;
 
     std::vector<HAPI_ParmInfo> parmInfos;

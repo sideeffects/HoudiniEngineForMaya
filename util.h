@@ -117,7 +117,7 @@ class Util {
 
         // Throws an exception if an error occurred
         static void checkHAPIStatus(HAPI_Result stat);
-        static void statusCheckLoop();
+        static bool statusCheckLoop();
         static void showProgressWindow(const MString & title, const MString & status, int progress);
         static void updateProgressWindow(const MString & status, int progress);
         static void hideProgressWindow();

@@ -187,7 +187,7 @@ Util::hideProgressWindow()
 #endif
 }
 
-void
+bool
 Util::statusCheckLoop()
 {
     bool showProgressWindow = false;
@@ -203,7 +203,8 @@ Util::statusCheckLoop()
 #endif
 
     int elapsedTime = 0;
-    while(state != HAPI_STATE_READY)
+    while(state != HAPI_STATE_READY
+            && state != HAPI_STATE_READY_WITH_ERRORS)
     {
             HAPI_GetStatus(HAPI_STATUS_STATE, &currState);
             state = (HAPI_State) currState;
@@ -261,6 +262,13 @@ Util::statusCheckLoop()
 
     if(showProgressWindow)
         Util::hideProgressWindow();
+
+    if(state == HAPI_STATE_READY_WITH_ERRORS)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 MObject

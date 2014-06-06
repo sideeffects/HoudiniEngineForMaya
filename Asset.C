@@ -340,48 +340,87 @@ Asset::Asset(
         MString assetName,
         MObject node
         ) :
-    myNode(node)
+    myNode(node),
+    // initialize values here because instantiating the asset could error out
+    myNumVisibleObjects(0),
+    myNumObjects(0),
+    myAssetInputs(NULL),
+    myObjects(NULL),
+    myObjectInfos(NULL)
 {
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
+    HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
 
-    myObjectInfos = NULL;
+    HAPI_AssetInfo_Init(&myAssetInfo);
 
     // load the otl
-    int libraryId;
-    HAPI_LoadAssetLibraryFromFile(otlFilePath.asChar(), &libraryId);
-
-    int assetCount;
-    HAPI_GetAvailableAssetCount(libraryId, &assetCount);
-
-    std::vector<HAPI_StringHandle> assetNamesSH(assetCount);
-    HAPI_GetAvailableAssets(libraryId, &assetNamesSH.front(), assetCount);
-
-    bool foundAsset = false;
-    for(int i = 0; i < assetCount; i++)
+    int libraryId = -1;
+    hapiResult = HAPI_LoadAssetLibraryFromFile(otlFilePath.asChar(), &libraryId);
+    if(HAPI_FAIL(hapiResult))
     {
-        if(Util::getString(assetNamesSH[i]) == assetName)
+        DISPLAY_WARNING("Could not load OTL file: ^1s\n"
+                "Attempting to instantiate asset anyway.",
+                otlFilePath);
+        DISPLAY_WARNING_HAPI_STATUS();
+    }
+
+    // get the list of assets in the otl
+    std::vector<HAPI_StringHandle> assetNamesSH;
+    if(libraryId >= 0)
+    {
+        int assetCount = 0;
+        hapiResult = HAPI_GetAvailableAssetCount(libraryId, &assetCount);
+        CHECK_HAPI(hapiResult);
+
+        assetNamesSH.resize(assetCount);
+        hapiResult = HAPI_GetAvailableAssets(libraryId, &assetNamesSH.front(), assetCount);
+        CHECK_HAPI(hapiResult);
+    }
+
+    // find the asset in the otl
+    if(assetNamesSH.size())
+    {
+        bool foundAsset = false;
+        for(int i = 0; i < assetNamesSH.size(); i++)
         {
-            foundAsset = true;
+            if(Util::getString(assetNamesSH[i]) == assetName)
+            {
+                foundAsset = true;
+            }
+        }
+
+        if(!foundAsset)
+        {
+            DISPLAY_WARNING("Could not find asset: ^1s\n"
+                    "in OTL file: ^2s\n"
+                    "Attempting to instantiate asset anyway.",
+                    otlFilePath,
+                    assetName);
+            DISPLAY_WARNING_HAPI_STATUS();
         }
     }
-    if(!foundAsset)
-    {
-        return;
-    }
 
-    int assetId;
-    HAPI_InstantiateAsset(
+    // instantiate the asset
+    int assetId = -1;
+    hapiResult = HAPI_InstantiateAsset(
             assetName.asChar(),
             true,
             &assetId
             );
+    CHECK_HAPI(hapiResult);
 
-    Util::statusCheckLoop();
-    Util::checkHAPIStatus(hstat);
-    hstat = HAPI_GetAssetInfo(assetId, &myAssetInfo);
-    Util::checkHAPIStatus(hstat);
-    hstat = HAPI_GetNodeInfo(myAssetInfo.nodeId, & myNodeInfo);
-    Util::checkHAPIStatus(hstat);
+    if(!Util::statusCheckLoop())
+    {
+        DISPLAY_ERROR("Could not instantiate asset: %1s\n"
+                "in OTL file: ^2s\n",
+                otlFilePath,
+                assetName);
+        DISPLAY_ERROR_HAPI_STATUS();
+    }
+
+    hapiResult = HAPI_GetAssetInfo(assetId, &myAssetInfo);
+    CHECK_HAPI(hapiResult);
+    hapiResult = HAPI_GetNodeInfo(myAssetInfo.nodeId, & myNodeInfo);
+    CHECK_HAPI(hapiResult);
 
     myAssetInputs = new Inputs(myAssetInfo.id);
     myAssetInputs->setNumInputs(myAssetInfo.maxGeoInputCount);
@@ -418,19 +457,38 @@ Asset::~Asset()
     delete[] myObjectInfos;
     delete myAssetInputs;
 
-    hstat = HAPI_DestroyAsset(myAssetInfo.id);
-    Util::checkHAPIStatus(hstat);
+    if(myAssetInfo.id >= 0)
+    {
+        hstat = HAPI_DestroyAsset(myAssetInfo.id);
+        Util::checkHAPIStatus(hstat);
+    }
+}
+
+bool
+Asset::isValid() const
+{
+    return myAssetInfo.id >= 0;
 }
 
 MString
 Asset::getOTLFilePath() const
 {
+    if(!isValid())
+    {
+        return MString();
+    }
+
     return Util::getString(myAssetInfo.filePathSH);
 }
 
 MString
 Asset::getAssetName() const
 {
+    if(!isValid())
+    {
+        return MString();
+    }
+
     return Util::getString(myAssetInfo.fullOpNameSH);
 }
 

@@ -382,7 +382,7 @@ Asset::Asset(
     if(assetNamesSH.size())
     {
         bool foundAsset = false;
-        for(int i = 0; i < assetNamesSH.size(); i++)
+        for(int i = 0; i < (int) assetNamesSH.size(); i++)
         {
             if(Util::getString(assetNamesSH[i]) == assetName)
             {

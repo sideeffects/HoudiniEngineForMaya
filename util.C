@@ -203,8 +203,7 @@ Util::statusCheckLoop()
 #endif
 
     int elapsedTime = 0;
-    while(state != HAPI_STATE_READY
-            && state != HAPI_STATE_READY_WITH_ERRORS)
+    while(state > HAPI_STATE_MAX_READY_STATE)
     {
             HAPI_GetStatus(HAPI_STATUS_STATE, &currState);
             state = (HAPI_State) currState;
@@ -263,7 +262,8 @@ Util::statusCheckLoop()
     if(showProgressWindow)
         Util::hideProgressWindow();
 
-    if(state == HAPI_STATE_READY_WITH_ERRORS)
+    if(state == HAPI_STATE_READY_WITH_FATAL_ERRORS
+        || state == HAPI_STATE_READY_WITH_COOK_ERRORS)
     {
         return false;
     }

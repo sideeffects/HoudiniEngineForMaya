@@ -123,7 +123,8 @@ Util::checkHAPIStatus(HAPI_Result stat)
     if(hasHAPICallFailed(stat))
     {
         int bufLen;
-        HAPI_GetStatusStringBufLength(HAPI_STATUS_RESULT, &bufLen);
+        HAPI_GetStatusStringBufLength(
+            HAPI_STATUS_RESULT, HAPI_STATUSVERBOSITY_ERRORS, &bufLen);
         char * buffer = new char[bufLen];
         HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer);
         throw HAPIError(buffer);
@@ -233,8 +234,9 @@ Util::statusCheckLoop()
             }
 
             int statusBufSize = 0;
-            HAPI_GetStatusStringBufLength(HAPI_STATUS_STATE,
-                                             &statusBufSize);
+            HAPI_GetStatusStringBufLength(
+                HAPI_STATUS_STATE, HAPI_STATUSVERBOSITY_ERRORS,
+                &statusBufSize);
 
             char * statusBuf = NULL;
 

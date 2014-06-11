@@ -574,6 +574,10 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
             -annotation "Resets all the simulation caches."
             resetSimulationButton;
 
+        button -label "Reload Asset"
+            -annotation "Reloads this asset to use the updated asset definition."
+            reloadAssetButton;
+
     setParent ..;
 
     separator;
@@ -627,6 +631,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     button -e
         -c ("houdiniAsset -resetSimulation " + $nodeName)
         ($optionsLayoutFull + "|buttonLayout|resetSimulationButton");
+    button -e
+        -c ("houdiniAsset -reloadAsset " + $nodeName)
+        ($optionsLayoutFull + "|buttonLayout|reloadAssetButton");
 
     // syncLayout
     replaceAttrCheckBox($optionsLayoutFull + "|syncLayout|autoSyncOutputs",

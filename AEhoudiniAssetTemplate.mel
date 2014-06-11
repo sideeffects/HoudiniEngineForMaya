@@ -582,12 +582,11 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
 
 global proc AEhoudiniAssetOptionsNew(string $attr)
 {
-    rowLayout
-        -numberOfColumns 2
-        "optionsRowLayout";
-        text -label "";
-        columnLayout "optionsLayout";
-    setParent ..;
+    global int $gAttributeEditorTemplateLabelWidth;
+
+    columnLayout
+        -columnAttach "left" $gAttributeEditorTemplateLabelWidth
+        optionsLayout;
     setParent ..;
 
     AEhoudiniAssetOptionsReplace $attr;
@@ -599,7 +598,7 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
 
     // delete existing UI
     string $parent = `setParent -q`;
-    string $optionsLayoutFull = $parent + "|optionsRowLayout|optionsLayout";
+    string $optionsLayoutFull = $parent + "|optionsLayout";
 
     if(`layout -q -numberOfChildren $optionsLayoutFull`)
     {

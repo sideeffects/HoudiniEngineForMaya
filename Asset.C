@@ -412,7 +412,7 @@ Asset::Asset(
 
     if(!Util::statusCheckLoop())
     {
-        DISPLAY_ERROR("Could not instantiate asset: %1s\n"
+        DISPLAY_ERROR("Could not instantiate asset: ^1s\n"
                 "in OTL file: ^2s\n",
                 otlFilePath,
                 assetName);

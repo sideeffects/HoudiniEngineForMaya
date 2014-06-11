@@ -149,10 +149,11 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
     }
 }
 
-proc createAttrCheckBox(string $checkBox, string $label)
+proc createAttrCheckBox(string $checkBox, string $label, string $annotation)
 {
     checkBox
         -label $label
+        -annotation $annotation
         $checkBox;
 }
 
@@ -570,6 +571,7 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         buttonLayout;
 
         button -label "Reset Simulation"
+            -annotation "Resets all the simulation caches."
             resetSimulationButton;
 
     setParent ..;
@@ -580,9 +582,11 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         -columnAttach "left" $gAttributeEditorTemplateLabelWidth
         syncLayout;
 
-        createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs");
+        createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs",
+                "Attemps to automatically sync the output nodes when necessary.");
 
         button -label "Sync Asset"
+            -annotation "Recreates all the parameters and output nodes."
             syncButton;
 
     setParent ..;
@@ -596,11 +600,14 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         // Don't use attrControlGrp here, and manually create our own checkBox.
         // For some reasons, Maya will trigger attrControlGrp's changeCommand
         // at the end of a playback.
-        createAttrCheckBox("useInstancerNode", "Use Instancer Node");
+        createAttrCheckBox("useInstancerNode", "Use Instancer Node",
+                "Use particle instancer node to output instances.");
 
-        createAttrCheckBox("outputHiddenObjects", "Output Hidden Objects");
+        createAttrCheckBox("outputHiddenObjects", "Output Hidden Objects",
+                "Output hidden objects.");
 
-        createAttrCheckBox("outputTemplateObjects", "Output Template Objects");
+        createAttrCheckBox("outputTemplateObjects", "Output Template Objects",
+                "Output templated objects.");
 
     setParent ..;
 

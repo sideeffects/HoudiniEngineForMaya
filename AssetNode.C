@@ -908,7 +908,10 @@ void
 AssetNode::rebuildAsset()
 {
     destroyAsset();
-    myAsset = new Asset(myOTLFilePath, myAssetName, thisMObject());
+
+    // We don't have to explicitly create the Asset object. It'll be created
+    // the next time getAsset() is called.
+
     myResultsClean = false;
 }
 

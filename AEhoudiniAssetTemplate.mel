@@ -149,16 +149,22 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
     }
 }
 
-proc createAttrCheckBox(string $plug, string $label, string $changeCommand)
+proc createAttrCheckBox(string $checkBox, string $label)
 {
-    int $value = `getAttr $plug`;
+    checkBox -label $label $checkBox;
+}
 
-    string $checkBox = `checkBox -label $label -value $value`;
+proc replaceAttrCheckBox(string $checkBox, string $plug, string $changeCommand)
+{
+    checkBox -e
+        -value `getAttr $plug`
+        $checkBox;
 
     // stopping playback will trigger the attributeChange scriptJob, so don't
     // add the changeCommand to the scriptJob
     scriptJob
         -parent $checkBox
+        -replacePrevious
         -attributeChange $plug
         ("checkBox -e -value `getAttr " + $plug + "`"
          + " \"" + $checkBox + "\";");
@@ -587,6 +593,15 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
     columnLayout
         -columnAttach "left" $gAttributeEditorTemplateLabelWidth
         optionsLayout;
+
+    // Don't use attrControlGrp here, and manually create our own checkBox.
+    // For some reasons, Maya will trigger attrControlGrp's changeCommand at
+    // the end of a playback.
+    createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs");
+    createAttrCheckBox("useInstancerNode", "Use Instancer Node");
+    createAttrCheckBox("outputHiddenObjects", "Output Hidden Objects");
+    createAttrCheckBox("outputTemplateObjects", "Output Template Objects");
+
     setParent ..;
 
     AEhoudiniAssetOptionsReplace $attr;
@@ -596,34 +611,20 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
 {
     string $nodeName = plugNode($attr);
 
-    // delete existing UI
     string $parent = `setParent -q`;
     string $optionsLayoutFull = $parent + "|optionsLayout";
 
-    if(`layout -q -numberOfChildren $optionsLayoutFull`)
-    {
-        for($child in `layout -q -childArray $optionsLayoutFull`)
-        {
-            deleteUI ($optionsLayoutFull + "|" + $child);
-        }
-    }
-
-    setParent $optionsLayoutFull;
-
-    // Don't use attrControlGrp here, and manually create our own checkBox.
-    // For some reasons, Maya will trigger attrControlGrp's changeCommand at
-    // the end of a playback.
-    createAttrCheckBox($nodeName + ".autoSyncOutputs",
-            "Auto Sync Outputs",
+    replaceAttrCheckBox($optionsLayoutFull + "|autoSyncOutputs",
+            $nodeName + ".autoSyncOutputs",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    createAttrCheckBox($nodeName + ".useInstancerNode",
-            "Use Instancer Node",
+    replaceAttrCheckBox($optionsLayoutFull + "|useInstancerNode",
+            $nodeName + ".useInstancerNode",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    createAttrCheckBox($nodeName + ".outputHiddenObjects",
-            "Output Hidden Objects",
+    replaceAttrCheckBox($optionsLayoutFull + "|outputTemplateObjects",
+            $nodeName + ".outputHiddenObjects",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    createAttrCheckBox($nodeName + ".outputTemplateObjects",
-            "Output Template Objects",
+    replaceAttrCheckBox($optionsLayoutFull + "|outputTemplateObjects",
+            $nodeName + ".outputTemplateObjects",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
 }
 

@@ -215,24 +215,18 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
 }
 
 global proc
-houdiniEngine_reloadAssetOutputMenuClick()
+houdiniEngine_reloadSelectedAssets()
 {
-    string $currSels[] = `ls -sl`;
-    if(size($currSels) < 1)
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) < 1)
     {
-        error("Please select a houdiniAsset node to reload.");
-    }
-    string $currSel = $currSels[0];
-    string $nodeTypeOfSel = `nodeType $currSel`;
-    if($nodeTypeOfSel == "houdiniAsset")
-    {
-        houdiniAsset -reloadAsset $currSel;
-    }
-    else
-    {
-        error("Please select a houdiniAsset node to reload.");
+        error("Please select at least one houdiniAsset node to reload.");
     }
 
+    for($assetNode in $assetNodes)
+    {
+        houdiniAsset -reloadAsset $assetNode;
+    }
 }
 
 global proc
@@ -313,7 +307,7 @@ houdiniEngineCreateUI()
     menuItem -label "Sync Asset"
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Reload Asset"
-       -command "houdiniEngine_reloadAssetOutputMenuClick";
+       -command "houdiniEngine_reloadSelectedAssets";
     menuItem -label "Save Underlying Houdini Scene..."
         -command "saveHipFile";
 

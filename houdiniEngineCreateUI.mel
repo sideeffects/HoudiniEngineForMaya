@@ -215,88 +215,6 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
 }
 
 global proc
-houdiniEngine_reloadAsset(string $asset)
-{
-    string $assetLibraryFilePath = `getAttr ($asset + ".otlFilePath")`;
-    string $assetName = `getAttr ($asset + ".assetName")`;
-
-    string $srcPlugs[] = `listConnections -s 1 -d 0 -p 1 $asset`;
-    string $dstPlugs[] = `listConnections -s 0 -d 1 -p 1 $asset`;
-
-    string $inputPlugs[];
-    for($ii=0; $ii < size($srcPlugs); $ii++)
-    {
-        string $srcPlug = $srcPlugs[$ii];
-        string $inputPlug[] = `listConnections -s 0 -d 1 -p 1 $srcPlug`;
-        $inputPlugs[size($inputPlugs)] = $inputPlug[0];
-    }
-
-    string $outputPlugs[];
-    for($ii=0; $ii < size($dstPlugs); $ii++)
-    {
-        string $dstPlug = $dstPlugs[$ii];
-        string $outputPlug[] = `listConnections -s 1 -d 0 -p 1 $dstPlug`;
-        $outputPlugs[size($outputPlugs)] = $outputPlug[0];
-    }
-
-    //disconnect all inputs and outputs first.
-
-    for($ii=0; $ii < size($srcPlugs); $ii++)
-    {
-        string $srcPlug = $srcPlugs[$ii];
-        string $inputPlug = $inputPlugs[$ii];
-        disconnectAttr $srcPlug $inputPlug;
-    }
-
-    for($ii=0; $ii < size($dstPlugs); $ii++)
-    {
-        string $dstPlug = $dstPlugs[$ii];
-        string $outputPlug = $outputPlugs[$ii];
-        disconnectAttr $outputPlug $dstPlug;
-    }
-
-    //delete our asset, flush the undo since this operation is not undoable.
-    //and it also force the deleted node to fall off the undo queue so it gets
-    // actually destructed and thus remove the corresponding asset on the houdini side
-    delete $asset;
-    flushUndo;
-
-    //reload the asset and restore connections:
-
-    houdiniAsset -loadAsset $assetLibraryFilePath $assetName;
-
-    refreshEditorTemplates;
-
-    for($ii=0; $ii < size($srcPlugs); $ii++)
-    {
-        string $srcPlug = $srcPlugs[$ii];
-        string $inputPlug = $inputPlugs[$ii];
-
-        string $array[] = stringToStringArray($srcPlug, ".");
-        string $srcNode = $array[0];
-        if(`objExists $srcNode`)
-        {
-            connectAttr $srcPlug $inputPlug;
-        }
-    }
-
-    for($ii=0; $ii < size($dstPlugs); $ii++)
-    {
-        string $dstPlug = $dstPlugs[$ii];
-        string $outputPlug = $outputPlugs[$ii];
-
-        string $array[] = stringToStringArray($dstPlug, ".");
-        string $dstNode = $array[0];
-        if(`objExists $dstNode`)
-        {
-            connectAttr $outputPlug $dstPlug;
-        }
-    }
-
-    select -r $asset;
-}
-
-global proc
 houdiniEngine_reloadAssetOutputMenuClick()
 {
     string $currSels[] = `ls -sl`;
@@ -308,12 +226,7 @@ houdiniEngine_reloadAssetOutputMenuClick()
     string $nodeTypeOfSel = `nodeType $currSel`;
     if($nodeTypeOfSel == "houdiniAsset")
     {
-        //FIXME: TODO: This is not yet working reliably. use
-        //a workaround for now to reload the asset.
-        //houdiniAsset -reloadAsset $currSel;
-        //refreshEditorTemplates;
-
-        houdiniEngine_reloadAsset($currSel);
+        houdiniAsset -reloadAsset $currSel;
     }
     else
     {

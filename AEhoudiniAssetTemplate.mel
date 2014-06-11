@@ -371,37 +371,6 @@ proc setInput(string $inputAttr, string $object)
     }
 }
 
-global proc
-AEhoudiniAssetOperationNew(string $attr)
-{
-    rowLayout
-        -numberOfColumns 2;
-
-        button -label "Sync"
-            syncButton;
-
-        button -label "Reset Simulation"
-            resetSimulationButton;
-
-    setParent ..;
-
-    AEhoudiniAssetOperationReplace $attr;
-}
-
-global proc
-AEhoudiniAssetOperationReplace(string $attr)
-{
-    string $nodeName = plugNode($attr);
-
-    button -e
-        -c ("houdiniEngine_syncAsset " + $nodeName)
-        syncButton;
-
-    button -e
-        -c ("houdiniAsset -resetSimulation " + $nodeName)
-        resetSimulationButton;
-}
-
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 {
     string $validInputs[];
@@ -598,9 +567,23 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
 
     columnLayout
         -columnAttach "left" $gAttributeEditorTemplateLabelWidth
+        buttonLayout;
+
+        button -label "Reset Simulation"
+            resetSimulationButton;
+
+    setParent ..;
+
+    separator;
+
+    columnLayout
+        -columnAttach "left" $gAttributeEditorTemplateLabelWidth
         syncLayout;
 
         createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs");
+
+        button -label "Sync Asset"
+            syncButton;
 
     setParent ..;
 
@@ -633,10 +616,18 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     string $parent = `setParent -q`;
     string $optionsLayoutFull = $parent + "|optionsLayout";
 
+    // buttonLayout
+    button -e
+        -c ("houdiniAsset -resetSimulation " + $nodeName)
+        ($optionsLayoutFull + "|buttonLayout|resetSimulationButton");
+
     // syncLayout
     replaceAttrCheckBox($optionsLayoutFull + "|syncLayout|autoSyncOutputs",
             $nodeName + ".autoSyncOutputs",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    button -e
+        -c ("houdiniEngine_syncAsset " + $nodeName)
+        ($optionsLayoutFull + "|syncLayout|syncButton");
 
     // outputLayout
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
@@ -653,9 +644,6 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
 global proc AEhoudiniAssetTemplate(string $nodeName)
 {
     editorTemplate -beginScrollLayout;
-
-    editorTemplate -callCustom "AEhoudiniAssetOperationNew" "AEhoudiniAssetOperationReplace"
-        "unused";
 
     // special ui for inputs
     string $inputAttrArray[] = `listAttr -st "input" $nodeName`;

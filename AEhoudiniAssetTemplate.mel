@@ -151,7 +151,9 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
 proc createAttrCheckBox(string $checkBox, string $label)
 {
-    checkBox -label $label $checkBox;
+    checkBox
+        -label $label
+        $checkBox;
 }
 
 proc replaceAttrCheckBox(string $checkBox, string $plug, string $changeCommand)
@@ -591,16 +593,33 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
     global int $gAttributeEditorTemplateLabelWidth;
 
     columnLayout
-        -columnAttach "left" $gAttributeEditorTemplateLabelWidth
+        -adjustableColumn true
         optionsLayout;
 
-    // Don't use attrControlGrp here, and manually create our own checkBox.
-    // For some reasons, Maya will trigger attrControlGrp's changeCommand at
-    // the end of a playback.
-    createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs");
-    createAttrCheckBox("useInstancerNode", "Use Instancer Node");
-    createAttrCheckBox("outputHiddenObjects", "Output Hidden Objects");
-    createAttrCheckBox("outputTemplateObjects", "Output Template Objects");
+    columnLayout
+        -columnAttach "left" $gAttributeEditorTemplateLabelWidth
+        syncLayout;
+
+        createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs");
+
+    setParent ..;
+
+    separator;
+
+    columnLayout
+        -columnAttach "left" $gAttributeEditorTemplateLabelWidth
+        outputLayout;
+
+        // Don't use attrControlGrp here, and manually create our own checkBox.
+        // For some reasons, Maya will trigger attrControlGrp's changeCommand
+        // at the end of a playback.
+        createAttrCheckBox("useInstancerNode", "Use Instancer Node");
+
+        createAttrCheckBox("outputHiddenObjects", "Output Hidden Objects");
+
+        createAttrCheckBox("outputTemplateObjects", "Output Template Objects");
+
+    setParent ..;
 
     setParent ..;
 
@@ -614,16 +633,19 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     string $parent = `setParent -q`;
     string $optionsLayoutFull = $parent + "|optionsLayout";
 
-    replaceAttrCheckBox($optionsLayoutFull + "|autoSyncOutputs",
+    // syncLayout
+    replaceAttrCheckBox($optionsLayoutFull + "|syncLayout|autoSyncOutputs",
             $nodeName + ".autoSyncOutputs",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    replaceAttrCheckBox($optionsLayoutFull + "|useInstancerNode",
+
+    // outputLayout
+    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    replaceAttrCheckBox($optionsLayoutFull + "|outputTemplateObjects",
+    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|outputTemplateObjects",
             $nodeName + ".outputHiddenObjects",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    replaceAttrCheckBox($optionsLayoutFull + "|outputTemplateObjects",
+    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|outputTemplateObjects",
             $nodeName + ".outputTemplateObjects",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
 }

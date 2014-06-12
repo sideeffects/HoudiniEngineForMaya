@@ -173,7 +173,7 @@ InputParticle::setInputGeo(
         // 1: double
         for(int i = 0; i < 2; i++)
         {
-            int tupleSize;
+            int tupleSize = 0;
             MString getAttributesCommand = "particle -q ";
             switch(i)
             {

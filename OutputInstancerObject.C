@@ -3,6 +3,7 @@
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
+#include <maya/MArrayDataBuilder.h>
 
 #include "Asset.h"
 #include "AssetNode.h"

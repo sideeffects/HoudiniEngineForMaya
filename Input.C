@@ -5,6 +5,7 @@
 #include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 
+#include <maya/MArrayDataBuilder.h>
 #include <maya/MDataBlock.h>
 #include <maya/MMatrix.h>
 #include <maya/MPlug.h>

@@ -1,5 +1,6 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFnMeshData.h>
+#include <maya/MArrayDataBuilder.h>
 #include <maya/MGlobal.h>
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>

@@ -1,3 +1,5 @@
+#include <maya/MArrayDataBuilder.h>
+
 #include "OutputGeometry.h"
 #include "OutputGeometryPart.h"
 #include "OutputObject.h"

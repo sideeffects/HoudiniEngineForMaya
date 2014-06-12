@@ -6,6 +6,7 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFnIntArrayData.h>
 #include <maya/MItMeshPolygon.h>
+#include <maya/MArrayDataBuilder.h>
 #include <maya/MDataHandle.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>

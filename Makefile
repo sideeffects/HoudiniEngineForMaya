@@ -58,6 +58,10 @@ else ifeq ($(OS), Cygwin)
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0/InstallationFolder" 2> /dev/null), \
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0A/InstallationFolder" 2> /dev/null), \
 		)
+
+	# Windows SDK
+	WIN32_SDK_INCLUDE = $(WIN32_SDK)/Include
+	WIN32_SDK_LIB = $(WIN32_SDK)/Lib/x64
     else ifeq ($(MAYA_VERSION), 2013.5)
 	# Visual C++ 2010
 	MSVC_SDK := $(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/VisualStudio/SxS/VC7/10.0" 2> /dev/null)
@@ -68,6 +72,10 @@ else ifeq ($(OS), Cygwin)
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0/InstallationFolder" 2> /dev/null), \
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0A/InstallationFolder" 2> /dev/null), \
 		)
+
+	# Windows SDK
+	WIN32_SDK_INCLUDE = $(WIN32_SDK)/Include
+	WIN32_SDK_LIB = $(WIN32_SDK)/Lib/x64
     else ifeq ($(MAYA_VERSION), 2013)
 	# Visual C++ 2010
 	MSVC_SDK := $(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/VisualStudio/SxS/VC7/10.0" 2> /dev/null)
@@ -78,6 +86,10 @@ else ifeq ($(OS), Cygwin)
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0/InstallationFolder" 2> /dev/null), \
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v7.0A/InstallationFolder" 2> /dev/null), \
 		)
+
+	# Windows SDK
+	WIN32_SDK_INCLUDE = $(WIN32_SDK)/Include
+	WIN32_SDK_LIB = $(WIN32_SDK)/Lib/x64
     else ifeq ($(MAYA_VERSION), 2012)
 	# Visual C++ 2008
 	MSVC_SDK := $(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/VisualStudio/SxS/VC7/9.0" 2> /dev/null)
@@ -88,16 +100,16 @@ else ifeq ($(OS), Cygwin)
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v6.0/InstallationFolder" 2> /dev/null), \
 		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v6.0A/InstallationFolder" 2> /dev/null), \
 		)
+
+	# Windows SDK
+	WIN32_SDK_INCLUDE = $(WIN32_SDK)/Include
+	WIN32_SDK_LIB = $(WIN32_SDK)/Lib/x64
     endif
 
     # Visual C++
     MSVC_SDK_BIN = $(MSVC_SDK)/bin/amd64
     MSVC_SDK_INCLUDE = $(MSVC_SDK)/include
     MSVC_SDK_LIB = $(MSVC_SDK)/lib/amd64
-
-    # Windows SDK
-    WIN32_SDK_INCLUDE = $(WIN32_SDK)/Include
-    WIN32_SDK_LIB = $(WIN32_SDK)/Lib/x64
 else ifeq ($(OS), Darwin)
     MAYA_DIR = /Applications/Autodesk/maya$(MAYA_VERSION)/Maya.app/Contents
 endif
@@ -175,9 +187,12 @@ else ifeq ($(OS), Cygwin)
     CXXFLAGS += -W4 $(WARNINGENABLE) $(WARNINGERROR) $(WARNINGDISABLE)
     CXXFLAGS += -D_CRT_SECURE_NO_WARNINGS
 
-    CPPFLAGS += -I$(MSVC_SDK_INCLUDE) -I$(WIN32_SDK_INCLUDE)
+    CPPFLAGS += -I$(MSVC_SDK_INCLUDE) \
+		$(foreach include,$(WIN32_SDK_INCLUDE),-I$(include))
     CXXFLAGS += -EHsc
-    LDLIBS += -LIBPATH:$(MSVC_SDK_LIB) -LIBPATH:$(WIN32_SDK_LIB) -DEFAULTLIB:USER32.lib
+    LDLIBS += -LIBPATH:$(MSVC_SDK_LIB) \
+	      $(foreach lib,$(WIN32_SDK_LIB),-LIBPATH:$(lib)) \
+	      -DEFAULTLIB:USER32.lib
 
     LDFLAGS += -export:initializePlugin -export:uninitializePlugin
 else ifeq ($(OS), Darwin)

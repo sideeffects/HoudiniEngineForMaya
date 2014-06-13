@@ -38,6 +38,12 @@ class Asset {
 
         void resetSimulation();
 
+        MTime getTime() const;
+
+        void setTime(
+                const MTime &mayaTime
+                );
+
         MStatus compute(
                 const MPlug& plug,
                 MDataBlock& data,

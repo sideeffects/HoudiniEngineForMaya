@@ -938,6 +938,11 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             return MStatus::kFailure;
         }
 
+        // Set the time
+        MDataHandle inTimeHandle = data.inputValue(AssetNode::inTime);
+        MTime mayaTime = inTimeHandle.asTime();
+        myAsset->setTime(mayaTime);
+
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
 

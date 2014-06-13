@@ -737,12 +737,6 @@ Asset::compute(
     //of this class, which is at asset load time.
     typeHandle.set(myAssetInfo.type);
 
-    // Set the time
-    MPlug timePlug(myNode, AssetNode::inTime);
-    MDataHandle timeHandle = data.inputValue(timePlug);
-    MTime currentTime = timeHandle.asTime();
-    setTime(currentTime);
-
     //this figures out the Houdini asset inputs (OutputGeometry, Transform)
     //for inter-asset stuff
     computeAssetInputs(plug, data);

@@ -78,8 +78,8 @@ class Asset {
 
     public:
         HAPI_NodeInfo        myNodeInfo;
-        int myNumVisibleObjects;
-        int myNumObjects;
+        unsigned int myNumVisibleObjects;
+        unsigned int myNumObjects;
 
     private:
 

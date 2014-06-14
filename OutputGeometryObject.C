@@ -75,7 +75,7 @@ OutputGeometryObject::compute(
         MDataHandle geosHandle = objectHandle.child(AssetNode::outputGeos);
         MArrayDataHandle geoArrayHandle(geosHandle);
         MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
-        if(geosBuilder.elementCount() != myObjectInfo.geoCount)
+        if(geosBuilder.elementCount() != (unsigned int)(myObjectInfo.geoCount))
         {
             needToSyncOutputs = true;
         }

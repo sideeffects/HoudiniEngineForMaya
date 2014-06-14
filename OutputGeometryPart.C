@@ -1117,7 +1117,6 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
     else
     {
         // get material info
-        int matId = myMaterialInfo.id;
         HAPI_NodeInfo materialNodeInfo;
         HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
 

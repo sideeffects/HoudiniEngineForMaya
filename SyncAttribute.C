@@ -67,6 +67,9 @@ CreateAttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
     MFnCompoundAttribute* attrFn = NULL;
     bool invisible = myInvisibles.back() || parmInfo.invisible;
 
+    //MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
+
     if(!invisible)
     {
         attrFn = new MFnCompoundAttribute();
@@ -117,6 +120,7 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     bool invisible = myInvisibles.back() || parmInfo.invisible;
 
     MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(!invisible)
     {

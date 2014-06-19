@@ -124,9 +124,9 @@ Util::checkHAPIStatus(HAPI_Result stat)
     {
         int bufLen;
         HAPI_GetStatusStringBufLength(
-            HAPI_STATUS_RESULT, HAPI_STATUSVERBOSITY_ERRORS, &bufLen);
+            HAPI_STATUS_CALL_RESULT, HAPI_STATUSVERBOSITY_ERRORS, &bufLen);
         char * buffer = new char[bufLen];
-        HAPI_GetStatusString(HAPI_STATUS_RESULT, buffer);
+        HAPI_GetStatusString(HAPI_STATUS_CALL_RESULT, buffer);
         throw HAPIError(buffer);
     }
 }
@@ -206,7 +206,7 @@ Util::statusCheckLoop()
     int elapsedTime = 0;
     while(state > HAPI_STATE_MAX_READY_STATE)
     {
-            HAPI_GetStatus(HAPI_STATUS_STATE, &currState);
+            HAPI_GetStatus(HAPI_STATUS_COOK_STATE, &currState);
             state = (HAPI_State) currState;
 
 #ifdef _WIN32
@@ -235,7 +235,7 @@ Util::statusCheckLoop()
 
             int statusBufSize = 0;
             HAPI_GetStatusStringBufLength(
-                HAPI_STATUS_STATE, HAPI_STATUSVERBOSITY_ERRORS,
+                HAPI_STATUS_COOK_STATE, HAPI_STATUSVERBOSITY_ERRORS,
                 &statusBufSize);
 
             char * statusBuf = NULL;
@@ -243,7 +243,7 @@ Util::statusCheckLoop()
             if(statusBufSize > 0)
             {
                 statusBuf = new char[statusBufSize];
-                HAPI_GetStatusString(HAPI_STATUS_STATE, statusBuf);
+                HAPI_GetStatusString(HAPI_STATUS_COOK_STATE, statusBuf);
             }
 
             if(statusBuf != NULL && showProgressWindow)

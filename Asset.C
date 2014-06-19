@@ -343,10 +343,10 @@ Asset::Asset(
         MString assetName,
         MObject node
         ) :
-    myNode(node),
     // initialize values here because instantiating the asset could error out
     myNumVisibleObjects(0),
     myNumObjects(0),
+    myNode(node),
     myAssetInputs(NULL),
     myObjects(NULL),
     myObjectInfos(NULL)
@@ -383,7 +383,7 @@ Asset::Asset(
     if(assetNamesSH.size())
     {
         bool foundAsset = false;
-        for(int i = 0; i < (int) assetNamesSH.size(); i++)
+        for(unsigned int i = 0; i < assetNamesSH.size(); i++)
         {
             if(Util::getString(assetNamesSH[i]) == assetName)
             {
@@ -432,7 +432,7 @@ Asset::Asset(
     update();
 
     // objects
-    int objCount = myAssetInfo.objectCount;
+    unsigned int objCount = myAssetInfo.objectCount;
     myObjects = new OutputObject*[objCount];
     myNumVisibleObjects = 0;
     myNumObjects = objCount;
@@ -441,7 +441,7 @@ Asset::Asset(
     MString status = "Creating Objects...";
     Util::showProgressWindow(title, status, 0);
 
-    for(int i=0; i<objCount; i++)
+    for(unsigned int i=0; i<objCount; i++)
     {
         Util::updateProgressWindow(status, (int)((float) i *100.0f / (float) objCount));
         myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
@@ -454,7 +454,7 @@ Asset::~Asset()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    for(int i=0; i< myNumObjects; i++)
+    for(unsigned int i=0; i< myNumObjects; i++)
         delete myObjects[i];
     delete[] myObjects;
     delete[] myObjectInfos;
@@ -583,7 +583,7 @@ Asset::computeInstancerObjects(
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
     MArrayDataBuilder instancersBuilder = instancersHandle.builder();
     MIntArray instancedObjIds;
-    for(int i=0; i< myNumObjects; i++)
+    for(unsigned int i=0; i< myNumObjects; i++)
     {
         OutputObject* obj = myObjects[i];
         //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
@@ -652,7 +652,7 @@ Asset::computeGeometryObjects(
         needToSyncOutputs = true;
     }
 
-    for(int ii = 0; ii < myNumObjects; ii++)
+    for(unsigned int ii = 0; ii < myNumObjects; ii++)
     {
         OutputObject * obj = myObjects[ii];
 
@@ -678,10 +678,10 @@ Asset::computeGeometryObjects(
 
     // clean up extra elements
     // in case the number of objects shrinks
-    int objBuilderSizeCheck = objectsBuilder.elementCount();
+    unsigned int objBuilderSizeCheck = objectsBuilder.elementCount();
     if(objBuilderSizeCheck > myNumObjects)
     {
-        for(int ii = myNumObjects; ii < objBuilderSizeCheck; ii++)
+        for(unsigned int ii = myNumObjects; ii < objBuilderSizeCheck; ii++)
         {
             stat = objectsBuilder.removeElement(ii);
             CHECK_MSTATUS(stat);

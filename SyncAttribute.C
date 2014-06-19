@@ -67,8 +67,8 @@ CreateAttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
     MFnCompoundAttribute* attrFn = NULL;
     bool invisible = myInvisibles.back() || parmInfo.invisible;
 
-    MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
-    const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
+    //MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(!invisible)
     {
@@ -120,7 +120,7 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     bool invisible = myInvisibles.back() || parmInfo.invisible;
 
     MFnCompoundAttribute* parentAttrFn = myAttrFns.back();
-    const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(!invisible)
     {
@@ -469,7 +469,7 @@ SyncAttribute::doIt()
 
                 MString connectAttrFormat = "connectAttr ^1s ^2s;";
                 unsigned int connectionsLength = connections.length();
-                for(unsigned int i = 0; i < connections.length(); i += 2)
+                for(unsigned int i = 0; i < connectionsLength; i += 2)
                 {
                     MString connectAttrCmd;
                     connectAttrCmd.format(connectAttrFormat,

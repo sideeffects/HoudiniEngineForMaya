@@ -165,7 +165,7 @@ OutputInstancerObject::compute(
         MVectorArray scales = fnAAD.vectorArray("scale");
         MIntArray objectIndices = fnAAD.intArray("objectIndex");
 
-        int size = myPartInfo.pointCount;
+        unsigned int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
         HAPI_GetInstanceTransforms(myAssetId, myObjectInfo.id, 0, HAPI_SRT, instTransforms, 0, size);
 
@@ -173,7 +173,7 @@ OutputInstancerObject::compute(
         MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
         MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
 
-        for(int j=0; j<size; j++)
+        for(unsigned int j=0; j<size; j++)
         {
             HAPI_Transform it = instTransforms[j];
             MVector p(it.position[0], it.position[1], it.position[2]);

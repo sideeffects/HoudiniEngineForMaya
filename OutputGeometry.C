@@ -41,7 +41,7 @@ OutputGeometry::update()
             || myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE
             || myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
-        int partCount = myGeoInfo.partCount;
+        unsigned int partCount = myGeoInfo.partCount;
 
         // If partCount is different, recreate the array.
         if(myParts.size() != partCount)
@@ -49,7 +49,7 @@ OutputGeometry::update()
             myParts.clear();
             myParts.reserve(partCount);
             HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
-            for(int i = 0; i < partCount; i++)
+            for(unsigned int i = 0; i < partCount; i++)
             {
                 myParts.push_back(OutputGeometryPart(myAssetId,
                             myObjectId,
@@ -83,7 +83,7 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
     MDataHandle partsHandle = geoHandle.child(AssetNode::outputParts);
     MArrayDataHandle partsArrayHandle(partsHandle);
     MArrayDataBuilder partsBuilder = partsArrayHandle.builder();
-    if(partsBuilder.elementCount() != myGeoInfo.partCount)
+    if(partsBuilder.elementCount() != (unsigned int)(myGeoInfo.partCount))
     {
         needToSyncOutputs = true;
     }

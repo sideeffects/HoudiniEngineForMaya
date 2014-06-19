@@ -238,11 +238,11 @@ SyncOutputInstance::createOutput()
 
         MPlug houdiniInstanceAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniInstanceAttribute);
         houdiniInstanceAttributesPlug.selectAncestorLogicalIndex(myParentMultiIndex, AssetNode::outputInstancers);
-        int numHoudiniInstanceAttributes = houdiniInstanceAttributesPlug.numElements();
+        unsigned int numHoudiniInstanceAttributes = houdiniInstanceAttributesPlug.numElements();
 
         MPlug houdiniNameAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniNameAttribute);
         houdiniNameAttributesPlug.selectAncestorLogicalIndex(myParentMultiIndex, AssetNode::outputInstancers);
-        int numHoudiniNameAttributes = houdiniNameAttributesPlug.numElements();
+        unsigned int numHoudiniNameAttributes = houdiniNameAttributesPlug.numElements();
 
         for(unsigned int ii = 0; ii < numPoints; ii++)
         {
@@ -255,8 +255,6 @@ SyncOutputInstance::createOutput()
             MString nameAttrStr("");
             if(numHoudiniNameAttributes == numPoints)
                 nameAttrStr = houdiniNameAttrPlug.asString();
-
-            bool doneInstancing = false;
 
             instanceObjects(myAssetNodeObj, instancerTransform, ii, objectToInstanceName, instanceAttrStr, nameAttrStr);
         }

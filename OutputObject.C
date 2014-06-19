@@ -43,7 +43,6 @@ OutputObject::OutputObject(
     myNeverBuilt(true)
 {
     // Do a full update, ignoring what has changed
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
         // update object
@@ -65,7 +64,6 @@ MString OutputObject::getName() { return Util::getString(myObjectInfo.nameSH); }
 void
 OutputObject::update()
 {
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     myObjectInfo = myObjectControl->getObjectInfo(myObjectId);
 }
 

@@ -1111,7 +1111,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 MFnCompoundAttribute attrFn(attrObj);
                                 for(int i=0; i<parmInfo.size; i++)
                                 {
-                                    MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    //MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    MDataHandle elementHandle = myDataBlock.inputValue(plug.child(i));
                                     values[i] = elementHandle.asFloat();
                                 }
                             }
@@ -1140,7 +1141,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 MFnCompoundAttribute attrFn(attrObj);
                                 for(int i=0; i<parmInfo.size; i++)
                                 {
-                                    MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    //MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    MDataHandle elementHandle = myDataBlock.inputValue(plug.child(i));
                                     if(parmInfo.type == HAPI_PARMTYPE_TOGGLE)
                                     {
                                         values[i] = elementHandle.asBool();
@@ -1195,7 +1197,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 MFnCompoundAttribute attrFn(attrObj);
                                 for(int i=0; i<parmInfo.size; i++)
                                 {
-                                    MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    //MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
+                                    MDataHandle elementHandle = myDataBlock.inputValue(plug.child(i));
                                     const char* val = elementHandle.asString().asChar();
                                     HAPI_SetParmStringValue(myNodeInfo.id, val, parmInfo.id, i);
                                 }

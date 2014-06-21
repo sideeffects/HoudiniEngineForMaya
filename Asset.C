@@ -549,26 +549,6 @@ Asset::update()
 }
 
 void
-Asset::computeAssetInputs(const MPlug& plug, MDataBlock& data)
-{
-    assert(myAssetInfo.id >= 0);
-
-    MStatus status;
-
-    MPlug inputsPlug(myNode, AssetNode::input);
-
-    myAssetInputs->compute(data);
-
-    for(int i=0; i< myAssetInfo.maxGeoInputCount; i++)
-    {
-        MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
-        CHECK_MSTATUS(status);
-
-        myAssetInputs->setInput(i, data, inputPlug);
-    }
-}
-
-void
 Asset::computeInstancerObjects(
         const MPlug& plug,
         MDataBlock& data,
@@ -718,6 +698,26 @@ Asset::setTime(const MTime &mayaTime)
     HAPI_SetTime(hapiTimeSeconds);
 }
 
+void
+Asset::setInputs(const MPlug& plug, MDataBlock& data)
+{
+    assert(myAssetInfo.id >= 0);
+
+    MStatus status;
+
+    MPlug inputsPlug(myNode, AssetNode::input);
+
+    myAssetInputs->compute(data);
+
+    for(int i=0; i< myAssetInfo.maxGeoInputCount; i++)
+    {
+        MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
+        CHECK_MSTATUS(status);
+
+        myAssetInputs->setInput(i, data, inputPlug);
+    }
+}
+
 MStatus
 Asset::compute(
         const MPlug& plug,
@@ -736,10 +736,6 @@ Asset::compute(
     //The asset info struct (info) was set at the constructor
     //of this class, which is at asset load time.
     typeHandle.set(myAssetInfo.type);
-
-    //this figures out the Houdini asset inputs (OutputGeometry, Transform)
-    //for inter-asset stuff
-    computeAssetInputs(plug, data);
 
     HAPI_CookAsset(myAssetInfo.id, NULL);
 

@@ -943,6 +943,9 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         MTime mayaTime = inTimeHandle.asTime();
         myAsset->setTime(mayaTime);
 
+        // push the inputs to Houdini, such as transforms and geometries
+        myAsset->setInputs(plug, data);
+
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
 

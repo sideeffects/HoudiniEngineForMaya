@@ -44,6 +44,8 @@ class Asset {
                 const MTime &mayaTime
                 );
 
+        void setInputs(const MPlug& plug, MDataBlock& data);
+
         MStatus compute(
                 const MPlug& plug,
                 MDataBlock& data,
@@ -85,7 +87,6 @@ class Asset {
 
         void update();
 
-        void computeAssetInputs(const MPlug& plug, MDataBlock& data);
         void computeInstancerObjects(
                 const MPlug& plug,
                 MDataBlock& data,

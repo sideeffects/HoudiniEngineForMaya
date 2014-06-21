@@ -135,6 +135,36 @@ MObject AssetNode::useInstancerNode;
 
 std::vector<MObject> computeAttributes;
 
+template <typename T>
+static bool
+isPlugBelow(const MPlug &plug, const T &upper)
+{
+    MPlug currentPlug = plug;
+
+    while(true)
+    {
+        if(currentPlug == upper)
+        {
+            return true;
+        }
+
+        if(currentPlug.isChild())
+        {
+            currentPlug = currentPlug.parent();
+        }
+        else if(currentPlug.isElement())
+        {
+            currentPlug = currentPlug.array();
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return false;
+}
+
 void*
 AssetNode::creator()
 {
@@ -735,7 +765,8 @@ AssetNode::initialize()
     return MS::kSuccess;
 }
 
-AssetNode::AssetNode()
+AssetNode::AssetNode() :
+    myNeedToMarshalInput(false)
 {
     myAsset = NULL;
 
@@ -762,6 +793,11 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
     myResultsClean = false;
     setPlugDirty(plugBeingDirtied);
+
+    if(isPlugBelow(plugBeingDirtied, AssetNode::input))
+    {
+        myNeedToMarshalInput = true;
+    }
 
     affectedPlugs.append(MPlug(thisMObject(), AssetNode::output));
 
@@ -944,7 +980,10 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         myAsset->setTime(mayaTime);
 
         // push the inputs to Houdini, such as transforms and geometries
-        myAsset->setInputs(plug, data);
+        if(myNeedToMarshalInput)
+        {
+            myAsset->setInputs(plug, data);
+        }
 
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
@@ -981,6 +1020,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         }
 
         myResultsClean = true;
+
+        myNeedToMarshalInput = false;
 
         data.setClean(plug);
         return MStatus::kSuccess;
@@ -1178,6 +1219,8 @@ AssetNode::createAsset()
                 NULL
                 );
     }
+
+    myNeedToMarshalInput = true;
 }
 
 void

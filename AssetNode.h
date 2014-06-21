@@ -79,6 +79,7 @@ class AssetNode: public MPxTransform
         MString myOTLFilePath;
         MString myAssetName;
         bool myResultsClean;
+        bool myNeedToMarshalInput;
 
         typedef std::vector<MObject> MObjectVector;
         MObjectVector myDirtyParmAttributes;

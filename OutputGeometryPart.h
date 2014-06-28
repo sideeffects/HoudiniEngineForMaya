@@ -33,7 +33,10 @@ class OutputGeometryPart
 
         void createMesh(MDataHandle &dataHandle);
         void createParticle(MDataHandle &dataHandle);
-        void createCurves(MDataHandle &dataHandle);
+        void createCurves(
+                MDataHandle &dataHandle,
+                MDataHandle &curvesIsBezier
+                );
 
         void createVolume(MDataHandle &dataHandle);
         void    updateVolumeTransform(MDataHandle& handle);

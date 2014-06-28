@@ -265,10 +265,9 @@ OutputGeometryPart::compute(
         // Curve
         if(myPartInfo.isCurve)
         {
-            createCurves(curvesHandle);
-            MDataHandle isBezierHandle =
+            MDataHandle curvesIsBezierHandle =
                 handle.child(AssetNode::outputPartCurvesIsBezier);
-            isBezierHandle.setBool(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER);
+            createCurves(curvesHandle, curvesIsBezierHandle);
         }
     }
 
@@ -287,7 +286,10 @@ OutputGeometryPart::compute(
 }
 
 void
-OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
+OutputGeometryPart::createCurves(
+        MDataHandle &curvesHandle,
+        MDataHandle &curvesIsBezierHandle
+        )
 {
     MStatus status;
 
@@ -387,6 +389,8 @@ OutputGeometryPart::createCurves(MDataHandle &curvesHandle)
     }
 
     curvesArrayHandle.set(curvesBuilder);
+
+    curvesIsBezierHandle.setBool(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER);
 }
 
 static void

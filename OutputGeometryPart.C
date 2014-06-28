@@ -328,6 +328,22 @@ OutputGeometryPart::createCurves(
         else
             HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId, &order, i, 1);
 
+        // If there's not enough vertices, then don't try to create the curve.
+        if(numVertices < order)
+        {
+            // Need to make sure we clear out the curve that was created
+            // previously.
+            curve.setMObject(curveDataFn.create());
+
+            // The curve at i will have numVertices vertices, and may have
+            // some knots. The knot count will be numVertices + order for
+            // nurbs curves
+            vertexOffset += numVertices * 4;
+            knotOffset += numVertices + order;
+
+            continue;
+        }
+
         std::vector<float> vertices;
         vertices.resize(numVertices * HAPI_CV_VECTOR_SIZE);
         HAPI_GetCurveVertices(myAssetId, myObjectId, myGeoId, myPartId,

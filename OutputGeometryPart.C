@@ -115,6 +115,10 @@ OutputGeometryPart::update()
             hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
             Util::checkHAPIStatus(hstat);
         }
+        else
+        {
+            HAPI_CurveInfo_Init(&myCurveInfo);
+        }
     }
     catch (HAPIError& e)
     {
@@ -263,12 +267,9 @@ OutputGeometryPart::compute(
 #endif
 
         // Curve
-        if(myPartInfo.isCurve)
-        {
-            MDataHandle curvesIsBezierHandle =
-                handle.child(AssetNode::outputPartCurvesIsBezier);
-            createCurves(curvesHandle, curvesIsBezierHandle);
-        }
+        MDataHandle curvesIsBezierHandle =
+            handle.child(AssetNode::outputPartCurvesIsBezier);
+        createCurves(curvesHandle, curvesIsBezierHandle);
     }
 
     if(myNeverBuilt || myGeoInfo.hasMaterialChanged)
@@ -386,6 +387,15 @@ OutputGeometryPart::createCurves(
         // nurbs curves
         vertexOffset += numVertices * 4;
         knotOffset += numVertices + order;
+    }
+
+    // There may be curves created in the previous cook. So we need to clear
+    // the output attributes to remove any curves that may have been created
+    // previously.
+    for(int i = (int) curvesBuilder.elementCount();
+            i-- > myCurveInfo.curveCount;)
+    {
+        curvesBuilder.removeElement(i);
     }
 
     curvesArrayHandle.set(curvesBuilder);

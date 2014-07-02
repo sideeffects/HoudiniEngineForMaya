@@ -1026,11 +1026,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         data.setClean(plug);
         return MStatus::kSuccess;
     }
-    else
-    {
-        return MStatus::kUnknownParameter;
-    }
 
+    return MPxTransform::compute(plug, data);
 }
 
 bool

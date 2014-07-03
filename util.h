@@ -29,19 +29,19 @@ class HAPIError: public std::exception
         MString myMessage;
 };
 
-#define DISPLAY_MSG(displayMethod, msgFormat, ...) \
+#define DISPLAY_MSG(displayMethod, ...) \
     { \
         MString msg; \
-        msg.format((msgFormat), __VA_ARGS__); \
+        msg.format(__VA_ARGS__); \
         MGlobal::displayMethod(msg); \
     }
 
-#define DISPLAY_ERROR(msg, ...) \
-    DISPLAY_MSG(displayError, msg, __VA_ARGS__)
-#define DISPLAY_WARNING(msg, ...) \
-    DISPLAY_MSG(displayWarning, msg, __VA_ARGS__)
-#define DISPLAY_INFO(msg, ...) \
-    DISPLAY_MSG(displayInfo, msg, __VA_ARGS__)
+#define DISPLAY_ERROR(...) \
+    DISPLAY_MSG(displayError, __VA_ARGS__)
+#define DISPLAY_WARNING(...) \
+    DISPLAY_MSG(displayWarning, __VA_ARGS__)
+#define DISPLAY_INFO(...) \
+    DISPLAY_MSG(displayInfo, __VA_ARGS__)
 
 #define HAPI_FAIL(r) \
     ((r) != HAPI_RESULT_SUCCESS)

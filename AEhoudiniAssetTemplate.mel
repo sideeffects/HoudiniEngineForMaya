@@ -558,6 +558,41 @@ global proc AEhoudiniAssetParmReplace(string $houdiniAssetParmAttribute)
     }
 }
 
+global proc AEhoudiniAssetShowCookMessages(string $nodeName)
+{
+    string $cookMessages = `houdiniAsset -cookMessages $nodeName`;
+
+    string $window = "houdiniAssetShowCookMessages";
+    if(`window -exists $window`)
+    {
+        deleteUI -window $window;
+    }
+
+    window
+        -title ($nodeName + ": Cook Messages")
+        $window;
+    string $formLayout = `formLayout`;
+    string $cookMessagesField = `scrollField -editable false -text $cookMessages`;
+    string $closeButton = `button
+        -label "Close"
+        -command ("deleteUI -window " + $window)`;
+
+    formLayout -e
+        -attachForm $cookMessagesField "top" 0
+        -attachForm $cookMessagesField "left" 0
+        -attachForm $cookMessagesField "right" 0
+        -attachControl $cookMessagesField "bottom" 0 $closeButton
+
+        -attachNone $closeButton "top"
+        -attachForm $closeButton "left" 0
+        -attachForm $closeButton "right" 0
+        -attachForm $closeButton "bottom" 0
+
+        $formLayout;
+
+    showWindow $window;
+}
+
 global proc AEhoudiniAssetOptionsNew(string $attr)
 {
     global int $gAttributeEditorTemplateLabelWidth;
@@ -569,6 +604,10 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
     columnLayout
         -columnAttach "left" $gAttributeEditorTemplateLabelWidth
         buttonLayout;
+
+        button -label "Show Cook Messages"
+            -annotation "Show the cook messages that were generated from the cook."
+            showCookMessagesButton;
 
         button -label "Reset Simulation"
             -annotation "Resets all the simulation caches."
@@ -628,6 +667,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     string $optionsLayoutFull = $parent + "|optionsLayout";
 
     // buttonLayout
+    button -e
+        -c ("AEhoudiniAssetShowCookMessages " + $nodeName)
+        ($optionsLayoutFull + "|buttonLayout|showCookMessagesButton");
     button -e
         -c ("houdiniAsset -resetSimulation " + $nodeName)
         ($optionsLayoutFull + "|buttonLayout|resetSimulationButton");

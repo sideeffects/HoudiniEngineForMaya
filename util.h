@@ -68,7 +68,7 @@ class HAPIError: public std::exception
 #define DISPLAY_HAPI_STATUS(displayMethod) \
 { \
     GET_HAPI_STATUS(); \
-    MGlobal::displayMethod(hapiStatus); \
+    DISPLAY_MSG(displayMethod, hapiStatus); \
 }
 
 #define CHECK_HAPI_AND_RETURN(r, returnValue) \

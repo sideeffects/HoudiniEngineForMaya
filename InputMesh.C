@@ -12,13 +12,23 @@
 
 InputMesh::InputMesh(int assetId, int inputIdx) :
     Input(assetId, inputIdx),
-    myInputAssetId(0)
+    myInputObjectId(-1),
+    myInputGeoId(-1)
 {
-    HAPI_CreateGeoInput(myAssetId, myInputIdx, &myInputInfo);
+    CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
+
+    myInputObjectId = 0;
+    myInputGeoId = 0;
+
+    CHECK_HAPI(HAPI_ConnectAssetGeometry(
+                myInputAssetId, myInputObjectId,
+                myAssetId, myInputIdx
+                ));
 }
 
 InputMesh::~InputMesh()
 {
+    CHECK_HAPI(HAPI_DestroyAsset(myInputAssetId));
 }
 
 Input::AssetInputType
@@ -37,7 +47,10 @@ InputMesh::setInputTransform(MDataHandle &dataHandle)
 
     HAPI_TransformEuler transformEuler;
     HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(myInputAssetId, myInputInfo.objectId, transformEuler);
+    HAPI_SetObjectTransform(
+            myInputAssetId, myInputObjectId,
+            transformEuler
+            );
 }
 
 void
@@ -74,12 +87,18 @@ InputMesh::setInputGeo(
     faceCounts.get(fc);
 
     // Set the data
-    HAPI_SetPartInfo(myInputAssetId, myInputInfo.objectId,
-            myInputInfo.geoId, &partInfo);
-    HAPI_SetFaceCounts(myInputAssetId, myInputInfo.objectId,
-            myInputInfo.geoId, fc, 0, partInfo.faceCount);
-    HAPI_SetVertexList(myInputAssetId, myInputInfo.objectId,
-            myInputInfo.geoId, vl, 0, partInfo.vertexCount);
+    HAPI_SetPartInfo(
+            myInputAssetId, myInputObjectId, myInputGeoId,
+            &partInfo
+            );
+    HAPI_SetFaceCounts(
+            myInputAssetId, myInputObjectId, myInputGeoId,
+            fc, 0, partInfo.faceCount
+            );
+    HAPI_SetVertexList(
+            myInputAssetId, myInputObjectId, myInputGeoId,
+            vl, 0, partInfo.vertexCount
+            );
 
     // Set position attributes.
     HAPI_AttributeInfo pos_attr_info;
@@ -88,10 +107,16 @@ InputMesh::setInputGeo(
     pos_attr_info.storage            = HAPI_STORAGETYPE_FLOAT;
     pos_attr_info.count              = meshFn.numVertices();
     pos_attr_info.tupleSize          = 3;
-    HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info);
+    HAPI_AddAttribute(
+            myInputAssetId, myInputObjectId, myInputGeoId,
+            "P", &pos_attr_info
+            );
 
-    HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "P", &pos_attr_info,
-            meshFn.getRawPoints(NULL), 0, meshFn.numVertices());
+    HAPI_SetAttributeFloatData(
+            myInputAssetId, myInputObjectId, myInputGeoId,
+            "P", &pos_attr_info,
+            meshFn.getRawPoints(NULL), 0, meshFn.numVertices()
+            );
 
     // normals
     {
@@ -125,10 +150,15 @@ InputMesh::setInputGeo(
             attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
             attributeInfo.count = normalIds.length();
             attributeInfo.tupleSize = 3;
-            HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "N", &attributeInfo);
+            HAPI_AddAttribute(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    "N", &attributeInfo
+                    );
 
-            HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "N", &attributeInfo,
-                    &vertexNormals.front(), 0, normalIds.length());
+            HAPI_SetAttributeFloatData(myInputAssetId, myInputObjectId, myInputGeoId,
+                    "N", &attributeInfo,
+                    &vertexNormals.front(), 0, normalIds.length()
+                    );
         }
     }
 
@@ -187,15 +217,21 @@ InputMesh::setInputGeo(
             attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
             attributeInfo.count = vertexList.length();
             attributeInfo.tupleSize = 3;
-            HAPI_AddAttribute(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "uv", &attributeInfo);
+            HAPI_AddAttribute(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    "uv", &attributeInfo
+                    );
 
-            HAPI_SetAttributeFloatData(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId, "uv", &attributeInfo,
-                    &vertexUVs.front(), 0, vertexList.length());
+            HAPI_SetAttributeFloatData(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    "uv", &attributeInfo,
+                    &vertexUVs.front(), 0, vertexList.length()
+                    );
         }
     }
 
     // Commit it
-    HAPI_CommitGeo(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId);
+    HAPI_CommitGeo(myInputAssetId, myInputObjectId, myInputGeoId);
 
     delete[] vl;
     delete[] fc;

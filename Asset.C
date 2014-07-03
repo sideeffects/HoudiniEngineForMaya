@@ -739,7 +739,11 @@ Asset::compute(
 
     HAPI_CookAsset(myAssetInfo.id, NULL);
 
-    Util::statusCheckLoop();
+    if(!Util::statusCheckLoop())
+    {
+        GET_HAPI_STATUS_COOK();
+        DISPLAY_MSG(displayError, hapiStatus);
+    }
 
     update();
 

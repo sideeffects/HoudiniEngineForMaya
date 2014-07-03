@@ -73,6 +73,9 @@ class HAPIError: public std::exception
     DISPLAY_MSG(displayMethod, hapiStatus); \
 }
 
+#define GET_HAPI_STATUS_COOK() \
+    GET_HAPI_STATUS_TYPE(HAPI_STATUS_COOK_RESULT, HAPI_STATUSVERBOSITY_MESSAGES)
+
 #define CHECK_HAPI_AND_RETURN(r, returnValue) \
     CHECK_HAPI_AND(r, return returnValue;)
 

@@ -363,7 +363,7 @@ Asset::Asset(
         DISPLAY_WARNING("Could not load OTL file: ^1s\n"
                 "Attempting to instantiate asset anyway.",
                 otlFilePath);
-        DISPLAY_WARNING_HAPI_STATUS();
+        DISPLAY_WARNING_HAPI_STATUS_CALL();
     }
 
     // get the list of assets in the otl
@@ -398,7 +398,7 @@ Asset::Asset(
                     "Attempting to instantiate asset anyway.",
                     otlFilePath,
                     assetName);
-            DISPLAY_WARNING_HAPI_STATUS();
+            DISPLAY_WARNING_HAPI_STATUS_CALL();
         }
     }
 
@@ -417,7 +417,7 @@ Asset::Asset(
                 "in OTL file: ^2s\n",
                 otlFilePath,
                 assetName);
-        DISPLAY_ERROR_HAPI_STATUS();
+        DISPLAY_ERROR_HAPI_STATUS_CALL();
     }
 
     hapiResult = HAPI_GetAssetInfo(assetId, &myAssetInfo);

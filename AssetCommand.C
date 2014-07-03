@@ -65,7 +65,7 @@ class AssetSubCommandListAssets : public AssetSubCommand
             if(HAPI_FAIL(hapiResult))
             {
                 DISPLAY_ERROR("Could not load OTL file: ^1s", myOTLFilePath);
-                DISPLAY_ERROR_HAPI_STATUS();
+                DISPLAY_ERROR_HAPI_STATUS_CALL();
 
                 return MStatus::kFailure;
             }

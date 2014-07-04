@@ -34,7 +34,6 @@ class AssetCommand: public MPxCommand
 
     private:
         MString myHIPFilePath;
-        int        myResetSimulationAssetId;
         AssetOperationType myOperationType;
 
         AssetSubCommand* myAssetSubCommand;

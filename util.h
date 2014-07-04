@@ -33,6 +33,12 @@ class HAPIError: public std::exception
     { \
         MString msg; \
         msg.format(__VA_ARGS__); \
+        /* Workaround MString::format() bug when there are no positional
+         arguments at all */ \
+        if(!msg.length()) \
+        { \
+            msg.format("^1s", __VA_ARGS__); \
+        } \
         MGlobal::displayMethod(msg); \
     }
 

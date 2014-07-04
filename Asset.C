@@ -406,7 +406,7 @@ Asset::Asset(
     int assetId = -1;
     hapiResult = HAPI_InstantiateAsset(
             assetName.asChar(),
-            true,
+            false,
             &assetId
             );
     CHECK_HAPI(hapiResult);
@@ -419,6 +419,12 @@ Asset::Asset(
                 assetName);
         DISPLAY_ERROR_HAPI_STATUS_CALL();
     }
+
+    // Cook the asset here so that we know the number of inputs and number of
+    // objects to output. Ignore the error here, because the inputs and
+    // parameters are not marshalled in yet.
+    HAPI_CookAsset(assetId, NULL);
+    Util::statusCheckLoop();
 
     hapiResult = HAPI_GetAssetInfo(assetId, &myAssetInfo);
     CHECK_HAPI(hapiResult);

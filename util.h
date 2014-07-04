@@ -46,28 +46,30 @@ class HAPIError: public std::exception
 #define HAPI_FAIL(r) \
     ((r) != HAPI_RESULT_SUCCESS)
 
-#define GET_HAPI_STATUS() \
+#define GET_HAPI_STATUS_TYPE(status_type, verbosity) \
     std::vector<char> _hapiStatusBuffer; \
     { \
         int bufferLength; \
         HAPI_GetStatusStringBufLength( \
-            HAPI_STATUS_CALL_RESULT, HAPI_STATUSVERBOSITY_ERRORS, &bufferLength); \
+            (status_type), (verbosity), &bufferLength); \
         _hapiStatusBuffer.resize(bufferLength); \
-        HAPI_GetStatusString(HAPI_STATUS_CALL_RESULT, &_hapiStatusBuffer.front()); \
+        HAPI_GetStatusString((status_type), &_hapiStatusBuffer.front()); \
     } \
     const char * hapiStatus = &_hapiStatusBuffer.front();
 
+#define GET_HAPI_STATUS_CALL() \
+    GET_HAPI_STATUS_TYPE(HAPI_STATUS_CALL_RESULT, HAPI_STATUSVERBOSITY_ERRORS)
 
-#define DISPLAY_ERROR_HAPI_STATUS() \
-    DISPLAY_HAPI_STATUS(displayError)
-#define DISPLAY_WARNING_HAPI_STATUS() \
-    DISPLAY_HAPI_STATUS(displayWarning)
-#define DISPLAY_INFO_HAPI_STATUS() \
-    DISPLAY_HAPI_STATUS(displayInfo)
+#define DISPLAY_ERROR_HAPI_STATUS_CALL() \
+    DISPLAY_HAPI_STATUS_CALL(displayError)
+#define DISPLAY_WARNING_HAPI_STATUS_CALL() \
+    DISPLAY_HAPI_STATUS_CALL(displayWarning)
+#define DISPLAY_INFO_HAPI_STATUS_CALL() \
+    DISPLAY_HAPI_STATUS_CALL(displayInfo)
 
-#define DISPLAY_HAPI_STATUS(displayMethod) \
+#define DISPLAY_HAPI_STATUS_CALL(displayMethod) \
 { \
-    GET_HAPI_STATUS(); \
+    GET_HAPI_STATUS_CALL(); \
     DISPLAY_MSG(displayMethod, hapiStatus); \
 }
 
@@ -84,7 +86,7 @@ class HAPIError: public std::exception
     { \
         std::cerr << "HAPI error in " __FILE__ " at line " << __LINE__ << std::endl; \
         \
-        GET_HAPI_STATUS(); \
+        GET_HAPI_STATUS_CALL(); \
         \
         std::cerr << hapiStatus << std::endl; \
         \

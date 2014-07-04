@@ -119,6 +119,12 @@ OutputInstancerObject::update()
                 myUniqueInstObjNames.append(myInstancedObjectNames[i]);
             myInstancedObjectIndices.append((int) j);
         }
+
+        // Workaround a crash where we can't determine the object to instance.
+        if(!myInstancedObjectNames.length())
+        {
+            myInstancedObjectIndices = MIntArray(myPartInfo.pointCount, -1);
+        }
     }
 }
 

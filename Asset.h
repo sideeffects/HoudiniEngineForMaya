@@ -38,6 +38,8 @@ class Asset {
 
         void resetSimulation();
 
+        MString getCookMessages();
+
         MTime getTime() const;
 
         void setTime(

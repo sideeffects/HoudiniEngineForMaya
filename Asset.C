@@ -527,6 +527,19 @@ Asset::resetSimulation()
     HAPI_ResetSimulation(myAssetInfo.id);
 }
 
+MString
+Asset::getCookMessages()
+{
+    // Trigger a cook so that the asset will become the "last cooked asset",
+    // because HAPI_STATUS_COOK_RESULT only consider the "last cooked asset".
+    // In most cases, this shouldn't do any actual cooking.
+    HAPI_CookAsset(myAssetInfo.id, NULL);
+
+    GET_HAPI_STATUS_COOK();
+
+    return hapiStatus;
+}
+
 void
 Asset::update()
 {

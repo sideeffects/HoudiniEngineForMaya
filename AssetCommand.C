@@ -21,6 +21,8 @@
 #define kSaveHIPFlagLong "-saveHIP"
 #define kResetSimulationFlag "-rs"
 #define kResetSimulationFlagLong "-resetSimulation"
+#define kCookMessagesFlag "-cm"
+#define kCookMessagesFlagLong "-cookMessages"
 #define kReloadAssetFlag "-rl"
 #define kReloadAssetFlagLong "-reloadAsset"
 #define kSyncAttributesFlag "-sa"
@@ -43,6 +45,22 @@ class AssetSubCommandResetSimulation : public AssetSubCommandAsset
         virtual MStatus doIt()
         {
             getAsset()->resetSimulation();
+
+            return MStatus::kSuccess;
+        }
+};
+
+class AssetSubCommandCookMessages : public AssetSubCommandAsset
+{
+    public:
+        AssetSubCommandCookMessages(const MObject &assetNodeObj) :
+            AssetSubCommandAsset(assetNodeObj)
+        {
+        }
+
+        virtual MStatus doIt()
+        {
+            MPxCommand::setResult(getAsset()->getCookMessages());
 
             return MStatus::kSuccess;
         }
@@ -128,6 +146,11 @@ AssetCommand::newSyntax()
                                  kResetSimulationFlagLong,
                                  MSyntax::kSelectionItem));
 
+    // -cookMessages get the cook messages for an asset
+    CHECK_MSTATUS(syntax.addFlag(kCookMessagesFlag,
+                                 kCookMessagesFlagLong,
+                                 MSyntax::kSelectionItem));
+
     // -reloadAsset will unload and immediate reload the asset.  If an otl file
     // has changed due to an edit in Houdini, this should pick up the change
         // Note that this won't refresh the AE, you need to that separately after
@@ -181,6 +204,7 @@ AssetCommand::parseArgs(const MArgList &args)
                 ^ argData.isFlagSet(kSyncFlag)
                 ^ argData.isFlagSet(kSaveHIPFlag)
                 ^ argData.isFlagSet(kResetSimulationFlag)
+                ^ argData.isFlagSet(kCookMessagesFlag)
                 ^ argData.isFlagSet(kReloadAssetFlag)))
     {
         displayError("Exactly one of these flags must be specified:\n"
@@ -188,6 +212,7 @@ AssetCommand::parseArgs(const MArgList &args)
                 kSyncFlagLong "\n"
                 kSaveHIPFlagLong "\n"
                 kResetSimulationFlagLong "\n"
+                kCookMessagesFlagLong "\n"
                 kReloadAssetFlagLong "\n");
         return MStatus::kInvalidParameter;
     }
@@ -347,6 +372,28 @@ AssetCommand::parseArgs(const MArgList &args)
         }
 
         myAssetSubCommand = new AssetSubCommandResetSimulation(assetNodeObj);
+    }
+
+    if(argData.isFlagSet(kCookMessagesFlag))
+    {
+        myOperationType = kOperationSubCommand;
+
+        MObject assetNodeObj;
+        {
+            MSelectionList selection;
+
+            status = argData.getFlagArgument(kCookMessagesFlag, 0, selection);
+            if(!status)
+            {
+                displayError("Invalid first argument for \"" kCookMessagesFlagLong "\".");
+                return status;
+            }
+
+            selection.getDependNode(0, assetNodeObj);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
+
+        myAssetSubCommand = new AssetSubCommandCookMessages(assetNodeObj);
     }
 
     return MStatus::kSuccess;

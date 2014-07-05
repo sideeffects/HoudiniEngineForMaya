@@ -364,8 +364,54 @@ Util::MainProgressBar::hideProgress()
                 " $gMainProgressBar"));
 }
 
+Util::LogProgressBar::LogProgressBar(
+        double timeBetweenLog,
+        double waitTimeBeforeShowing
+        ) :
+    myTimeBetweenLog(timeBetweenLog),
+    myLastPrintedTime(0.0)
+{
+}
+
+Util::LogProgressBar::~LogProgressBar()
+{
+}
+
+void
+Util::LogProgressBar::displayProgress(
+        int progress,
+        int maxProgress,
+        const MString &status
+        )
+{
+    const double elapsedTimeTemp = elapsedTime();
+
+    if(elapsedTimeTemp < myLastPrintedTime + myTimeBetweenLog)
+    {
+        return;
+    }
+
+    MString progressString;
+    if(progress != -1 && maxProgress != -1)
+    {
+        progressString.format("(^1s%) ",
+                MString() + (int) ((progress / (float) maxProgress) * 100.0f));
+    }
+
+    MString message;
+    message.format(
+            "^1s(^2s) ^3s",
+            progressString,
+            elapsedTimeString(),
+            status
+            );
+    MGlobal::displayInfo(message);
+
+    myLastPrintedTime = elapsedTimeTemp;
+}
+
 bool
-Util::statusCheckLoop()
+Util::statusCheckLoop(bool wantMainProgressBar)
 {
     HAPI_State state = HAPI_STATE_STARTING_LOAD;
     int currState = (int) state;
@@ -373,7 +419,15 @@ Util::statusCheckLoop()
     int totalCookCount = -1;
 
     std::auto_ptr<ProgressBar> progressBar;
-    progressBar = std::auto_ptr<ProgressBar>(new MainProgressBar());
+    if(MGlobal::mayaState() == MGlobal::kInteractive
+            && wantMainProgressBar)
+    {
+        progressBar = std::auto_ptr<ProgressBar>(new MainProgressBar());
+    }
+    else
+    {
+        progressBar = std::auto_ptr<ProgressBar>(new LogProgressBar());
+    }
 
     progressBar->beginProgress();
 

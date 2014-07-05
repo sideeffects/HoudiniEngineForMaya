@@ -183,7 +183,27 @@ class Util {
                 virtual void hideProgress();
         };
 
-        static bool statusCheckLoop();
+        class LogProgressBar : public ProgressBar
+        {
+            public:
+                LogProgressBar(
+                        double timeBetweenLog = 2.0,
+                        double waitTimeBeforeShowing = 1.0
+                        );
+                virtual ~LogProgressBar();
+
+            protected:
+                virtual void displayProgress(
+                        int progress,
+                        int maxProgress,
+                        const MString &status
+                        );
+            private:
+                const double myTimeBetweenLog;
+                double myLastPrintedTime;
+        };
+
+        static bool statusCheckLoop(bool wantMainProgressBar = true);
 
         template <typename T>
         static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)

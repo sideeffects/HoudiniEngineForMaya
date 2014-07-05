@@ -443,17 +443,10 @@ Asset::Asset(
     myNumVisibleObjects = 0;
     myNumObjects = objCount;
 
-    MString title = "Houdini";
-    MString status = "Creating Objects...";
-    Util::showProgressWindow(title, status, 0);
-
     for(unsigned int i=0; i<objCount; i++)
     {
-        Util::updateProgressWindow(status, (int)((float) i *100.0f / (float) objCount));
         myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
     }
-
-    Util::hideProgressWindow();
 }
 
 Asset::~Asset()

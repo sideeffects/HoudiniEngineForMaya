@@ -133,6 +133,63 @@ Util::checkHAPIStatus(HAPI_Result stat)
     }
 }
 
+MString
+Util::escapeString(const MString &str)
+{
+    MString escapedStr;
+
+    for(unsigned int i = 0; i < str.length(); i++)
+    {
+        MString ch = str.substringW(i, i);
+        if(ch == "\n")
+        {
+            escapedStr += "\\n";
+        }
+        else if(ch == "\t")
+        {
+            escapedStr += "\\t";
+        }
+        else if(ch == "\b")
+        {
+            escapedStr += "\\b";
+        }
+        else if(ch == "\r")
+        {
+            escapedStr += "\\r";
+        }
+        else if(ch == "\f")
+        {
+            escapedStr += "\\f";
+        }
+        else if(ch == "\v")
+        {
+            escapedStr += "\\v";
+        }
+        else if(ch == "\a")
+        {
+            escapedStr += "\\a";
+        }
+        else if(ch == "\\")
+        {
+            escapedStr += "\\\\";
+        }
+        else if(ch == "\"")
+        {
+            escapedStr += "\\\"";
+        }
+        else if(ch == "\'")
+        {
+            escapedStr += "\\\'";
+        }
+        else
+        {
+            escapedStr += ch;
+        }
+    }
+
+    return escapedStr;
+}
+
 Util::ProgressBar::ProgressBar(double waitTimeBeforeShowing) :
     myWaitTimeBeforeShowing(waitTimeBeforeShowing),
     myIsShowing(false)
@@ -295,7 +352,7 @@ Util::MainProgressBar::displayProgress(
                 MString() + progress,
                 MString() + maxProgress,
                 elapsedTimeString(),
-                status
+                escapeString(status)
                 ));
     CHECK_MSTATUS(MGlobal::executeCommand(cmd));
 }

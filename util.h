@@ -128,6 +128,8 @@ class Util {
         static MString getParmAttrPrefix();
         static bool hasHAPICallFailed(HAPI_Result stat);
 
+        static MString escapeString(const MString &str);
+
         // Throws an exception if an error occurred
         static void checkHAPIStatus(HAPI_Result stat);
 

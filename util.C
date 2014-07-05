@@ -7,12 +7,14 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
+
+#include <memory>
 
 #include "util.h"
 
-//minimum cook time to show the progress bar, in milliseconds
-#define MIN_COOKTIME_FOR_PROGRESSBAR        1000
 //=============================================================================
 // HAPIError
 //=============================================================================
@@ -131,106 +133,207 @@ Util::checkHAPIStatus(HAPI_Result stat)
     }
 }
 
-//TODO: For each of the ifdefs, implement them for other platforms (mac and linux)
-void pumpmsgs()
+Util::ProgressBar::ProgressBar(double waitTimeBeforeShowing) :
+    myWaitTimeBeforeShowing(waitTimeBeforeShowing),
+    myIsShowing(false)
 {
-#ifdef _WIN32
-    MSG msg;
+}
 
-    while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
+Util::ProgressBar::~ProgressBar()
+{
+}
+
+void
+Util::ProgressBar::beginProgress()
+{
+    myTimer.beginTimer();
+}
+
+void
+Util::ProgressBar::updateProgress(
+        int progress,
+        int maxProgress,
+        const MString &status
+        )
+{
+    if(!isShowing()
+            && elapsedTime() > myWaitTimeBeforeShowing)
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        showProgress();
+        myIsShowing = true;
     }
-#endif
+
+    if(!isShowing())
+    {
+        return;
+    }
+
+    displayProgress(progress, maxProgress, status);
 }
 
 void
-Util::showProgressWindow(const MString & title, const MString & status, int progress)
+Util::ProgressBar::endProgress()
 {
-#ifdef _WIN32
-    MString cmdStr = "progressWindow -t \"";
-    cmdStr += title;
-    cmdStr += "\" -progress ";
-    cmdStr += progress;
-    cmdStr += " -status \"";
-    cmdStr += status;
-    cmdStr += "\" -ii false";
-    MGlobal::executeCommand(cmdStr);
-    pumpmsgs();
-#endif
+    if(isShowing())
+    {
+        hideProgress();
+        myIsShowing = false;
+    }
+
+    myTimer.endTimer();
+}
+
+bool
+Util::ProgressBar::isShowing() const
+{
+    return myIsShowing;
+}
+
+double
+Util::ProgressBar::elapsedTime()
+{
+    myTimer.endTimer();
+    return myTimer.elapsedTime();
+}
+
+MString
+Util::ProgressBar::elapsedTimeString()
+{
+    const int time = (int) elapsedTime();
+
+    const int hours = time / (60 * 60) % 60;
+    const int minutes = time / 60 % 60;
+    const int seconds = time % 60;
+
+    MString timeString;
+
+    if(hours > 0)
+    {
+        if(hours < 10)
+        {
+            timeString += "0";
+        }
+
+        timeString += hours;
+        timeString += ":";
+    }
+
+    if(minutes < 10)
+    {
+        timeString += "0";
+    }
+    timeString += minutes;
+    timeString += ":";
+
+    if(seconds < 10)
+    {
+        timeString += "0";
+    }
+    timeString += seconds;
+
+    return timeString;
 }
 
 void
-Util::updateProgressWindow(const MString & status, int progress)
+Util::ProgressBar::showProgress()
 {
-#ifdef _WIN32
-    MString cmdStr;
-    cmdStr = "progressWindow -e -progress ";
-    cmdStr += progress;
-
-    cmdStr += " -st \"";
-    cmdStr += status;
-    cmdStr += "\"";
-
-    MGlobal::executeCommand(cmdStr);
-    pumpmsgs();
-#endif
 }
 
 void
-Util::hideProgressWindow()
+Util::ProgressBar::displayProgress(
+        int progress,
+        int maxProgress,
+        const MString &status
+        )
 {
-#ifdef _WIN32
-    MString cmdStr = "progressWindow -endProgress";
-    MGlobal::executeCommand(cmdStr);
-    pumpmsgs();
-#endif
+}
+
+void
+Util::ProgressBar::hideProgress()
+{
+}
+
+Util::MainProgressBar::MainProgressBar(double waitTimeBeforeShowing) :
+    ProgressBar(waitTimeBeforeShowing)
+{
+}
+
+Util::MainProgressBar::~MainProgressBar()
+{
+}
+
+void
+Util::MainProgressBar::showProgress()
+{
+    CHECK_MSTATUS(MGlobal::executeCommand("progressBar -edit"
+                " -beginProgress"
+                " $gMainProgressBar"));
+}
+
+void
+Util::MainProgressBar::displayProgress(
+        int progress,
+        int maxProgress,
+        const MString &status
+        )
+{
+    if(progress == -1 || maxProgress == -1)
+    {
+        // unknown progress
+        const int maxTicks = 100;
+        const double maxTime = 2.0;
+        progress = ((int)(elapsedTime() * maxTicks / maxTime)) % maxTicks;
+        maxProgress = maxTicks;
+    }
+
+    MString cmd;
+    CHECK_MSTATUS(cmd.format(
+                "progressBar -edit -progress ^1s"
+                " -maxValue ^2s"
+                " -status \"(^3s) ^4s\""
+                " $gMainProgressBar",
+                MString() + progress,
+                MString() + maxProgress,
+                elapsedTimeString(),
+                status
+                ));
+    CHECK_MSTATUS(MGlobal::executeCommand(cmd));
+}
+
+void
+Util::MainProgressBar::hideProgress()
+{
+    CHECK_MSTATUS(MGlobal::executeCommand("progressBar -edit -endProgress"
+                " $gMainProgressBar"));
 }
 
 bool
 Util::statusCheckLoop()
 {
-    bool showProgressWindow = false;
     HAPI_State state = HAPI_STATE_STARTING_LOAD;
     int currState = (int) state;
-    int currCookCount = 0;
-    int totalCookCount = 1;
+    int currCookCount = -1;
+    int totalCookCount = -1;
 
-#ifdef _WIN32
-    int startTime = 0;
+    std::auto_ptr<ProgressBar> progressBar;
+    progressBar = std::auto_ptr<ProgressBar>(new MainProgressBar());
 
-    startTime = ::GetTickCount();
-#endif
+    progressBar->beginProgress();
 
-    int elapsedTime = 0;
     while(state > HAPI_STATE_MAX_READY_STATE)
     {
             HAPI_GetStatus(HAPI_STATUS_COOK_STATE, &currState);
             state = (HAPI_State) currState;
 
-#ifdef _WIN32
-            elapsedTime = (int)::GetTickCount() - startTime;
-#endif
-
-            if(elapsedTime > MIN_COOKTIME_FOR_PROGRESSBAR && !showProgressWindow)
-            {
-                MString title("Houdini");
-                MString status("Working...");
-                Util::showProgressWindow(title, status, 0);
-                showProgressWindow = true;
-            }
-
-            int percent = 0;
             if(state == HAPI_STATE_COOKING)
             {
                     HAPI_GetCookingCurrentCount(&currCookCount);
                     HAPI_GetCookingTotalCount(&totalCookCount);
-                    percent = (int) ((float) currCookCount*100 / (float) totalCookCount);
             }
             else
             {
-                    percent = (int)((elapsedTime / 1000) % 100);
+                currCookCount = -1;
+                totalCookCount = -1;
             }
 
             int statusBufSize = 0;
@@ -246,23 +349,21 @@ Util::statusCheckLoop()
                 HAPI_GetStatusString(HAPI_STATUS_COOK_STATE, statusBuf);
             }
 
-            if(statusBuf != NULL && showProgressWindow)
-            {
-                MString statusStr = statusBuf;
-                updateProgressWindow(statusStr, percent);
-#ifdef _WIN32
-                ::Sleep(100);
-#endif
-            }
+            progressBar->updateProgress(currCookCount, totalCookCount, statusBuf);
 
             if(statusBuf)
             {
                 delete[] statusBuf;
             }
+
+#ifdef _WIN32
+            Sleep(100);
+#else
+            usleep(100);
+#endif
     }
 
-    if(showProgressWindow)
-        Util::hideProgressWindow();
+    progressBar->endProgress();
 
     if(state == HAPI_STATE_READY_WITH_FATAL_ERRORS
         || state == HAPI_STATE_READY_WITH_COOK_ERRORS)

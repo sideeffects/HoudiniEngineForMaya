@@ -4,6 +4,7 @@
 #include <maya/MGlobal.h>
 #include <maya/MObject.h>
 #include <maya/MString.h>
+#include <maya/MTimer.h>
 #include <maya/MIntArray.h>
 
 #include <vector>
@@ -129,10 +130,58 @@ class Util {
 
         // Throws an exception if an error occurred
         static void checkHAPIStatus(HAPI_Result stat);
+
+        class ProgressBar
+        {
+            public:
+                ProgressBar(double waitTimeBeforeShowing = 1.0);
+                virtual ~ProgressBar();
+
+                void beginProgress();
+                void updateProgress(
+                        int progress,
+                        int maxProgress,
+                        const MString &status
+                        );
+                void endProgress();
+
+            protected:
+                bool isShowing() const;
+
+                double elapsedTime();
+                MString elapsedTimeString();
+
+                virtual void showProgress();
+                virtual void displayProgress(
+                        int progress,
+                        int maxProgress,
+                        const MString &status
+                        );
+                virtual void hideProgress();
+
+            private:
+                const double myWaitTimeBeforeShowing;
+                bool myIsShowing;
+                MTimer myTimer;
+        };
+
+        class MainProgressBar : public ProgressBar
+        {
+            public:
+                MainProgressBar(double waitTimeBeforeShowing = 1.0);
+                virtual ~MainProgressBar();
+
+            protected:
+                virtual void showProgress();
+                virtual void displayProgress(
+                        int progress,
+                        int maxProgress,
+                        const MString &status
+                        );
+                virtual void hideProgress();
+        };
+
         static bool statusCheckLoop();
-        static void showProgressWindow(const MString & title, const MString & status, int progress);
-        static void updateProgressWindow(const MString & status, int progress);
-        static void hideProgressWindow();
 
         template <typename T>
         static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)

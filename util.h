@@ -1,6 +1,7 @@
 #ifndef __util_h__
 #define __util_h__
 
+#include <maya/MComputation.h>
 #include <maya/MGlobal.h>
 #include <maya/MObject.h>
 #include <maya/MString.h>
@@ -147,6 +148,8 @@ class Util {
                         );
                 void endProgress();
 
+                bool isInterrupted();
+
             protected:
                 bool isShowing() const;
 
@@ -160,6 +163,7 @@ class Util {
                         const MString &status
                         );
                 virtual void hideProgress();
+                virtual bool checkInterrupted();
 
             private:
                 const double myWaitTimeBeforeShowing;
@@ -181,6 +185,7 @@ class Util {
                         const MString &status
                         );
                 virtual void hideProgress();
+                virtual bool checkInterrupted();
         };
 
         class LogProgressBar : public ProgressBar
@@ -193,14 +198,20 @@ class Util {
                 virtual ~LogProgressBar();
 
             protected:
+                virtual void showProgress();
                 virtual void displayProgress(
                         int progress,
                         int maxProgress,
                         const MString &status
                         );
+                virtual void hideProgress();
+                virtual bool checkInterrupted();
+
             private:
                 const double myTimeBetweenLog;
                 double myLastPrintedTime;
+
+                MComputation myComputation;
         };
 
         static bool statusCheckLoop(bool wantMainProgressBar = true);

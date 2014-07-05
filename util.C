@@ -241,6 +241,17 @@ Util::ProgressBar::endProgress()
 }
 
 bool
+Util::ProgressBar::isInterrupted()
+{
+    if(!isShowing())
+    {
+        return false;
+    }
+
+    return checkInterrupted();
+}
+
+bool
 Util::ProgressBar::isShowing() const
 {
     return myIsShowing;
@@ -310,6 +321,12 @@ Util::ProgressBar::hideProgress()
 {
 }
 
+bool
+Util::ProgressBar::checkInterrupted()
+{
+    return false;
+}
+
 Util::MainProgressBar::MainProgressBar(double waitTimeBeforeShowing) :
     ProgressBar(waitTimeBeforeShowing)
 {
@@ -324,6 +341,7 @@ Util::MainProgressBar::showProgress()
 {
     CHECK_MSTATUS(MGlobal::executeCommand("progressBar -edit"
                 " -beginProgress"
+                " -isInterruptable true"
                 " $gMainProgressBar"));
 }
 
@@ -357,6 +375,19 @@ Util::MainProgressBar::displayProgress(
     CHECK_MSTATUS(MGlobal::executeCommand(cmd));
 }
 
+bool
+Util::MainProgressBar::checkInterrupted()
+{
+    int interrupted;
+
+    CHECK_MSTATUS(MGlobal::executeCommand("progressBar -query"
+                " -isCancelled"
+                " $gMainProgressBar",
+                interrupted));
+
+    return interrupted;
+}
+
 void
 Util::MainProgressBar::hideProgress()
 {
@@ -375,6 +406,12 @@ Util::LogProgressBar::LogProgressBar(
 
 Util::LogProgressBar::~LogProgressBar()
 {
+}
+
+void
+Util::LogProgressBar::showProgress()
+{
+    myComputation.beginComputation();
 }
 
 void
@@ -408,6 +445,18 @@ Util::LogProgressBar::displayProgress(
     MGlobal::displayInfo(message);
 
     myLastPrintedTime = elapsedTimeTemp;
+}
+
+bool
+Util::LogProgressBar::checkInterrupted()
+{
+    return myComputation.isInterruptRequested();
+}
+
+void
+Util::LogProgressBar::hideProgress()
+{
+    myComputation.endComputation();
 }
 
 bool
@@ -465,6 +514,11 @@ Util::statusCheckLoop(bool wantMainProgressBar)
             if(statusBuf)
             {
                 delete[] statusBuf;
+            }
+
+            if(progressBar->isInterrupted())
+            {
+                HAPI_Interrupt();
             }
 
 #ifdef _WIN32

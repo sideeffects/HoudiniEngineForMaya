@@ -44,7 +44,7 @@ InputCurve::setInputTransform(MDataHandle &dataHandle)
 
     HAPI_TransformEuler transformEuler;
     HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(myCurveAssetInfo.id, 0, transformEuler);
+    HAPI_SetObjectTransform(myCurveAssetInfo.id, 0, &transformEuler);
 }
 
 void

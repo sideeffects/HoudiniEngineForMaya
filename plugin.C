@@ -83,7 +83,7 @@ initializeHAPI()
     cook_options.maxVerticesPerPrimitive = -1;
     cook_options.refineCurveToLinear = false;
     hstat = HAPI_Initialize(otl_dir.asChar(),
-            dso_dir.asChar(), cook_options, true, -1);
+            dso_dir.asChar(), &cook_options, true, -1);
     if(hstat != HAPI_RESULT_SUCCESS)
     {
         CHECK_HAPI(hstat);

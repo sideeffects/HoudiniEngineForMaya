@@ -16,11 +16,20 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
     Input(assetId, inputIdx),
     myInputAssetId(0)
 {
-    HAPI_CreateGeoInput(myAssetId, myInputIdx, &myInputInfo);
+    CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
+
+    myInputObjectId = 0;
+    myInputGeoId = 0;
+
+    CHECK_HAPI(HAPI_ConnectAssetGeometry(
+                myInputAssetId, myInputObjectId,
+                myAssetId, myInputIdx
+                ));
 }
 
 InputParticle::~InputParticle()
 {
+    CHECK_HAPI(HAPI_DestroyAsset(myInputAssetId));
 }
 
 Input::AssetInputType
@@ -39,7 +48,7 @@ InputParticle::setInputTransform(MDataHandle &dataHandle)
 
     HAPI_TransformEuler transformEuler;
     HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(myInputAssetId, myInputInfo.objectId, transformEuler);
+    HAPI_SetObjectTransform(myInputAssetId, myInputObjectId, transformEuler);
 }
 
 void
@@ -59,7 +68,7 @@ InputParticle::setAttributePointData(
     attributeInfo.tupleSize = tupleSize;
 
     HAPI_AddAttribute(
-            myInputAssetId, myInputInfo.objectId, myInputInfo.geoId,
+            myInputAssetId, myInputObjectId, myInputGeoId,
             attributeName,
             &attributeInfo
             );
@@ -68,7 +77,7 @@ InputParticle::setAttributePointData(
     {
         case HAPI_STORAGETYPE_FLOAT:
             HAPI_SetAttributeFloatData(
-                    myInputAssetId, myInputInfo.objectId, myInputInfo.geoId,
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     attributeName,
                     &attributeInfo,
                     static_cast<float*>(data),
@@ -77,7 +86,7 @@ InputParticle::setAttributePointData(
             break;
         case HAPI_STORAGETYPE_INT:
             HAPI_SetAttributeIntData(
-                    myInputAssetId, myInputInfo.objectId, myInputInfo.geoId,
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     attributeName,
                     &attributeInfo,
                     static_cast<int*>(data),
@@ -140,7 +149,7 @@ InputParticle::setInputGeo(
     partInfo.pointCount = particleFn.count();
 
     HAPI_SetPartInfo(
-            myInputAssetId, myInputInfo.objectId, myInputInfo.geoId,
+            myInputAssetId, myInputObjectId, myInputGeoId,
             &partInfo
             );
 
@@ -303,5 +312,5 @@ InputParticle::setInputGeo(
     }
 
     // Commit it
-    HAPI_CommitGeo(myInputAssetId, myInputInfo.objectId, myInputInfo.geoId);
+    HAPI_CommitGeo(myInputAssetId, myInputObjectId, myInputGeoId);
 }

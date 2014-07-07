@@ -30,7 +30,8 @@ class InputParticle : public Input
 
     protected:
         int myInputAssetId;
-        HAPI_GeoInputInfo myInputInfo;
+        int myInputObjectId;
+        int myInputGeoId;
 };
 
 #endif

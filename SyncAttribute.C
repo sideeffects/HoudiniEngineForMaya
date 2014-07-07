@@ -223,7 +223,10 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     attrObj = createNumericAttr(parmInfo);
                     break;
                 case HAPI_PARMTYPE_STRING:
-                case HAPI_PARMTYPE_FILE:
+                case HAPI_PARMTYPE_PATH_FILE:
+                case HAPI_PARMTYPE_PATH_FILE_GEO:
+                case HAPI_PARMTYPE_PATH_FILE_IMAGE:
+                case HAPI_PARMTYPE_PATH_NODE:
                     attrObj = createStringAttr(parmInfo);
                     break;
                 default:
@@ -264,7 +267,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
                     );
             tAttr.setNiceNameOverride(childNiceName);
             tAttr.setStorable(true);
-            if(parm.type == HAPI_PARMTYPE_FILE)
+            if(HAPI_ParmInfo_IsFilePath(&parm))
                 tAttr.setUsedAsFilename(true);
             cAttr.addChild(child);
         }
@@ -274,7 +277,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
     result = tAttr.create(attrName, attrName, MFnData::kString);
     tAttr.setStorable(true);
     tAttr.setNiceNameOverride(niceName);
-    if(parm.type == HAPI_PARMTYPE_FILE)
+    if(HAPI_ParmInfo_IsFilePath(&parm))
         tAttr.setUsedAsFilename(true);
 
     return result;

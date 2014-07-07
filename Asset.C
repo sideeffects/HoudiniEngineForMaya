@@ -962,7 +962,10 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         }
                         break;
                     case HAPI_PARMTYPE_STRING:
-                    case HAPI_PARMTYPE_FILE:
+                    case HAPI_PARMTYPE_PATH_FILE:
+                    case HAPI_PARMTYPE_PATH_FILE_GEO:
+                    case HAPI_PARMTYPE_PATH_FILE_IMAGE:
+                    case HAPI_PARMTYPE_PATH_NODE:
                         {
                             int* values = new int[parmInfo.size];
                             HAPI_GetParmStringValues(myNodeInfo.id, false, values, parmInfo.stringValuesIndex, parmInfo.size);
@@ -1198,7 +1201,10 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         }
                         break;
                     case HAPI_PARMTYPE_STRING:
-                    case HAPI_PARMTYPE_FILE:
+                    case HAPI_PARMTYPE_PATH_FILE:
+                    case HAPI_PARMTYPE_PATH_FILE_GEO:
+                    case HAPI_PARMTYPE_PATH_FILE_IMAGE:
+                    case HAPI_PARMTYPE_PATH_NODE:
                         {
                             if(parmInfo.size == 1)
                             {

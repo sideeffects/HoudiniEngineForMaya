@@ -49,7 +49,7 @@ InputMesh::setInputTransform(MDataHandle &dataHandle)
     HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
     HAPI_SetObjectTransform(
             myInputAssetId, myInputObjectId,
-            transformEuler
+            &transformEuler
             );
 }
 

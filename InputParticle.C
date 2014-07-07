@@ -48,7 +48,7 @@ InputParticle::setInputTransform(MDataHandle &dataHandle)
 
     HAPI_TransformEuler transformEuler;
     HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(myInputAssetId, myInputObjectId, transformEuler);
+    HAPI_SetObjectTransform(myInputAssetId, myInputObjectId, &transformEuler);
 }
 
 void

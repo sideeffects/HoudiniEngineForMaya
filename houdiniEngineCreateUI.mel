@@ -3,12 +3,6 @@ source houdiniEngineAssetSync;
 source houdiniEngineUtils;
 
 global proc
-houdiniEngine_debugWindowMenuClick()
-{
-    hapiDebugWindow();
-}
-
-global proc
 houdiniEngine_browseAssetLibrary()
 {
     string $filter = "Houdini Asset Library (*.otl);;All Files (*.*)";

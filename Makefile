@@ -261,7 +261,6 @@ CXXFILES = \
 	   plugin.C
 
 MELFILES = AEhoudiniAssetTemplate.mel \
-	   hapiDebugWindow.mel \
 	   houdiniEngineCreateUI.mel \
 	   houdiniEngineDeleteUI.mel \
 	   houdiniEngineAssetLibraryManager.mel \

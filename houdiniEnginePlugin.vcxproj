@@ -29,7 +29,6 @@
   <ItemGroup>
     <None Include="AEhoudiniAssetTemplate.mel" />
     <None Include="clShowIncludesToMake" />
-    <None Include="hapiDebugWindow.mel" />
     <None Include="houdiniEngineCreateUI.mel" />
     <None Include="houdiniEngineDeleteUI.mel" />
     <None Include="houdiniEngineOTLsManager.mel" />

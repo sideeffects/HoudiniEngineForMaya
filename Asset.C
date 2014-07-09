@@ -396,8 +396,8 @@ Asset::Asset(
             DISPLAY_WARNING("Could not find asset: ^1s\n"
                     "in OTL file: ^2s\n"
                     "Attempting to instantiate asset anyway.",
-                    otlFilePath,
-                    assetName);
+                    assetName,
+                    otlFilePath);
             DISPLAY_WARNING_HAPI_STATUS_CALL();
         }
     }
@@ -415,8 +415,8 @@ Asset::Asset(
     {
         DISPLAY_ERROR("Could not instantiate asset: ^1s\n"
                 "in OTL file: ^2s\n",
-                otlFilePath,
-                assetName);
+                assetName,
+                otlFilePath);
         DISPLAY_ERROR_HAPI_STATUS_CALL();
     }
 

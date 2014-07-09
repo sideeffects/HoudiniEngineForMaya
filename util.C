@@ -102,6 +102,10 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
     {
         name += "__button";
     }
+    else if(parm.type == HAPI_PARMTYPE_FOLDER)
+    {
+        name += "__folder";
+    }
 
     return getParmAttrPrefix() + "_" + name;
 }

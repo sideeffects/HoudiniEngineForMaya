@@ -26,12 +26,21 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
     string $children[] = `attributeQuery -node $nodeName -listChildren $attr`;
     for($child in $children)
     {
+        int $isFolder = endsWith($child, "__folder");
+
         string $type = `getAttr -type ($fullAttrName + "." + $child)`;
         int $isCompound = ($type == "TdataCompound");
         int $isMulti = `attributeQuery -node $nodeName -multi $child`;
 
         string $multiparm_suffix = "__multiSize";
         int $isMultiSize = endsWith($child, $multiparm_suffix);
+
+        int $isSimpleAttribute = `attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`
+            && !$isMultiSize
+            // We need to make sure this is not a folder. There could be
+            // folders that look like a float3 attribute, and -handlesAttribute
+            // will return true.
+            && !$isFolder;
 
         // separator
         if($type == ""
@@ -45,8 +54,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
             button -label $niceName -command ("setAttr " + $fullAttrName + "." + $child + " 1");
         }
         // simple attributes
-        else if(`attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`
-                && !$isMultiSize)
+        else if($isSimpleAttribute)
         {
             if(`addAttr -q -usedAsFilename ($fullAttrName + "." + $child)`)
             {

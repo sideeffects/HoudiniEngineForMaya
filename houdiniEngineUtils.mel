@@ -6,9 +6,23 @@ houdiniEngine_getSelectedAssetNodes()
     string $assetNodes[];
     for($selection in $selections)
     {
-        if(`objectType -isAType "houdiniAsset" $selection`)
+        string $current = $selection;
+        while(true)
         {
-            $assetNodes[size($assetNodes)] = $selection;
+            if(`objectType -isAType "houdiniAsset" $current`)
+            {
+                $assetNodes[size($assetNodes)] = $current;
+                break;
+            }
+
+            // Search the parents
+            string $parents[] = `listRelatives -parent $current`;
+            if(!size($parents))
+            {
+                break;
+            }
+
+            $current = $parents[0];
         }
     }
 

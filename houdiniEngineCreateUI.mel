@@ -256,6 +256,24 @@ houdiniEngine_createInstance(string $assetNode,
     connectAttr $outputScalePlug $newInstanceScalePlug;
 }
 
+global proc houdiniEngine_saveHipFile()
+{
+    string $filter = "Houdini Scene Files (*.hip);;All Files (*.*)";
+
+    string $results[] = `fileDialog2
+        -caption "Save Underlying Houdini Scene"
+        -okCaption "Save"
+        -fileFilter $filter
+        -fileMode 0`;
+
+    if(size($results) == 0)
+    {
+        return;
+    }
+
+    houdiniAsset -saveHIP $results[0];
+}
+
 global proc
 houdiniEngine_launchOrboltPageClick()
 {
@@ -303,7 +321,7 @@ houdiniEngineCreateUI()
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";
     menuItem -label "Save Underlying Houdini Scene..."
-        -command "saveHipFile";
+        -command "houdiniEngine_saveHipFile";
 
     menuItem -divider true;
 

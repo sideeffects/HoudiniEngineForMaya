@@ -389,7 +389,7 @@ Util::MainProgressBar::checkInterrupted()
                 " $gMainProgressBar",
                 interrupted));
 
-    return (bool) interrupted;
+    return interrupted != 0;
 }
 
 void

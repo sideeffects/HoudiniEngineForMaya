@@ -1156,7 +1156,7 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
             return 0;
         }
 
-        return myAsset->getAssetInfo().maxGeoInputCount;
+        return getAsset()->getAssetInfo().maxGeoInputCount;
     }
 
     return MPxTransform::internalArrayCount(plug, ctx);
@@ -1184,9 +1184,9 @@ AssetNode::getAsset()
 bool
 AssetNode::isAssetValid() const
 {
-    return myAsset != NULL
-        && myAsset->getOTLFilePath() == myOTLFilePath
-        && myAsset->getAssetName() == myAssetName;
+    return getAsset() != NULL
+        && getAsset()->getOTLFilePath() == myOTLFilePath
+        && getAsset()->getAssetName() == myAssetName;
 }
 
 void
@@ -1210,7 +1210,7 @@ AssetNode::createAsset()
     MDataBlock dataBlock = forceCache();
     if(!parmAttrObj.isNull())
     {
-        myAsset->setParmValues(
+        getAsset()->setParmValues(
                 dataBlock,
                 assetNodeFn,
                 NULL

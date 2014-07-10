@@ -438,10 +438,6 @@ SyncAttribute::SyncAttribute(
         ) :
     myAssetNodeObj(assetNodeObj)
 {
-    MFnDependencyNode assetNodeFn(myAssetNodeObj);
-
-    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
-    myNodeInfo = assetNode->getAsset()->myNodeInfo;
 }
 
 SyncAttribute::~SyncAttribute()
@@ -454,6 +450,9 @@ SyncAttribute::doIt()
     MStatus status;
 
     MFnDagNode assetNodeFn(myAssetNodeObj);
+
+    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+    HAPI_NodeInfo nodeInfo = assetNode->getAsset()->myNodeInfo;
 
     // Save the current state of the parameters
     MStringArray setAttrCmds;
@@ -496,8 +495,8 @@ SyncAttribute::doIt()
 
     {
         std::vector<HAPI_ParmInfo> parmInfos;
-        parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        parmInfos.resize(nodeInfo.parmCount);
+        HAPI_GetParameters(nodeInfo.id, &parmInfos[0], 0, parmInfos.size());
 
         // create root attribute
         MFnCompoundAttribute attrFn;
@@ -508,7 +507,7 @@ SyncAttribute::doIt()
 
         CreateAttrOperation operation(
                 reinterpret_cast<MFnCompoundAttribute*>(&reinterpret_cast<char&>(attrFn)),
-                myNodeInfo
+                nodeInfo
                 );
         Util::walkParm(parmInfos, operation);
 

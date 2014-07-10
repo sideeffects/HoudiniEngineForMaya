@@ -27,8 +27,6 @@ class SyncAttribute : public SubCommand
     protected:
         const MObject myAssetNodeObj;
 
-        HAPI_NodeInfo myNodeInfo;
-
         MDGModifier myDGModifier;
 };
 

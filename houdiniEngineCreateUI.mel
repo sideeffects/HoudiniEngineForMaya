@@ -275,7 +275,7 @@ global proc houdiniEngine_saveHipFile()
         return;
     }
 
-    houdiniAsset -saveHIP $results[0];
+    houdiniEngine -saveHIP $results[0];
 }
 
 global proc

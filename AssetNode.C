@@ -945,8 +945,7 @@ AssetNode::rebuildAsset()
 {
     destroyAsset();
 
-    // We don't have to explicitly create the Asset object. It'll be created
-    // the next time getAsset() is called.
+    createAsset();
 
     myResultsClean = false;
 }
@@ -965,9 +964,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
         != computeAttributes.end() && !myResultsClean)
     {
-        // make sure Asset is created
-        createAsset();
-
         // make sure asset was created properly
         if(!isAssetValid())
         {
@@ -1107,10 +1103,7 @@ AssetNode::setInternalValueInContext(
 
         // Create the Asset object as early as possible. We may need it before
         // the first compute. For example, Maya may call internalArrayCount.
-        if(isAssetValid())
-        {
-            createAsset();
-        }
+        rebuildAsset();
 
         return true;
     }
@@ -1176,8 +1169,6 @@ AssetNode::copyInternalData(MPxNode* node)
 Asset*
 AssetNode::getAsset()
 {
-    createAsset();
-
     return myAsset;
 }
 

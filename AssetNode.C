@@ -1167,7 +1167,7 @@ AssetNode::copyInternalData(MPxNode* node)
 }
 
 Asset*
-AssetNode::getAsset()
+AssetNode::getAsset() const
 {
     return myAsset;
 }

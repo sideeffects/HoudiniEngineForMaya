@@ -9,12 +9,6 @@ class SubCommand;
 
 class AssetCommand: public MPxCommand
 {
-    enum AssetOperationType
-    {
-        kOperationSubCommand,
-        kOperationInvalid
-    };
-
     public:
         static void* creator();
         static MSyntax newSyntax();
@@ -32,8 +26,6 @@ class AssetCommand: public MPxCommand
         MStatus parseArgs(const MArgList &args);
 
     private:
-        AssetOperationType myOperationType;
-
         SubCommand* mySubCommand;
 };
 

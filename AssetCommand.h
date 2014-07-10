@@ -12,7 +12,6 @@ class AssetCommand: public MPxCommand
     enum AssetOperationType
     {
         kOperationSubCommand,
-        kOperationSaveHip,
         kOperationInvalid
     };
 
@@ -33,7 +32,6 @@ class AssetCommand: public MPxCommand
         MStatus parseArgs(const MArgList &args);
 
     private:
-        MString myHIPFilePath;
         AssetOperationType myOperationType;
 
         SubCommand* mySubCommand;

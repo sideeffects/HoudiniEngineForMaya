@@ -17,8 +17,6 @@
 #define kLoadAssetFlagLong "-loadAsset"
 #define kSyncFlag "-syn"
 #define kSyncFlagLong "-sync"
-#define kSaveHIPFlag "-sh"
-#define kSaveHIPFlagLong "-saveHIP"
 #define kResetSimulationFlag "-rs"
 #define kResetSimulationFlagLong "-resetSimulation"
 #define kCookMessagesFlag "-cm"
@@ -136,10 +134,6 @@ AssetCommand::newSyntax()
     CHECK_MSTATUS(syntax.addFlag(kSyncFlag, kSyncFlagLong,
                 MSyntax::kSelectionItem));
 
-    // -saveHIP saves the contents of the current Houdini scene as a hip file
-    // expected arguments: hip_file_name - the name of the hip file to save
-    CHECK_MSTATUS(syntax.addFlag(kSaveHIPFlag, kSaveHIPFlagLong, MSyntax::kString));
-
     // -resetSimulation resets the simulation state for an asset.  This will clear
     // the DOPs cache for the asset.
     CHECK_MSTATUS(syntax.addFlag(kResetSimulationFlag,
@@ -176,7 +170,6 @@ AssetCommand::newSyntax()
 }
 
 AssetCommand::AssetCommand() :
-    myOperationType(kOperationInvalid),
     mySubCommand(NULL)
 {
 }
@@ -202,7 +195,6 @@ AssetCommand::parseArgs(const MArgList &args)
     if(!(argData.isFlagSet(kListAssetsFlag)
                 ^ argData.isFlagSet(kLoadAssetFlag)
                 ^ argData.isFlagSet(kSyncFlag)
-                ^ argData.isFlagSet(kSaveHIPFlag)
                 ^ argData.isFlagSet(kResetSimulationFlag)
                 ^ argData.isFlagSet(kCookMessagesFlag)
                 ^ argData.isFlagSet(kReloadAssetFlag)))
@@ -210,7 +202,6 @@ AssetCommand::parseArgs(const MArgList &args)
         displayError("Exactly one of these flags must be specified:\n"
                 kLoadAssetFlagLong "\n"
                 kSyncFlagLong "\n"
-                kSaveHIPFlagLong "\n"
                 kResetSimulationFlagLong "\n"
                 kCookMessagesFlagLong "\n"
                 kReloadAssetFlagLong "\n");
@@ -340,18 +331,6 @@ AssetCommand::parseArgs(const MArgList &args)
         mySubCommand = subCommand;
     }
 
-    if(argData.isFlagSet(kSaveHIPFlag))
-    {
-        myOperationType = kOperationSaveHip;
-
-        status = argData.getFlagArgument(kSaveHIPFlag, 0, myHIPFilePath);
-        if(!status)
-        {
-            displayError("Invalid argument for \"" kSaveHIPFlagLong "\".");
-            return status;
-        }
-    }
-
     if(argData.isFlagSet(kResetSimulationFlag))
     {
         myOperationType = kOperationSubCommand;
@@ -422,12 +401,6 @@ MStatus AssetCommand::redoIt()
     if(myOperationType == kOperationSubCommand)
     {
         return mySubCommand->redoIt();
-    }
-
-    if(myOperationType == kOperationSaveHip)
-    {
-        HAPI_SaveHIPFile(myHIPFilePath.asChar());
-        return MS::kSuccess;
     }
 
     return MS::kFailure;

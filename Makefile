@@ -241,6 +241,7 @@ CXXFILES = \
 	   SubCommand.C \
 	   AssetSubCommandLoadAsset.C \
 	   AssetSubCommandSync.C \
+	   EngineCommand.C \
 	   Asset.C \
 	   Input.C \
 	   InputAsset.C \

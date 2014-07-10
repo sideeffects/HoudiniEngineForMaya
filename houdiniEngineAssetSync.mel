@@ -1,6 +1,8 @@
 global proc
 houdiniEngine_syncSelectedAsset()
 {
+    string $old_selection[] = `ls -selection -long`;
+
     string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
     if(size($assetNodes) < 1)
     {
@@ -11,6 +13,8 @@ houdiniEngine_syncSelectedAsset()
     {
         houdiniEngine_syncAsset($assetNode);
     }
+
+    catchQuiet(`select -replace $old_selection`);
 }
 
 proc

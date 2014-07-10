@@ -176,10 +176,7 @@ AssetCommand::AssetCommand() :
 
 AssetCommand::~AssetCommand()
 {
-    if(myOperationType == kOperationSubCommand)
-    {
-        delete mySubCommand;
-    }
+    delete mySubCommand;
 }
 
 MStatus
@@ -210,8 +207,6 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kListAssetsFlag))
     {
-        myOperationType = kOperationSubCommand;
-
         MString otlFilePath;
         {
             status = argData.getFlagArgument(kListAssetsFlag, 0, otlFilePath);
@@ -229,8 +224,6 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kLoadAssetFlag))
     {
-        myOperationType = kOperationSubCommand;
-
         MString otlFilePath;
         {
             status = argData.getFlagArgument(kLoadAssetFlag, 0, otlFilePath);
@@ -259,8 +252,6 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kReloadAssetFlag))
     {
-        myOperationType = kOperationSubCommand;
-
         MString assetPath;
         {
             status = argData.getFlagArgument(kReloadAssetFlag, 0, assetPath);
@@ -287,8 +278,6 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kSyncFlag))
     {
-        myOperationType = kOperationSubCommand;
-
         MObject assetNodeObj;
         {
             MSelectionList selection;
@@ -333,8 +322,6 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kResetSimulationFlag))
     {
-        myOperationType = kOperationSubCommand;
-
         MObject assetNodeObj;
         {
             MSelectionList selection;
@@ -355,8 +342,6 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kCookMessagesFlag))
     {
-        myOperationType = kOperationSubCommand;
-
         MObject assetNodeObj;
         {
             MSelectionList selection;
@@ -388,40 +373,20 @@ MStatus AssetCommand::doIt(const MArgList& args)
         return status;
     }
 
-    if(myOperationType == kOperationSubCommand)
-    {
-        return mySubCommand->doIt();
-    }
-
-    return redoIt();
+    return mySubCommand->doIt();
 }
 
 MStatus AssetCommand::redoIt()
 {
-    if(myOperationType == kOperationSubCommand)
-    {
-        return mySubCommand->redoIt();
-    }
-
-    return MS::kFailure;
+    return mySubCommand->redoIt();
 }
 
 MStatus AssetCommand::undoIt()
 {
-    if(myOperationType == kOperationSubCommand)
-    {
-        return mySubCommand->undoIt();
-    }
-
-    return MS::kSuccess;
+    return mySubCommand->undoIt();
 }
 
 bool AssetCommand::isUndoable() const
 {
-    if(myOperationType == kOperationSubCommand)
-    {
-        return mySubCommand->isUndoable();
-    }
-
-    return false;
+    return mySubCommand->isUndoable();
 }

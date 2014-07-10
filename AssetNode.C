@@ -141,7 +141,7 @@ isPlugBelow(const MPlug &plug, const T &upper)
 {
     MPlug currentPlug = plug;
 
-    while(true)
+    for(;;)
     {
         if(currentPlug == upper)
         {

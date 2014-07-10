@@ -1229,14 +1229,12 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
             int destinationFilePathSH = 0;
             if(canRenderTexture)
             {
-                HAPI_Result hapiResult;
-
                 MString destinationFolderPath;
                 MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
                         destinationFolderPath);
 
                 // this could fail if the image planes don't exist
-                hapiResult = HAPI_ExtractImageToFile(
+                HAPI_ExtractImageToFile(
                         myAssetId,
                         myMaterialInfo.id,
                         HAPI_PNG_FORMAT_NAME,

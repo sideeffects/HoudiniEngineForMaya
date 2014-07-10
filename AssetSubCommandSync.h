@@ -1,14 +1,14 @@
 #ifndef __AssetSubCommandSync_h__
 #define __AssetSubCommandSync_h__
 
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 
 #include <maya/MObject.h>
 #include <maya/MDagModifier.h>
 
 #include <vector>
 
-class AssetSubCommandSync : public AssetSubCommandAsset
+class AssetSubCommandSync : public SubCommandAsset
 {
     public:
         AssetSubCommandSync(
@@ -37,7 +37,7 @@ class AssetSubCommandSync : public AssetSubCommandAsset
 
         MDagModifier myDagModifier;
 
-        typedef std::vector<AssetSubCommand*> AssetSyncs;
+        typedef std::vector<SubCommand*> AssetSyncs;
         AssetSyncs myAssetSyncs;
 };
 

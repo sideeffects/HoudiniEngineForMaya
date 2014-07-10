@@ -1,5 +1,5 @@
-#ifndef __AssetSubCommand_h__
-#define __AssetSubCommand_h__
+#ifndef __SubCommand_h__
+#define __SubCommand_h__
 
 #include <maya/MObject.h>
 #include <maya/MStatus.h>
@@ -7,11 +7,11 @@
 class AssetNode;
 class Asset;
 
-class AssetSubCommand
+class SubCommand
 {
     public:
-        AssetSubCommand();
-        virtual ~AssetSubCommand();
+        SubCommand();
+        virtual ~SubCommand();
 
         virtual MStatus doIt();
         virtual MStatus redoIt();
@@ -20,10 +20,10 @@ class AssetSubCommand
         virtual bool isUndoable() const;
 };
 
-class AssetSubCommandAsset : public AssetSubCommand
+class SubCommandAsset : public SubCommand
 {
     public:
-        AssetSubCommandAsset(const MObject &assetNodeObj);
+        SubCommandAsset(const MObject &assetNodeObj);
 
     protected:
         AssetNode* getAssetNode() const;

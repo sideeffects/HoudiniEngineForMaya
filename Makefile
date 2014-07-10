@@ -239,7 +239,7 @@ endif
 CXXFILES = \
 	   AssetNode.C \
 	   AssetCommand.C \
-	   AssetSubCommand.C \
+	   SubCommand.C \
 	   AssetSubCommandLoadAsset.C \
 	   AssetSubCommandSync.C \
 	   Asset.C \

@@ -4,9 +4,9 @@
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
 
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 
-class SyncOutputGeometryPart : public AssetSubCommand
+class SyncOutputGeometryPart : public SubCommand
 {
     public:
         SyncOutputGeometryPart(

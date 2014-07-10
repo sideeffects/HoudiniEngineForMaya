@@ -1,7 +1,7 @@
 #ifndef __SyncAttribute_h__
 #define __SyncAttribute_h__
 
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 
 #include <maya/MDGModifier.h>
 #include <maya/MObject.h>
@@ -10,7 +10,7 @@
 
 class MFnCompoundAttribute;
 
-class SyncAttribute : public AssetSubCommand
+class SyncAttribute : public SubCommand
 {
     public:
         SyncAttribute(

@@ -6,7 +6,7 @@
 #include "Asset.h"
 #include "AssetNode.h"
 #include "AssetCommand.h"
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 #include "AssetSubCommandLoadAsset.h"
 #include "AssetSubCommandSync.h"
 #include "util.h"
@@ -34,11 +34,11 @@
 #define kSyncTemplatedGeosFlag "-stm"
 #define kSyncTemplatedGeosFlagLong "-syncTemplatedGeos"
 
-class AssetSubCommandResetSimulation : public AssetSubCommandAsset
+class AssetSubCommandResetSimulation : public SubCommandAsset
 {
     public:
         AssetSubCommandResetSimulation(const MObject &assetNodeObj) :
-            AssetSubCommandAsset(assetNodeObj)
+            SubCommandAsset(assetNodeObj)
         {
         }
 
@@ -50,11 +50,11 @@ class AssetSubCommandResetSimulation : public AssetSubCommandAsset
         }
 };
 
-class AssetSubCommandCookMessages : public AssetSubCommandAsset
+class AssetSubCommandCookMessages : public SubCommandAsset
 {
     public:
         AssetSubCommandCookMessages(const MObject &assetNodeObj) :
-            AssetSubCommandAsset(assetNodeObj)
+            SubCommandAsset(assetNodeObj)
         {
         }
 
@@ -66,7 +66,7 @@ class AssetSubCommandCookMessages : public AssetSubCommandAsset
         }
 };
 
-class AssetSubCommandListAssets : public AssetSubCommand
+class AssetSubCommandListAssets : public SubCommand
 {
     public:
         AssetSubCommandListAssets(const MString &otlFilePath) :
@@ -177,7 +177,7 @@ AssetCommand::newSyntax()
 
 AssetCommand::AssetCommand() :
     myOperationType(kOperationInvalid),
-    myAssetSubCommand(NULL)
+    mySubCommand(NULL)
 {
 }
 
@@ -185,7 +185,7 @@ AssetCommand::~AssetCommand()
 {
     if(myOperationType == kOperationSubCommand)
     {
-        delete myAssetSubCommand;
+        delete mySubCommand;
     }
 }
 
@@ -231,7 +231,7 @@ AssetCommand::parseArgs(const MArgList &args)
             }
         }
 
-        myAssetSubCommand = new AssetSubCommandListAssets(
+        mySubCommand = new AssetSubCommandListAssets(
                 otlFilePath
                 );
     }
@@ -260,7 +260,7 @@ AssetCommand::parseArgs(const MArgList &args)
             }
         }
 
-        myAssetSubCommand = new AssetSubCommandLoadAsset(
+        mySubCommand = new AssetSubCommandLoadAsset(
                 otlFilePath,
                 assetName
                 );
@@ -291,7 +291,7 @@ AssetCommand::parseArgs(const MArgList &args)
         AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
         assetNode->rebuildAsset();
 
-        myAssetSubCommand = new AssetSubCommandSync(assetNodeObj);
+        mySubCommand = new AssetSubCommandSync(assetNodeObj);
     }
 
     if(argData.isFlagSet(kSyncFlag))
@@ -337,7 +337,7 @@ AssetCommand::parseArgs(const MArgList &args)
             subCommand->setSyncOutputTemplatedGeos();
         }
 
-        myAssetSubCommand = subCommand;
+        mySubCommand = subCommand;
     }
 
     if(argData.isFlagSet(kSaveHIPFlag))
@@ -371,7 +371,7 @@ AssetCommand::parseArgs(const MArgList &args)
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
 
-        myAssetSubCommand = new AssetSubCommandResetSimulation(assetNodeObj);
+        mySubCommand = new AssetSubCommandResetSimulation(assetNodeObj);
     }
 
     if(argData.isFlagSet(kCookMessagesFlag))
@@ -393,7 +393,7 @@ AssetCommand::parseArgs(const MArgList &args)
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
 
-        myAssetSubCommand = new AssetSubCommandCookMessages(assetNodeObj);
+        mySubCommand = new AssetSubCommandCookMessages(assetNodeObj);
     }
 
     return MStatus::kSuccess;
@@ -411,7 +411,7 @@ MStatus AssetCommand::doIt(const MArgList& args)
 
     if(myOperationType == kOperationSubCommand)
     {
-        return myAssetSubCommand->doIt();
+        return mySubCommand->doIt();
     }
 
     return redoIt();
@@ -421,7 +421,7 @@ MStatus AssetCommand::redoIt()
 {
     if(myOperationType == kOperationSubCommand)
     {
-        return myAssetSubCommand->redoIt();
+        return mySubCommand->redoIt();
     }
 
     if(myOperationType == kOperationSaveHip)
@@ -437,7 +437,7 @@ MStatus AssetCommand::undoIt()
 {
     if(myOperationType == kOperationSubCommand)
     {
-        return myAssetSubCommand->undoIt();
+        return mySubCommand->undoIt();
     }
 
     return MS::kSuccess;
@@ -447,7 +447,7 @@ bool AssetCommand::isUndoable() const
 {
     if(myOperationType == kOperationSubCommand)
     {
-        return myAssetSubCommand->isUndoable();
+        return mySubCommand->isUndoable();
     }
 
     return false;

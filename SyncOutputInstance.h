@@ -4,11 +4,11 @@
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
 
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 
 class MDagPath;
 
-class SyncOutputInstance : public AssetSubCommand
+class SyncOutputInstance : public SubCommand
 {
     public:
         SyncOutputInstance(

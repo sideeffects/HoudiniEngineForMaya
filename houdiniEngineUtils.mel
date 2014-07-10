@@ -1,7 +1,7 @@
 global proc string[]
 houdiniEngine_getSelectedAssetNodes()
 {
-    string $selections[] = `ls -selection`;
+    string $selections[] = `ls -selection -long`;
 
     string $assetNodes[];
     for($selection in $selections)
@@ -16,7 +16,7 @@ houdiniEngine_getSelectedAssetNodes()
             }
 
             // Search the parents
-            string $parents[] = `listRelatives -parent $current`;
+            string $parents[] = `listRelatives -parent -fullPath $current`;
             if(!size($parents))
             {
                 break;

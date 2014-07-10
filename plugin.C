@@ -2,6 +2,7 @@
 
 #include <maya/MFnPlugin.h>
 
+#include "EngineCommand.h"
 #include "AssetCommand.h"
 #include "AssetNode.h"
 #include "FluidVelocityConvert.h"
@@ -143,6 +144,13 @@ initializePlugin(MObject obj)
             );
 #endif
 
+    status = plugin.registerCommand(
+            EngineCommand::commandName,
+            EngineCommand::creator,
+            EngineCommand::newSyntax
+            );
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -162,6 +170,9 @@ uninitializePlugin(MObject obj)
     status = plugin.deregisterNode(FluidVelocityConvert::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 #endif
+
+    status = plugin.deregisterCommand(EngineCommand::commandName);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.deregisterCommand("houdiniAsset");
     CHECK_MSTATUS_AND_RETURN_IT(status);

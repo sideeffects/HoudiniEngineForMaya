@@ -5,7 +5,7 @@
 
 #include <maya/MSyntax.h>
 
-class AssetSubCommand;
+class SubCommand;
 
 class AssetCommand: public MPxCommand
 {
@@ -36,7 +36,7 @@ class AssetCommand: public MPxCommand
         MString myHIPFilePath;
         AssetOperationType myOperationType;
 
-        AssetSubCommand* myAssetSubCommand;
+        SubCommand* mySubCommand;
 };
 
 #endif

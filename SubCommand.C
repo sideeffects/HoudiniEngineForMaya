@@ -1,48 +1,48 @@
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 
 #include <maya/MFnDependencyNode.h>
 
 #include "AssetNode.h"
 
-AssetSubCommand::AssetSubCommand()
+SubCommand::SubCommand()
 {
 }
 
-AssetSubCommand::~AssetSubCommand()
+SubCommand::~SubCommand()
 {
 }
 
 MStatus
-AssetSubCommand::doIt()
+SubCommand::doIt()
 {
     return MStatus::kSuccess;
 }
 
 MStatus
-AssetSubCommand::redoIt()
+SubCommand::redoIt()
 {
     return MStatus::kSuccess;
 }
 
 MStatus
-AssetSubCommand::undoIt()
+SubCommand::undoIt()
 {
     return MStatus::kSuccess;
 }
 
 bool
-AssetSubCommand::isUndoable() const
+SubCommand::isUndoable() const
 {
     return false;
 }
 
-AssetSubCommandAsset::AssetSubCommandAsset(const MObject &assetNodeObj) :
+SubCommandAsset::SubCommandAsset(const MObject &assetNodeObj) :
     myAssetNodeObj(assetNodeObj)
 {
 }
 
 AssetNode*
-AssetSubCommandAsset::getAssetNode() const
+SubCommandAsset::getAssetNode() const
 {
     MFnDependencyNode assetNodeFn(myAssetNodeObj);
 
@@ -52,7 +52,7 @@ AssetSubCommandAsset::getAssetNode() const
 }
 
 Asset*
-AssetSubCommandAsset::getAsset() const
+SubCommandAsset::getAsset() const
 {
     Asset* asset = getAssetNode()->getAsset();
 

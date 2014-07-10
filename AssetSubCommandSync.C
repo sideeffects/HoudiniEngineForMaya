@@ -15,7 +15,7 @@
 AssetSubCommandSync::AssetSubCommandSync(
         const MObject &assetNodeObj
         ) :
-    AssetSubCommandAsset(assetNodeObj),
+    SubCommandAsset(assetNodeObj),
     mySyncAll(true),
     mySyncAttributes(false),
     mySyncOutputs(false),
@@ -73,7 +73,7 @@ AssetSubCommandSync::doIt()
     // attributes
     if(mySyncAll || mySyncAttributes)
     {
-        AssetSubCommand* syncOutput = new SyncAttribute(myAssetNodeObj);
+        SubCommand* syncOutput = new SyncAttribute(myAssetNodeObj);
         syncOutput->doIt();
 
         myAssetSyncs.push_back(syncOutput);
@@ -120,7 +120,7 @@ AssetSubCommandSync::doIt()
 
             if(mySyncOutputHidden || visible || instanced)
             {
-                AssetSubCommand* syncOutput = new SyncOutputObject(elemPlug,
+                SubCommand* syncOutput = new SyncOutputObject(elemPlug,
                         myAssetNodeObj, visible, mySyncOutputTemplatedGeos);
                 syncOutput->doIt();
 
@@ -137,7 +137,7 @@ AssetSubCommandSync::doIt()
         {
             MPlug elemPlug = instancersPlug[i];
 
-            AssetSubCommand* syncOutput = new SyncOutputInstance(elemPlug, i, myAssetNodeObj);
+            SubCommand* syncOutput = new SyncOutputInstance(elemPlug, i, myAssetNodeObj);
             syncOutput->doIt();
 
             myAssetSyncs.push_back(syncOutput);

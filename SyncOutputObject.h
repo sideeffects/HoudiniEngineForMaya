@@ -6,9 +6,9 @@
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
 
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 
-class SyncOutputObject : public AssetSubCommand
+class SyncOutputObject : public SubCommand
 {
     public:
         SyncOutputObject(
@@ -40,7 +40,7 @@ class SyncOutputObject : public AssetSubCommand
         MDagModifier myDagModifier;
 
         // TODO: change this into an SyncOutputGeometryPart
-        typedef std::vector<AssetSubCommand*> AssetSyncs;
+        typedef std::vector<SubCommand*> AssetSyncs;
         AssetSyncs myAssetSyncs;
 };
 

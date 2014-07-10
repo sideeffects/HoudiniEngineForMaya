@@ -1,14 +1,14 @@
 #ifndef __AssetSubCommandLoadAsset_h__
 #define __AssetSubCommandLoadAsset_h__
 
-#include "AssetSubCommand.h"
+#include "SubCommand.h"
 
 #include <maya/MDagModifier.h>
 #include <maya/MString.h>
 
 class AssetSubCommandSync;
 
-class AssetSubCommandLoadAsset : public AssetSubCommand
+class AssetSubCommandLoadAsset : public SubCommand
 {
     public:
         AssetSubCommandLoadAsset(

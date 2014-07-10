@@ -211,6 +211,8 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
 global proc
 houdiniEngine_reloadSelectedAssets()
 {
+    string $old_selection[] = `ls -selection -long`;
+
     string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
     if(size($assetNodes) < 1)
     {
@@ -221,6 +223,8 @@ houdiniEngine_reloadSelectedAssets()
     {
         houdiniAsset -reloadAsset $assetNode;
     }
+
+    catchQuiet(`select -replace $old_selection`);
 }
 
 global proc

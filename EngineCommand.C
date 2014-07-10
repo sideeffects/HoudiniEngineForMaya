@@ -8,6 +8,8 @@
 
 #include "SubCommand.h"
 
+#define kHoudiniVersionFlag "-hv"
+#define kHoudiniVersionFlagLong "-houdiniVersion"
 #define kSaveHIPFlag "-sh"
 #define kSaveHIPFlagLong "-saveHIP"
 
@@ -32,6 +34,31 @@ class EngineSubCommandSaveHIPFile : public SubCommand
         MString myHIPFilePath;
 };
 
+class EngineSubCommandHoudiniVersion : public SubCommand
+{
+    public:
+        virtual MStatus doIt()
+        {
+            int major, minor, build;
+
+            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &major);
+            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &minor);
+            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &build);
+
+            MString version_string;
+            version_string.format(
+                    "^1s.^2s.^3s",
+                    MString() + major,
+                    MString() + minor,
+                    MString() + build
+                    );
+
+            MPxCommand::setResult(version_string);
+
+            return MStatus::kSuccess;
+        }
+};
+
 void* EngineCommand::creator()
 {
     return new EngineCommand();
@@ -41,6 +68,9 @@ MSyntax
 EngineCommand::newSyntax()
 {
     MSyntax syntax;
+
+    // -houdiniVersion returns the Houdini version that's being used.
+    CHECK_MSTATUS(syntax.addFlag(kHoudiniVersionFlag, kHoudiniVersionFlagLong));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file
     // expected arguments: hip_file_name - the name of the hip file to save
@@ -70,13 +100,19 @@ EngineCommand::parseArgs(const MArgList &args)
     }
 
     if(!(
-                argData.isFlagSet(kSaveHIPFlag)
+                argData.isFlagSet(kHoudiniVersionFlag)
+                ^ argData.isFlagSet(kSaveHIPFlag)
         ))
     {
         displayError("Exactly one of these flags must be specified:\n"
                 kSaveHIPFlagLong "\n"
                 );
         return MStatus::kInvalidParameter;
+    }
+
+    if(argData.isFlagSet(kHoudiniVersionFlag))
+    {
+        mySubCommand = new EngineSubCommandHoudiniVersion();
     }
 
     if(argData.isFlagSet(kSaveHIPFlag))

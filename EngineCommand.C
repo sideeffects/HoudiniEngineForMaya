@@ -10,6 +10,8 @@
 
 #define kHoudiniVersionFlag "-hv"
 #define kHoudiniVersionFlagLong "-houdiniVersion"
+#define kHoudiniEngineVersionFlag "-hev"
+#define kHoudiniEngineVersionFlagLong "-houdiniEngineVersion"
 #define kSaveHIPFlag "-sh"
 #define kSaveHIPFlagLong "-saveHIP"
 
@@ -59,6 +61,31 @@ class EngineSubCommandHoudiniVersion : public SubCommand
         }
 };
 
+class EngineSubCommandHoudiniEngineVersion : public SubCommand
+{
+    public:
+        virtual MStatus doIt()
+        {
+            int major, minor, api;
+
+            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &major);
+            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &minor);
+            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &api);
+
+            MString version_string;
+            version_string.format(
+                    "^1s.^2s (API: ^3s)",
+                    MString() + major,
+                    MString() + minor,
+                    MString() + api
+                    );
+
+            MPxCommand::setResult(version_string);
+
+            return MStatus::kSuccess;
+        }
+};
+
 void* EngineCommand::creator()
 {
     return new EngineCommand();
@@ -71,6 +98,9 @@ EngineCommand::newSyntax()
 
     // -houdiniVersion returns the Houdini version that's being used.
     CHECK_MSTATUS(syntax.addFlag(kHoudiniVersionFlag, kHoudiniVersionFlagLong));
+
+    // -houdiniVersion returns the Houdini version that's being used.
+    CHECK_MSTATUS(syntax.addFlag(kHoudiniEngineVersionFlag, kHoudiniEngineVersionFlagLong));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file
     // expected arguments: hip_file_name - the name of the hip file to save
@@ -101,6 +131,7 @@ EngineCommand::parseArgs(const MArgList &args)
 
     if(!(
                 argData.isFlagSet(kHoudiniVersionFlag)
+                ^ argData.isFlagSet(kHoudiniEngineVersionFlag)
                 ^ argData.isFlagSet(kSaveHIPFlag)
         ))
     {
@@ -113,6 +144,11 @@ EngineCommand::parseArgs(const MArgList &args)
     if(argData.isFlagSet(kHoudiniVersionFlag))
     {
         mySubCommand = new EngineSubCommandHoudiniVersion();
+    }
+
+    if(argData.isFlagSet(kHoudiniEngineVersionFlag))
+    {
+        mySubCommand = new EngineSubCommandHoudiniEngineVersion();
     }
 
     if(argData.isFlagSet(kSaveHIPFlag))

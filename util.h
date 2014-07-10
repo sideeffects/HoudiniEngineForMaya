@@ -166,7 +166,7 @@ class Util {
                 virtual bool checkInterrupted();
 
             private:
-                const double myWaitTimeBeforeShowing;
+                double myWaitTimeBeforeShowing;
                 bool myIsShowing;
                 MTimer myTimer;
         };
@@ -208,7 +208,7 @@ class Util {
                 virtual bool checkInterrupted();
 
             private:
-                const double myTimeBetweenLog;
+                double myTimeBetweenLog;
                 double myLastPrintedTime;
 
                 MComputation myComputation;

@@ -42,7 +42,9 @@ class AssetSubCommandResetSimulation : public SubCommandAsset
 
         virtual MStatus doIt()
         {
-            getAsset()->resetSimulation();
+            GET_COMMAND_ASSET_OR_RETURN_FAIL();
+
+            asset->resetSimulation();
 
             return MStatus::kSuccess;
         }
@@ -58,7 +60,9 @@ class AssetSubCommandCookMessages : public SubCommandAsset
 
         virtual MStatus doIt()
         {
-            MPxCommand::setResult(getAsset()->getCookMessages());
+            GET_COMMAND_ASSET_OR_RETURN_FAIL();
+
+            MPxCommand::setResult(asset->getCookMessages());
 
             return MStatus::kSuccess;
         }

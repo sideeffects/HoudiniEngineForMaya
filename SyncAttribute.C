@@ -449,10 +449,11 @@ SyncAttribute::doIt()
 {
     MStatus status;
 
+    GET_COMMAND_ASSET_OR_RETURN_FAIL();
+
     MFnDagNode assetNodeFn(myAssetNodeObj);
 
-    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
-    HAPI_NodeInfo nodeInfo = assetNode->getAsset()->myNodeInfo;
+    HAPI_NodeInfo nodeInfo = asset->myNodeInfo;
 
     // Save the current state of the parameters
     MStringArray setAttrCmds;

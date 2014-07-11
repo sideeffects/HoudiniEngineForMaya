@@ -4,6 +4,8 @@
 #include <maya/MObject.h>
 #include <maya/MStatus.h>
 
+#include "util.h"
+
 class AssetNode;
 class Asset;
 
@@ -32,5 +34,16 @@ class SubCommandAsset : public SubCommand
     protected:
         MObject myAssetNodeObj;
 };
+
+#define GET_COMMAND_ASSET_OR_RETURN_FAIL() \
+    Asset* asset = getAsset(); \
+    if(!asset) \
+    { \
+        MFnDependencyNode assetNodeFn(myAssetNodeObj); \
+        DISPLAY_ERROR("^1s: The node contains an invalid asset." \
+                " Check the OTL file path and asset name.", \
+                assetNodeFn.name()); \
+        return MStatus::kFailure; \
+    }
 
 #endif

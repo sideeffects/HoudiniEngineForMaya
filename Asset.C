@@ -398,7 +398,6 @@ Asset::Asset(
                     "Attempting to instantiate asset anyway.",
                     assetName,
                     otlFilePath);
-            DISPLAY_WARNING_HAPI_STATUS_CALL();
         }
     }
 
@@ -417,7 +416,9 @@ Asset::Asset(
                 "in OTL file: ^2s\n",
                 assetName,
                 otlFilePath);
-        DISPLAY_ERROR_HAPI_STATUS_CALL();
+
+        GET_HAPI_STATUS_COOK();
+        DISPLAY_ERROR(hapiStatus);
 
         // Do nothing else if the asset is invalid.
         return;

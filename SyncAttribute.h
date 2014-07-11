@@ -10,7 +10,7 @@
 
 class MFnCompoundAttribute;
 
-class SyncAttribute : public SubCommand
+class SyncAttribute : public SubCommandAsset
 {
     public:
         SyncAttribute(
@@ -25,8 +25,6 @@ class SyncAttribute : public SubCommand
         virtual bool isUndoable() const;
 
     protected:
-        const MObject myAssetNodeObj;
-
         MDGModifier myDGModifier;
 };
 

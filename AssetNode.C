@@ -1197,6 +1197,12 @@ AssetNode::createAsset()
 
     myAsset = new Asset(myOTLFilePath, myAssetName, thisMObject());
 
+    if(!myAsset->isValid())
+    {
+        destroyAsset();
+        return;
+    }
+
     MFnDependencyNode assetNodeFn(thisMObject());
     MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
 

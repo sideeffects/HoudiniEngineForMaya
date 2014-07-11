@@ -969,6 +969,12 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         // make sure asset was created properly
         if(!isAssetValid())
         {
+            DISPLAY_ERROR("^1s: Could not instantiate asset: ^2s\n"
+                    "in OTL file: ^3s\n",
+                    name(),
+                    myAssetName,
+                    myOTLFilePath);
+
             return MStatus::kFailure;
         }
 

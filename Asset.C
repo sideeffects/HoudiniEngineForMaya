@@ -435,6 +435,18 @@ Asset::Asset(
     hapiResult = HAPI_GetNodeInfo(myAssetInfo.nodeId, & myNodeInfo);
     CHECK_HAPI(hapiResult);
 
+    // Warn the user if the OTL path is not what was originally requested.
+    if(Util::getString(myAssetInfo.filePathSH) != otlFilePath)
+    {
+        DISPLAY_WARNING("The asset: ^1s\n"
+                "was instantiated from: ^2s\n"
+                "but the expected path was: ^3s",
+                assetName,
+                Util::getString(myAssetInfo.filePathSH),
+                otlFilePath
+                );
+    }
+
     myAssetInputs = new Inputs(myAssetInfo.id);
     myAssetInputs->setNumInputs(myAssetInfo.maxGeoInputCount);
 

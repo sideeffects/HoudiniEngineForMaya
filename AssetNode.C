@@ -1192,7 +1192,6 @@ bool
 AssetNode::isAssetValid() const
 {
     return getAsset() != NULL
-        && getAsset()->getOTLFilePath() == myOTLFilePath
         && getAsset()->getAssetName() == myAssetName;
 }
 

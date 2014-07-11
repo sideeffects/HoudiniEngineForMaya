@@ -436,7 +436,7 @@ getConnectedChildrenPlugs(MPlugArray &connections, const MPlug &parentPlug)
 SyncAttribute::SyncAttribute(
         const MObject &assetNodeObj
         ) :
-    myAssetNodeObj(assetNodeObj)
+    SubCommandAsset(assetNodeObj)
 {
 }
 

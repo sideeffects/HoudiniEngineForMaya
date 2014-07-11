@@ -1153,7 +1153,6 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
     {
         if(!isAssetValid())
         {
-            Util::displayWarningForNode(typeName, "Attempting to get input array size with an invalid asset.");
             return 0;
         }
 

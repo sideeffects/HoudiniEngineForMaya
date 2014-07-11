@@ -418,6 +418,9 @@ Asset::Asset(
                 assetName,
                 otlFilePath);
         DISPLAY_ERROR_HAPI_STATUS_CALL();
+
+        // Do nothing else if the asset is invalid.
+        return;
     }
 
     // Cook the asset here so that we know the number of inputs and number of

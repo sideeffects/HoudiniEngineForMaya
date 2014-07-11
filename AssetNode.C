@@ -16,6 +16,8 @@
 #include "MayaTypeID.h"
 #include "util.h"
 
+#include <cassert>
+
 MString AssetNode::typeName("houdiniAsset");
 MTypeId AssetNode::typeId(MayaTypeID_HoudiniAssetNode);
 
@@ -1183,6 +1185,8 @@ AssetNode::isAssetValid() const
 void
 AssetNode::createAsset()
 {
+    assert(!myAsset);
+
     MStatus status;
 
     if(isAssetValid())
@@ -1190,7 +1194,6 @@ AssetNode::createAsset()
         return;
     }
 
-    destroyAsset();
 
     myAsset = new Asset(myOTLFilePath, myAssetName, thisMObject());
 

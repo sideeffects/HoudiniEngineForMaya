@@ -1111,7 +1111,16 @@ AssetNode::setInternalValueInContext(
 
         // Create the Asset object as early as possible. We may need it before
         // the first compute. For example, Maya may call internalArrayCount.
-        rebuildAsset();
+
+        // When the AssetNode is first created, setInternalValueInContext()
+        // will be called with default values. But we don't want to try to
+        // create the Asset at that time, since it'll result in errors that's
+        // not caused by the user. So make sure the asset name is at least set
+        // to avoid getting false errors.
+        if(myAssetName.length())
+        {
+            rebuildAsset();
+        }
 
         return true;
     }

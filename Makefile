@@ -268,6 +268,8 @@ MELFILES = AEhoudiniAssetTemplate.mel \
 	   houdiniEngineUtils.mel \
 	   houdiniEngineAssetSync.mel
 
+PYFILES =
+
 OBJ_DIR = .obj/maya$(MAYA_VERSION)
 
 OBJFILES = $(patsubst %.C, $(OBJ_DIR)/%.o, $(CXXFILES))
@@ -286,7 +288,8 @@ endif
 # version, the file can also be used to set environment variables.
 DST_MODULE_ABSOLUTE = $(DST_DIR)/houdiniEngine-maya$(MAYA_VERSION)
 DST_PLUG_IN = $(DST_PLUG_INS_DIR)/$(SONAME)
-DST_SCRIPTS = $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(MELFILES))
+DST_SCRIPTS = $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(MELFILES)) \
+	      $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(PYFILES))
 
 # check build requirement
 ifeq ($(OS), Linux)
@@ -365,6 +368,10 @@ else ifeq ($(OS), Darwin)
 endif
 
 $(DST_SCRIPTS_DIR)/%.mel: %.mel
+	@mkdir -p $(dir $(@))
+	cp $(<) $(@)
+
+$(DST_SCRIPTS_DIR)/%.py: %.py
 	@mkdir -p $(dir $(@))
 	cp $(<) $(@)
 

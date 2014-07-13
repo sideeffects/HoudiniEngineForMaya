@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -104,6 +105,14 @@ def get_installed_assets():
     return installed_assets_root
 
 def load_asset(otl_file, asset):
+    # Workaround for missing node type
+    print "load_asset:", asset
+    for asset_in_otl in cmds.houdiniAsset(listAssets = otl_file):
+        print "in otl:", asset_in_otl
+        if asset == re.sub("[a-zA-Z_]*/", "", asset_in_otl):
+            asset = asset_in_otl
+            break
+
     # HAPI calls are done asynchronously, which means we could be running
     # Python code in a separate thread. This could cause a GIL deadlock. Make
     # sure we call load asset from MEL to avoid a GIL deadlock.

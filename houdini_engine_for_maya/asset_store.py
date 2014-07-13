@@ -187,7 +187,7 @@ def create_asset_entries(entries):
 
     cmds.setParent(upLevel = True)
 
-def refresh_asset_entries():
+def refresh_asset_entries(*args):
     if not cmds.window(asset_store_window, exists = True):
         return
 
@@ -205,6 +205,9 @@ def refresh_asset_entries():
 
     cmds.setParent(upLevel = True)
 
+def close_asset_store_window(*args):
+    cmds.deleteUI(asset_store_window)
+
 def show_asset_store_window():
     if cmds.window(asset_store_window, exists = True):
         cmds.showWindow(asset_store_window)
@@ -213,7 +216,16 @@ def show_asset_store_window():
     cmds.window(
             asset_store_window,
             title = "Orbolt Asset Browser",
+            menuBar = True,
             )
+
+    cmds.menu(label = "File", tearOff = True)
+
+    cmds.menuItem(label = "Refresh Asset List", command = refresh_asset_entries)
+    cmds.menuItem(divider = True)
+    cmds.menuItem(label = "Close", command = close_asset_store_window)
+
+    cmds.setParent(menu = True, upLevel = True);
 
     refresh_asset_entries()
 

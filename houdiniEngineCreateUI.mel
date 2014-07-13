@@ -315,6 +315,12 @@ houdiniEngineCreateUI()
     menuItem -label "Asset Library Manager..."
         -command "houdiniEngineAssetLibraryManager";
 
+    menuItem -divider true;
+
+    menuItem -label "Orbolt Asset Browser..."
+        -sourceType "python"
+        -command "import houdini_engine_for_maya.asset_store\nhoudini_engine_for_maya.asset_store.show_asset_store_window()";
+
     menuItem -label "Get Assets from Orbolt..."
         -command "houdiniEngine_launchOrboltPageClick";
 

@@ -268,7 +268,8 @@ MELFILES = AEhoudiniAssetTemplate.mel \
 	   houdiniEngineUtils.mel \
 	   houdiniEngineAssetSync.mel
 
-PYFILES = houdini_engine_for_maya/__init__.py
+PYFILES = houdini_engine_for_maya/__init__.py \
+	  houdini_engine_for_maya/asset_store.py
 
 OBJ_DIR = .obj/maya$(MAYA_VERSION)
 

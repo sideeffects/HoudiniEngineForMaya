@@ -125,15 +125,28 @@ def load_asset(otl_file, asset):
 def create_asset_entry(asset):
     form_layout = cmds.formLayout(width = asset_size, height = asset_size)
 
-    otl_file = os.path.join(get_store_otls_path(), asset["otl_file"])
-    asset_name = asset["node_type_name"]
+    if "otl_file" in asset:
+        otl_file = os.path.join(get_store_otls_path(), asset["otl_file"])
+        asset_name = asset["node_type_name"]
 
-    cmds.symbolButton(
-            annotation = asset["descriptive_name"],
-            image = os.path.join(get_store_icons_path(), asset["icon"]),
-            width = asset_size, height = asset_size,
-            command = lambda *args: load_asset(otl_file, asset_name)
-            )
+        cmds.symbolButton(
+                annotation = asset["descriptive_name"],
+                image = os.path.join(get_store_icons_path(), asset["icon"]),
+                width = asset_size, height = asset_size,
+                command = lambda *args: load_asset(otl_file, asset_name)
+                )
+    elif "update_available" in asset and asset["update_available"]:
+        cmds.symbolButton(
+                annotation = asset["descriptive_name"],
+                image = os.path.join(get_store_icons_path(), asset["icon"]),
+                width = asset_size, height = asset_size,
+                )
+        cmds.text(
+                label = "Update available. Use Houdini to update asset.",
+                width = asset_size, height = asset_size,
+                wordWrap = True,
+                )
+
     text = cmds.text(
             label = asset["descriptive_name"],
             backgroundColor = [0,0,0],

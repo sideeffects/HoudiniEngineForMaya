@@ -11,6 +11,7 @@ child_entries_margin = 5
 child_assets_column = 3
 
 asset_store_window = "houdiniEngineAssetStoreWindow"
+change_user_menu_item = "houdiniEngineAssetStoreChangeUserMenuItem"
 asset_entries_scroll_layout = "houdiniEngineAssetStoreEntriesScrollLayout"
 
 def get_store_path():
@@ -187,6 +188,31 @@ def create_asset_entries(entries):
 
     cmds.setParent(upLevel = True)
 
+def change_user(user):
+    current_user = user
+
+    refresh_asset_entries()
+
+def change_user_post_menu_command(*args):
+    cmds.menu(
+            change_user_menu_item,
+            edit = True,
+            deleteAllItems = True,
+            )
+
+    cmds.setParent(change_user_menu_item, menu = True)
+
+    users_root = get_users()
+
+    current_user = get_store_current_user()
+
+    for user in users_root["users"]:
+        cmds.menuItem(
+                label = user,
+                command = lambda user=user: change_user(user),
+                radioButton = user == current_user
+                )
+
 def refresh_asset_entries(*args):
     if not cmds.window(asset_store_window, exists = True):
         return
@@ -221,6 +247,15 @@ def show_asset_store_window():
 
     cmds.menu(label = "File", tearOff = True)
 
+    cmds.menuItem(
+            change_user_menu_item,
+            label = "Change User",
+            subMenu = True,
+            postMenuCommand = change_user_post_menu_command,
+            )
+    cmds.setParent(menu = True, upLevel = True);
+
+    cmds.menuItem(divider = True)
     cmds.menuItem(label = "Refresh Asset List", command = refresh_asset_entries)
     cmds.menuItem(divider = True)
     cmds.menuItem(label = "Close", command = close_asset_store_window)

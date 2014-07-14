@@ -106,9 +106,7 @@ def get_installed_assets():
 
 def load_asset(otl_file, asset):
     # Workaround for missing node type
-    print "load_asset:", asset
     for asset_in_otl in cmds.houdiniAsset(listAssets = otl_file):
-        print "in otl:", asset_in_otl
         if asset == re.sub("[a-zA-Z_]*/", "", asset_in_otl):
             asset = asset_in_otl
             break

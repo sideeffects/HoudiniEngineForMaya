@@ -73,6 +73,9 @@ def get_store_otls_path():
 def get_store_icons_path():
     return os.path.join(get_store_user_path(), "icons")
 
+def get_store_licenses_path():
+    return os.path.join(get_store_user_path(), "licenses")
+
 def get_store_current_user():
     global current_user
 
@@ -104,13 +107,17 @@ def get_installed_assets():
 
     return installed_assets_root
 
-def load_asset(otl_file, asset):
-    # Workaround for missing node type
-    for asset_in_otl in cmds.houdiniAsset(listAssets = otl_file):
-        if asset == re.sub("[a-zA-Z_]*/", "", asset_in_otl):
-            asset = asset_in_otl
-            break
+def get_asset_license(otl_file):
+    license_json = os.path.join(get_store_licenses_path(),
+            re.sub("\\.otl$", ".json", otl_file))
 
+    license_root = None
+    with open(license_json, "r") as f:
+        license_root = json.load(f)
+
+    return license_root
+
+def load_asset(otl_file, asset):
     # HAPI calls are done asynchronously, which means we could be running
     # Python code in a separate thread. This could cause a GIL deadlock. Make
     # sure we call load asset from MEL to avoid a GIL deadlock.
@@ -124,8 +131,16 @@ def create_asset_entry(asset):
     form_layout = cmds.formLayout(width = asset_size, height = asset_size)
 
     if "otl_file" in asset:
+        license = get_asset_license(asset["otl_file"])
+
         otl_file = os.path.join(get_store_otls_path(), asset["otl_file"])
-        asset_name = asset["node_type_name"]
+
+        m = re.match("([^:]*)::(.*)", asset["node_type_name"])
+        asset_name = "{0}::{1}/{2}".format(
+                m.group(1),
+                license["category_name"],
+                m.group(2),
+                )
 
         cmds.symbolButton(
                 annotation = asset["descriptive_name"],

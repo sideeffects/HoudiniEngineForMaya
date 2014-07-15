@@ -273,8 +273,17 @@ def refresh_asset_entries(*args):
 
     cmds.scrollLayout(asset_entries_scroll_layout, childResizable = True)
 
-    if installed_assets:
+    if installed_assets \
+            and installed_assets["organization"]["entries"]:
         create_asset_entries(installed_assets["organization"]["entries"])
+    else:
+        cmds.text(
+                label = "There are no Orbolt assets installed for this user.<br />"
+                "Please visit the <a href=\"http://www.orbolt.com/maya\">Orbolt Store</a> for assets.",
+                wordWrap = True,
+                hyperlink = True,
+                )
+
 
     cmds.setParent(upLevel = True)
 

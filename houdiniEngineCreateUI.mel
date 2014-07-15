@@ -287,7 +287,7 @@ houdiniEngine_launchOrboltPageClick()
 global proc
 houdiniEngine_launchForum()
 {
-    launch -web "http://www.sidefx.com/index.php?option=com_forum&Itemid=172&page=viewforum&f=46";
+    launch -web "http://www.sidefx.com/index.php?option=com_forum&Itemid=172&page=viewforum&f=53";
 }
 
 global proc
@@ -335,7 +335,7 @@ houdiniEngineCreateUI()
 
     menuItem -divider true;
 
-    menuItem -label "Visit Maya plug-in forum..."
+    menuItem -label "Visit Houdini Engine for Maya forum..."
         -command "houdiniEngine_launchForum";
 
     menuItem -e -postMenuCommand ("houdiniEngine_buildRecentAssetsMenu"

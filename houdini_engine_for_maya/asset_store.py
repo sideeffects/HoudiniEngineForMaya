@@ -54,9 +54,11 @@ def get_store_user_path():
     users_root = get_users()
 
     user_dir = None
-    if user in users_root["users"]:
+
+    if users_root and user in users_root["users"]:
         user_dir = users_root["users"][user]
-    else:
+
+    if not user_dir:
         user_dir = "default"
 
     return os.path.join(get_store_path(), user_dir)
@@ -81,7 +83,7 @@ def get_store_current_user():
 
     if not current_user:
         users_root = get_users()
-        if "default_user" in users_root:
+        if users_root and "default_user" in users_root:
             current_user = users_root["default_user"]
 
     if not current_user:
@@ -91,6 +93,9 @@ def get_store_current_user():
 
 def get_users():
     users_json = get_store_users_path()
+
+    if not os.path.exists(users_json):
+        return None
 
     users_root = None
     with open(users_json, "r") as f:
@@ -238,6 +243,9 @@ def change_user_post_menu_command(*args):
     cmds.setParent(change_user_menu_item, menu = True)
 
     users_root = get_users()
+
+    if not users_root:
+        return
 
     current_user = get_store_current_user()
 

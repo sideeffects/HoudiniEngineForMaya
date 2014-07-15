@@ -380,6 +380,36 @@ proc setInput(string $inputAttr, string $object)
     }
 }
 
+global proc
+AEhoudiniAssetOperationNew(string $attr)
+{
+    setUITemplate -pushTemplate NONE;
+
+    rowLayout
+        -adjustableColumn 1
+        -numberOfColumns 1;
+
+        button -label "Sync Asset"
+            -annotation "Recreates all the parameters and output nodes."
+            syncButton;
+
+    setParent ..;
+
+    setUITemplate -popTemplate;
+
+    AEhoudiniAssetOperationReplace $attr;
+}
+
+global proc
+AEhoudiniAssetOperationReplace(string $attr)
+{
+    string $nodeName = plugNode($attr);
+
+    button -e
+        -c ("houdiniEngine_syncAsset " + $nodeName)
+        syncButton;
+}
+
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 {
     string $validInputs[];
@@ -708,6 +738,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
 global proc AEhoudiniAssetTemplate(string $nodeName)
 {
     editorTemplate -beginScrollLayout;
+
+    editorTemplate -callCustom "AEhoudiniAssetOperationNew" "AEhoudiniAssetOperationReplace"
+        "unused";
 
     // special ui for inputs
     string $inputAttrArray[] = `listAttr -st "input" $nodeName`;

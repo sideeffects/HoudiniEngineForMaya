@@ -106,6 +106,9 @@ def get_users():
 def get_installed_assets():
     installed_assets_json = get_store_installed_assets_path()
 
+    if not os.path.exists(installed_assets_json):
+        return None
+
     installed_assets_root = None
     with open(installed_assets_json, "r") as f:
         installed_assets_root = json.load(f)
@@ -270,7 +273,8 @@ def refresh_asset_entries(*args):
 
     cmds.scrollLayout(asset_entries_scroll_layout, childResizable = True)
 
-    create_asset_entries(installed_assets["organization"]["entries"])
+    if installed_assets:
+        create_asset_entries(installed_assets["organization"]["entries"])
 
     cmds.setParent(upLevel = True)
 

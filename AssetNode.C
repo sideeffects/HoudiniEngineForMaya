@@ -995,10 +995,19 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         //push parms into Houdini
         if(!parmAttrObj.isNull())
         {
+            // If we're computing even though there are no dirty parameters,
+            // then treat this as a file load, and restore all the parameter
+            // values.
+            MObjectVector* attrs = NULL;
+            if(myDirtyParmAttributes.size())
+            {
+                attrs = &myDirtyParmAttributes;
+            }
+
             myAsset->setParmValues(
                     data,
                     assetNodeFn,
-                    &myDirtyParmAttributes
+                    attrs
                     );
             myDirtyParmAttributes.clear();
         }
@@ -1219,16 +1228,8 @@ AssetNode::createAsset()
     MFnDependencyNode assetNodeFn(thisMObject());
     MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
 
-    // Restore all the asset's parameter values
-    MDataBlock dataBlock = forceCache();
-    if(!parmAttrObj.isNull())
-    {
-        getAsset()->setParmValues(
-                dataBlock,
-                assetNodeFn,
-                NULL
-                );
-    }
+    // When createAsset() is called during file load, parameter values aren't
+    // loaded yet. So we can't restore the parameter values here.
 
     myNeedToMarshalInput = true;
 }

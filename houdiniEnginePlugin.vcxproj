@@ -37,15 +37,16 @@
   <ItemGroup>
     <ClCompile Include="Asset.C" />
     <ClCompile Include="AssetCommand.C" />
+    <ClCompile Include="EngineCommand.C" />
     <ClCompile Include="Input.C" />
     <ClCompile Include="InputAsset.C" />
     <ClCompile Include="InputCurve.C" />
     <ClCompile Include="InputMesh.C" />
     <ClCompile Include="InputParticle.C" />
     <ClCompile Include="AssetNode.C" />
-    <ClCompile Include="AssetSubCommand.C" />
     <ClCompile Include="AssetSubCommandLoadAsset.C" />
     <ClCompile Include="AssetSubCommandSync.C" />
+    <ClCompile Include="SubCommand.C" />
     <ClCompile Include="SyncAttribute.C" />
     <ClCompile Include="SyncOutputGeometryPart.C" />
     <ClCompile Include="SyncOutputInstance.C" />
@@ -62,15 +63,16 @@
   <ItemGroup>
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetCommand.h" />
+    <ClInclude Include="enginecommand.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InputAsset.h" />
     <ClInclude Include="InputCurve.h" />
     <ClInclude Include="InputMesh.h" />
-    <ClInclude Include="assetinputparticle.h" />
     <ClInclude Include="AssetNode.h" />
-    <ClInclude Include="AssetSubCommand.h" />
     <ClInclude Include="AssetSubCommandLoadAsset.h" />
     <ClInclude Include="AssetSubCommandSync.h" />
+    <ClInclude Include="inputparticle.h" />
+    <ClInclude Include="subcommand.h" />
     <ClInclude Include="SyncAttribute.h" />
     <ClInclude Include="SyncOutputGeometryPart.h" />
     <ClInclude Include="SyncOutputInstance.h" />

@@ -50,11 +50,11 @@ OutputGeometry::update()
             myParts.reserve(partCount);
             for(unsigned int i = 0; i < partCount; i++)
             {
-                myParts.push_back(OutputGeometryPart(myAssetId,
+                myParts.push_back(OutputGeometryPart(
+                            myAssetId,
                             myObjectId,
                             myGeoId,
-                            i,
-                            myGeoInfo
+                            i
                             ));
             }
         }

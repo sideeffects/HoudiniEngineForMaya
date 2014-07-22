@@ -23,13 +23,16 @@
 #include "OutputGeometryPart.h"
 #include "util.h"
 
-OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
-        HAPI_GeoInfo geoInfo) :
+OutputGeometryPart::OutputGeometryPart(
+        int assetId,
+        int objectId,
+        int geoId,
+        int partId
+        ) :
     myAssetId(assetId),
     myObjectId(objectId),
     myGeoId(geoId),
     myPartId(partId),
-    myGeoInfo(geoInfo),
     myNeverBuilt(true)
 {
     update();
@@ -124,12 +127,6 @@ OutputGeometryPart::update()
         cerr << e.what() << endl;
         HAPI_PartInfo_Init(&myPartInfo);
     }
-}
-
-void
-OutputGeometryPart::setGeoInfo(HAPI_GeoInfo& info)
-{
-    myGeoInfo = info;
 }
 
 static

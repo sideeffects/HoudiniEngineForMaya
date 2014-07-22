@@ -669,18 +669,6 @@ Asset::computeGeometryObjects(
         if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
             obj->compute(objectHandle, needToSyncOutputs);
-
-            MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
-            visibilityHandle.setBool(obj->isVisible());
-            visibilityHandle.setClean();
-
-            MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
-            isInstancedHandle.setBool(obj->isInstanced());
-            isInstancedHandle.setClean();
-
-            MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
-            objectNameHandle.setString(obj->getName());
-            objectNameHandle.setClean();
         }
     }
 

@@ -69,6 +69,18 @@ OutputGeometryObject::compute(
         }
     }
 
+    // outputVisibility
+    MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
+    visibilityHandle.setBool(isVisible());
+
+    // outputIsInstanced
+    MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
+    isInstancedHandle.setBool(isInstanced());
+
+    // outputObjectName
+    MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
+    objectNameHandle.setString(getName());
+
     MStatus stat = MS::kSuccess;
     if(myNeverBuilt || myObjectInfo.haveGeosChanged)
     {

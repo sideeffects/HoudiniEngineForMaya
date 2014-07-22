@@ -20,6 +20,8 @@ class OutputGeometryPart
 
         MStatus compute(
                 MDataHandle& handle,
+                bool hasGeoChanged,
+                bool hasMaterialChanged,
                 bool &needToSyncOutputs
                 );
 

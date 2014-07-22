@@ -791,12 +791,20 @@ MStatus
 AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlugArray& affectedPlugs)
 {
+    MStatus status;
+
     if(plugBeingDirtied == AssetNode::otlFilePath
         || plugBeingDirtied == AssetNode::assetName)
         return MS::kSuccess;
 
     myResultsClean = false;
-    setPlugDirty(plugBeingDirtied);
+
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+    if(isPlugBelow(plugBeingDirtied, parmAttrObj))
+    {
+        myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
+    }
 
     if(isPlugBelow(plugBeingDirtied, AssetNode::input))
     {
@@ -952,12 +960,6 @@ AssetNode::rebuildAsset()
     createAsset();
 
     myResultsClean = false;
-}
-
-void
-AssetNode::setPlugDirty(const MPlug &plug)
-{
-    myDirtyParmAttributes.push_back(plug.attribute());
 }
 
 MStatus

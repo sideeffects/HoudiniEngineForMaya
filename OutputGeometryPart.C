@@ -215,6 +215,8 @@ OutputGeometryPart::getAttributeData(
 MStatus
 OutputGeometryPart::compute(
         MDataHandle& handle,
+        bool hasGeoChanged,
+        bool hasMaterialChanged,
         bool &needToSyncOutputs
         )
 {
@@ -227,7 +229,7 @@ OutputGeometryPart::compute(
     //MDataHandle transformHandle = handle.child(AssetNode::transform);
     MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
 
-    if(myNeverBuilt || myGeoInfo.hasGeoChanged)
+    if(myNeverBuilt || hasGeoChanged)
     {
         // Name
         MString partName = Util::getString(myPartInfo.nameSH);
@@ -271,7 +273,7 @@ OutputGeometryPart::compute(
         createCurves(curvesHandle, curvesIsBezierHandle);
     }
 
-    if(myNeverBuilt || myGeoInfo.hasMaterialChanged)
+    if(myNeverBuilt || hasMaterialChanged)
     {
         updateMaterial(materialHandle);
     }

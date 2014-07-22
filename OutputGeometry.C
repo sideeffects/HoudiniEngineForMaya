@@ -93,7 +93,12 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
         for(int i=0; i< myGeoInfo.partCount; i++)
         {
             MDataHandle h = partsBuilder.addElement(i);
-            stat = myParts[i].compute(h, needToSyncOutputs);
+            stat = myParts[i].compute(
+                    h,
+                    myGeoInfo.hasGeoChanged,
+                    myGeoInfo.hasMaterialChanged,
+                    needToSyncOutputs
+                    );
             CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
         }
 

@@ -4,6 +4,7 @@
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MDataHandle.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MFileIO.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 #include <maya/MPlugArray.h>
@@ -771,6 +772,7 @@ AssetNode::AssetNode() :
     myNeedToMarshalInput(false)
 {
     myAsset = NULL;
+    myIsLoadedFromFile = MFileIO::isOpeningFile();
 
     myResultsClean = false;
 }
@@ -995,13 +997,13 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         //push parms into Houdini
         if(!parmAttrObj.isNull())
         {
-            // If we're computing even though there are no dirty parameters,
-            // then treat this as a file load, and restore all the parameter
-            // values.
-            MObjectVector* attrs = NULL;
-            if(myDirtyParmAttributes.size())
+            MObjectVector* attrs = &myDirtyParmAttributes;
+
+            // If we just loaded this node from a file, then push all the
+            // parameter values.
+            if(myIsLoadedFromFile)
             {
-                attrs = &myDirtyParmAttributes;
+                attrs = NULL;
             }
 
             myAsset->setParmValues(
@@ -1031,6 +1033,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         {
             MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.name());
         }
+
+        myIsLoadedFromFile = false;
 
         myResultsClean = true;
 

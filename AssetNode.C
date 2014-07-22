@@ -1075,20 +1075,22 @@ AssetNode::getInternalValueInContext(
             MFnDependencyNode assetNodeFn(thisMObject());
             MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
 
-            if(!parmAttrObj.isNull())
+            int multiSize = 0;
+
+            if(!parmAttrObj.isNull()
+                    && isAssetValid())
             {
                 MDataBlock dataBlock = forceCache();
 
-                int multiSize = 0;
                 getAsset()->getMultiparmLength(
                         dataBlock,
                         plug,
                         multiSize,
                         assetNodeFn
                         );
-
-                dataHandle.setInt(multiSize);
             }
+
+            dataHandle.setInt(multiSize);
 
             return true;
         }
@@ -1145,7 +1147,8 @@ AssetNode::setInternalValueInContext(
             MFnDependencyNode assetNodeFn(thisMObject());
             MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
 
-            if(!parmAttrObj.isNull())
+            if(!parmAttrObj.isNull()
+                    && isAssetValid())
             {
                 MDataBlock dataBlock = forceCache();
 

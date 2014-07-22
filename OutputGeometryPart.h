@@ -14,8 +14,12 @@ class MFnArrayAttrsData;
 class OutputGeometryPart
 {
     public:
-        OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
-                HAPI_GeoInfo geoInfo);
+        OutputGeometryPart(
+                int assetId,
+                int objectId,
+                int geoId,
+                int partId
+                );
         ~OutputGeometryPart();
 
         MStatus compute(
@@ -65,7 +69,6 @@ class OutputGeometryPart
         int myGeoId;
         int myPartId;
 
-        HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
         HAPI_VolumeInfo myVolumeInfo;
         HAPI_CurveInfo myCurveInfo;

@@ -15,7 +15,7 @@ class OutputGeometryPart
 {
     public:
         OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
-                HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo);
+                HAPI_GeoInfo geoInfo);
         ~OutputGeometryPart();
 
         MStatus compute(
@@ -63,7 +63,6 @@ class OutputGeometryPart
         int myGeoId;
         int myPartId;
 
-        HAPI_ObjectInfo myObjectInfo;
         HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
         HAPI_VolumeInfo myVolumeInfo;

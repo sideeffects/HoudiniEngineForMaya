@@ -48,14 +48,12 @@ OutputGeometry::update()
         {
             myParts.clear();
             myParts.reserve(partCount);
-            HAPI_ObjectInfo objectInfo = myParentObject->getObjectInfo();
             for(unsigned int i = 0; i < partCount; i++)
             {
                 myParts.push_back(OutputGeometryPart(myAssetId,
                             myObjectId,
                             myGeoId,
                             i,
-                            objectInfo,
                             myGeoInfo
                             ));
             }

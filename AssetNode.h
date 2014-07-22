@@ -68,9 +68,6 @@ class AssetNode: public MPxTransform
         static MTypeId typeId;
 
     private:
-        void setPlugDirty(const MPlug &plug);
-
-    private:
         Asset* myAsset;
         bool isAssetValid() const;
         void createAsset();

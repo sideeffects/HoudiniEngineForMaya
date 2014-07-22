@@ -24,12 +24,11 @@
 #include "util.h"
 
 OutputGeometryPart::OutputGeometryPart(int assetId, int objectId, int geoId, int partId,
-        HAPI_ObjectInfo objectInfo, HAPI_GeoInfo geoInfo) :
+        HAPI_GeoInfo geoInfo) :
     myAssetId(assetId),
     myObjectId(objectId),
     myGeoId(geoId),
     myPartId(partId),
-    myObjectInfo(objectInfo),
     myGeoInfo(geoInfo),
     myNeverBuilt(true)
 {

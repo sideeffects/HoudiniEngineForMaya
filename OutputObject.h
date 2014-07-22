@@ -39,7 +39,6 @@ class OutputObject {
 
         int getId();
         MString getName();
-        HAPI_ObjectInfo getObjectInfo() { return myObjectInfo; }
         Asset * getParentAsset() { return myObjectControl; }
 
         //virtual MStatus compute(const MPlug& plug, MDataBlock& data);

@@ -1183,10 +1183,29 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
 void
 AssetNode::copyInternalData(MPxNode* node)
 {
+    MStatus status;
+
     AssetNode* assetNode = dynamic_cast<AssetNode*>(node);
 
     myOTLFilePath = assetNode->myOTLFilePath;
     myAssetName = assetNode->myAssetName;
+
+    rebuildAsset();
+
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+
+    // Push all the parameter values to Houdini.
+    if(!parmAttrObj.isNull() && isAssetValid())
+    {
+        MDataBlock dataBlock = forceCache();
+
+        getAsset()->setParmValues(
+                dataBlock,
+                assetNodeFn,
+                NULL
+                );
+    }
 
     MPxTransform::copyInternalData(node);
 }

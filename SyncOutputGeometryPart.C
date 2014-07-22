@@ -28,12 +28,7 @@ SyncOutputGeometryPart::doIt()
 {
     MStatus status;
 
-    MString partName;
-    {
-        MString outputPartName = myOutputPlug.child(AssetNode::outputPartName).asString();
-        int separatorIndex = outputPartName.rindexW('/');
-        partName = outputPartName.substringW(separatorIndex + 1, outputPartName.numChars() - 1);
-    }
+    MString partName = myOutputPlug.child(AssetNode::outputPartName).asString();
 
     MFnDagNode objectTransformFn(myObjectTransform);
 

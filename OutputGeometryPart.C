@@ -230,8 +230,8 @@ OutputGeometryPart::compute(
 
     if(myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
-        // OutputObject name
-        MString partName = Util::getString(myObjectInfo.nameSH) + "/" + Util::getString(myPartInfo.nameSH);
+        // Name
+        MString partName = Util::getString(myPartInfo.nameSH);
         partNameHandle.set(partName);
 
         // Mesh

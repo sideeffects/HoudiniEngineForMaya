@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import sys
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -23,19 +24,19 @@ def get_store_path():
 
     # Get Houdini prefs directory
     houdini_prefs_path = None
-    if os.name == "posix":
+    if sys.platform.startswith("linux"):
         houdini_prefs_path = os.path.expanduser(
                 "~/houdini{0}.{1}".format(
                     houdini_version[0], houdini_version[1]
                     )
                 )
-    elif os.name == "nt":
+    elif sys.platform.startswith("win32"):
         houdini_prefs_path = os.path.expanduser(
                 "~/houdini{0}.{1}".format(
                     houdini_version[0], houdini_version[1]
                     )
                 )
-    elif os.name == "mac":
+    elif sys.platform.startswith("darwin"):
         houdini_prefs_path = os.path.expanduser(
                 "~/Library/Preferences/houdini/{0}.{1}".format(
                     houdini_version[0], houdini_version[1]

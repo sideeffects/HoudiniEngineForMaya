@@ -526,9 +526,9 @@ Util::statusCheckLoop(bool wantMainProgressBar)
             }
 
 #ifdef _WIN32
-            Sleep(100);
+            Sleep(1);
 #else
-            usleep(100);
+            usleep(1000);
 #endif
     }
 

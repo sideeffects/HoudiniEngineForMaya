@@ -166,6 +166,12 @@ SyncOutputGeometryPart::createOutputMesh(
     MFnDependencyNode partMeshFn(mesh, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    // set mesh.displayColors
+    myDagModifier.newPlugValueBool(
+            partMeshFn.findPlug("displayColors"),
+            true
+            );
+
     // connect mesh attributes
     {
         MPlug srcPlug;

@@ -317,6 +317,8 @@ proc clearInput(string $inputAttr)
 
 proc setInput(string $inputAttr, string $object)
 {
+    string $nodeName = plugNode($inputAttr);
+
     string $inputTransformAttr = $inputAttr + ".inputTransform";
     string $inputGeoAttr = $inputAttr + ".inputGeo";
 
@@ -325,6 +327,8 @@ proc setInput(string $inputAttr, string $object)
         // if we just got the houdiniAsset, just assume the first output
         connectAttr -force ($object + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
         connectAttr -force ($object + ".worldMatrix") $inputTransformAttr;
+
+        houdiniEngine_syncAssetOutput $nodeName;
     }
     else if(`objectType -isAType "mesh" $object`)
     {
@@ -353,6 +357,8 @@ proc setInput(string $inputAttr, string $object)
                 connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
             }
         }
+
+        houdiniEngine_syncAssetOutput $nodeName;
     }
     else if(`objectType -isAType "nurbsCurve" $object`)
     {
@@ -363,6 +369,8 @@ proc setInput(string $inputAttr, string $object)
             string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
             connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
         }
+
+        houdiniEngine_syncAssetOutput $nodeName;
     }
     else if(`objectType -isAType "particle" $object`)
     {
@@ -373,6 +381,8 @@ proc setInput(string $inputAttr, string $object)
             string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
             connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
         }
+
+        houdiniEngine_syncAssetOutput $nodeName;
     }
     else
     {

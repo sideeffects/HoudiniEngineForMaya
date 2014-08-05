@@ -262,7 +262,20 @@ houdiniEngine_createInstance(string $assetNode,
 
 global proc houdiniEngine_saveHipFile()
 {
-    string $filter = "Houdini Scene Files (*.hip);;All Files (*.*)";
+    string $license = `houdiniEngine -license`;
+
+    string $hipExtension;
+    if($license == "Houdini-Indie"
+        || $license == "Houdini-Engine-Indie")
+    {
+        $hipExtension = "*.hiplc";
+    }
+    else
+    {
+        $hipExtension = "*.hip";
+    }
+
+    string $filter = "Houdini Scene Files (" + $hipExtension + ");;All Files (*.*)";
 
     string $results[] = `fileDialog2
         -caption "Save Underlying Houdini Scene"

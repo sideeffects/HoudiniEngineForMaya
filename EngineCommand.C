@@ -8,6 +8,8 @@
 
 #include "SubCommand.h"
 
+#define kLicenseFlag "-lic"
+#define kLicenseFlagLong "-license"
 #define kHoudiniVersionFlag "-hv"
 #define kHoudiniVersionFlagLong "-houdiniVersion"
 #define kHoudiniEngineVersionFlag "-hev"
@@ -16,6 +18,47 @@
 #define kSaveHIPFlagLong "-saveHIP"
 
 const char* EngineCommand::commandName = "houdiniEngine";
+
+class EngineSubCommandLicense : public SubCommand
+{
+    public:
+        virtual MStatus doIt()
+        {
+            int license;
+
+            HAPI_GetEnvInt(HAPI_ENVINT_LICENSE, &license);
+
+            MString version_string;
+            switch(license)
+            {
+                case HAPI_LICENSE_NONE:
+                    version_string = "none";
+                    break;
+                case HAPI_LICENSE_HOUDINI_ENGINE:
+                    version_string = "Houdini-Engine";
+                    break;
+                case HAPI_LICENSE_HOUDINI:
+                    version_string = "Houdini-Escape";
+                    break;
+                case HAPI_LICENSE_HOUDINI_FX:
+                    version_string = "Houdini-Master";
+                    break;
+                case HAPI_LICENSE_HOUDINI_ENGINE_INDIE:
+                    version_string = "Houdini-Engine-Indie";
+                    break;
+                case HAPI_LICENSE_HOUDINI_INDIE:
+                    version_string = "Houdini-Indie";
+                    break;
+                default:
+                    version_string = "Unknown";
+                    break;
+            }
+
+            MPxCommand::setResult(version_string);
+
+            return MStatus::kSuccess;
+        }
+};
 
 class EngineSubCommandSaveHIPFile : public SubCommand
 {
@@ -133,7 +176,8 @@ EngineCommand::parseArgs(const MArgList &args)
     }
 
     if(!(
-                argData.isFlagSet(kHoudiniVersionFlag)
+                argData.isFlagSet(kLicenseFlag)
+                ^ argData.isFlagSet(kHoudiniVersionFlag)
                 ^ argData.isFlagSet(kHoudiniEngineVersionFlag)
                 ^ argData.isFlagSet(kSaveHIPFlag)
         ))
@@ -142,6 +186,11 @@ EngineCommand::parseArgs(const MArgList &args)
                 kSaveHIPFlagLong "\n"
                 );
         return MStatus::kInvalidParameter;
+    }
+
+    if(argData.isFlagSet(kLicenseFlag))
+    {
+        mySubCommand = new EngineSubCommandLicense();
     }
 
     if(argData.isFlagSet(kHoudiniVersionFlag))

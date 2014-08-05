@@ -118,7 +118,7 @@ def get_installed_assets():
 
 def get_asset_license(otl_file):
     license_json = os.path.join(get_store_licenses_path(),
-            re.sub("\\.otl$", ".json", otl_file))
+            re.sub("\\.otl$|\\.hda$|\\.otllc$|\\.hdalc$|\\.otlnc$|\\.hdanc$", ".json", otl_file))
 
     license_root = None
     with open(license_json, "r") as f:

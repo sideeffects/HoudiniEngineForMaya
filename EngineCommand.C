@@ -96,6 +96,9 @@ EngineCommand::newSyntax()
 {
     MSyntax syntax;
 
+    // -license returns the Houdini version that's being used.
+    CHECK_MSTATUS(syntax.addFlag(kLicenseFlag, kLicenseFlagLong));
+
     // -houdiniVersion returns the Houdini version that's being used.
     CHECK_MSTATUS(syntax.addFlag(kHoudiniVersionFlag, kHoudiniVersionFlagLong));
 

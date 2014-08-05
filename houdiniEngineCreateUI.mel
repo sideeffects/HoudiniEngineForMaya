@@ -5,7 +5,7 @@ source houdiniEngineUtils;
 global proc
 houdiniEngine_browseAssetLibrary()
 {
-    string $filter = "Houdini Asset Library (*.otl);;All Files (*.*)";
+    string $filter = "Houdini Asset Library (*.otl *.hda *.otllc *.hdalc *.otlnc *.hdanc);;All Files (*.*)";
     string $results[] = `fileDialog2
         -caption "Browse Asset Library"
         -okCaption "Open"

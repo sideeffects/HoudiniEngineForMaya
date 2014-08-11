@@ -65,9 +65,6 @@ AssetSubCommandLoadAsset::doIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    myAssetSubCommandSync = new AssetSubCommandSync(assetNode);
-    myAssetSubCommandSync->doIt();
-
     MFnDependencyNode assetNodeFn(assetNode);
 
     // select the node
@@ -75,6 +72,22 @@ AssetSubCommandLoadAsset::doIt()
 
     // set result
     MPxCommand::setResult(assetNodeFn.name());
+
+    // The asset should have been instantiated by now. If we couldn't
+    // instantiate the asset, then don't operate on the asset any further. This
+    // avoids generating repeated errors.
+    {
+        AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+        if(!assetNode->getAsset())
+        {
+            // If we couldn't instantiate the asset, then an error message
+            // should have displayed already. No need to display error here.
+            return MStatus::kFailure;
+        }
+    }
+
+    myAssetSubCommandSync = new AssetSubCommandSync(assetNode);
+    myAssetSubCommandSync->doIt();
 
     return MStatus::kSuccess;
 }

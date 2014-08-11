@@ -408,7 +408,18 @@ Asset::Asset(
             false,
             &assetId
             );
-    CHECK_HAPI(hapiResult);
+    if(HAPI_FAIL(hapiResult))
+    {
+        DISPLAY_ERROR("Could not instantiate asset: ^1s\n"
+                "in OTL file: ^2s\n",
+                assetName,
+                otlFilePath);
+
+        GET_HAPI_STATUS_CALL();
+        DISPLAY_ERROR(hapiStatus);
+
+        return;
+    }
 
     if(!Util::statusCheckLoop())
     {

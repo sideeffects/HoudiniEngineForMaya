@@ -156,14 +156,14 @@ SyncOutputGeometryPart::createOutputMesh(
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // create mesh
-    MObject mesh = myDagModifier.createNode("mesh", meshTransform, &status);
+    MObject meshShape = myDagModifier.createNode("mesh", meshTransform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename mesh
-    status = myDagModifier.renameNode(mesh, "meshShape");
+    status = myDagModifier.renameNode(meshShape, "meshShape");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    MFnDependencyNode partMeshFn(mesh, &status);
+    MFnDependencyNode partMeshFn(meshShape, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set mesh.displayColors
@@ -198,18 +198,20 @@ SyncOutputGeometryPart::createOutputCurves(
     int numCurves = curvesPlug.evaluateNumElements();
     for(int i=0; i<numCurves; i++)
     {
-        MPlug curve = curvesPlug[i];
+        MPlug curvePlug = curvesPlug[i];
 
-        MObject partCurve =
-            myDagModifier.createNode(isBezier ? "bezierCurve" : "nurbsCurve",
-                                     partTransform, &status);
+        MObject curveShape = myDagModifier.createNode(
+                isBezier ? "bezierCurve" : "nurbsCurve",
+                partTransform,
+                &status
+                );
         CHECK_MSTATUS(status);
 
-        MFnDependencyNode partCurveFn(partCurve, &status);
-        MPlug dstPlug = partCurveFn.findPlug("create");
+        MFnDependencyNode curveShapeFn(curveShape, &status);
+        MPlug dstPlug = curveShapeFn.findPlug("create");
         CHECK_MSTATUS(status);
 
-        myDagModifier.connect(curve, dstPlug);
+        myDagModifier.connect(curvePlug, dstPlug);
     }
 
     return MStatus::kSuccess;

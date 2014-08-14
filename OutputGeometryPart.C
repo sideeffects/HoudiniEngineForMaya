@@ -380,8 +380,15 @@ OutputGeometryPart::createCurves(
         else
         {
             knotSequences.setLength(numVertices + order - 2);
-            for(int j=0; j<numVertices + order - 2; j++)
-                knotSequences[j] = 0;
+            int j = 0;
+            for(; j < order - 1; j++)
+                knotSequences[j] = 0.0;
+
+            for(; j < numVertices - 1; j++)
+                knotSequences[j] = (double) j / (numVertices - order + 1);
+
+            for(; j < numVertices + order - 2; j++)
+                knotSequences[j] = 1.0;
         }
 
         // NOTE: Periodicity is always constant, so periodic and

@@ -200,12 +200,21 @@ SyncOutputGeometryPart::createOutputCurves(
     {
         MPlug curvePlug = curvesPlug[i];
 
+        MString curveTransformName;
+        MString curveShapeName;
+        curveTransformName.format("curve^1s", MString() + (i + 1));
+        curveShapeName.format("curveShape^1s", MString() + (i + 1));
+
         // create curve transform
         MObject curveTransform = myDagModifier.createNode(
                 "transform",
                 partTransform,
                 &status
                 );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        // rename curve transform
+        status = myDagModifier.renameNode(curveTransform, curveTransformName);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         // create curve shape
@@ -215,6 +224,10 @@ SyncOutputGeometryPart::createOutputCurves(
                 &status
                 );
         CHECK_MSTATUS(status);
+
+        // rename curve shape
+        status = myDagModifier.renameNode(curveShape, curveShapeName);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
 
         MFnDependencyNode curveShapeFn(curveShape, &status);
         MPlug dstPlug = curveShapeFn.findPlug("create");

@@ -200,9 +200,18 @@ SyncOutputGeometryPart::createOutputCurves(
     {
         MPlug curvePlug = curvesPlug[i];
 
+        // create curve transform
+        MObject curveTransform = myDagModifier.createNode(
+                "transform",
+                partTransform,
+                &status
+                );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        // create curve shape
         MObject curveShape = myDagModifier.createNode(
                 isBezier ? "bezierCurve" : "nurbsCurve",
-                partTransform,
+                curveTransform,
                 &status
                 );
         CHECK_MSTATUS(status);

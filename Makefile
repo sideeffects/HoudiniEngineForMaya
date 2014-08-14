@@ -163,8 +163,10 @@ ifeq ($(OS), Linux)
 else ifeq ($(OS), Cygwin)
     LDLIBS += -LIBPATH:$(HFS)/custom/houdini/dsolib libHAPI.a
 else ifeq ($(OS), Darwin)
-    LDLIBS += -F$(HFS)/Frameworks -framework Houdini
+    # No need to (or can't) use -rpath, because HAPI_Loader has absolute path
+    # as the install_name.
     LDLIBS += -L$(HFS)/Frameworks/Houdini.framework/Libraries
+    LDLIBS += -lHAPIL
 endif
 
 # general flags

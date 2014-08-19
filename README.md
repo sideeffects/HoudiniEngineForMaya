@@ -28,18 +28,19 @@ For more information:
 
 For support and reporting bugs:
 
-* [SideFX Labs forum](http://www.sidefx.com/index.php?option=com_forum&Itemid=172&page=viewforum&f=46)
+* [Houdini Engine for Maya forum](http://www.sidefx.com/index.php?option=com_forum&Itemid=172&page=viewforum&f=53)
 * [Bug Submission](http://www.sidefx.com/index.php?option=com_content&task=view&id=768&Itemid=239)
 
 ## Supported Maya versions
 Currently, the supported Maya versions are:
 
+* 2015
 * 2014
 * 2013.5
 * 2013
 * 2012
 
-The plug-in is supported on both Linux and Windows.
+The plug-in is supported on Linux, Windows, and Mac OS X.
 
 ## Compiling
 
@@ -77,7 +78,7 @@ MAYA_SCRIPT_PATH = <You Path>\HoudiniEngineForMaya
 
 Run Maya!
 
-### GNU Make (Linux, Cygwin on Windows)
+### GNU Make (Linux, Cygwin on Windows, and Mac OS X)
 The code can be compiled through the Makefile using GNU Make. This can also be
 done on Windows through the use of Cygwin.
 

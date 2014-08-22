@@ -35,17 +35,16 @@ class OutputGeometryPart
         void update();
 
     private:
-        void updateMaterial(MDataHandle& handle);
+        void computeMaterial(MDataHandle &materialHandle);
 
-        void createMesh(MDataHandle &dataHandle);
-        void createParticle(MDataHandle &dataHandle);
-        void createCurves(
-                MDataHandle &dataHandle,
-                MDataHandle &curvesIsBezier
+        void computeMesh(MDataHandle &meshHandle);
+        void computeParticle(MDataHandle &particleHandle);
+        void computeCurves(
+                MDataHandle &curvesHandle,
+                MDataHandle &curvesIsBezierHandle
                 );
-
-        void createVolume(MDataHandle &dataHandle);
-        void    updateVolumeTransform(MDataHandle& handle);
+        void computeVolume(MDataHandle &volumeHandle);
+        void computeVolumeTransform(MDataHandle &volumeTransformHandle);
 
         template<typename T>
         bool getAttributeData(

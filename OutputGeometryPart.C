@@ -23,6 +23,17 @@
 #include "OutputGeometryPart.h"
 #include "util.h"
 
+void
+clearMesh(
+        MDataHandle &hasMeshHandle,
+        MDataHandle &meshHandle
+        )
+{
+    hasMeshHandle.setBool(false);
+
+    meshHandle.setMObject(MObject::kNullObj);
+}
+
 OutputGeometryPart::OutputGeometryPart(
         int assetId,
         int objectId,
@@ -234,6 +245,10 @@ OutputGeometryPart::compute(
                 && myPartInfo.faceCount != 0)
         {
             computeMesh(hasMeshHandle, meshHandle);
+        }
+        else
+        {
+            clearMesh(hasMeshHandle, meshHandle);
         }
 
         // Particle

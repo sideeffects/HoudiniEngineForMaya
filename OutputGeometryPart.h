@@ -37,8 +37,14 @@ class OutputGeometryPart
     private:
         void computeMaterial(MDataHandle &materialHandle);
 
-        void computeMesh(MDataHandle &meshHandle);
-        void computeParticle(MDataHandle &particleHandle);
+        void computeMesh(
+                MDataHandle &hasMeshHandle,
+                MDataHandle &meshHandle
+                );
+        void computeParticle(
+                MDataHandle &hasParticlesHandle,
+                MDataHandle &particleHandle
+                );
         void computeCurves(
                 MDataHandle &curvesHandle,
                 MDataHandle &curvesIsBezierHandle

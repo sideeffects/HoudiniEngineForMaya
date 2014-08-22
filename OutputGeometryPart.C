@@ -42,13 +42,13 @@ OutputGeometryPart::~OutputGeometryPart() {}
 
 #if MAYA_API_VERSION >= 201400
 void
-OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
+OutputGeometryPart::computeVolumeTransform(MDataHandle& volumeTransformHandle)
 {
     HAPI_Transform transform = myVolumeInfo.transform;
 
-    MDataHandle translateHandle = handle.child(AssetNode::outputPartVolumeTranslate);
-    MDataHandle rotateHandle = handle.child(AssetNode::outputPartVolumeRotate);
-    MDataHandle scaleHandle = handle.child(AssetNode::outputPartVolumeScale);
+    MDataHandle translateHandle = volumeTransformHandle.child(AssetNode::outputPartVolumeTranslate);
+    MDataHandle rotateHandle = volumeTransformHandle.child(AssetNode::outputPartVolumeRotate);
+    MDataHandle scaleHandle = volumeTransformHandle.child(AssetNode::outputPartVolumeScale);
 
     MEulerRotation r = MQuaternion(transform.rotationQuaternion[0],
                                    transform.rotationQuaternion[1],
@@ -93,7 +93,7 @@ OutputGeometryPart::updateVolumeTransform(MDataHandle& handle)
     translateHandle.setClean();
     rotateHandle.setClean();
     scaleHandle.setClean();
-    handle.setClean();
+    volumeTransformHandle.setClean();
 }
 #endif
 
@@ -240,7 +240,7 @@ OutputGeometryPart::compute(
             MDataHandle hasMeshHandle = handle.child(AssetNode::outputPartHasMesh);
             hasMeshHandle.setBool(true);
 
-            createMesh(meshHandle);
+            computeMesh(meshHandle);
         }
 
         // Particle
@@ -252,7 +252,7 @@ OutputGeometryPart::compute(
             partHasParticlesHandle.setBool(true);
 
             MDataHandle partParticleHandle = handle.child(AssetNode::outputPartParticle);
-            createParticle(partParticleHandle);
+            computeParticle(partParticleHandle);
         }
 
 #if MAYA_API_VERSION >= 201400
@@ -260,19 +260,19 @@ OutputGeometryPart::compute(
         if(myPartInfo.hasVolume)
         {
             MDataHandle partVolumeHandle = handle.child(AssetNode::outputPartVolume);
-            createVolume(partVolumeHandle);
+            computeVolume(partVolumeHandle);
         }
 #endif
 
         // Curve
         MDataHandle curvesIsBezierHandle =
             handle.child(AssetNode::outputPartCurvesIsBezier);
-        createCurves(curvesHandle, curvesIsBezierHandle);
+        computeCurves(curvesHandle, curvesIsBezierHandle);
     }
 
     if(myNeverBuilt || hasMaterialChanged)
     {
-        updateMaterial(materialHandle);
+        computeMaterial(materialHandle);
     }
 
     partNameHandle.setClean();
@@ -285,7 +285,7 @@ OutputGeometryPart::compute(
 }
 
 void
-OutputGeometryPart::createCurves(
+OutputGeometryPart::computeCurves(
         MDataHandle &curvesHandle,
         MDataHandle &curvesIsBezierHandle
         )
@@ -545,10 +545,10 @@ OutputGeometryPart::convertParticleAttribute(
 }
 
 void
-OutputGeometryPart::createParticle(MDataHandle &dataHandle)
+OutputGeometryPart::computeParticle(MDataHandle &particleHandle)
 {
-    MDataHandle positionsHandle = dataHandle.child(AssetNode::outputPartParticlePositions);
-    MDataHandle arrayDataHandle = dataHandle.child(AssetNode::outputPartParticleArrayData);
+    MDataHandle positionsHandle = particleHandle.child(AssetNode::outputPartParticlePositions);
+    MDataHandle arrayDataHandle = particleHandle.child(AssetNode::outputPartParticleArrayData);
 
     std::vector<float> floatArray;
     std::vector<int> intArray;
@@ -771,12 +771,12 @@ OutputGeometryPart::createParticle(MDataHandle &dataHandle)
 
 #if MAYA_API_VERSION >= 201400
 void
-OutputGeometryPart::createVolume(MDataHandle &dataHandle)
+OutputGeometryPart::computeVolume(MDataHandle &volumeHandle)
 {
-    MDataHandle gridHandle = dataHandle.child(AssetNode::outputPartVolumeGrid);
-    MDataHandle transformHandle = dataHandle.child(AssetNode::outputPartVolumeTransform);
-    MDataHandle resHandle = dataHandle.child(AssetNode::outputPartVolumeRes);
-    MDataHandle nameHandle = dataHandle.child(AssetNode::outputPartVolumeName);
+    MDataHandle gridHandle = volumeHandle.child(AssetNode::outputPartVolumeGrid);
+    MDataHandle transformHandle = volumeHandle.child(AssetNode::outputPartVolumeTransform);
+    MDataHandle resHandle = volumeHandle.child(AssetNode::outputPartVolumeRes);
+    MDataHandle nameHandle = volumeHandle.child(AssetNode::outputPartVolumeName);
 
     // grid
     {
@@ -841,7 +841,7 @@ OutputGeometryPart::createVolume(MDataHandle &dataHandle)
     }
 
     // transform
-    updateVolumeTransform(transformHandle);
+    computeVolumeTransform(transformHandle);
 
     // resolution
     MFloatArray resolution;
@@ -857,21 +857,21 @@ OutputGeometryPart::createVolume(MDataHandle &dataHandle)
 #endif
 
 void
-OutputGeometryPart::createMesh(MDataHandle &dataHandle)
+OutputGeometryPart::computeMesh(MDataHandle &meshHandle)
 {
     MStatus status;
 
     // create mesh
-    MObject meshDataObj = dataHandle.data();
+    MObject meshDataObj = meshHandle.data();
     MFnMeshData meshDataFn(meshDataObj);
     if(meshDataObj.isNull())
     {
         // set the MDataHandle
         meshDataObj = meshDataFn.create();
-        dataHandle.setMObject(meshDataObj);
+        meshHandle.setMObject(meshDataObj);
 
         // then get the copy from MDataHandle
-        meshDataObj = dataHandle.data();
+        meshDataObj = meshHandle.data();
         meshDataFn.setObject(meshDataObj);
     }
 
@@ -1134,14 +1134,14 @@ OutputGeometryPart::createMesh(MDataHandle &dataHandle)
 }
 
 void
-OutputGeometryPart::updateMaterial(MDataHandle& handle)
+OutputGeometryPart::computeMaterial(MDataHandle& materialHandle)
 {
-    MDataHandle matExistsHandle = handle.child(AssetNode::outputPartMaterialExists);
-    MDataHandle ambientHandle = handle.child(AssetNode::outputPartAmbientColor);
-    MDataHandle diffuseHandle = handle.child(AssetNode::outputPartDiffuseColor);
-    MDataHandle specularHandle = handle.child(AssetNode::outputPartSpecularColor);
-    MDataHandle alphaHandle = handle.child(AssetNode::outputPartAlphaColor);
-    MDataHandle texturePathHandle = handle.child(AssetNode::outputPartTexturePath);
+    MDataHandle matExistsHandle = materialHandle.child(AssetNode::outputPartMaterialExists);
+    MDataHandle ambientHandle = materialHandle.child(AssetNode::outputPartAmbientColor);
+    MDataHandle diffuseHandle = materialHandle.child(AssetNode::outputPartDiffuseColor);
+    MDataHandle specularHandle = materialHandle.child(AssetNode::outputPartSpecularColor);
+    MDataHandle alphaHandle = materialHandle.child(AssetNode::outputPartAlphaColor);
+    MDataHandle texturePathHandle = materialHandle.child(AssetNode::outputPartTexturePath);
 
     HAPI_GetMaterialOnPart( myAssetId, myObjectId, myGeoId, myPartId, &myMaterialInfo );
 
@@ -1258,7 +1258,7 @@ OutputGeometryPart::updateMaterial(MDataHandle& handle)
         }
     }
 
-    handle.setClean();
+    materialHandle.setClean();
     matExistsHandle.setClean();
     ambientHandle.setClean();
     diffuseHandle.setClean();

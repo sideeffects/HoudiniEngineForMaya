@@ -6,10 +6,6 @@
 #include "util.h"
 #include "AssetNode.h"
 
-OutputGeometry::~OutputGeometry()
-{
-}
-
 OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId, OutputObject * parentObject) :
     myParentObject (parentObject),
     myAssetId (assetId),
@@ -17,6 +13,15 @@ OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId, OutputObjec
     myGeoId (geoId)
 {
     update();
+}
+
+OutputGeometry::~OutputGeometry()
+{
+    for(int i = myParts.size(); i-- > 0;)
+    {
+        delete myParts.back();
+        myParts.pop_back();
+    }
 }
 
 void
@@ -41,22 +46,24 @@ OutputGeometry::update()
             || myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE
             || myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
-        unsigned int partCount = myGeoInfo.partCount;
-
-        // If partCount is different, recreate the array.
-        if(myParts.size() != partCount)
+        // Create any new OutputGeometryPart
+        myParts.reserve(myGeoInfo.partCount);
+        for(int i = myParts.size(); i < myGeoInfo.partCount; i++)
         {
-            myParts.clear();
-            myParts.reserve(partCount);
-            for(unsigned int i = 0; i < partCount; i++)
-            {
-                myParts.push_back(OutputGeometryPart(
-                            myAssetId,
-                            myObjectId,
-                            myGeoId,
-                            i
-                            ));
-            }
+            OutputGeometryPart* outputGeometryPart = new OutputGeometryPart(
+                    myAssetId,
+                    myObjectId,
+                    myGeoId,
+                    i
+                    );
+            myParts.push_back(outputGeometryPart);
+        }
+
+        // Destroy the extra OutputGeometryPart
+        for(int i = myParts.size(); i-- > myGeoInfo.partCount;)
+        {
+            delete myParts.back();
+            myParts.pop_back();
         }
     }
 }
@@ -94,7 +101,7 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
         for(int i=0; i< myGeoInfo.partCount; i++)
         {
             MDataHandle h = partsBuilder.addElement(i);
-            stat = myParts[i].compute(
+            stat = myParts[i]->compute(
                     h,
                     myGeoInfo.hasGeoChanged,
                     myGeoInfo.hasMaterialChanged,

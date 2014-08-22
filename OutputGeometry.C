@@ -90,6 +90,7 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
         myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
         myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
+        // Compute the OutputGeometryPart
         for(int i=0; i< myGeoInfo.partCount; i++)
         {
             MDataHandle h = partsBuilder.addElement(i);
@@ -102,14 +103,11 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
             CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
         }
 
-        int partBuilderSizeCheck = partsBuilder.elementCount();
-        if(partBuilderSizeCheck > myGeoInfo.partCount)
+        // Remove the element of the array attribute
+        for(int i = partsBuilder.elementCount(); i-- > myGeoInfo.partCount;)
         {
-            for(int i = myGeoInfo.partCount; i< partBuilderSizeCheck; i++)
-            {
-                stat = partsBuilder.removeElement(i);
-                CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
-            }
+            stat = partsBuilder.removeElement(i);
+            CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
         }
     }
 

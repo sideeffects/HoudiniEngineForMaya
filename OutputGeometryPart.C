@@ -219,52 +219,44 @@ OutputGeometryPart::compute(
 {
     update();
 
-    // Get plugs
-    MDataHandle partNameHandle = handle.child(AssetNode::outputPartName);
-    MDataHandle meshHandle = handle.child(AssetNode::outputPartMesh);
-    MDataHandle curvesHandle = handle.child(AssetNode::outputPartCurves);
-    //MDataHandle transformHandle = handle.child(AssetNode::transform);
-    MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
-
     if(myNeverBuilt || hasGeoChanged)
     {
         // Name
+        MDataHandle nameHandle = handle.child(AssetNode::outputPartName);
         MString partName = Util::getString(myPartInfo.nameSH);
-        partNameHandle.set(partName);
+        nameHandle.set(partName);
 
         // Mesh
+        MDataHandle hasMeshHandle = handle.child(AssetNode::outputPartHasMesh);
+        MDataHandle meshHandle = handle.child(AssetNode::outputPartMesh);
         if(myPartInfo.pointCount != 0
                 && myPartInfo.vertexCount != 0
                 && myPartInfo.faceCount != 0)
         {
-            MDataHandle hasMeshHandle = handle.child(AssetNode::outputPartHasMesh);
-            hasMeshHandle.setBool(true);
-
-            computeMesh(meshHandle);
+            computeMesh(hasMeshHandle, meshHandle);
         }
 
         // Particle
+        MDataHandle hasParticlesHandle = handle.child(AssetNode::outputPartHasParticles);
+        MDataHandle particleHandle = handle.child(AssetNode::outputPartParticle);
         if(myPartInfo.pointCount != 0
                 && myPartInfo.vertexCount == 0
                 && myPartInfo.faceCount == 0)
         {
-            MDataHandle partHasParticlesHandle = handle.child(AssetNode::outputPartHasParticles);
-            partHasParticlesHandle.setBool(true);
-
-            MDataHandle partParticleHandle = handle.child(AssetNode::outputPartParticle);
-            computeParticle(partParticleHandle);
+            computeParticle(hasParticlesHandle, particleHandle);
         }
 
 #if MAYA_API_VERSION >= 201400
         // Volume
+        MDataHandle volumeHandle = handle.child(AssetNode::outputPartVolume);
         if(myPartInfo.hasVolume)
         {
-            MDataHandle partVolumeHandle = handle.child(AssetNode::outputPartVolume);
-            computeVolume(partVolumeHandle);
+            computeVolume(volumeHandle);
         }
 #endif
 
         // Curve
+        MDataHandle curvesHandle = handle.child(AssetNode::outputPartCurves);
         MDataHandle curvesIsBezierHandle =
             handle.child(AssetNode::outputPartCurvesIsBezier);
         computeCurves(curvesHandle, curvesIsBezierHandle);
@@ -272,12 +264,9 @@ OutputGeometryPart::compute(
 
     if(myNeverBuilt || hasMaterialChanged)
     {
+        MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
         computeMaterial(materialHandle);
     }
-
-    partNameHandle.setClean();
-    meshHandle.setClean();
-    handle.setClean();
 
     myNeverBuilt = false;
 
@@ -545,8 +534,13 @@ OutputGeometryPart::convertParticleAttribute(
 }
 
 void
-OutputGeometryPart::computeParticle(MDataHandle &particleHandle)
+OutputGeometryPart::computeParticle(
+        MDataHandle &hasParticlesHandle,
+        MDataHandle &particleHandle
+        )
 {
+    hasParticlesHandle.setBool(true);
+
     MDataHandle positionsHandle = particleHandle.child(AssetNode::outputPartParticlePositions);
     MDataHandle arrayDataHandle = particleHandle.child(AssetNode::outputPartParticleArrayData);
 
@@ -857,9 +851,14 @@ OutputGeometryPart::computeVolume(MDataHandle &volumeHandle)
 #endif
 
 void
-OutputGeometryPart::computeMesh(MDataHandle &meshHandle)
+OutputGeometryPart::computeMesh(
+        MDataHandle &hasMeshHandle,
+        MDataHandle &meshHandle
+        )
 {
     MStatus status;
+
+    hasMeshHandle.setBool(true);
 
     // create mesh
     MObject meshDataObj = meshHandle.data();

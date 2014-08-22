@@ -34,6 +34,35 @@ clearMesh(
     meshHandle.setMObject(MObject::kNullObj);
 }
 
+static void
+clearCurvesBuilder(
+        MArrayDataBuilder &curvesBuilder,
+        int count
+        )
+{
+    for(int i = (int) curvesBuilder.elementCount();
+            i-- > count;)
+    {
+        curvesBuilder.removeElement(i);
+    }
+}
+
+static void
+clearCurves(
+        MDataHandle &curvesHandle,
+        MDataHandle &curvesIsBezier
+        )
+{
+    MArrayDataHandle curvesArrayHandle(curvesHandle);
+    MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
+
+    clearCurvesBuilder(curvesBuilder, 0);
+
+    curvesArrayHandle.set(curvesBuilder);
+
+    curvesIsBezier.setBool(false);
+}
+
 OutputGeometryPart::OutputGeometryPart(
         int assetId,
         int objectId,
@@ -274,7 +303,14 @@ OutputGeometryPart::compute(
         MDataHandle curvesHandle = handle.child(AssetNode::outputPartCurves);
         MDataHandle curvesIsBezierHandle =
             handle.child(AssetNode::outputPartCurvesIsBezier);
-        computeCurves(curvesHandle, curvesIsBezierHandle);
+        if(myCurveInfo.curveCount)
+        {
+            computeCurves(curvesHandle, curvesIsBezierHandle);
+        }
+        else
+        {
+            clearCurves(curvesHandle, curvesIsBezierHandle);
+        }
     }
 
     if(myNeverBuilt || hasMaterialChanged)
@@ -417,11 +453,7 @@ OutputGeometryPart::computeCurves(
     // There may be curves created in the previous cook. So we need to clear
     // the output attributes to remove any curves that may have been created
     // previously.
-    for(int i = (int) curvesBuilder.elementCount();
-            i-- > myCurveInfo.curveCount;)
-    {
-        curvesBuilder.removeElement(i);
-    }
+    clearCurvesBuilder(curvesBuilder, myCurveInfo.curveCount);
 
     curvesArrayHandle.set(curvesBuilder);
 

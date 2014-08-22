@@ -30,7 +30,7 @@ class OutputGeometry {
         int myObjectId;
         int myGeoId;
 
-        std::vector<OutputGeometryPart> myParts;
+        std::vector<OutputGeometryPart*> myParts;
 };
 
 #endif

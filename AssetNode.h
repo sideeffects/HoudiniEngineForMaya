@@ -114,10 +114,6 @@ class AssetNode: public MPxTransform
         static MObject outputObjectScaleX;
         static MObject outputObjectScaleY;
         static MObject outputObjectScaleZ;
-
-#if MAYA_API_VERSION >= 201400
-        static MObject outputObjectFluidFromAsset;
-#endif
         static MObject outputObjectMetaData;
 
         static MObject outputGeos;

@@ -249,13 +249,6 @@ SyncOutputObject::createFluidShape()
         MFnDagNode partFluidTransformFn(transform, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
-        // set playFromCache
-        status = myDagModifier.newPlugValueBool(
-                partVolumeFn.findPlug("playFromCache"),
-                true
-                );
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-
         MObject velConverter;
 
         bool doneDensity = false;
@@ -392,6 +385,11 @@ SyncOutputObject::createFluidShape()
                 status = myDagModifier.connect(srcPlug, dstPlug);
                 CHECK_MSTATUS_AND_RETURN_IT(status);
             }
+
+            srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
+            dstPlug = partVolumeFn.findPlug("playFromCache");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // inOffset must be initialized or bugs will be had; and the math is
             // simpler with dimensions all equal to 1.

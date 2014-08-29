@@ -384,6 +384,15 @@ SyncOutputObject::createFluidShape()
                 CHECK_MSTATUS_AND_RETURN_IT(status);
             }
 
+            // time1.outTime -> fluidShape.currentTime
+            {
+                MObject srcNode = Util::findNodeByName("time1");
+                srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
+                dstPlug = partVolumeFn.findPlug("currentTime");
+                status = myDagModifier.connect(srcPlug, dstPlug);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+            }
+
             // inOffset must be initialized or bugs will be had; and the math is
             // simpler with dimensions all equal to 1.
             MFloatArray offset;

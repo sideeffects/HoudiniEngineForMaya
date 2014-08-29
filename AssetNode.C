@@ -53,6 +53,9 @@ MObject AssetNode::outputObjectScale;
 MObject AssetNode::outputObjectScaleX;
 MObject AssetNode::outputObjectScaleY;
 MObject AssetNode::outputObjectScaleZ;
+#if MAYA_API_VERSION >= 201400
+MObject AssetNode::outputObjectFluidFromAsset;
+#endif
 MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputGeos;
@@ -395,6 +398,14 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputObjectTransform);
 
+#if MAYA_API_VERSION >= 201400
+    // object fluid from asset
+    AssetNode::outputObjectFluidFromAsset = nAttr.create("outputObjectFluidFromAsset", "outputObjectFluidFromAsset", MFnNumericData::kBoolean, true);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputObjectFluidFromAsset);
+#endif
+
     // meta data
     AssetNode::outputObjectMetaData = tAttr.create("outputObjectMetaData", "outputObjectMetaData", MFnData::kIntArray);
     tAttr.setStorable(false);
@@ -706,6 +717,9 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputGeos);
     cAttr.addChild(AssetNode::outputObjectName);
     cAttr.addChild(AssetNode::outputObjectTransform);
+#if MAYA_API_VERSION >= 201400
+    cAttr.addChild(AssetNode::outputObjectFluidFromAsset);
+#endif
     cAttr.addChild(AssetNode::outputObjectMetaData);
     cAttr.addChild(AssetNode::outputVisibility);
     cAttr.addChild(AssetNode::outputIsInstanced);

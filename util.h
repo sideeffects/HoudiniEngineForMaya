@@ -8,6 +8,7 @@
 #include <maya/MTimer.h>
 #include <maya/MIntArray.h>
 
+#include <cassert>
 #include <vector>
 
 #include <HAPI/HAPI.h>
@@ -258,11 +259,62 @@ class Util {
             return array.size();
         }
 
+        template <typename T, typename Alloc, template <typename, typename> class U>
+        static void setArrayLength(U<T, Alloc> &array, size_t n)
+        {
+            return array.resize(n);
+        }
+
         // Maya containers
         template <typename T>
         static unsigned int getArrayLength(const T &array)
         {
             return array.length();
+        }
+
+        template <typename T>
+        static unsigned int setArrayLength(T &array, unsigned int n)
+        {
+            return array.setLength(n);
+        }
+
+        // Accessing components
+        template <unsigned int offset, typename A, typename T>
+        struct getComponent
+        {
+            A operator()(const T &t, unsigned int i)
+            {
+                return t[offset + i];
+            }
+            A &operator()(T &t, unsigned int i)
+            {
+                return t[offset + i];
+            }
+        };
+
+        template <unsigned int offset, typename T>
+        struct getComponent<offset, T, T>
+        {
+            T operator()(const T &t, unsigned int i)
+            {
+                return t;
+            }
+            T &operator()(T &t, unsigned int i)
+            {
+                return t;
+            }
+        };
+
+        template <unsigned int offset, unsigned int offset2,
+                 unsigned int numComponents,
+                 typename A,
+                 typename T, typename U>
+        static void setComponents(T &a, const U &b)
+        {
+            for(unsigned int i = 0; i < numComponents; i++)
+            {
+                getComponent<offset, A, T>()(a, i) = getComponent<offset2, A, U>()(b, i);
+            }
         }
 
         template <typename T, typename U>
@@ -277,6 +329,113 @@ class Util {
                     std::swap(arrayData[a], arrayData[b]);
                 }
                 current_index += faceCounts[i];
+            }
+        }
+
+        template <unsigned int offset, unsigned int offset2, unsigned int numComponents,
+                 typename A,
+                 typename T, typename U, typename V>
+        static void
+        promoteAttributeData(
+                HAPI_AttributeOwner toOwner,
+                T &toArray,
+                HAPI_AttributeOwner fromOwner,
+                const U &fromArray,
+                unsigned int pointCount,
+                const V* polygonCounts = NULL,
+                const V* polygonConnects = NULL
+                )
+        {
+            if(fromOwner == toOwner)
+            {
+                setArrayLength(toArray, getArrayLength(fromArray));
+                for(unsigned int i = 0; i < getArrayLength(fromArray); ++i)
+                {
+                    setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[i]);
+                }
+
+                return;
+            }
+
+            switch(fromOwner)
+            {
+                case HAPI_ATTROWNER_POINT:
+                    switch(toOwner)
+                    {
+                        case HAPI_ATTROWNER_VERTEX:
+                            assert(polygonConnects);
+                            assert(polygonConnects);
+
+                            setArrayLength(toArray, getArrayLength(*polygonConnects));
+                            for(unsigned int i = 0; i < getArrayLength(*polygonConnects); ++i)
+                            {
+                                unsigned int point = (*polygonConnects)[i];
+                                setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[point]);
+                            }
+                            break;
+                        default:
+                            assert(false);
+                            break;
+                    }
+                    break;
+                case HAPI_ATTROWNER_PRIM:
+                    switch(toOwner)
+                    {
+                        case HAPI_ATTROWNER_VERTEX:
+                            assert(polygonCounts);
+                            assert(polygonConnects);
+
+                            setArrayLength(toArray, getArrayLength(*polygonConnects));
+                            for(unsigned int i = 0, j = 0; i < getArrayLength(*polygonCounts); ++i)
+                            {
+                                for(int k = 0; k < (*polygonCounts)[i]; ++j, ++k)
+                                {
+                                    setComponents<offset, offset2, numComponents, A>(toArray[j], fromArray[i]);
+                                }
+                            }
+                            break;
+                        case HAPI_ATTROWNER_POINT:
+                            // Don't convert the prim attributes to point
+                            // attributes, because that would lose information.
+                            // Convert everything to vertex attributs instead.
+                            assert(false);
+                            break;
+                        default:
+                            assert(false);
+                            break;
+                    }
+                    break;
+                case HAPI_ATTROWNER_DETAIL:
+                    {
+                        unsigned int count = 0;
+                        switch(toOwner)
+                        {
+                            case HAPI_ATTROWNER_VERTEX:
+                                assert(polygonConnects);
+                                count = getArrayLength(*polygonConnects);
+                                break;
+                            case HAPI_ATTROWNER_POINT:
+                                count = pointCount;
+                                break;
+                            case HAPI_ATTROWNER_PRIM:
+                                assert(polygonCounts);
+                                count = getArrayLength(*polygonCounts);
+                                break;
+                            default:
+                                assert(false);
+                                break;
+                        }
+
+                        setArrayLength(toArray, count);
+                        for(unsigned int i = 0; i < count; ++i)
+                        {
+                            setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[0]);
+                        }
+                    }
+                    break;
+                default:
+                    assert(false);
+                    break;
             }
         }
 };

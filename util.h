@@ -216,21 +216,6 @@ class Util {
 
         static bool statusCheckLoop(bool wantMainProgressBar = true);
 
-        template <typename T>
-        static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)
-        {
-            int current_index = 0;
-            for(int i = 0; i < (int) faceCounts.length(); i++)
-            {
-                for(int a = current_index, b = current_index + faceCounts[i] - 1;
-                        a < b; a++, b--)
-                {
-                    std::swap(arrayData[a], arrayData[b]);
-                }
-                current_index += faceCounts[i];
-            }
-        }
-
         static MObject findNodeByName(const MString &name);
         static MObject findDagChild(const MFnDagNode &dag, const MString &name);
         static MStatus createNodeByModifierCommand(
@@ -265,6 +250,21 @@ class Util {
                 WalkParmOperation& operator=(const WalkParmOperation &);
         };
         static void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
+
+        template <typename T>
+        static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)
+        {
+            int current_index = 0;
+            for(int i = 0; i < (int) faceCounts.length(); i++)
+            {
+                for(int a = current_index, b = current_index + faceCounts[i] - 1;
+                        a < b; a++, b--)
+                {
+                    std::swap(arrayData[a], arrayData[b]);
+                }
+                current_index += faceCounts[i];
+            }
+        }
 };
 
 #endif

@@ -251,11 +251,25 @@ class Util {
         };
         static void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
 
+        // STL style containers
+        template <typename T, typename Alloc, template <typename, typename> class U>
+        static size_t getArrayLength(const U<T, Alloc> &array)
+        {
+            return array.size();
+        }
+
+        // Maya containers
         template <typename T>
-        static void reverseWindingOrder(T &arrayData, const MIntArray &faceCounts)
+        static unsigned int getArrayLength(const T &array)
+        {
+            return array.length();
+        }
+
+        template <typename T, typename U>
+        static void reverseWindingOrder(T &arrayData, const U &faceCounts)
         {
             unsigned int current_index = 0;
-            for(unsigned int i = 0; i < faceCounts.length(); i++)
+            for(unsigned int i = 0; i < getArrayLength(faceCounts); i++)
             {
                 for(unsigned int a = current_index, b = current_index + faceCounts[i] - 1;
                         a < b; a++, b--)

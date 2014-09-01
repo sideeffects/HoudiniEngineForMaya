@@ -1108,47 +1108,129 @@ OutputGeometryPart::computeMesh(
     if(polygonCounts.length())
     {
         // Get color data
-        HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
+        HAPI_AttributeOwner colorOwner = HAPI_ATTROWNER_MAX;
 
         if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_VERTEX))
         {
-            owner = HAPI_ATTROWNER_VERTEX;
+            colorOwner = HAPI_ATTROWNER_VERTEX;
         }
         else if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_POINT))
         {
-            owner = HAPI_ATTROWNER_POINT;
+            colorOwner = HAPI_ATTROWNER_POINT;
+        }
+        else if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_PRIM))
+        {
+            colorOwner = HAPI_ATTROWNER_PRIM;
+        }
+        else if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_DETAIL))
+        {
+            colorOwner = HAPI_ATTROWNER_DETAIL;
         }
 
-        if(owner != HAPI_ATTROWNER_MAX)
-        {
-            // Sample to color array
-            MColorArray colors;
-            colors.setLength(floatArray.size() / 3);
-            for(unsigned int i = 0, length = colors.length();
-                    i < length; ++i)
-            {
-                MColor &color = colors[i];
-                color.r = floatArray[i * 3 + 0];
-                color.g = floatArray[i * 3 + 1];
-                color.b = floatArray[i * 3 + 2];
-                color.a = 1.0f;
-            }
+        HAPI_AttributeOwner alphaOwner = HAPI_ATTROWNER_MAX;
+        std::vector<float> alphaArray;
 
-            // Get alpha data, if exists
-            if(getAttributeData(floatArray, "Alpha", owner)
-                    && colors.length() == floatArray.size())
+        if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_VERTEX))
+        {
+            alphaOwner = HAPI_ATTROWNER_VERTEX;
+        }
+        else if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_POINT))
+        {
+            alphaOwner = HAPI_ATTROWNER_POINT;
+        }
+        else if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_PRIM))
+        {
+            alphaOwner = HAPI_ATTROWNER_PRIM;
+        }
+        else if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_DETAIL))
+        {
+            alphaOwner = HAPI_ATTROWNER_DETAIL;
+        }
+
+        if(colorOwner != HAPI_ATTROWNER_MAX || alphaOwner != HAPI_ATTROWNER_MAX)
+        {
+            // Convert to color array
+            MColorArray colors(floatArray.size() / 3);
+            if(colorOwner != HAPI_ATTROWNER_MAX)
             {
                 for(unsigned int i = 0, length = colors.length();
                         i < length; ++i)
                 {
-                    colors[i].a = floatArray[i];
+                    MColor &color = colors[i];
+                    color.r = floatArray[i * 3 + 0];
+                    color.g = floatArray[i * 3 + 1];
+                    color.b = floatArray[i * 3 + 2];
                 }
             }
 
-            // Append colors on verts based on sample location
+            HAPI_AttributeOwner owner;
+            if((colorOwner == HAPI_ATTROWNER_POINT && alphaOwner == HAPI_ATTROWNER_PRIM)
+                    || (colorOwner == HAPI_ATTROWNER_PRIM && alphaOwner == HAPI_ATTROWNER_POINT))
+            {
+                // Don't convert the prim attributes to point attributes,
+                // because that would lose information. Convert everything to
+                // vertex attributs instead.
+                owner = HAPI_ATTROWNER_VERTEX;
+            }
+            else
+            {
+                if(colorOwner < alphaOwner)
+                {
+                    owner = colorOwner;
+                }
+                else
+                {
+                    owner = alphaOwner;
+                }
+            }
+
+            if(owner == HAPI_ATTROWNER_DETAIL)
+            {
+                // Handle detail color and alpha as points
+                owner = HAPI_ATTROWNER_POINT;
+            }
+
+            // If there's no color, then use a default color
+            if(colorOwner == HAPI_ATTROWNER_MAX)
+            {
+                colorOwner = HAPI_ATTROWNER_DETAIL;
+                colors.setLength(1);
+                colors[0] = MColor(1.0f, 1.0f, 1.0f);
+            }
+
+            // If there's no alpha, then use a default alpha
+            if(alphaOwner == HAPI_ATTROWNER_MAX)
+            {
+                alphaOwner = HAPI_ATTROWNER_DETAIL;
+                alphaArray.resize(1);
+                alphaArray[0] = 1.0f;
+            }
+
+            // Promte the attributes
+            MColorArray promotedColors;
+            Util::promoteAttributeData<0, 0, 3, float>(
+                    owner,
+                    promotedColors,
+                    colorOwner,
+                    colors,
+                    vertexArray.length(),
+                    &polygonCounts,
+                    &polygonConnects
+                    );
+
+            Util::promoteAttributeData<3, 0, 1, float>(
+                    owner,
+                    promotedColors,
+                    alphaOwner,
+                    alphaArray,
+                    vertexArray.length(),
+                    &polygonCounts,
+                    &polygonConnects
+                    );
+
             if(owner == HAPI_ATTROWNER_VERTEX)
             {
-                Util::reverseWindingOrder(colors, polygonCounts);
+                Util::reverseWindingOrder(promotedColors, polygonCounts);
 
                 MIntArray faceList;
                 faceList.setLength(polygonConnects.length());
@@ -1161,7 +1243,7 @@ OutputGeometryPart::computeMesh(
                     }
                 }
 
-                meshFn.setFaceVertexColors(colors, faceList, polygonConnects);
+                meshFn.setFaceVertexColors(promotedColors, faceList, polygonConnects);
             }
             else if(owner == HAPI_ATTROWNER_POINT)
             {
@@ -1173,7 +1255,19 @@ OutputGeometryPart::computeMesh(
                     vertexList[i] = i;
                 }
 
-                meshFn.setVertexColors(colors, vertexList);
+                meshFn.setVertexColors(promotedColors, vertexList);
+            }
+            else if(owner == HAPI_ATTROWNER_PRIM)
+            {
+                MIntArray faceList;
+                faceList.setLength(polygonCounts.length());
+                for(unsigned int i = 0, length = faceList.length();
+                        i < length; ++i)
+                {
+                    faceList[i] = i;
+                }
+
+                meshFn.setFaceColors(promotedColors, faceList);
             }
         }
     }

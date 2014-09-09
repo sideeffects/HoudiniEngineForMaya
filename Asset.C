@@ -459,7 +459,7 @@ Asset::Asset(
     }
 
     myAssetInputs = new Inputs(myAssetInfo.id);
-    myAssetInputs->setNumInputs(myAssetInfo.maxGeoInputCount);
+    myAssetInputs->setNumInputs(myAssetInfo.geoInputCount);
 
     // get the infos
     update();
@@ -736,7 +736,7 @@ Asset::setInputs(const MPlug& plug, MDataBlock& data)
 
     myAssetInputs->compute(data);
 
-    for(int i=0; i< myAssetInfo.maxGeoInputCount; i++)
+    for(int i=0; i< myAssetInfo.geoInputCount; i++)
     {
         MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
         CHECK_MSTATUS(status);

@@ -33,7 +33,9 @@ AssetSubCommandLoadAsset::doIt()
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node
-    status = myDagModifier.renameNode(assetNode, myAssetName);
+    MString nodeName = Util::replaceString(myAssetName, ":", "_");
+    nodeName = Util::replaceString(nodeName, ".", "_");
+    status = myDagModifier.renameNode(assetNode, nodeName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set otl file attribute

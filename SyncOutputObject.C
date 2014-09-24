@@ -54,10 +54,17 @@ SyncOutputObject::doIt()
     MPlug objectNamePlug = myOutputPlug.child(AssetNode::outputObjectName);
 
     MString objectName = objectNamePlug.asString();
-    if(objectName.length() > 0)
-        status = myDagModifier.renameNode(objectTransform, objectName);
+    if(objectName.length())
+    {
+        objectName = Util::sanitizeStringForNodeName(objectName);
+    }
+    else
+    {
+        objectName = "emptyObject";
+    }
+    status = myDagModifier.renameNode(objectTransform, objectName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
-    myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(myDagModifier.doIt());
 
     MFnDependencyNode objectTransformFn(objectTransform);
 
@@ -117,10 +124,17 @@ SyncOutputObject::doIt()
                 // rename geoTransform
                 MPlug geoNamePlug = geoPlug.child(AssetNode::outputGeoName);
                 MString geoName = geoNamePlug.asString();
-                if(geoName.length() > 0)
-                    status = myDagModifier.renameNode(geoTransform, geoName);
+                if(geoName.length())
+                {
+                    geoName = Util::sanitizeStringForNodeName(geoName);
+                }
+                else
+                {
+                    geoName = "emptyGeo";
+                }
+                status = myDagModifier.renameNode(geoTransform, geoName);
                 CHECK_MSTATUS_AND_RETURN_IT(status);
-                myDagModifier.doIt();
+                CHECK_MSTATUS_AND_RETURN_IT(myDagModifier.doIt());
 
                 partParent = geoTransform;
             }

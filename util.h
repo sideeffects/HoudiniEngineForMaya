@@ -226,6 +226,7 @@ class Util {
                 unsigned int index = 0
                 );
         static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
+        static MString sanitizeStringForNodeName(const MString &str);
 
         // Returns true if the parm was found.
         static int findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum = -1);

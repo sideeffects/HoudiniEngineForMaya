@@ -74,7 +74,12 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
     MStatus stat;
 
     MDataHandle geoNameHandle = geoHandle.child(AssetNode::outputGeoName);
-    geoNameHandle.setString(Util::getString(myGeoInfo.nameSH));
+    MString geoName;
+    if(myGeoInfo.nameSH != 0)
+    {
+        geoName = Util::getString(myGeoInfo.nameSH);
+    }
+    geoNameHandle.setString(geoName);
     geoNameHandle.setClean();
 
     MDataHandle isTemplatedHandle = geoHandle.child(AssetNode::outputGeoIsTemplated);

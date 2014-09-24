@@ -638,6 +638,26 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
     return result;
 }
 
+MString
+Util::sanitizeStringForNodeName(const MString &str)
+{
+    MString result = str;
+    assert(result.length() > 0);
+
+    result = Util::replaceString(result, ":", "_");
+    result = Util::replaceString(result, ".", "_");
+    result = Util::replaceString(result, "/", "_");
+    result = Util::replaceString(result, " ", "_");
+
+    // check that the first character is not a number
+    if(result.substringW(0,0).isInt())
+    {
+        result = "_" + result.substringW(1, result.length() - 1);
+    }
+
+    return result;
+}
+
 MStringArray
 Util::getAttributeStringData(int assetId,
                             int objectId,

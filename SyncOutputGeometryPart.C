@@ -29,6 +29,14 @@ SyncOutputGeometryPart::doIt()
     MStatus status;
 
     MString partName = myOutputPlug.child(AssetNode::outputPartName).asString();
+    if(partName.length())
+    {
+        partName = Util::sanitizeStringForNodeName(partName);
+    }
+    else
+    {
+        partName = "emptyPart";
+    }
 
     MFnDagNode objectTransformFn(myObjectTransform);
 

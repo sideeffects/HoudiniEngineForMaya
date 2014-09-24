@@ -79,7 +79,12 @@ OutputGeometryObject::compute(
 
     // outputObjectName
     MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
-    objectNameHandle.setString(getName());
+    MString objectName;
+    if(myObjectInfo.nameSH != 0)
+    {
+        objectName = Util::getString(myObjectInfo.nameSH);
+    }
+    objectNameHandle.setString(objectName);
 
     MStatus stat = MS::kSuccess;
     if(myNeverBuilt || myObjectInfo.haveGeosChanged)

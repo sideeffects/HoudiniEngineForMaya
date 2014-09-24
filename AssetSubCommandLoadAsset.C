@@ -33,8 +33,7 @@ AssetSubCommandLoadAsset::doIt()
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node
-    MString nodeName = Util::replaceString(myAssetName, ":", "_");
-    nodeName = Util::replaceString(nodeName, ".", "_");
+    MString nodeName = Util::sanitizeStringForNodeName(myAssetName);
     status = myDagModifier.renameNode(assetNode, nodeName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 

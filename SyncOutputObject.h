@@ -26,10 +26,12 @@ class SyncOutputObject : public SubCommand
         virtual bool isUndoable() const;
 
     protected:
+#if MAYA_API_VERSION >= 201400
         MStatus createFluidShape();
         MStatus createFluidShapeNode(MObject& transform, MObject& fluid);
         MStatus createVelocityConverter(MObject& gridInterleaver);
         bool resolutionsEqual(MPlug resA, MPlug resB);
+#endif
 
         const MPlug myOutputPlug;
         const MObject myAssetNodeObj;

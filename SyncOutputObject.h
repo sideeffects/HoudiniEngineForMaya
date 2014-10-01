@@ -27,8 +27,7 @@ class SyncOutputObject : public SubCommand
 
     protected:
 #if MAYA_API_VERSION >= 201400
-        MStatus createFluidShape();
-        MStatus createFluidShapeNode(MObject& transform, MObject& fluid);
+        MStatus createFluidShape(const MObject &objectTransform);
         MStatus createVelocityConverter(MObject& gridInterleaver);
         bool resolutionsEqual(MPlug resA, MPlug resB);
 #endif

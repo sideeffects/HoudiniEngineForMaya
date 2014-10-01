@@ -242,7 +242,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             transform = myDagModifier.createNode("transform", objectTransform, &status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
             // TODO: name
-            status  = myDagModifier.renameNode(transform, "fluid_transform");
+            status  = myDagModifier.renameNode(transform, "fluid");
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             fluid = myDagModifier.createNode("fluidShape", transform, &status);

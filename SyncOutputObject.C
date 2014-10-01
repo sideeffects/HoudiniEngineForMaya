@@ -152,29 +152,13 @@ SyncOutputObject::doIt()
     }
 
 #if MAYA_API_VERSION >= 201400
-    createFluidShape();
+    createFluidShape(objectTransform);
 #endif
 
     return MStatus::kSuccess;
 }
 
 #if MAYA_API_VERSION >= 201400
-MStatus
-SyncOutputObject::createFluidShapeNode(MObject& transform, MObject& fluid)
-{
-    MStatus status;
-    transform = myDagModifier.createNode("transform", myAssetNodeObj, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    // TODO: name
-    status  = myDagModifier.renameNode(transform, "fluid_transform");
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    fluid = myDagModifier.createNode("fluidShape", transform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    return status;
-}
-
 MStatus
 SyncOutputObject::createVelocityConverter(MObject& velocityConverter)
 {
@@ -208,7 +192,7 @@ SyncOutputObject::resolutionsEqual(MPlug resA, MPlug resB)
 }
 
 MStatus
-SyncOutputObject::createFluidShape()
+SyncOutputObject::createFluidShape(const MObject &objectTransform)
 {
     MStatus status;
 
@@ -254,7 +238,16 @@ SyncOutputObject::createFluidShape()
             return MStatus::kSuccess;
 
         MObject transform, fluid;
-        createFluidShapeNode(transform, fluid);
+        {
+            transform = myDagModifier.createNode("transform", objectTransform, &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+            // TODO: name
+            status  = myDagModifier.renameNode(transform, "fluid_transform");
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            fluid = myDagModifier.createNode("fluidShape", transform, &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
 
         MPlug referenceRes = referenceVolume.child(AssetNode::outputPartVolumeRes);
 

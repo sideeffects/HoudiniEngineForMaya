@@ -26,7 +26,6 @@ class SyncOutputObject : public SubCommand
         virtual bool isUndoable() const;
 
     protected:
-        MStatus createOutputObject();
         MStatus createFluidShape();
         MStatus createFluidShapeNode(MObject& transform, MObject& fluid);
         MStatus createVelocityConverter(MObject& gridInterleaver);

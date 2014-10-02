@@ -77,14 +77,17 @@ initializeHAPI()
 
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    MString otl_dir(getenv("HAPI_OTL_PATH"));
-    MString dso_dir(getenv("HAPI_DSO_PATH"));
+    const char* otl_dir = getenv("HAPI_OTL_PATH");
+    const char* dso_dir = getenv("HAPI_DSO_PATH");
 
     HAPI_CookOptions cook_options = HAPI_CookOptions_Create();
     cook_options.maxVerticesPerPrimitive = -1;
     cook_options.refineCurveToLinear = false;
-    hstat = HAPI_Initialize(otl_dir.asChar(),
-            dso_dir.asChar(), &cook_options, true, -1);
+
+    hstat = HAPI_Initialize(
+            otl_dir, dso_dir,
+            &cook_options, true, -1
+            );
     if(hstat != HAPI_RESULT_SUCCESS)
     {
         CHECK_HAPI(hstat);

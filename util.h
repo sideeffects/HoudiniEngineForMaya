@@ -325,7 +325,7 @@ class Util {
             for(unsigned int i = 0; i < getArrayLength(faceCounts); i++)
             {
                 for(unsigned int a = current_index, b = current_index + faceCounts[i] - 1;
-                        a < b; a++, b--)
+                        a < current_index + faceCounts[i] / 2; a++, b--)
                 {
                     std::swap(arrayData[a], arrayData[b]);
                 }

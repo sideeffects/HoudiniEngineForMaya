@@ -263,7 +263,11 @@ OutputGeometryPart::compute(
     {
         // Name
         MDataHandle nameHandle = handle.child(AssetNode::outputPartName);
-        MString partName = Util::getString(myPartInfo.nameSH);
+        MString partName;
+        if(myPartInfo.nameSH != 0)
+        {
+            partName = Util::getString(myPartInfo.nameSH);
+        }
         nameHandle.set(partName);
 
         // Mesh

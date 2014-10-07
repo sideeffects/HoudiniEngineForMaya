@@ -339,9 +339,9 @@ AttrOperation::containsParm(const HAPI_ParmInfo &parm) const
 }
 
 Asset::Asset(
-        MString otlFilePath,
-        MString assetName,
-        MObject node
+        const MString &otlFilePath,
+        const MString &assetName,
+        const MObject &node
         ) :
     // initialize values here because instantiating the asset could error out
     myNumVisibleObjects(0),

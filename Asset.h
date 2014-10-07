@@ -17,9 +17,9 @@ class MFnDependencyNode;
 class Asset {
     public:
         Asset(
-                MString otlFilePath,
-                MString assetName,
-                MObject node
+                const MString &otlFilePath,
+                const MString &assetName,
+                const MObject &node
              );
         ~Asset();
 

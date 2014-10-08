@@ -15,7 +15,11 @@ InputCurve::InputCurve(int assetId, int inputIdx) :
     Input(assetId, inputIdx)
 {
     int curveAssetId;
-    HAPI_CreateCurve(&curveAssetId);
+    CHECK_HAPI(HAPI_CreateCurve(&curveAssetId));
+    if(!Util::statusCheckLoop())
+    {
+        DISPLAY_ERROR("Unexpected error when creating input curve.");
+    }
 
     HAPI_GetAssetInfo(curveAssetId, &myCurveAssetInfo);
     HAPI_GetNodeInfo(myCurveAssetInfo.nodeId, &myCurveNodeInfo);

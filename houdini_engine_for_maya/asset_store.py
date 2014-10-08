@@ -127,14 +127,7 @@ def get_asset_license(otl_file):
     return license_root
 
 def load_asset(otl_file, asset):
-    # HAPI calls are done asynchronously, which means we could be running
-    # Python code in a separate thread. This could cause a GIL deadlock. Make
-    # sure we call load asset from MEL to avoid a GIL deadlock.
-    load_asset_mel = "houdiniAsset -loadAsset \"{0}\" \"{1}\"".format(
-            cmds.encodeString(otl_file),
-            cmds.encodeString(asset),
-            )
-    mel.eval("evalDeferred(\"{0}\")".format(cmds.encodeString(load_asset_mel)))
+    cmds.houdiniAsset(loadAsset=[otl_file, asset])
 
 def create_asset_entry(asset):
     form_layout = cmds.formLayout(width = asset_size, height = asset_size)

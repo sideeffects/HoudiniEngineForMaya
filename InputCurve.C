@@ -14,6 +14,8 @@
 InputCurve::InputCurve(int assetId, int inputIdx) :
     Input(assetId, inputIdx)
 {
+    Util::PythonInterpreterLock pythonInterpreterLock;
+
     int curveAssetId;
     CHECK_HAPI(HAPI_CreateCurve(&curveAssetId));
     if(!Util::statusCheckLoop())

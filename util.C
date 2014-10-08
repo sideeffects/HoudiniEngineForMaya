@@ -137,6 +137,16 @@ Util::checkHAPIStatus(HAPI_Result stat)
     }
 }
 
+Util::PythonInterpreterLock::PythonInterpreterLock()
+{
+    HAPI_PythonThreadInterpreterLock(true);
+}
+
+Util::PythonInterpreterLock::~PythonInterpreterLock()
+{
+    HAPI_PythonThreadInterpreterLock(false);
+}
+
 MString
 Util::escapeString(const MString &str)
 {

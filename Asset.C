@@ -403,43 +403,51 @@ Asset::Asset(
 
     // instantiate the asset
     int assetId = -1;
-    hapiResult = HAPI_InstantiateAsset(
-            assetName.asChar(),
-            false,
-            &assetId
-            );
-    if(HAPI_FAIL(hapiResult))
     {
-        DISPLAY_ERROR("Could not instantiate asset: ^1s\n"
-                "in OTL file: ^2s\n",
-                assetName,
-                otlFilePath);
+        Util::PythonInterpreterLock pythonInterpreterLock;
 
-        GET_HAPI_STATUS_CALL();
-        DISPLAY_ERROR(hapiStatus);
+        hapiResult = HAPI_InstantiateAsset(
+                assetName.asChar(),
+                false,
+                &assetId
+                );
+        if(HAPI_FAIL(hapiResult))
+        {
+            DISPLAY_ERROR("Could not instantiate asset: ^1s\n"
+                    "in OTL file: ^2s\n",
+                    assetName,
+                    otlFilePath);
 
-        return;
-    }
+            GET_HAPI_STATUS_CALL();
+            DISPLAY_ERROR(hapiStatus);
 
-    if(!Util::statusCheckLoop())
-    {
-        DISPLAY_ERROR("Could not instantiate asset: ^1s\n"
-                "in OTL file: ^2s\n",
-                assetName,
-                otlFilePath);
+            return;
+        }
 
-        GET_HAPI_STATUS_COOK();
-        DISPLAY_ERROR(hapiStatus);
+        if(!Util::statusCheckLoop())
+        {
+            DISPLAY_ERROR("Could not instantiate asset: ^1s\n"
+                    "in OTL file: ^2s\n",
+                    assetName,
+                    otlFilePath);
 
-        // Do nothing else if the asset is invalid.
-        return;
+            GET_HAPI_STATUS_COOK();
+            DISPLAY_ERROR(hapiStatus);
+
+            // Do nothing else if the asset is invalid.
+            return;
+        }
     }
 
     // Cook the asset here so that we know the number of inputs and number of
     // objects to output. Ignore the error here, because the inputs and
     // parameters are not marshalled in yet.
-    HAPI_CookAsset(assetId, NULL);
-    Util::statusCheckLoop();
+    {
+        Util::PythonInterpreterLock pythonInterpreterLock;
+
+        HAPI_CookAsset(assetId, NULL);
+        Util::statusCheckLoop();
+    }
 
     hapiResult = HAPI_GetAssetInfo(assetId, &myAssetInfo);
     CHECK_HAPI(hapiResult);
@@ -556,6 +564,8 @@ Asset::resetSimulation()
 MString
 Asset::getCookMessages()
 {
+    Util::PythonInterpreterLock pythonInterpreterLock;
+
     // Trigger a cook so that the asset will become the "last cooked asset",
     // because HAPI_STATUS_COOK_RESULT only consider the "last cooked asset".
     // In most cases, this shouldn't do any actual cooking.
@@ -764,12 +774,16 @@ Asset::compute(
     //of this class, which is at asset load time.
     typeHandle.set(myAssetInfo.type);
 
-    HAPI_CookAsset(myAssetInfo.id, NULL);
-
-    if(!Util::statusCheckLoop())
     {
-        GET_HAPI_STATUS_COOK();
-        DISPLAY_MSG(displayError, hapiStatus);
+        Util::PythonInterpreterLock pythonInterpreterLock;
+
+        HAPI_CookAsset(myAssetInfo.id, NULL);
+
+        if(!Util::statusCheckLoop())
+        {
+            GET_HAPI_STATUS_COOK();
+            DISPLAY_MSG(displayError, hapiStatus);
+        }
     }
 
     update();

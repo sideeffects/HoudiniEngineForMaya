@@ -16,6 +16,8 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
     Input(assetId, inputIdx),
     myInputAssetId(0)
 {
+    Util::PythonInterpreterLock pythonInterpreterLock;
+
     CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
     if(!Util::statusCheckLoop())
     {

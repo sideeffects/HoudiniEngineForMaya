@@ -135,6 +135,13 @@ class Util {
         // Throws an exception if an error occurred
         static void checkHAPIStatus(HAPI_Result stat);
 
+        class PythonInterpreterLock
+        {
+            public:
+                PythonInterpreterLock();
+                ~PythonInterpreterLock();
+        };
+
         class ProgressBar
         {
             public:

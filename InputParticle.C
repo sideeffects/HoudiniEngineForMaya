@@ -19,10 +19,7 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
-    if(!Util::statusCheckLoop())
-    {
-        DISPLAY_ERROR("Unexpected error when creating input asset.");
-    }
+    Util::statusCheckLoop();
 
     myInputObjectId = 0;
     myInputGeoId = 0;

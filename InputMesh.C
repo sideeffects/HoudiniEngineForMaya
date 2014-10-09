@@ -16,10 +16,7 @@ InputMesh::InputMesh(int assetId, int inputIdx) :
     myInputGeoId(-1)
 {
     CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
-    if(!Util::statusCheckLoop())
-    {
-        DISPLAY_ERROR("Unexpected error when creating input asset.");
-    }
+    Util::statusCheckLoop();
 
     myInputObjectId = 0;
     myInputGeoId = 0;

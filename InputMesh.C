@@ -231,6 +231,122 @@ InputMesh::setInputGeo(
         }
     }
 
+    // Colors and Alphas
+    {
+        MString currentColorSetName;
+        currentColorSetName = meshFn.currentColorSetName();
+
+        MStringArray colorSetNames;
+        meshFn.getColorSetNames(colorSetNames);
+
+        MColor defaultUnsetColor;
+        MColorArray colors;
+        std::vector<float> buffer;
+        for(unsigned int i = 0; i < colorSetNames.length(); i++)
+        {
+            const MString colorSetName = colorSetNames[i];
+
+            MString colorAttributeName;
+            MString alphaAttributeName;
+            if(colorSetName == currentColorSetName)
+            {
+                colorAttributeName = "Cd";
+                alphaAttributeName = "Alpha";
+            }
+            else
+            {
+                colorAttributeName = colorSetName;
+                alphaAttributeName = colorSetName + "Alpha";
+            }
+
+            bool hasColor = false;
+            bool hasAlpha = false;
+            {
+                MFnMesh::MColorRepresentation colorSetRepresentation =
+                    meshFn.getColorRepresentation(colorSetName);
+
+                switch(colorSetRepresentation)
+                {
+                    case MFnMesh::kAlpha:
+                        hasAlpha = true;
+                        break;
+                    case MFnMesh::kRGB:
+                        hasColor = true;
+                        break;
+                    case MFnMesh::kRGBA:
+                        hasColor = true;
+                        hasAlpha = true;
+                        break;
+                }
+            }
+
+            CHECK_MSTATUS(meshFn.getFaceVertexColors(
+                        colors,
+                        &colorSetName,
+                        &defaultUnsetColor
+                        ));
+
+            // reverse winding order
+            Util::reverseWindingOrder(colors, faceCounts);
+
+            if(hasColor)
+            {
+                buffer.resize(3 * vertexList.length());
+                for(unsigned int j = 0; j < vertexList.length(); j++)
+                {
+                    buffer[j * 3 + 0] = colors[j].r;
+                    buffer[j * 3 + 1] = colors[j].g;
+                    buffer[j * 3 + 2] = colors[j].b;
+                }
+
+                // add and set Cd
+                HAPI_AttributeInfo colorAttributeInfo;
+                colorAttributeInfo.exists = true;
+                colorAttributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+                colorAttributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+                colorAttributeInfo.count = vertexList.length();
+                colorAttributeInfo.tupleSize = 3;
+                HAPI_AddAttribute(
+                        myInputAssetId, myInputObjectId, myInputGeoId,
+                        colorAttributeName.asChar(), &colorAttributeInfo
+                        );
+
+                HAPI_SetAttributeFloatData(
+                        myInputAssetId, myInputObjectId, myInputGeoId,
+                        colorAttributeName.asChar(), &colorAttributeInfo,
+                        &buffer.front(), 0, vertexList.length()
+                        );
+            }
+
+            if(hasAlpha)
+            {
+                buffer.resize(vertexList.length());
+                for(unsigned int j = 0; j < vertexList.length(); j++)
+                {
+                    buffer[j] = colors[j].a;
+                }
+
+                // add and set Alpha
+                HAPI_AttributeInfo alphaAttributeInfo;
+                alphaAttributeInfo.exists = true;
+                alphaAttributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+                alphaAttributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+                alphaAttributeInfo.count = vertexList.length();
+                alphaAttributeInfo.tupleSize = 1;
+                HAPI_AddAttribute(
+                        myInputAssetId, myInputObjectId, myInputGeoId,
+                        alphaAttributeName.asChar(), &alphaAttributeInfo
+                        );
+
+                HAPI_SetAttributeFloatData(
+                        myInputAssetId, myInputObjectId, myInputGeoId,
+                        alphaAttributeName.asChar(), &alphaAttributeInfo,
+                        &buffer.front(), 0, vertexList.length()
+                        );
+            }
+        }
+    }
+
     // Commit it
     HAPI_CommitGeo(myInputAssetId, myInputObjectId, myInputGeoId);
 

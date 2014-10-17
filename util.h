@@ -262,15 +262,15 @@ class Util {
 
         // STL style containers
         template <typename T, typename Alloc, template <typename, typename> class U>
-        static size_t getArrayLength(const U<T, Alloc> &array)
+        static unsigned int getArrayLength(const U<T, Alloc> &array)
         {
             return array.size();
         }
 
         template <typename T, typename Alloc, template <typename, typename> class U>
-        static void setArrayLength(U<T, Alloc> &array, size_t n)
+        static void setArrayLength(U<T, Alloc> &array, unsigned int n)
         {
-            return array.resize(n);
+            array.resize(n);
         }
 
         // Maya containers
@@ -281,9 +281,9 @@ class Util {
         }
 
         template <typename T>
-        static unsigned int setArrayLength(T &array, unsigned int n)
+        static void setArrayLength(T &array, unsigned int n)
         {
-            return array.setLength(n);
+            array.setLength(n);
         }
 
         // Accessing components

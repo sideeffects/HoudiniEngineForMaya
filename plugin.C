@@ -72,6 +72,7 @@ initializeHAPI()
 {
     if(HAPI_IsInitialized() == HAPI_RESULT_SUCCESS)
     {
+        MGlobal::displayInfo("Houdini Engine is already initialized. Skipping initialization.");
         return true;
     }
 
@@ -88,6 +89,21 @@ initializeHAPI()
             otl_dir, dso_dir,
             &cook_options, true, -1
             );
+    if(hstat != HAPI_RESULT_SUCCESS)
+    {
+        CHECK_HAPI(hstat);
+        return false;
+    }
+
+    return true;
+}
+
+bool
+cleanupHAPI()
+{
+    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
+
+    hstat = HAPI_Cleanup();
     if(hstat != HAPI_RESULT_SUCCESS)
     {
         CHECK_HAPI(hstat);
@@ -179,6 +195,16 @@ uninitializePlugin(MObject obj)
 
     status = plugin.deregisterCommand("houdiniAsset");
     CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    if(cleanupHAPI())
+    {
+	MGlobal::displayInfo("Houdini Engine cleaned up successfully.");
+    }
+    else
+    {
+	MGlobal::displayInfo("Houdini Engine failed to clean up.");
+	return MStatus::kFailure;
+    }
 
     return status;
 }

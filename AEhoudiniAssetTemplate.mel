@@ -737,7 +737,7 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|outputTemplateObjects",
+    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|outputHiddenObjects",
             $nodeName + ".outputHiddenObjects",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|outputTemplateObjects",

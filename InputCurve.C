@@ -135,19 +135,32 @@ InputCurve::setInputGeo(
 
             coords << pt.x << "," << pt.y << "," << pt.z << " ";
         }
-        HAPI_SetParmStringValue(myCurveNodeInfo.id, coords.str().c_str(), coordsParm.id, coordsParm.stringValuesIndex);
+        HAPI_SetParmStringValue(
+                myCurveNodeInfo.id,
+                coords.str().c_str(),
+                coordsParm.id,
+                coordsParm.stringValuesIndex
+                );
     }
 
     // order
     {
         int order = fnCurve.degree() + 1;
 
-        HAPI_SetParmIntValues(myCurveNodeInfo.id, &order, orderParm.intValuesIndex, 1);
+        HAPI_SetParmIntValues(
+                myCurveNodeInfo.id,
+                &order,
+                orderParm.intValuesIndex, 1
+                );
     }
 
     // periodicity
     {
         int close = fnCurve.form() == MFnNurbsCurve::kPeriodic;
-        HAPI_SetParmIntValues(myCurveNodeInfo.id, &close, closeParm.intValuesIndex, 1);
+        HAPI_SetParmIntValues(
+                myCurveNodeInfo.id,
+                &close,
+                closeParm.intValuesIndex, 1
+                );
     }
 }

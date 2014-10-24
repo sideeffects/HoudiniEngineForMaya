@@ -879,11 +879,21 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 else if(parmInfo.type == HAPI_PARMTYPE_STRING)
                 {
                     int value;
-                    HAPI_GetParmStringValues(myNodeInfo.id, false, &value, parmInfo.stringValuesIndex, parmInfo.size);
+                    HAPI_GetParmStringValues(
+                            myNodeInfo.id,
+                            false,
+                            &value,
+                            parmInfo.stringValuesIndex, parmInfo.size
+                            );
                     MString valueString = Util::getString(value);
 
-                    HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
-                    HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parmInfo.choiceIndex, parmInfo.choiceCount);
+                    HAPI_ParmChoiceInfo * choiceInfos =
+                        new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
+                    HAPI_GetParmChoiceLists(
+                            myNodeInfo.id,
+                            choiceInfos,
+                            parmInfo.choiceIndex, parmInfo.choiceCount
+                            );
 
                     for(int i = 0; i < parmInfo.choiceCount; i++)
                     {
@@ -897,7 +907,11 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 }
                 else
                 {
-                    HAPI_GetParmIntValues(myNodeInfo.id, &enumIndex, parmInfo.intValuesIndex, parmInfo.size);
+                    HAPI_GetParmIntValues(
+                            myNodeInfo.id,
+                            &enumIndex,
+                            parmInfo.intValuesIndex, parmInfo.size
+                            );
                 }
 
                 dataHandle.setShort(static_cast<short>(enumIndex));
@@ -910,7 +924,11 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_COLOR:
                         {
                             float* values = new float[parmInfo.size];
-                            HAPI_GetParmFloatValues(myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+                            HAPI_GetParmFloatValues(
+                                    myNodeInfo.id,
+                                    values,
+                                    parmInfo.floatValuesIndex, parmInfo.size
+                                    );
 
                             if(parmInfo.size == 1)
                             {
@@ -924,7 +942,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                         && i < (int) parmInfo.size;
                                         i++)
                                 {
-                                    MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                    MDataHandle elementDataHandle =
+                                        dataHandle.child(attrFn.child(i));
                                     elementDataHandle.setFloat(values[i]);
                                 }
                             }
@@ -951,7 +970,11 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             }
                             else
                             {
-                                HAPI_GetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
+                                HAPI_GetParmIntValues(
+                                        myNodeInfo.id,
+                                        values,
+                                        parmInfo.intValuesIndex, parmInfo.size
+                                        );
                             }
 
                             if(parmInfo.size == 1)
@@ -997,7 +1020,12 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_PATH_NODE:
                         {
                             int* values = new int[parmInfo.size];
-                            HAPI_GetParmStringValues(myNodeInfo.id, false, values, parmInfo.stringValuesIndex, parmInfo.size);
+                            HAPI_GetParmStringValues(
+                                    myNodeInfo.id,
+                                    false,
+                                    values,
+                                    parmInfo.stringValuesIndex, parmInfo.size
+                                    );
 
                             if(parmInfo.size == 1)
                             {
@@ -1011,7 +1039,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                         && i < (int) parmInfo.size;
                                         i++)
                                 {
-                                    MDataHandle elementDataHandle = dataHandle.child(attrFn.child(i));
+                                    MDataHandle elementDataHandle =
+                                        dataHandle.child(attrFn.child(i));
                                     elementDataHandle.setString(Util::getString(values[i]));
                                 }
                             }
@@ -1120,23 +1149,39 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     int value = enumIndex - 1;
                     if(value >= 0)
                     {
-                        HAPI_SetParmIntValues(myNodeInfo.id, &value, parmInfo.intValuesIndex, 1);
+                        HAPI_SetParmIntValues(
+                                myNodeInfo.id,
+                                &value,
+                                parmInfo.intValuesIndex, 1
+                                );
                     }
                 }
                 else if(parmInfo.type == HAPI_PARMTYPE_STRING)
                 {
                     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
-                    HAPI_GetParmChoiceLists(myNodeInfo.id, choiceInfos, parmInfo.choiceIndex, parmInfo.choiceCount);
+                    HAPI_GetParmChoiceLists(
+                            myNodeInfo.id,
+                            choiceInfos,
+                            parmInfo.choiceIndex, parmInfo.choiceCount);
 
                     MString valueString = Util::getString(choiceInfos[enumIndex].valueSH);
 
-                    HAPI_SetParmStringValue(myNodeInfo.id, valueString.asChar(), parmInfo.id, 0);
+                    HAPI_SetParmStringValue(
+                            myNodeInfo.id,
+                            valueString.asChar(),
+                            parmInfo.id,
+                            0
+                            );
 
                     delete[] choiceInfos;
                 }
                 else
                 {
-                    HAPI_SetParmIntValues(myNodeInfo.id, &enumIndex, parmInfo.intValuesIndex, 1);
+                    HAPI_SetParmIntValues(
+                            myNodeInfo.id,
+                            &enumIndex,
+                            parmInfo.intValuesIndex, 1
+                            );
                 }
             }
             else
@@ -1160,7 +1205,11 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                     values[i] = elementHandle.asFloat();
                                 }
                             }
-                            HAPI_SetParmFloatValues(myNodeInfo.id, values, parmInfo.floatValuesIndex, parmInfo.size);
+                            HAPI_SetParmFloatValues(
+                                    myNodeInfo.id,
+                                    values,
+                                    parmInfo.floatValuesIndex, parmInfo.size
+                                    );
 
                             delete[] values;
                         }
@@ -1206,7 +1255,11 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                                 int* currentValues = new int[parmInfo.size];
 
-                                HAPI_GetParmIntValues(myNodeInfo.id, currentValues, parmInfo.intValuesIndex, parmInfo.size);
+                                HAPI_GetParmIntValues(
+                                        myNodeInfo.id,
+                                        currentValues,
+                                        parmInfo.intValuesIndex, parmInfo.size
+                                        );
                                 for(int i = 0; i < parmInfo.size; i++)
                                 {
                                     if(values[i] == 1)
@@ -1215,7 +1268,11 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                         // set it to the current value, so we
                                         // don't have to worry about the value
                                         // changing.
-                                        HAPI_SetParmIntValues(myNodeInfo.id, &currentValues[i], parmInfo.intValuesIndex + i, 1);
+                                        HAPI_SetParmIntValues(
+                                                myNodeInfo.id,
+                                                &currentValues[i],
+                                                parmInfo.intValuesIndex + i, 1
+                                                );
                                     }
                                 }
 
@@ -1223,7 +1280,11 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             }
                             else
                             {
-                                HAPI_SetParmIntValues(myNodeInfo.id, values, parmInfo.intValuesIndex, parmInfo.size);
+                                HAPI_SetParmIntValues(
+                                        myNodeInfo.id,
+                                        values,
+                                        parmInfo.intValuesIndex, parmInfo.size
+                                        );
                             }
 
                             delete[] values;
@@ -1238,7 +1299,12 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             if(parmInfo.size == 1)
                             {
                                 const char* val = dataHandle.asString().asChar();
-                                HAPI_SetParmStringValue(myNodeInfo.id, val, parmInfo.id, 0);
+                                HAPI_SetParmStringValue(
+                                        myNodeInfo.id,
+                                        val,
+                                        parmInfo.id,
+                                        0
+                                        );
                             } else
                             {
                                 MFnCompoundAttribute attrFn(attrObj);
@@ -1247,7 +1313,12 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                     //MDataHandle elementHandle = dataHandle.child(attrFn.child(i));
                                     MDataHandle elementHandle = myDataBlock.inputValue(plug.child(i));
                                     const char* val = elementHandle.asString().asChar();
-                                    HAPI_SetParmStringValue(myNodeInfo.id, val, parmInfo.id, i);
+                                    HAPI_SetParmStringValue(
+                                            myNodeInfo.id,
+                                            val,
+                                            parmInfo.id,
+                                            i
+                                            );
                                 }
                             }
                         }
@@ -1274,7 +1345,11 @@ Asset::setParmValues(
     // Set value
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         SetAttrOperation operation(
                 dataBlock,
@@ -1363,7 +1438,11 @@ Asset::getMultiparmLength(
     // Get multiparm length
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         GetMultiparmLengthOperation operation(
                 dataBlock,

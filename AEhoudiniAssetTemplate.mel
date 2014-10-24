@@ -691,6 +691,9 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         // Don't use attrControlGrp here, and manually create our own checkBox.
         // For some reasons, Maya will trigger attrControlGrp's changeCommand
         // at the end of a playback.
+        createAttrCheckBox("splitGeosByGroup", "Split Geos By Group",
+                "Split geos by group.");
+
         createAttrCheckBox("useInstancerNode", "Use Instancer Node",
                 "Use particle instancer node to output instances.");
 
@@ -734,6 +737,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
         ($optionsLayoutFull + "|syncLayout|syncButton");
 
     // outputLayout
+    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|splitGeosByGroup",
+            $nodeName + ".splitGeosByGroup",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
@@ -783,6 +789,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -callCustom "AEhoudiniAssetOptionsNew" "AEhoudiniAssetOptionsReplace" "unused";
 
         editorTemplate -suppress "autoSyncOutputs";
+        editorTemplate -suppress "splitGeosByGroup";
         editorTemplate -suppress "useInstancerNode";
         editorTemplate -suppress "outputHiddenObjects";
         editorTemplate -suppress "outputTemplateObjects";

@@ -30,6 +30,7 @@ MObject AssetNode::assetName;
 MObject AssetNode::assetType;
 
 MObject AssetNode::autoSyncOutputs;
+MObject AssetNode::splitGeosByGroup;
 MObject AssetNode::outputHiddenObjects;
 MObject AssetNode::outputTemplateObjects;
 
@@ -221,6 +222,11 @@ AssetNode::initialize()
     AssetNode::autoSyncOutputs = nAttr.create(
             "autoSyncOutputs", "autoSyncOutputs",
             MFnNumericData::kBoolean
+            );
+    AssetNode::splitGeosByGroup = nAttr.create(
+            "splitGeosByGroup", "splitGeosByGroup",
+            MFnNumericData::kBoolean,
+            1
             );
     AssetNode::outputHiddenObjects = nAttr.create(
             "outputHiddenObjects", "outputHiddenObjects",
@@ -1031,6 +1037,7 @@ AssetNode::initialize()
 
     // add the static attributes to the node
     addAttribute(AssetNode::autoSyncOutputs);
+    addAttribute(AssetNode::splitGeosByGroup);
     addAttribute(AssetNode::outputHiddenObjects);
     addAttribute(AssetNode::outputTemplateObjects);
     addAttribute(AssetNode::inTime);
@@ -1310,10 +1317,16 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         }
 
         bool autoSyncOutputs = data.inputValue(AssetNode::autoSyncOutputs).asBool();
+        bool splitGeosByGroup = data.inputValue(AssetNode::splitGeosByGroup).asBool();
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
-        myAsset->compute(outputPlug, data, needToSyncOutputs);
+        myAsset->compute(
+                outputPlug,
+                data,
+                splitGeosByGroup,
+                needToSyncOutputs
+                );
         if(autoSyncOutputs && needToSyncOutputs)
         {
             MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.name());

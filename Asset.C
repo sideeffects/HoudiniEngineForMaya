@@ -759,6 +759,7 @@ MStatus
 Asset::compute(
         const MPlug& plug,
         MDataBlock& data,
+        bool splitGeosByGroup,
         bool &needToSyncOutputs
         )
 {
@@ -777,7 +778,11 @@ Asset::compute(
     {
         Util::PythonInterpreterLock pythonInterpreterLock;
 
-        HAPI_CookAsset(myAssetInfo.id, NULL);
+        HAPI_CookOptions cookOptions;
+        HAPI_CookOptions_Init(&cookOptions);
+        cookOptions.splitGeosByGroup = splitGeosByGroup;
+
+        HAPI_CookAsset(myAssetInfo.id, &cookOptions);
 
         if(!Util::statusCheckLoop())
         {

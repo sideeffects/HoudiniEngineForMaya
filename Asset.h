@@ -51,6 +51,7 @@ class Asset {
         MStatus compute(
                 const MPlug& plug,
                 MDataBlock& data,
+                bool splitGeosByGroup,
                 bool &needToSyncOutputs
                 );
 

@@ -33,17 +33,25 @@ Inputs::createInputAttribute()
     MFnGenericAttribute gAttr;
     MFnTypedAttribute tAttr;
 
-    Inputs::inputTransform = mAttr.create("inputTransform", "inputTransform");
+    Inputs::inputTransform = mAttr.create(
+            "inputTransform", "inputTransform"
+            );
 
-    Inputs::inputName = tAttr.create("inputName", "inputName", MFnData::kString);
+    Inputs::inputName = tAttr.create(
+            "inputName", "inputName",
+            MFnData::kString);
 
-    Inputs::inputGeo = gAttr.create("inputGeo", "inputGeo");
+    Inputs::inputGeo = gAttr.create(
+            "inputGeo", "inputGeo"
+            );
     gAttr.addDataAccept(MFnData::kIntArray);
     gAttr.addDataAccept(MFnData::kMesh);
     gAttr.addDataAccept(MFnData::kNurbsCurve);
     gAttr.addDataAccept(MFnData::kVectorArray);
 
-    Inputs::input = cAttr.create("input", "input");
+    Inputs::input = cAttr.create(
+            "input", "input"
+            );
     cAttr.addChild(Inputs::inputName);
     cAttr.addChild(Inputs::inputTransform);
     cAttr.addChild(Inputs::inputGeo);

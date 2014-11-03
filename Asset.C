@@ -1299,7 +1299,6 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_PATH_FILE:
                     case HAPI_PARMTYPE_PATH_FILE_GEO:
                     case HAPI_PARMTYPE_PATH_FILE_IMAGE:
-                    case HAPI_PARMTYPE_PATH_NODE:
                         {
                             if(parmInfo.size == 1)
                             {
@@ -1328,6 +1327,12 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             }
                         }
                         break;
+                    case HAPI_PARMTYPE_PATH_NODE:
+                        // Avoid setting path parameters. Path parameters
+                        // should all be HAPI inputs. So technically, the user
+                        // wouldn't know what values to set these parameters
+                        // to. And the values restored from a previous session
+                        // are not necessarily correct.
                     default:
                         break;
                 }

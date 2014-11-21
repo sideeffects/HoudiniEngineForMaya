@@ -1002,6 +1002,58 @@ OutputGeometryPart::computeMesh(
             );
     CHECK_MSTATUS(status);
 
+    // Check that the mesh created is what we tried to create. Assets could
+    // output mesh with bad faces that Maya cannot handle. When this happens,
+    // Maya would skip the bad faces, so the resulting mesh would be slightly
+    // different. This makes it no longer possible to apply geometry attributes
+    // (like UVs and color sets) to the mesh.
+    {
+        bool mismatch_topology = false;
+
+        if(vertexArray.length() != (unsigned int) meshFn.numVertices())
+        {
+            DISPLAY_WARNING(
+                    "Attempted to create ^1s vertices, but only ^2s vertices "
+                    "were created.",
+                    MString() + vertexArray.length(),
+                    MString() + meshFn.numVertices()
+                    );
+            mismatch_topology = true;
+        }
+        if(polygonCounts.length() != (unsigned int) meshFn.numPolygons())
+        {
+            DISPLAY_WARNING(
+                    "Attempted to create ^1s polygons, but only ^2s polygons "
+                    "were created.",
+                    MString() + polygonCounts.length(),
+                    MString() + meshFn.numPolygons()
+                    );
+            mismatch_topology = true;
+        }
+        if(polygonConnects.length() != (unsigned int) meshFn.numFaceVertices())
+        {
+            DISPLAY_WARNING(
+                    "Attempted to create ^1s face-vertices, but only ^2s "
+                    "face-vertices were created.",
+                    MString() + polygonConnects.length(),
+                    MString() + meshFn.numFaceVertices()
+                    );
+            mismatch_topology = true;
+        }
+
+        if(mismatch_topology)
+        {
+            DISPLAY_WARNING(MString(
+                    "This likely means that the Houdini Digital Asset is "
+                    "outputting bad geometry that Maya cannot handle. As a "
+                    "result, other attributes (such as UVs and color sets) "
+                    "cannot be transferred."
+                    ));
+
+            return;
+        }
+    }
+
     // normal array
     if(polygonCounts.length())
     {

@@ -20,7 +20,7 @@ InputCurve::InputCurve(int assetId, int inputIdx) :
     CHECK_HAPI(HAPI_CreateCurve(&curveAssetId));
     if(!Util::statusCheckLoop())
     {
-        DISPLAY_ERROR("Unexpected error when creating input curve.");
+        DISPLAY_ERROR(MString("Unexpected error when creating input curve."));
     }
 
     HAPI_GetAssetInfo(curveAssetId, &myCurveAssetInfo);

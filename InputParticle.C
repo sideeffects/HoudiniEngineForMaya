@@ -21,7 +21,7 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
     CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
     if(!Util::statusCheckLoop())
     {
-        DISPLAY_ERROR("Unexpected error when creating input asset.");
+        DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
     }
 
     myInputObjectId = 0;

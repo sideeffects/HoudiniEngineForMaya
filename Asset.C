@@ -357,7 +357,7 @@ Asset::Asset(
 
     // load the otl
     int libraryId = -1;
-    hapiResult = HAPI_LoadAssetLibraryFromFile(otlFilePath.asChar(), &libraryId);
+    hapiResult = HAPI_LoadAssetLibraryFromFile(otlFilePath.asChar(), true, &libraryId);
     if(HAPI_FAIL(hapiResult))
     {
         DISPLAY_WARNING("Could not load OTL file: ^1s\n"

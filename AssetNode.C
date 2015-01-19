@@ -1462,7 +1462,11 @@ AssetNode::setInternalValueInContext(
                         );
             }
 
-            return true;
+            // When restoring from scene file, dynamic attribute seems to lose
+            // the "internal" flag, which causes getAttr to always return 0.
+            // Returning false here seems to at least allow getAttr to return
+            // the proper value.
+            return false;
         }
     }
 

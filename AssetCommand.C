@@ -81,7 +81,7 @@ class AssetSubCommandListAssets : public SubCommand
             HAPI_Result hapiResult;
 
             int libraryId = -1;
-            hapiResult = HAPI_LoadAssetLibraryFromFile(myOTLFilePath.asChar(), &libraryId);
+            hapiResult = HAPI_LoadAssetLibraryFromFile(myOTLFilePath.asChar(), true, &libraryId);
             if(HAPI_FAIL(hapiResult))
             {
                 DISPLAY_ERROR("Could not load OTL file: ^1s", myOTLFilePath);

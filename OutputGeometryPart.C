@@ -1333,6 +1333,7 @@ void
 OutputGeometryPart::computeMaterial(MDataHandle& materialHandle)
 {
     MDataHandle matExistsHandle = materialHandle.child(AssetNode::outputPartMaterialExists);
+    MDataHandle nameHandle = materialHandle.child(AssetNode::outputPartMaterialName);
     MDataHandle ambientHandle = materialHandle.child(AssetNode::outputPartAmbientColor);
     MDataHandle diffuseHandle = materialHandle.child(AssetNode::outputPartDiffuseColor);
     MDataHandle specularHandle = materialHandle.child(AssetNode::outputPartSpecularColor);
@@ -1362,6 +1363,10 @@ OutputGeometryPart::computeMaterial(MDataHandle& materialHandle)
         float valueHolder[4];
 
         matExistsHandle.set(true);
+
+        nameHandle.setString(
+                Util::getString(materialNodeInfo.nameSH)
+                );
 
         if(ambientParmIndex >= 0)
         {

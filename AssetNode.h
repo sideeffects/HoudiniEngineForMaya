@@ -140,6 +140,7 @@ class AssetNode: public MPxTransform
         static MObject outputPartHasParticles;
         static MObject outputPartMaterial;
         static MObject outputPartMaterialExists;
+        static MObject outputPartMaterialName;
         static MObject outputPartTexturePath;
         static MObject outputPartAmbientColor;
         static MObject outputPartDiffuseColor;

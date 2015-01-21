@@ -78,6 +78,7 @@ MObject AssetNode::outputPartMesh;
 MObject AssetNode::outputPartHasParticles;
 MObject AssetNode::outputPartMaterial;
 MObject AssetNode::outputPartMaterialExists;
+MObject AssetNode::outputPartMaterialName;
 MObject AssetNode::outputPartTexturePath;
 MObject AssetNode::outputPartAmbientColor;
 MObject AssetNode::outputPartDiffuseColor;
@@ -591,6 +592,14 @@ AssetNode::initialize()
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
     computeAttributes.push_back(AssetNode::outputPartMaterialExists);
+    // material name
+    AssetNode::outputPartMaterialName = tAttr.create(
+            "outputPartMaterialName", "outputPartMaterialName",
+            MFnData::kString
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartMaterialName);
     // material ambient
     AssetNode::outputPartAmbientColor = nAttr.createColor(
             "outputPartAmbientColor", "outputPartAmbientColor"
@@ -633,6 +642,7 @@ AssetNode::initialize()
             "outputPartMaterial", "outputPartMaterial"
             );
     cAttr.addChild(AssetNode::outputPartMaterialExists);
+    cAttr.addChild(AssetNode::outputPartMaterialName);
     cAttr.addChild(AssetNode::outputPartAmbientColor);
     cAttr.addChild(AssetNode::outputPartDiffuseColor);
     cAttr.addChild(AssetNode::outputPartSpecularColor);
@@ -1137,6 +1147,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                 affectedPlugs.append(outputPartNamePlug);
 
                 affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialExists));
+                affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartMaterialName));
                 affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartTexturePath));
                 affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAmbientColor));
                 affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));

@@ -272,6 +272,11 @@ SyncOutputGeometryPart::createOutputMaterial(
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
+    // rename the shader
+    MPlug namePlug = materialPlug.child(AssetNode::outputPartMaterialName);
+    myDagModifier.renameNode(shaderFn.object(), namePlug.asString());
+    CHECK_MSTATUS_AND_RETURN_IT(myDagModifier.doIt());
+
     // assign shader
     status = myDagModifier.commandToExecute(
             "assignSG " + shaderFn.name() + " " + partTransformFn.fullPathName()

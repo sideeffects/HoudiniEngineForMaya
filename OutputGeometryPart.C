@@ -1371,21 +1371,21 @@ OutputGeometryPart::computeMaterial(MDataHandle& materialHandle)
         if(ambientParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-                    parms[ambientParmIndex].floatValuesIndex, 4);
+                    parms[ambientParmIndex].floatValuesIndex, 3);
             ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
         }
 
         if(specularParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-                    parms[specularParmIndex].floatValuesIndex, 4);
+                    parms[specularParmIndex].floatValuesIndex, 3);
             specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
         }
 
         if(diffuseParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-                    parms[diffuseParmIndex].floatValuesIndex, 4);
+                    parms[diffuseParmIndex].floatValuesIndex, 3);
             diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
         }
 

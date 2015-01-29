@@ -344,7 +344,6 @@ Asset::Asset(
         const MObject &node
         ) :
     // initialize values here because instantiating the asset could error out
-    myNumVisibleObjects(0),
     myNumObjects(0),
     myNode(node),
     myAssetInputs(NULL),
@@ -475,7 +474,6 @@ Asset::Asset(
     // objects
     unsigned int objCount = myAssetInfo.objectCount;
     myObjects = new OutputObject*[objCount];
-    myNumVisibleObjects = 0;
     myNumObjects = objCount;
 
     for(unsigned int i=0; i<objCount; i++)
@@ -586,15 +584,6 @@ Asset::update()
     myObjectInfos = new HAPI_ObjectInfo[myAssetInfo.objectCount];
     HAPI_GetObjects(myAssetInfo.id, myObjectInfos, 0, myAssetInfo.objectCount);
 
-    // update transform infos
-    //delete[] transformInfos;
-    //transformInfos = new HAPI_Transform[assetInfo.objectCount];
-    //HAPI_GetObjectTransforms(assetInfo.id, 5, transformInfos, 0, assetInfo.objectCount);
-
-    // update material infos
-    //delete[] materialInfos;
-    //materialInfos = new HAPI_MaterialInfo[assetInfo.materialCount];
-    //HAPI_GetMaterials(assetInfo.id, materialInfos, 0, assetInfo.materialCount);
 }
 
 void
@@ -805,12 +794,6 @@ Asset::compute(
     computeGeometryObjects(plug, data, needToSyncOutputs);
 
     return stat;
-}
-
-OutputObject**
-Asset::getObjects()
-{
-    return myObjects;
 }
 
 class GetAttrOperation : public AttrOperation

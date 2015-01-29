@@ -25,8 +25,6 @@ class OutputInstancerObject: public OutputObject
 
         virtual ObjectType type();
 
-    public:
-
     protected:
         virtual void update();
 

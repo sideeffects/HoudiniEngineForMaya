@@ -29,8 +29,6 @@ class OutputGeometryPart
                 bool &needToSyncOutputs
                 );
 
-        void setGeoInfo(HAPI_GeoInfo& info);
-
     protected:
         void update();
 

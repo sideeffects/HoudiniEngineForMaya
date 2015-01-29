@@ -24,7 +24,7 @@ OutputGeometryObject::OutputGeometryObject(
 
     for(int ii = 0; ii < geoCount; ii++)
     {
-        OutputGeometry * geo = new OutputGeometry(myAssetId, myObjectId, ii, this);
+        OutputGeometry * geo = new OutputGeometry(myAssetId, myObjectId, ii);
         myGeos.push_back(geo);
     }
 

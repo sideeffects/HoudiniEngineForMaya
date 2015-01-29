@@ -12,10 +12,8 @@ class OutputObject;
 class OutputGeometryPart;
 
 class OutputGeometry {
-
     public:
-
-        OutputGeometry(int assetId, int objectId, int geoId, OutputObject * parentObject);
+        OutputGeometry(int assetId, int objectId, int geoId);
         ~OutputGeometry();
 
         MStatus compute(MDataHandle &geoHandle, bool &needToSyncOutputs);
@@ -23,8 +21,6 @@ class OutputGeometry {
         void update();
 
     protected:
-
-        OutputObject* myParentObject;
         HAPI_GeoInfo myGeoInfo;
         int myAssetId;
         int myObjectId;

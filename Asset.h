@@ -28,7 +28,6 @@ class Asset {
         MString getOTLFilePath() const;
         MString getAssetName() const;
 
-        OutputObject** getObjects();
         OutputObject* findObjectByName(MString name);
         OutputObject* findObjectById(int id);
         HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
@@ -83,7 +82,6 @@ class Asset {
 
     public:
         HAPI_NodeInfo        myNodeInfo;
-        unsigned int myNumVisibleObjects;
         unsigned int myNumObjects;
 
     private:

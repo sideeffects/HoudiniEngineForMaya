@@ -6,8 +6,7 @@
 #include "util.h"
 #include "AssetNode.h"
 
-OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId, OutputObject * parentObject) :
-    myParentObject (parentObject),
+OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId) :
     myAssetId (assetId),
     myObjectId (objectId),
     myGeoId (geoId)

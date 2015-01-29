@@ -82,7 +82,6 @@ class Asset {
 
     public:
         HAPI_NodeInfo        myNodeInfo;
-        unsigned int myNumObjects;
 
     private:
 
@@ -100,12 +99,13 @@ class Asset {
                 );
 
     private:
+        typedef std::vector<OutputObject*> OutputObjects;
+
         HAPI_AssetInfo         myAssetInfo;
         MObject myNode;                    //The Maya asset node
 
         Inputs* myAssetInputs;
-        //TODO: make this a vector.  The double pointer assumes the number of objects is static
-        OutputObject** myObjects;            //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
+        OutputObjects myObjects;            //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
 
         // Arrays of infos that can be accessed when updating objects,
         // keeping them here avoids getting them for individual object.

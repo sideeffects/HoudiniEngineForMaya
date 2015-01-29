@@ -345,8 +345,7 @@ Asset::Asset(
         ) :
     // initialize values here because instantiating the asset could error out
     myNode(node),
-    myAssetInputs(NULL),
-    myObjectInfos(NULL)
+    myAssetInputs(NULL)
 {
     HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
 
@@ -477,7 +476,7 @@ Asset::~Asset()
         delete *iter;
     }
     myObjects.clear();
-    delete[] myObjectInfos;
+    myObjectInfos.clear();
     delete myAssetInputs;
 
     if(myAssetInfo.id >= 0)
@@ -568,9 +567,12 @@ Asset::update()
     assert(myAssetInfo.id >= 0);
 
     // update object infos
-    delete[] myObjectInfos;
-    myObjectInfos = new HAPI_ObjectInfo[myAssetInfo.objectCount];
-    HAPI_GetObjects(myAssetInfo.id, myObjectInfos, 0, myAssetInfo.objectCount);
+    myObjectInfos.resize(myAssetInfo.objectCount);
+    HAPI_GetObjects(
+            myAssetInfo.id,
+            &myObjectInfos.front(),
+            0, myAssetInfo.objectCount
+            );
 
 }
 

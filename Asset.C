@@ -344,10 +344,8 @@ Asset::Asset(
         const MObject &node
         ) :
     // initialize values here because instantiating the asset could error out
-    myNumObjects(0),
     myNode(node),
     myAssetInputs(NULL),
-    myObjects(NULL),
     myObjectInfos(NULL)
 {
     HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
@@ -462,11 +460,8 @@ Asset::Asset(
     update();
 
     // objects
-    unsigned int objCount = myAssetInfo.objectCount;
-    myObjects = new OutputObject*[objCount];
-    myNumObjects = objCount;
-
-    for(unsigned int i=0; i<objCount; i++)
+    myObjects.resize(myAssetInfo.objectCount);
+    for(unsigned int i = 0; i < myObjects.size(); i++)
     {
         myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
     }
@@ -476,9 +471,12 @@ Asset::~Asset()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    for(unsigned int i=0; i< myNumObjects; i++)
-        delete myObjects[i];
-    delete[] myObjects;
+    for(OutputObjects::const_iterator iter = myObjects.begin();
+            iter != myObjects.end(); iter++)
+    {
+        delete *iter;
+    }
+    myObjects.clear();
     delete[] myObjectInfos;
     delete myAssetInputs;
 
@@ -591,9 +589,10 @@ Asset::computeInstancerObjects(
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
     MArrayDataBuilder instancersBuilder = instancersHandle.builder();
     MIntArray instancedObjIds;
-    for(unsigned int i=0; i< myNumObjects; i++)
+    for(OutputObjects::const_iterator iter = myObjects.begin();
+            iter != myObjects.end(); iter++)
     {
-        OutputObject* obj = myObjects[i];
+        OutputObject* obj = *iter;
         //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
 
         if(obj->type() == OutputObject::OBJECT_TYPE_INSTANCER)
@@ -655,16 +654,16 @@ Asset::computeGeometryObjects(
 
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
     MArrayDataBuilder objectsBuilder = objectsHandle.builder();
-    if(objectsBuilder.elementCount() != myNumObjects)
+    if(objectsBuilder.elementCount() != myObjects.size())
     {
         needToSyncOutputs = true;
     }
 
-    for(unsigned int ii = 0; ii < myNumObjects; ii++)
+    for(unsigned int i = 0; i < myObjects.size(); i++)
     {
-        OutputObject * obj = myObjects[ii];
+        OutputObject * obj = myObjects[i];
 
-        MDataHandle objectHandle = objectsBuilder.addElement(ii);
+        MDataHandle objectHandle = objectsBuilder.addElement(i);
 
         if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
@@ -675,11 +674,11 @@ Asset::computeGeometryObjects(
     // clean up extra elements
     // in case the number of objects shrinks
     unsigned int objBuilderSizeCheck = objectsBuilder.elementCount();
-    if(objBuilderSizeCheck > myNumObjects)
+    if(objBuilderSizeCheck > myObjects.size())
     {
-        for(unsigned int ii = myNumObjects; ii < objBuilderSizeCheck; ii++)
+        for(unsigned int i = myObjects.size(); i < objBuilderSizeCheck; i++)
         {
-            stat = objectsBuilder.removeElement(ii);
+            stat = objectsBuilder.removeElement(i);
             CHECK_MSTATUS(stat);
         }
     }

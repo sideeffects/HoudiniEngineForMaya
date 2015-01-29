@@ -99,17 +99,16 @@ class Asset {
                 );
 
     private:
+        typedef std::vector<HAPI_ObjectInfo> ObjectInfos;
         typedef std::vector<OutputObject*> OutputObjects;
 
         HAPI_AssetInfo         myAssetInfo;
+        ObjectInfos myObjectInfos;
         MObject myNode;                    //The Maya asset node
 
         Inputs* myAssetInputs;
         OutputObjects myObjects;            //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
 
-        // Arrays of infos that can be accessed when updating objects,
-        // keeping them here avoids getting them for individual object.
-        HAPI_ObjectInfo* myObjectInfos;
 };
 
 #endif

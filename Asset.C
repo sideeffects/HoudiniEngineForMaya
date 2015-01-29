@@ -454,16 +454,6 @@ Asset::Asset(
 
     myAssetInputs = new Inputs(myAssetInfo.id);
     myAssetInputs->setNumInputs(myAssetInfo.geoInputCount);
-
-    // get the infos
-    update();
-
-    // objects
-    myObjects.resize(myAssetInfo.objectCount);
-    for(unsigned int i = 0; i < myObjects.size(); i++)
-    {
-        myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
-    }
 }
 
 Asset::~Asset()
@@ -574,6 +564,21 @@ Asset::update()
             0, myAssetInfo.objectCount
             );
 
+    // objects
+    if((int) myObjects.size() != myAssetInfo.objectCount)
+    {
+        for(OutputObjects::const_iterator iter = myObjects.begin();
+                iter != myObjects.end(); iter++)
+        {
+            delete *iter;
+        }
+
+        myObjects.resize(myAssetInfo.objectCount);
+        for(unsigned int i = 0; i < myObjects.size(); i++)
+        {
+            myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
+        }
+    }
 }
 
 void

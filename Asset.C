@@ -438,16 +438,6 @@ Asset::Asset(
         }
     }
 
-    // Cook the asset here so that we know the number of inputs and number of
-    // objects to output. Ignore the error here, because the inputs and
-    // parameters are not marshalled in yet.
-    {
-        Util::PythonInterpreterLock pythonInterpreterLock;
-
-        HAPI_CookAsset(assetId, NULL);
-        Util::statusCheckLoop();
-    }
-
     hapiResult = HAPI_GetAssetInfo(assetId, &myAssetInfo);
     CHECK_HAPI(hapiResult);
     hapiResult = HAPI_GetNodeInfo(myAssetInfo.nodeId, & myNodeInfo);

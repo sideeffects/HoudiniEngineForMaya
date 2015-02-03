@@ -1,0 +1,86 @@
+global proc
+houdiniEnginePreferences_refresh()
+{
+    setParent houdiniEnginePreferences;
+}
+
+global proc
+houdiniEnginePreferences_save()
+{
+    houdiniEnginePreferences_close;
+}
+
+global proc
+houdiniEnginePreferences_close()
+{
+    evalDeferred "deleteUI -window houdiniEnginePreferences";
+}
+
+global proc
+houdiniEnginePreferences()
+{
+    if(`window -exists houdiniEnginePreferences`)
+    {
+        showWindow houdiniEnginePreferences;
+        return;
+    }
+
+    window
+        -title "Houdini Engine Preferences"
+        -menuBar true
+        houdiniEnginePreferences;
+
+    string $mainLayout = `formLayout`;
+
+    // Versions
+    string $houdiniVersion  = `houdiniEngine -houdiniVersion`;
+    string $houdiniEngineVersion  = `houdiniEngine -houdiniEngineVersion`;
+    string $versionText = `text -align "left"
+        -label ("Houdini Version: " + $houdiniVersion + "\n"
+                + "Houdini Engine Version: " + $houdiniEngineVersion + "\n")`;
+
+    // Buttons
+    string $buttonLayout = `formLayout`;
+
+        button
+            -label "Save"
+            -command "houdiniEnginePreferences_save"
+            saveButton;
+
+        button
+            -label "Cancel"
+            -command "houdiniEnginePreferences_close"
+            cancelButton;
+
+    setParent ..;
+    setParent ..;
+
+    formLayout -e
+        -attachNone saveButton "top"
+        -attachForm saveButton "left" 5
+        -attachForm saveButton "bottom" 5
+        -attachPosition saveButton "right" 1 50
+
+        -attachNone cancelButton "top"
+        -attachPosition cancelButton "left" 1 50
+        -attachForm cancelButton "bottom" 5
+        -attachForm cancelButton "right" 5
+
+        $buttonLayout;
+
+    setParent ..;
+
+    formLayout -e
+        -attachForm $versionText "top" 5
+        -attachForm $versionText "left" 5
+        -attachForm $versionText "right" 5
+
+        -attachForm $buttonLayout "left" 5
+        -attachForm $buttonLayout "bottom" 5
+        -attachForm $buttonLayout "right" 5
+        $mainLayout;
+
+    houdiniEnginePreferences_refresh;
+
+    showWindow;
+}

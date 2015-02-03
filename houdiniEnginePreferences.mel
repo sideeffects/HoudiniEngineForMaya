@@ -2,11 +2,19 @@ global proc
 houdiniEnginePreferences_refresh()
 {
     setParent houdiniEnginePreferences;
+
+    checkBoxGrp -e
+        -value1 `optionVar -query "houdiniEngineAsynchronousMode"`
+        asynchronousModeCheck;
 }
 
 global proc
 houdiniEnginePreferences_save()
 {
+    global int $houdiniEngineAsynchronousMode;
+
+    optionVar -intValue "houdiniEngineAsynchronousMode" $houdiniEngineAsynchronousMode;
+
     houdiniEnginePreferences_close;
 }
 
@@ -14,6 +22,14 @@ global proc
 houdiniEnginePreferences_close()
 {
     evalDeferred "deleteUI -window houdiniEnginePreferences";
+}
+
+global proc
+houdiniEnginePreferences_toggleAsynchronousMode(int $state)
+{
+    global int $houdiniEngineAsynchronousMode;
+
+    $houdiniEngineAsynchronousMode = $state;
 }
 
 global proc
@@ -38,6 +54,42 @@ houdiniEnginePreferences()
     string $versionText = `text -align "left"
         -label ("Houdini Version: " + $houdiniVersion + "\n"
                 + "Houdini Engine Version: " + $houdiniEngineVersion + "\n")`;
+
+    // Global
+    string $globalLayout = `frameLayout
+        -label "Global"`;
+    formLayout
+        globalPreferences;
+
+        checkBoxGrp
+            -numberOfCheckBoxes 1
+            -label "Asynchronous Mode:"
+            -label1 "(requires restart)"
+            -changeCommand "houdiniEnginePreferences_toggleAsynchronousMode #1"
+            asynchronousModeCheck;
+
+        button
+            -label "?"
+            -command ("confirmDialog -title \"Houdini Engine Preferences\"" +
+            "-button \"OK\" -message \"\\\"Asynchronous Mode\\\" controls " +
+            "whether Houdini Engine runs asynchronously. Running asynchronously " +
+            "enables some nice features, such as progress bars and interrupts. " +
+            "However, if an asset tries to interact with Maya, it may lead to " +
+            "some unexpected behaviors. Disabling this option may fix these " +
+            "issues. If unsure, leave it on. (Default: on)\"")
+            asynchronousModeHelp;
+
+    setParent ..;
+    setParent ..;
+
+    formLayout -e
+        -attachForm asynchronousModeCheck "top" 5
+        -attachForm asynchronousModeCheck "left" 5
+        -attachControl asynchronousModeCheck "right" 5 asynchronousModeHelp
+
+        -attachForm asynchronousModeHelp "top" 5
+        -attachForm asynchronousModeHelp "right" 5
+        globalPreferences;
 
     // Buttons
     string $buttonLayout = `formLayout`;
@@ -74,6 +126,11 @@ houdiniEnginePreferences()
         -attachForm $versionText "top" 5
         -attachForm $versionText "left" 5
         -attachForm $versionText "right" 5
+
+        -attachControl $globalLayout "top" 5 $versionText
+        -attachForm $globalLayout "left" 5
+        -attachControl $globalLayout "bottom" 5 $buttonLayout
+        -attachForm $globalLayout "right" 5
 
         -attachForm $buttonLayout "left" 5
         -attachForm $buttonLayout "bottom" 5

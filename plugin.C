@@ -67,6 +67,18 @@ printHAPIVersion()
     }
 }
 
+void
+initializeOptionVars()
+{
+    bool exists;
+
+    MGlobal::optionVarIntValue("houdiniEngineAsynchronousMode", &exists);
+    if(!exists)
+    {
+        MGlobal::setOptionVarValue("houdiniEngineAsynchronousMode", 1);
+    }
+}
+
 bool
 initializeHAPI()
 {
@@ -85,9 +97,14 @@ initializeHAPI()
     cook_options.maxVerticesPerPrimitive = -1;
     cook_options.refineCurveToLinear = false;
 
+    bool use_cooking_thread =
+        MGlobal::optionVarIntValue("houdiniEngineAsynchronousMode") == 1;
+
     hstat = HAPI_Initialize(
             otl_dir, dso_dir,
-            &cook_options, true, -1
+            &cook_options,
+            use_cooking_thread,
+            -1
             );
     if(hstat != HAPI_RESULT_SUCCESS)
     {
@@ -117,6 +134,8 @@ MStatus
 initializePlugin(MObject obj)
 {
     printHAPIVersion();
+
+    initializeOptionVars();
 
     char engine_version[32];
     sprintf(engine_version, "%d.%d (API: %d)",

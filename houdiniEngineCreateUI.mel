@@ -348,6 +348,11 @@ houdiniEngineCreateUI()
 
     menuItem -divider true;
 
+    menuItem -label "Preferences..."
+        -command "houdiniEnginePreferences";
+
+    menuItem -divider true;
+
     menuItem -label "Visit Houdini Engine for Maya forum..."
         -command "houdiniEngine_launchForum";
 

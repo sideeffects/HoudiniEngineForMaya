@@ -267,6 +267,7 @@ MELFILES = AEhoudiniAssetTemplate.mel \
 	   houdiniEngineCreateUI.mel \
 	   houdiniEngineDeleteUI.mel \
 	   houdiniEngineAssetLibraryManager.mel \
+	   houdiniEnginePreferences.mel \
 	   houdiniEngineUtils.mel \
 	   houdiniEngineAssetSync.mel
 

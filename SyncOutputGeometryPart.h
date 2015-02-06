@@ -29,6 +29,7 @@ class SyncOutputGeometryPart : public SubCommand
                 );
         MStatus createOutputMesh(
                 const MObject &partTransform,
+                const MString &partName,
                 const MPlug &meshPlug
                 );
         MStatus createOutputMaterial(
@@ -37,11 +38,13 @@ class SyncOutputGeometryPart : public SubCommand
                 );
         MStatus createOutputParticle(
                 const MObject &partTransform,
+                const MString &partName,
                 const MPlug &particlePlug
                 );
         MStatus createOutputCurves(
                 MPlug curvesPlug,
                 const MObject &partTransform,
+                const MString &partName,
                 bool isBezier
                 );
 

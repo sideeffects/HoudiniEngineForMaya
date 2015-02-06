@@ -117,6 +117,7 @@ SyncOutputGeometryPart::createOutputPart(
     {
         status = createOutputMesh(
                 partTransform,
+                partName,
                 myOutputPlug.child(AssetNode::outputPartMesh)
                 );
     }
@@ -127,6 +128,7 @@ SyncOutputGeometryPart::createOutputPart(
     {
         status = createOutputParticle(
                 partTransform,
+                partName,
                 myOutputPlug.child(AssetNode::outputPartParticle)
                 );
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -136,6 +138,7 @@ SyncOutputGeometryPart::createOutputPart(
     MPlug curveIsBezier = myOutputPlug.child(AssetNode::outputPartCurvesIsBezier);
     createOutputCurves(myOutputPlug.child(AssetNode::outputPartCurves),
                        partTransform,
+                       partName,
                        curveIsBezier.asBool());
 
     // doIt
@@ -150,25 +153,18 @@ SyncOutputGeometryPart::createOutputPart(
 MStatus
 SyncOutputGeometryPart::createOutputMesh(
         const MObject &partTransform,
+        const MString &partName,
         const MPlug &meshPlug
         )
 {
     MStatus status;
 
-    // create mesh transform
-    MObject meshTransform = myDagModifier.createNode("transform", partTransform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // rename mesh transform
-    status = myDagModifier.renameNode(meshTransform, "mesh");
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
     // create mesh
-    MObject meshShape = myDagModifier.createNode("mesh", meshTransform, &status);
+    MObject meshShape = myDagModifier.createNode("mesh", partTransform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename mesh
-    status = myDagModifier.renameNode(meshShape, "meshShape");
+    status = myDagModifier.renameNode(meshShape, partName + "Shape");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     MFnDependencyNode partMeshFn(meshShape, &status);
@@ -198,6 +194,7 @@ MStatus
 SyncOutputGeometryPart::createOutputCurves(
         MPlug curvesPlug,
         const MObject &partTransform,
+        const MString &partName,
         bool isBezier
         )
 {
@@ -355,32 +352,30 @@ SyncOutputGeometryPart::createOutputMaterial(
 MStatus
 SyncOutputGeometryPart::createOutputParticle(
         const MObject &partTransform,
+        const MString &partName,
         const MPlug &particlePlug
         )
 {
     MStatus status;
 
     // create nParticle
-    MObject particleTransformObj;
-    status = Util::createNodeByModifierCommand(
-            myDagModifier,
+    MObject particleShapeObj = myDagModifier.createNode(
             "nParticle",
-            particleTransformObj
+            partTransform,
+            &status
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    // reparent it under partTransform
-    myDagModifier.reparentNode(particleTransformObj, partTransform);
+    // rename particle
+    status = myDagModifier.renameNode(particleShapeObj, partName + "Shape");
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    // get nParticleShape
-    MObject particleShapeObj;
-    {
-        MDagPath particleTrasnformDag;
-        status = MDagPath::getAPathTo(particleTransformObj, particleTrasnformDag);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-        particleShapeObj = particleTrasnformDag.child(0, &status);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
+    myDagModifier.commandToExecute(
+            "setupNParticleConnections " +
+            MFnDagNode(partTransform).fullPathName()
+            );
 
     MPlug srcPlug;
     MPlug dstPlug;
@@ -397,6 +392,15 @@ SyncOutputGeometryPart::createOutputParticle(
     dstPlug = particleShapeFn.findPlug("cacheArrayData");
     status = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // time1.outTime -> nParticleShape.currentTime
+    {
+        MObject srcNode = Util::findNodeByName("time1");
+        srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
+        dstPlug = particleShapeFn.findPlug("currentTime");
+        status = myDagModifier.connect(srcPlug, dstPlug);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
     // set particleRenderType to points
     status = myDagModifier.newPlugValueInt(

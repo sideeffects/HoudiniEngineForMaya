@@ -27,8 +27,6 @@ MObject AssetNode::inTime;
 MObject AssetNode::otlFilePath;
 MObject AssetNode::assetName;
 
-MObject AssetNode::assetType;
-
 MObject AssetNode::autoSyncOutputs;
 MObject AssetNode::splitGeosByGroup;
 MObject AssetNode::outputHiddenObjects;
@@ -209,16 +207,6 @@ AssetNode::initialize()
             MFnData::kString
             );
     tAttr.setInternal(true);
-
-    // asset type
-    // This maps to the underlying Houdini asset type: OBJ, SOP, etc. (see HAPI_AssetType)
-    AssetNode::assetType = nAttr.create(
-            "assetType", "assetType",
-            MFnNumericData::kInt
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::assetType);
 
     AssetNode::autoSyncOutputs = nAttr.create(
             "autoSyncOutputs", "autoSyncOutputs",
@@ -1053,7 +1041,6 @@ AssetNode::initialize()
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);
-    addAttribute(AssetNode::assetType);
     addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
     addAttribute(AssetNode::useInstancerNode);

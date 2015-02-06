@@ -752,14 +752,6 @@ Asset::compute(
 
     MStatus stat(MS::kSuccess);
 
-    // Set the type
-    MPlug typePlug(myNode, AssetNode::assetType);
-    MDataHandle typeHandle = data.outputValue(typePlug);
-
-    //The asset info struct (info) was set at the constructor
-    //of this class, which is at asset load time.
-    typeHandle.set(myAssetInfo.type);
-
     {
         Util::PythonInterpreterLock pythonInterpreterLock;
 

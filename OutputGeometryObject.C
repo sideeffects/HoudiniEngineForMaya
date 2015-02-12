@@ -18,25 +18,15 @@ OutputGeometryObject::OutputGeometryObject(
             objectControl
           )
 {
-    int geoCount = myObjectInfo.geoCount;
-    myGeos.reserve(geoCount);
-    myGeos.clear();
-
-    for(int ii = 0; ii < geoCount; ii++)
-    {
-        OutputGeometry * geo = new OutputGeometry(myAssetId, myObjectId, ii);
-        myGeos.push_back(geo);
-    }
-
 }
 
 OutputGeometryObject::~OutputGeometryObject()
 {
-    for(int ii = 0; ii < myObjectInfo.geoCount; ii++)
+    for(int i = 0; i < (int) myGeos.size(); i++)
     {
-        delete myGeos[ii];
+        delete myGeos[i];
     }
-
+    myGeos.clear();
 }
 
 OutputObject::ObjectType
@@ -51,6 +41,8 @@ OutputGeometryObject::compute(
         bool &needToSyncOutputs
         )
 {
+    update();
+
     MDataHandle metaDataHandle = objectHandle.child(AssetNode::outputObjectMetaData);
 
     // Meta data
@@ -116,6 +108,26 @@ OutputGeometryObject::compute(
     }
 
     return stat;
+}
+
+void OutputGeometryObject::update()
+{
+    const int geoCount = myObjectInfo.geoCount;
+
+    // Delete old OutputGeometry
+    for(int i = myGeos.size(); i-- > geoCount;)
+    {
+        delete myGeos[i];
+        myGeos.pop_back();
+    }
+
+    // Add new OutputGeometry
+    myGeos.reserve(geoCount);
+    for(int i = myGeos.size(); i < geoCount; i++)
+    {
+        OutputGeometry * geo = new OutputGeometry(myAssetId, myObjectId, i);
+        myGeos.push_back(geo);
+    }
 }
 
 void OutputGeometryObject::updateTransform(MDataHandle& handle)

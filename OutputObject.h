@@ -27,19 +27,17 @@ class OutputObject {
         static OutputObject* createObject(
                 int assetId,
                 int objectId,
-                Asset* objectControl
+                const HAPI_ObjectInfo &objectInfo
                 );
 
         OutputObject(
                 int assetId,
-                int objectId,
-                Asset* objectControl
+                int objectId
               );
         virtual ~OutputObject();
 
         int getId();
         MString getName();
-        Asset * getParentAsset() { return myObjectControl; }
 
         void setObjectInfo(const HAPI_ObjectInfo &objectInfo);
 
@@ -55,7 +53,6 @@ class OutputObject {
         bool        isInstanced() const;
 
     public:
-        Asset* myObjectControl;
         bool myIsInstanced;
 
     protected:

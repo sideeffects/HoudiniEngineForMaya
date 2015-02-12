@@ -249,8 +249,13 @@ OutputInstancerObject::compute(
         if(myObjectInfo.objectToInstanceId >= 0)
         {
             // instancing a single object
-            OutputObject* objToInstance = myObjectControl->findObjectById(myObjectInfo.objectToInstanceId);
-            MString name = objToInstance->getName();
+            HAPI_ObjectInfo instanceObjectInfo;
+            HAPI_GetObjects(
+                    myAssetId,
+                    &instanceObjectInfo,
+                    myObjectInfo.objectToInstanceId, 1
+                    );
+            MString name = Util::getString(instanceObjectInfo.nameSH);
 
             MDataHandle h = builder.addElement(0);
             h.set(name);

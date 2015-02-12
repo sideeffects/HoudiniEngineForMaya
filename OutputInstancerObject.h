@@ -26,7 +26,7 @@ class OutputInstancerObject: public OutputObject
         virtual ObjectType type();
 
     protected:
-        virtual void update();
+        void update();
 
         MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
 

@@ -62,9 +62,9 @@ int OutputObject::getId() { return myObjectId; }
 MString OutputObject::getName() { return Util::getString(myObjectInfo.nameSH); }
 
 void
-OutputObject::update()
+OutputObject::setObjectInfo(const HAPI_ObjectInfo &objectInfo)
 {
-    myObjectInfo = myObjectControl->getObjectInfo(myObjectId);
+    myObjectInfo = objectInfo;
 }
 
 bool

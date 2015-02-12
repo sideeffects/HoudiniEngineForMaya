@@ -42,8 +42,6 @@ OutputInstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString
 void
 OutputInstancerObject::update()
 {
-    OutputObject::update();
-
     try
     {
         HAPI_Result hstat = HAPI_RESULT_SUCCESS;

@@ -564,7 +564,7 @@ Asset::update()
             0, myAssetInfo.objectCount
             );
 
-    // objects
+    // Create the OutputObjects
     if((int) myObjects.size() != myAssetInfo.objectCount)
     {
         for(OutputObjects::const_iterator iter = myObjects.begin();
@@ -578,6 +578,12 @@ Asset::update()
         {
             myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
         }
+    }
+
+    // Pass the ObjectInfo to the OutputObjects
+    for(unsigned int i = 0; i < myObjects.size(); i++)
+    {
+        myObjects[i]->setObjectInfo(myObjectInfos[i]);
     }
 }
 

@@ -41,6 +41,8 @@ class OutputObject {
         MString getName();
         Asset * getParentAsset() { return myObjectControl; }
 
+        void setObjectInfo(const HAPI_ObjectInfo &objectInfo);
+
         //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
         virtual MStatus compute(
                 MDataHandle& handle,
@@ -55,9 +57,6 @@ class OutputObject {
     public:
         Asset* myObjectControl;
         bool myIsInstanced;
-
-    protected:
-        virtual void update();
 
     protected:
         HAPI_ObjectInfo myObjectInfo;

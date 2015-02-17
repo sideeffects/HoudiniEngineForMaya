@@ -96,13 +96,13 @@ OutputGeometryObject::compute(
 
         geoArrayHandle.set(geosBuilder);
 
-        if(stat == MS::kSuccess)
-        {
-            MDataHandle transformHandle = objectHandle.child(AssetNode::outputObjectTransform);
-            updateTransform(transformHandle);
-        }
-
         myNeverBuilt = false;
+    }
+
+    if(myObjectInfo.hasTransformChanged)
+    {
+        MDataHandle transformHandle = objectHandle.child(AssetNode::outputObjectTransform);
+        updateTransform(transformHandle);
     }
 
     return stat;

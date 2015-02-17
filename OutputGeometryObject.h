@@ -28,6 +28,8 @@ class OutputGeometryObject: public OutputObject
         virtual ObjectType type();
 
     private:
+        void update();
+
         void updateTransform(MDataHandle& handle);
         //void updateMaterial(MDataHandle& handle);
         //void updateFaceCounts();

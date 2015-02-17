@@ -11,19 +11,19 @@
 #include "util.h"
 
 OutputObject*
-OutputObject::createObject(int assetId, int objectId, Asset* objControl)
+OutputObject::createObject(
+        int assetId,
+        int objectId,
+        const HAPI_ObjectInfo &objectInfo
+        )
 {
     OutputObject* obj;
 
-    HAPI_ObjectInfo objInfo;
-    //HAPI_GetObjects(assetId, &objInfo, objectId, 1);
-    objInfo = objControl->getObjectInfo(objectId);
-
-    if(objInfo.isInstancer)
-        obj = new OutputInstancerObject(assetId, objectId, objControl);
+    if(objectInfo.isInstancer)
+        obj = new OutputInstancerObject(assetId, objectId);
     else
     {
-        obj = new OutputGeometryObject(assetId, objectId, objControl);
+        obj = new OutputGeometryObject(assetId, objectId);
     }
 
     return obj;
@@ -33,27 +33,13 @@ OutputObject::~OutputObject() {}
 
 OutputObject::OutputObject(
         int assetId,
-        int objectId,
-        Asset* objectControl
+        int objectId
         ) :
-    myObjectControl(objectControl),
     myIsInstanced(false),
     myAssetId(assetId),
     myObjectId(objectId),
     myNeverBuilt(true)
 {
-    // Do a full update, ignoring what has changed
-    try
-    {
-        // update object
-        //hstat = HAPI_GetObjects(assetId, &objectInfo, objectId, 1);
-        //Util::checkHAPIStatus(hstat);
-        myObjectInfo = myObjectControl->getObjectInfo(myObjectId);
-    }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-    }
 }
 
 // Getters ----------------------------------------------------

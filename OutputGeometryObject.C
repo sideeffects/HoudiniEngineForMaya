@@ -9,13 +9,11 @@
 
 OutputGeometryObject::OutputGeometryObject(
         int assetId,
-        int objectId,
-        Asset* objectControl
+        int objectId
         ) :
     OutputObject(
             assetId,
-            objectId,
-            objectControl
+            objectId
           )
 {
 }

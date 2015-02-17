@@ -12,13 +12,11 @@
 
 OutputInstancerObject::OutputInstancerObject(
         int assetId,
-        int objectId,
-        Asset* objectControl
+        int objectId
         ) :
     OutputObject(
             assetId,
-            objectId,
-            objectControl
+            objectId
           ),
     myGeoInfo(HAPI_GeoInfo_Create())
 {

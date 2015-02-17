@@ -13,8 +13,7 @@ class OutputGeometryObject: public OutputObject
     public:
         OutputGeometryObject(
                 int assetId,
-                int objectId,
-                Asset* objectControl
+                int objectId
                 );
         virtual ~OutputGeometryObject();
 

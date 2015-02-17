@@ -10,8 +10,7 @@ class OutputInstancerObject: public OutputObject
     public:
         OutputInstancerObject(
                 int assetId,
-                int objectId,
-                Asset* objectControl
+                int objectId
                 );
         virtual ~OutputInstancerObject();
 

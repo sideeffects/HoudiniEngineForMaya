@@ -576,7 +576,11 @@ Asset::update()
         myObjects.resize(myAssetInfo.objectCount);
         for(unsigned int i = 0; i < myObjects.size(); i++)
         {
-            myObjects[i] = OutputObject::createObject(myAssetInfo.id, i, this);
+            myObjects[i] = OutputObject::createObject(
+                    myAssetInfo.id,
+                    i,
+                    myObjectInfos[i]
+                    );
         }
     }
 

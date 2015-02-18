@@ -225,7 +225,8 @@ ifeq ($(OS), Linux)
     endif
 else ifeq ($(OS), Cygwin)
     ifeq ($(MAKETYPE),)
-	CXXFLAGS += -Od -MDd
+	CXXFLAGS += -Od -MDd -Zi
+	LDFLAGS += -DEBUG
     else ifeq ($(MAKETYPE),Release)
 	CXXFLAGS += -O2 -MD
     endif

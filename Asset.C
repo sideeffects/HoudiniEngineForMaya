@@ -1587,6 +1587,4 @@ Asset::setMultiparmLength(
         // multiparm length could change, so we need to get the new parmCount
         HAPI_GetNodeInfo(myAssetInfo.nodeId, &myNodeInfo);
     }
-
-    getParmValues(dataBlock, nodeFn, NULL);
 }

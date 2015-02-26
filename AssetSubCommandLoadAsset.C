@@ -33,13 +33,41 @@ AssetSubCommandLoadAsset::doIt()
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node
-    assert(myAssetName.index('/') >= 0);
-    MString nodeName = myAssetName.substring(
-            myAssetName.index('/') + 1,
-            myAssetName.length() - 1
-            )  + "1";
-    status = myDagModifier.renameNode(assetNode, nodeName);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    {
+        int slashPosition = myAssetName.index('/');
+        MString nodeName;
+        if(slashPosition >= 0)
+        {
+            const char* tempName = myAssetName.asChar();
+            // keep the part that's before the node table name
+            // i.e. namespace
+            for(int i = slashPosition; i-- > 0;)
+            {
+                if(!(('A' <= tempName[i] &&
+                        tempName[i] <= 'Z') ||
+                        ('a' <= tempName[i] &&
+                         tempName[i] <= 'z')))
+                {
+                    nodeName += myAssetName.substring(0, i);
+                    break;
+                }
+            }
+
+            // keep everything that's after the slash
+            nodeName += myAssetName.substring(
+                    slashPosition + 1,
+                    myAssetName.length() - 1
+                    )  + "1";
+        }
+        else
+        {
+            // this is probably an invalid node type name
+            nodeName = myAssetName;
+        }
+        nodeName = Util::sanitizeStringForNodeName(nodeName);
+        status = myDagModifier.renameNode(assetNode, nodeName);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
     // set otl file attribute
     {

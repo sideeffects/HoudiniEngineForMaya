@@ -1281,7 +1281,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             myAsset->setInputs(plug, data);
         }
 
-        MFnDependencyNode assetNodeFn(thisMObject());
+        MFnDagNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
 
         //push parms into Houdini
@@ -1327,7 +1327,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
                 );
         if(autoSyncOutputs && needToSyncOutputs)
         {
-            MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.name());
+            MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.fullPathName());
         }
 
         myIsLoadedFromFile = false;

@@ -5,6 +5,7 @@
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 #include <maya/MMatrix.h>
+#include <maya/MTime.h>
 #include <maya/MFnArrayAttrsData.h>
 #include <maya/MFnDoubleArrayData.h>
 #include <maya/MFnNurbsCurve.h>
@@ -598,6 +599,7 @@ OutputGeometryPart::computeParticle(
 {
     hasParticlesHandle.setBool(true);
 
+    MDataHandle currentTimeHandle = particleHandle.child(AssetNode::outputPartParticleCurrentTime);
     MDataHandle positionsHandle = particleHandle.child(AssetNode::outputPartParticlePositions);
     MDataHandle arrayDataHandle = particleHandle.child(AssetNode::outputPartParticleArrayData);
 
@@ -605,6 +607,9 @@ OutputGeometryPart::computeParticle(
     std::vector<int> intArray;
 
     int particleCount = myPartInfo.pointCount;
+
+    // currentTime
+    currentTimeHandle.setMTime(time);
 
     // positions
     MObject positionsObj = positionsHandle.data();
@@ -816,6 +821,7 @@ OutputGeometryPart::computeParticle(
     }
     delete [] attributeNames;
 
+    currentTimeHandle.setClean();
     positionsHandle.setClean();
     arrayDataHandle.setClean();
 }

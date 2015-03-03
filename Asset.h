@@ -4,6 +4,7 @@
 #include <maya/MObjectArray.h>
 #include <maya/MObject.h>
 #include <maya/MString.h>
+#include <maya/MTime.h>
 
 #include <HAPI/HAPI.h>
 
@@ -101,6 +102,8 @@ class Asset {
     private:
         typedef std::vector<HAPI_ObjectInfo> ObjectInfos;
         typedef std::vector<OutputObject*> OutputObjects;
+
+        MTime myTime;
 
         HAPI_AssetInfo         myAssetInfo;
         ObjectInfos myObjectInfos;

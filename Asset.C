@@ -709,23 +709,17 @@ Asset::computeGeometryObjects(
 MTime
 Asset::getTime() const
 {
-    float hapiTimeSeconds;
-    HAPI_GetTime(&hapiTimeSeconds);
-
-    // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
-    // So we need to offset the time by 1.
-    MTime mayaTime(hapiTimeSeconds, MTime::kSeconds);
-    mayaTime += MTime(1,MTime::uiUnit());
-
-    return mayaTime;
+    return myTime;
 }
 
 void
 Asset::setTime(const MTime &mayaTime)
 {
+    myTime = mayaTime;
+
     // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
     // So we need to offset the time by 1.
-    MTime hapiTime = mayaTime - MTime(1, MTime::uiUnit());
+    MTime hapiTime = myTime - MTime(1, MTime::uiUnit());
     float hapiTimeSeconds = (float)hapiTime.as(MTime::kSeconds);
     HAPI_SetTime(hapiTimeSeconds);
 }

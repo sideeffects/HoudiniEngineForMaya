@@ -23,6 +23,7 @@ class OutputGeometryPart
         ~OutputGeometryPart();
 
         MStatus compute(
+                const MTime &time,
                 MDataHandle& handle,
                 bool hasGeoChanged,
                 bool hasMaterialChanged,
@@ -33,22 +34,34 @@ class OutputGeometryPart
         void update();
 
     private:
-        void computeMaterial(MDataHandle &materialHandle);
+        void computeMaterial(
+                const MTime &time,
+                MDataHandle &materialHandle
+                );
 
         void computeMesh(
+                const MTime &time,
                 MDataHandle &hasMeshHandle,
                 MDataHandle &meshHandle
                 );
         void computeParticle(
+                const MTime &time,
                 MDataHandle &hasParticlesHandle,
                 MDataHandle &particleHandle
                 );
         void computeCurves(
+                const MTime &time,
                 MDataHandle &curvesHandle,
                 MDataHandle &curvesIsBezierHandle
                 );
-        void computeVolume(MDataHandle &volumeHandle);
-        void computeVolumeTransform(MDataHandle &volumeTransformHandle);
+        void computeVolume(
+                const MTime &time,
+                MDataHandle &volumeHandle
+                );
+        void computeVolumeTransform(
+                const MTime &time,
+                MDataHandle &volumeTransformHandle
+                );
 
         template<typename T>
         bool getAttributeData(

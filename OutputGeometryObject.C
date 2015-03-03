@@ -35,6 +35,7 @@ OutputGeometryObject::type()
 
 MStatus
 OutputGeometryObject::compute(
+        const MTime &time,
         MDataHandle& objectHandle,
         bool &needToSyncOutputs
         )
@@ -90,7 +91,11 @@ OutputGeometryObject::compute(
         for(int ii = 0; ii < myObjectInfo.geoCount; ii++)
         {
             MDataHandle geoHandle = geosBuilder.addElement(ii);
-            stat = myGeos[ii]->compute(geoHandle, needToSyncOutputs);
+            stat = myGeos[ii]->compute(
+                    time,
+                    geoHandle,
+                    needToSyncOutputs
+                    );
             CHECK_MSTATUS_AND_RETURN_IT(stat);
         }
 

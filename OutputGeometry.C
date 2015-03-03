@@ -68,7 +68,11 @@ OutputGeometry::update()
 }
 
 MStatus
-OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
+OutputGeometry::compute(
+        const MTime &time,
+        MDataHandle &geoHandle,
+        bool &needToSyncOutputs
+        )
 {
     MStatus stat;
 
@@ -106,6 +110,7 @@ OutputGeometry::compute(MDataHandle &geoHandle, bool &needToSyncOutputs)
         {
             MDataHandle h = partsBuilder.addElement(i);
             stat = myParts[i]->compute(
+                    time,
                     h,
                     myGeoInfo.hasGeoChanged,
                     myGeoInfo.hasMaterialChanged,

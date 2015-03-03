@@ -142,6 +142,7 @@ OutputInstancerObject::getUniqueInstObjNames()
 MStatus
 //OutputInstancerObject::compute(const MPlug& plug, MDataBlock& data)
 OutputInstancerObject::compute(
+        const MTime &time,
         MDataHandle& handle,
         bool &needToSyncOutputs
         )

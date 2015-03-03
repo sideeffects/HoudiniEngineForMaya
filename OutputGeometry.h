@@ -16,7 +16,11 @@ class OutputGeometry {
         OutputGeometry(int assetId, int objectId, int geoId);
         ~OutputGeometry();
 
-        MStatus compute(MDataHandle &geoHandle, bool &needToSyncOutputs);
+        MStatus compute(
+                const MTime &time,
+                MDataHandle &geoHandle,
+                bool &needToSyncOutputs
+                );
 
         void update();
 

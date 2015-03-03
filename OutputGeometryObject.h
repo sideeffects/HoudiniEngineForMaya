@@ -20,6 +20,7 @@ class OutputGeometryObject: public OutputObject
         //MObject createMesh();
 
         virtual MStatus compute(
+                const MTime &time,
                 MDataHandle& handle,
                 bool &needToSyncOutputs
                 );

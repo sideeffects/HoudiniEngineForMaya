@@ -43,6 +43,7 @@ class OutputObject {
 
         //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
         virtual MStatus compute(
+                const MTime &time,
                 MDataHandle& handle,
                 bool &needToSyncOutputs
                 ) = 0;

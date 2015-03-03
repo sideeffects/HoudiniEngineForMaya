@@ -1,3 +1,6 @@
+#include <maya/MAnimControl.h>
+#include <maya/MCallbackIdArray.h>
+#include <maya/MEventMessage.h>
 #include <maya/MGlobal.h>
 
 #include <maya/MFnPlugin.h>
@@ -130,6 +133,74 @@ cleanupHAPI()
     return true;
 }
 
+void updateTimelineCallback(void* clientData)
+{
+    HAPI_TimelineOptions timelineOptions;
+
+    MTime oneUnitTime;
+
+    // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
+    // So we need to offset the time by 1.
+    timelineOptions.fps = 1.0 / oneUnitTime.as(MTime::kSeconds);
+    timelineOptions.startTime =
+        (MAnimControl::animationStartTime() - oneUnitTime)
+        .as(MTime::kSeconds);
+    timelineOptions.endTime =
+        (MAnimControl::animationEndTime() - oneUnitTime)
+        .as(MTime::kSeconds);
+
+    HAPI_SetTimelineOptions(&timelineOptions);
+}
+
+MCallbackIdArray messageCallbacks;
+
+void
+initializeMessageCallbacks()
+{
+    MStatus status;
+
+    MCallbackId callbackId;
+
+    callbackId = MEventMessage::addEventCallback(
+            "playbackRangeSliderChanged",
+            updateTimelineCallback,
+            NULL,
+            &status
+            );
+    if(status)
+    {
+        messageCallbacks.append(callbackId);
+    }
+    else
+    {
+        CHECK_MSTATUS(status);
+    }
+
+    callbackId = MEventMessage::addEventCallback(
+            "timeUnitChanged",
+            updateTimelineCallback,
+            NULL,
+            &status
+            );
+    if(status)
+    {
+        messageCallbacks.append(callbackId);
+    }
+    else
+    {
+        CHECK_MSTATUS(status);
+    }
+}
+
+void
+cleanupMessageCallbacks()
+{
+    MStatus status;
+
+    status = MMessage::removeCallbacks(messageCallbacks);
+    CHECK_MSTATUS(status);
+}
+
 MStatus
 initializePlugin(MObject obj)
 {
@@ -192,6 +263,11 @@ initializePlugin(MObject obj)
     status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    initializeMessageCallbacks();
+
+    // update the timeline option for the first time
+    updateTimelineCallback(NULL);
+
     return status;
 }
 
@@ -200,6 +276,8 @@ uninitializePlugin(MObject obj)
 {
     MStatus status;
     MFnPlugin plugin(obj);
+
+    cleanupMessageCallbacks();
 
     status = plugin.deregisterNode(AssetNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);

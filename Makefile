@@ -145,13 +145,13 @@ endif
 CPPFLAGS += -D_BOOL -DREQUIRE_IOSTREAM
 ifeq ($(OS), Linux)
     CPPFLAGS += -I$(MAYA_DIR)/include
-    LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lOpenMayaFX -lFoundation
+    LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lOpenMayaAnim -lOpenMayaFX -lFoundation
 else ifeq ($(OS), Cygwin)
     CPPFLAGS += -I$(MAYA_DIR)/include
-    LDLIBS += -LIBPATH:$(MAYA_DIR)/lib OpenMaya.lib OpenMayaFX.lib Foundation.lib
+    LDLIBS += -LIBPATH:$(MAYA_DIR)/lib OpenMaya.lib OpenMayaAnim.lib OpenMayaFX.lib Foundation.lib
 else ifeq ($(OS), Darwin)
     CPPFLAGS += -I$(MAYA_DIR)/../../devkit/include
-    LDLIBS += -L$(MAYA_DIR)/MacOS -lOpenMaya -lOpenMayaFX -lFoundation
+    LDLIBS += -L$(MAYA_DIR)/MacOS -lOpenMaya -lOpenMayaAnim -lOpenMayaFX -lFoundation
 endif
 
 # Houdini flags

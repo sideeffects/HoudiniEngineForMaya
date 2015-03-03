@@ -383,6 +383,12 @@ SyncOutputGeometryPart::createOutputParticle(
     MFnDependencyNode particleShapeFn(particleShapeObj);
 
     // connect nParticleShape attributes
+    status = myDagModifier.connect(srcPlug, dstPlug);
+    srcPlug = particlePlug.child(AssetNode::outputPartParticleCurrentTime);
+    dstPlug = particleShapeFn.findPlug("currentTime");
+    status = myDagModifier.connect(srcPlug, dstPlug);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     srcPlug = particlePlug.child(AssetNode::outputPartParticlePositions);
     dstPlug = particleShapeFn.findPlug("positions");
     status = myDagModifier.connect(srcPlug, dstPlug);
@@ -392,15 +398,6 @@ SyncOutputGeometryPart::createOutputParticle(
     dstPlug = particleShapeFn.findPlug("cacheArrayData");
     status = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // time1.outTime -> nParticleShape.currentTime
-    {
-        MObject srcNode = Util::findNodeByName("time1");
-        srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
-        dstPlug = particleShapeFn.findPlug("currentTime");
-        status = myDagModifier.connect(srcPlug, dstPlug);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
 
     // set particleRenderType to points
     status = myDagModifier.newPlugValueInt(

@@ -84,6 +84,7 @@ MObject AssetNode::outputPartSpecularColor;
 MObject AssetNode::outputPartAlphaColor;
 
 MObject AssetNode::outputPartParticle;
+MObject AssetNode::outputPartParticleCurrentTime;
 MObject AssetNode::outputPartParticlePositions;
 MObject AssetNode::outputPartParticleArrayData;
 
@@ -641,6 +642,14 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::outputPartMaterial);
 
     // particle
+    AssetNode::outputPartParticleCurrentTime = uAttr.create(
+            "outputPartParticleCurrentTime", "outputPartParticleCurrentTime",
+            MFnUnitAttribute::kTime
+            );
+    uAttr.setWritable(false);
+    uAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartParticleCurrentTime);
+
     AssetNode::outputPartParticlePositions = tAttr.create(
             "outputPartParticlePositions", "outputPartParticlePositions",
             MFnData::kVectorArray
@@ -660,6 +669,7 @@ AssetNode::initialize()
     AssetNode::outputPartParticle = cAttr.create(
             "outputPartParticle", "outputPartParticle"
             );
+    cAttr.addChild(AssetNode::outputPartParticleCurrentTime);
     cAttr.addChild(AssetNode::outputPartParticlePositions);
     cAttr.addChild(AssetNode::outputPartParticleArrayData);
     cAttr.setWritable(false);
@@ -1143,6 +1153,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
                 // Particle
                 MPlug outputPartParticle = elemPlug.child(AssetNode::outputPartParticle);
+                affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleCurrentTime));
                 affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticlePositions));
                 affectedPlugs.append(outputPartParticle.child(AssetNode::outputPartParticleArrayData));
 

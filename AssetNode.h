@@ -146,6 +146,7 @@ class AssetNode: public MPxTransform
         static MObject outputPartAlphaColor;
 
         static MObject outputPartParticle;
+        static MObject outputPartParticleCurrentTime;
         static MObject outputPartParticlePositions;
         static MObject outputPartParticleArrayData;
 

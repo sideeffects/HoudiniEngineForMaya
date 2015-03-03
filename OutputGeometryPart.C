@@ -82,7 +82,10 @@ OutputGeometryPart::~OutputGeometryPart() {}
 
 #if MAYA_API_VERSION >= 201400
 void
-OutputGeometryPart::computeVolumeTransform(MDataHandle& volumeTransformHandle)
+OutputGeometryPart::computeVolumeTransform(
+        const MTime &time,
+        MDataHandle& volumeTransformHandle
+        )
 {
     HAPI_Transform transform = myVolumeInfo.transform;
 
@@ -251,6 +254,7 @@ OutputGeometryPart::getAttributeData(
 
 MStatus
 OutputGeometryPart::compute(
+        const MTime &time,
         MDataHandle& handle,
         bool hasGeoChanged,
         bool hasMaterialChanged,
@@ -277,7 +281,7 @@ OutputGeometryPart::compute(
                 && myPartInfo.vertexCount != 0
                 && myPartInfo.faceCount != 0)
         {
-            computeMesh(hasMeshHandle, meshHandle);
+            computeMesh(time, hasMeshHandle, meshHandle);
         }
         else
         {
@@ -291,7 +295,7 @@ OutputGeometryPart::compute(
                 && myPartInfo.vertexCount == 0
                 && myPartInfo.faceCount == 0)
         {
-            computeParticle(hasParticlesHandle, particleHandle);
+            computeParticle(time, hasParticlesHandle, particleHandle);
         }
 
 #if MAYA_API_VERSION >= 201400
@@ -299,7 +303,7 @@ OutputGeometryPart::compute(
         MDataHandle volumeHandle = handle.child(AssetNode::outputPartVolume);
         if(myPartInfo.hasVolume)
         {
-            computeVolume(volumeHandle);
+            computeVolume(time, volumeHandle);
         }
 #endif
 
@@ -309,7 +313,7 @@ OutputGeometryPart::compute(
             handle.child(AssetNode::outputPartCurvesIsBezier);
         if(myCurveInfo.curveCount)
         {
-            computeCurves(curvesHandle, curvesIsBezierHandle);
+            computeCurves(time, curvesHandle, curvesIsBezierHandle);
         }
         else
         {
@@ -320,7 +324,7 @@ OutputGeometryPart::compute(
     if(myNeverBuilt || hasMaterialChanged)
     {
         MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
-        computeMaterial(materialHandle);
+        computeMaterial(time, materialHandle);
     }
 
     myNeverBuilt = false;
@@ -330,6 +334,7 @@ OutputGeometryPart::compute(
 
 void
 OutputGeometryPart::computeCurves(
+        const MTime &time,
         MDataHandle &curvesHandle,
         MDataHandle &curvesIsBezierHandle
         )
@@ -586,6 +591,7 @@ OutputGeometryPart::convertParticleAttribute(
 
 void
 OutputGeometryPart::computeParticle(
+        const MTime &time,
         MDataHandle &hasParticlesHandle,
         MDataHandle &particleHandle
         )
@@ -816,7 +822,10 @@ OutputGeometryPart::computeParticle(
 
 #if MAYA_API_VERSION >= 201400
 void
-OutputGeometryPart::computeVolume(MDataHandle &volumeHandle)
+OutputGeometryPart::computeVolume(
+        const MTime &time,
+        MDataHandle &volumeHandle
+        )
 {
     MDataHandle gridHandle = volumeHandle.child(AssetNode::outputPartVolumeGrid);
     MDataHandle transformHandle = volumeHandle.child(AssetNode::outputPartVolumeTransform);
@@ -886,7 +895,7 @@ OutputGeometryPart::computeVolume(MDataHandle &volumeHandle)
     }
 
     // transform
-    computeVolumeTransform(transformHandle);
+    computeVolumeTransform(time, transformHandle);
 
     // resolution
     MFloatArray resolution;
@@ -903,6 +912,7 @@ OutputGeometryPart::computeVolume(MDataHandle &volumeHandle)
 
 void
 OutputGeometryPart::computeMesh(
+        const MTime &time,
         MDataHandle &hasMeshHandle,
         MDataHandle &meshHandle
         )
@@ -1330,7 +1340,10 @@ OutputGeometryPart::computeMesh(
 }
 
 void
-OutputGeometryPart::computeMaterial(MDataHandle& materialHandle)
+OutputGeometryPart::computeMaterial(
+        const MTime &time,
+        MDataHandle& materialHandle
+        )
 {
     MDataHandle matExistsHandle = materialHandle.child(AssetNode::outputPartMaterialExists);
     MDataHandle nameHandle = materialHandle.child(AssetNode::outputPartMaterialName);

@@ -615,7 +615,11 @@ Asset::computeInstancerObjects(
         if(obj->type() == OutputObject::OBJECT_TYPE_INSTANCER)
         {
             MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
-            stat = obj->compute(instancerElemHandle, needToSyncOutputs);
+            stat = obj->compute(
+                    myTime,
+                    instancerElemHandle,
+                    needToSyncOutputs
+                    );
             if(MS::kSuccess == stat)
             {
                 instancerIndex++;
@@ -684,7 +688,11 @@ Asset::computeGeometryObjects(
 
         if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
-            obj->compute(objectHandle, needToSyncOutputs);
+            obj->compute(
+                    myTime,
+                    objectHandle,
+                    needToSyncOutputs
+                    );
         }
     }
 

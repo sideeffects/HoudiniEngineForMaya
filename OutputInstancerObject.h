@@ -18,6 +18,7 @@ class OutputInstancerObject: public OutputObject
         MStringArray getUniqueInstObjNames();
 
         virtual MStatus compute(
+                const MTime &time,
                 MDataHandle& handle,
                 bool &needToSyncOutputs
                 );

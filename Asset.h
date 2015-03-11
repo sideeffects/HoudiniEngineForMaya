@@ -67,20 +67,6 @@ class Asset {
                 const std::vector<MObject>* attrs
                 );
 
-        void getMultiparmLength(
-                MDataBlock &dataBlock,
-                const MPlug &multiSizePlug,
-                int &multiSize,
-                const MFnDependencyNode &nodeFn
-                );
-
-        void setMultiparmLength(
-                MDataBlock &dataBlock,
-                const MPlug &multiSizePlug,
-                int multiSize,
-                const MFnDependencyNode &nodeFn
-                );
-
     public:
         HAPI_NodeInfo        myNodeInfo;
 

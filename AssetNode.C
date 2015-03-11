@@ -1375,38 +1375,6 @@ AssetNode::getInternalValueInContext(
         return true;
     }
 
-    // handle getting multiparm length
-    {
-        MString multiSizeSuffix = "__multiSize";
-        // check suffix
-        MString attrName = MFnAttribute(plug.attribute()).name();
-        if(attrName.substring(attrName.length() - multiSizeSuffix.length(),
-                        attrName.length() - 1) == multiSizeSuffix)
-        {
-            MFnDependencyNode assetNodeFn(thisMObject());
-            MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
-
-            int multiSize = 0;
-
-            if(!parmAttrObj.isNull()
-                    && isAssetValid())
-            {
-                MDataBlock dataBlock = forceCache();
-
-                getAsset()->getMultiparmLength(
-                        dataBlock,
-                        plug,
-                        multiSize,
-                        assetNodeFn
-                        );
-            }
-
-            dataHandle.setInt(multiSize);
-
-            return true;
-        }
-    }
-
     return MPxTransform::getInternalValueInContext(plug, dataHandle, ctx);
 }
 
@@ -1445,38 +1413,6 @@ AssetNode::setInternalValueInContext(
         }
 
         return true;
-    }
-
-    // handle setting multiparm length
-    {
-        MString multiSizeSuffix = "__multiSize";
-        // check suffix
-        MString attrName = MFnAttribute(plug.attribute()).name();
-        if(attrName.substring(attrName.length() - multiSizeSuffix.length(),
-                        attrName.length() - 1) == multiSizeSuffix)
-        {
-            MFnDependencyNode assetNodeFn(thisMObject());
-            MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
-
-            if(!parmAttrObj.isNull()
-                    && isAssetValid())
-            {
-                MDataBlock dataBlock = forceCache();
-
-                getAsset()->setMultiparmLength(
-                        dataBlock,
-                        plug,
-                        dataHandle.asInt(),
-                        assetNodeFn
-                        );
-            }
-
-            // When restoring from scene file, dynamic attribute seems to lose
-            // the "internal" flag, which causes getAttr to always return 0.
-            // Returning false here seems to at least allow getAttr to return
-            // the proper value.
-            return false;
-        }
     }
 
     return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);

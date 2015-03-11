@@ -1562,9 +1562,6 @@ AssetNode::createAsset()
         return;
     }
 
-    MFnDependencyNode assetNodeFn(thisMObject());
-    MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
-
     // When createAsset() is called during file load, parameter values aren't
     // loaded yet. So we can't restore the parameter values here.
 

@@ -130,7 +130,6 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
         MFnNumericAttribute sizeAttrFn;
         sizeAttrFn.create(attrName + "__multiSize", attrName + "__multiSize", MFnNumericData::kInt);
         sizeAttrFn.setNiceNameOverride(label);
-        sizeAttrFn.setInternal(true);
         parentAttrFn->addChild(sizeAttrFn.object());
 
         attrFn = new MFnCompoundAttribute();

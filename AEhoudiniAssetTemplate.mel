@@ -127,7 +127,11 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
             attrControlGrp
                 -attribute ($fullAttrName + "." + $child)
-                -changeCommand ("houdiniAssetAdjustMulti \\\"" + $parent + "\\\" \\\"" + $nodeName + "\\\" \\\"" + $multiAttr + "\\\" \\\"" + $multiFullAttr + "\\\"");
+                // Forcing evaluation here ensures the element attribute is
+                // created before houdiniAssetAdjustMulti() is executed. This
+                // prevents the UI from a completel rebuild when
+                // houdiniAssetAdjustMulti() accesses the new element.
+                -changeCommand ("dgeval " + $nodeName + ".output; houdiniAssetAdjustMulti \\\"" + $parent + "\\\" \\\"" + $nodeName + "\\\" \\\"" + $multiAttr + "\\\" \\\"" + $multiFullAttr + "\\\"");
             ;
 
             button

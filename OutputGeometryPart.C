@@ -373,8 +373,10 @@ OutputGeometryPart::computeCurves(
                             &numVertices, iCurve , 1);
 
         const int nextVertexOffset = vertexOffset + numVertices;
-        if ( nextVertexOffset > pArray.size() * 3
-            || (!pwArray.empty() && nextVertexOffset > pwArray.size()) )
+        if ( nextVertexOffset > static_cast<int>( pArray.size() ) * 3
+            || (!pwArray.empty()
+                && nextVertexOffset > static_cast<int>( pwArray.size() ) )
+        )
         {
             MGlobal::displayError( "Not enough points to create a curve" );
             break;

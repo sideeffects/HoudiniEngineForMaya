@@ -345,11 +345,15 @@ OutputGeometryPart::computeCurves(
     MArrayDataHandle curvesArrayHandle(curvesHandle);
     MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
 
+    std::vector<float> pArray, pwArray;
+    getAttributeData(pArray,  "P",  HAPI_ATTROWNER_POINT);
+    getAttributeData(pwArray, "Pw", HAPI_ATTROWNER_POINT);
+
     int vertexOffset = 0;
     int knotOffset = 0;
-    for(int i=0; i<myCurveInfo.curveCount; i++)
+    for(int iCurve = 0; iCurve < myCurveInfo.curveCount; iCurve++)
     {
-        MDataHandle curve = curvesBuilder.addElement(i);
+        MDataHandle curve = curvesBuilder.addElement(iCurve );
         MObject curveDataObj = curve.data();
         MFnNurbsCurveData curveDataFn(curveDataObj);
         if(curve.data().isNull())
@@ -364,17 +368,30 @@ OutputGeometryPart::computeCurves(
         }
 
         // Number of CVs
-        int numVertices;
+        int numVertices = 0;
         HAPI_GetCurveCounts(myAssetId, myObjectId, myGeoId, myPartId,
-                            &numVertices, i, 1);
+                            &numVertices, iCurve , 1);
+
+        const int nextVertexOffset = vertexOffset + numVertices;
+        if ( nextVertexOffset > pArray.size() * 3
+            || (!pwArray.empty() && nextVertexOffset > pwArray.size()) )
+        {
+            MGlobal::displayError( "Not enough points to create a curve" );
+            break;
+        }
 
         // Order of this particular curve
         int order;
-        if(myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
-            && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID)
+        if ( myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
+            && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID )
+        {
             order = myCurveInfo.order;
+        }
         else
-            HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId, &order, i, 1);
+        {
+            HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId,
+                                &order, iCurve , 1);
+        }
 
         // If there's not enough vertices, then don't try to create the curve.
         if(numVertices < order)
@@ -386,24 +403,23 @@ OutputGeometryPart::computeCurves(
             // The curve at i will have numVertices vertices, and may have
             // some knots. The knot count will be numVertices + order for
             // nurbs curves
-            vertexOffset += numVertices * 4;
+            vertexOffset = nextVertexOffset;
             knotOffset += numVertices + order;
 
             continue;
         }
 
-        std::vector<float> vertices;
-        vertices.resize(numVertices * HAPI_CV_VECTOR_SIZE);
-        HAPI_GetCurveVertices(myAssetId, myObjectId, myGeoId, myPartId,
-                              &vertices.front(), vertexOffset,
-                              numVertices * HAPI_CV_VECTOR_SIZE);
-        MPointArray controlVertices(numVertices);
-        for(int j=0; j<numVertices; j++)
+        MPointArray controlVertices( numVertices );
+        for(int iDst = 0, iSrc = vertexOffset;
+            iDst < numVertices;
+            ++iDst, ++iSrc)
         {
-            controlVertices[j] = MPoint(vertices[j*HAPI_CV_VECTOR_SIZE],
-                                        vertices[j*HAPI_CV_VECTOR_SIZE + 1],
-                                        vertices[j*HAPI_CV_VECTOR_SIZE + 2],
-                                        vertices[j*HAPI_CV_VECTOR_SIZE + 3]);
+            controlVertices[iDst] = MPoint(
+                pArray[iSrc * 3],
+                pArray[iSrc * 3 + 1],
+                pArray[iSrc * 3 + 2],
+                pwArray.empty() ? 1.0f : pwArray[iSrc]
+            );
         }
 
         MDoubleArray knotSequences;
@@ -447,7 +463,7 @@ OutputGeometryPart::computeCurves(
         MObject nurbsCurve =
             curveFn.create(controlVertices, knotSequences, order-1,
                            myCurveInfo.isPeriodic ?
-                                      MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
+                               MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
                            false /* 2d? */,
                            myCurveInfo.isRational /* rational? */,
                            curveDataObj, &status);
@@ -456,7 +472,7 @@ OutputGeometryPart::computeCurves(
         // The curve at i will have numVertices vertices, and may have
         // some knots. The knot count will be numVertices + order for
         // nurbs curves
-        vertexOffset += numVertices * 4;
+        vertexOffset = nextVertexOffset;
         knotOffset += numVertices + order;
     }
 

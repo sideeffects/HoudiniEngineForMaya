@@ -927,7 +927,7 @@ GetAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
     bool isMulti = myIsMulti.back();
     MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
-    MPlug &multiSizePlug = myMultiSizePlugs.back();
+    //MPlug &multiSizePlug = myMultiSizePlugs.back();
     //bool hasMultiAttr = myHasMultiAttr.back();
     //MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
     //MPlug &multiPlug = myMultiPlugs.back();

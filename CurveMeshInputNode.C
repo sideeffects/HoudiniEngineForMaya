@@ -146,8 +146,6 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
             continue;
         }
 
-        ++curveInfo.curveCount;
-
         const int order = fnCurve.degree() + 1;
         if ( iCurve == 0 )
         {
@@ -159,7 +157,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         }
         else if ( order != curveInfo.order )
         {
-            orders.resize( curveInfo.curveCount - 1, curveInfo.order );
+            orders.resize( curveInfo.curveCount, curveInfo.order );
             curveInfo.order = HAPI_CURVE_ORDER_VARYING;
             orders.push_back( order );
         }
@@ -170,7 +168,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         unsigned int nCVs = cvArray.length();
 
         // Maya provides fnCurve.degree() more cvs in its data definition
-        // than Houdini for periodic curves--but they are conincident
+        // than Houdini for periodic curves -- but they are conincident
         // with the first ones. Houdini ignores them, so we don't
         // output them.
         if ( curveInfo.isPeriodic && static_cast<int>(nCVs) > fnCurve.degree() )
@@ -179,9 +177,8 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         }
 
         cvCounts.push_back(nCVs);
-        curveInfo.vertexCount += nCVs;
 
-        for ( unsigned int iCV = 0; iCV < nCVs; ++iCV )
+        for ( unsigned int iCV = 0; iCV < nCVs; ++iCV, ++curveInfo.vertexCount )
         {
             const MPoint& cv = cvArray[iCV];
             cvP.push_back(cv.x);
@@ -193,7 +190,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
                 if ( cv.w != 1.0 )
                 {
                     curveInfo.isRational = true;
-                    cvPw.resize( curveInfo.curveCount - 1, 1.0f );
+                    cvPw.resize( curveInfo.vertexCount, 1.0f );
                     cvPw.push_back(cv.w);
                 }
             }
@@ -222,6 +219,8 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
                 static_cast<float>( knotsArray[knotsArray.length() - 1] )
             );
         }
+
+        ++curveInfo.curveCount;
 
         if ( !inputCurves.next() )
         {

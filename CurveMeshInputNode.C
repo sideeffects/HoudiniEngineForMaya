@@ -165,17 +165,24 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         }
 
         MPointArray cvArray;
-        CHECK_MSTATUS_AND_RETURN_IT(
-            fnCurve.getCVs( cvArray )
-        );
+        CHECK_MSTATUS_AND_RETURN_IT( fnCurve.getCVs( cvArray ) );
 
-        cvCounts.push_back(0);
+        unsigned int nCVs = cvArray.length();
 
-        for ( unsigned int iCV = 0; iCV < cvArray.length(); ++iCV )
+        // Maya provides fnCurve.degree() more cvs in its data definition
+        // than Houdini for periodic curves--but they are conincident
+        // with the first ones. Houdini ignores them, so we don't
+        // output them.
+        if ( curveInfo.isPeriodic && static_cast<int>(nCVs) > fnCurve.degree() )
         {
-            ++curveInfo.vertexCount;
-            ++cvCounts.back();
+            nCVs -= fnCurve.degree();
+        }
 
+        cvCounts.push_back(nCVs);
+        curveInfo.vertexCount += nCVs;
+
+        for ( unsigned int iCV = 0; iCV < nCVs; ++iCV )
+        {
             const MPoint& cv = cvArray[iCV];
             cvP.push_back(cv.x);
             cvP.push_back(cv.y);

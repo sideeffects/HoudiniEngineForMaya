@@ -63,20 +63,6 @@ CurveMeshInputNode::~CurveMeshInputNode()
     }
 }
 
-void
-CurveMeshInputNode::postConstructor()
-{
-}
-
-MStatus
-CurveMeshInputNode::setDependentsDirty(const MPlug& plugBeingDirtied,
-        MPlugArray& affectedPlugs)
-{
-    MStatus status;
-
-    return MS::kSuccess;
-}
-
 MStatus
 CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 {
@@ -130,7 +116,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
     for ( int iCurve = 0; iCurve < nInputCurves; ++iCurve )
     {
         MDataHandle curveHandle = inputCurves.inputValue();
-        MObject curveObject = curveHandle.asNurbsCurveTransformed();
+        MObject curveObject = curveHandle.asNurbsCurve();
         MFnNurbsCurve fnCurve( curveObject );
 
         const bool isPeriodic = fnCurve.form() == MFnNurbsCurve::kPeriodic;
@@ -279,35 +265,6 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     data.setClean(plug);
     return MStatus::kSuccess;
-}
-
-bool
-CurveMeshInputNode::getInternalValueInContext(
-        const MPlug &plug,
-        MDataHandle &dataHandle,
-        MDGContext &ctx)
-{
-    MStatus status;
-
-    return MPxTransform::getInternalValueInContext(plug, dataHandle, ctx);
-}
-
-bool
-CurveMeshInputNode::setInternalValueInContext(
-        const MPlug &plug,
-        const MDataHandle &dataHandle,
-        MDGContext &ctx
-        )
-{
-    MStatus status;
-
-    return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);
-}
-
-int
-CurveMeshInputNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
-{
-    return MPxTransform::internalArrayCount(plug, ctx);
 }
 
 void

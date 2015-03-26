@@ -8,8 +8,10 @@
 #include <maya/MTime.h>
 #include <maya/MFnArrayAttrsData.h>
 #include <maya/MFnDoubleArrayData.h>
+#include <maya/MFnIntArrayData.h>
 #include <maya/MFnNurbsCurve.h>
 #include <maya/MFnNurbsCurveData.h>
+#include <maya/MFnStringArrayData.h>
 #include <maya/MPointArray.h>
 #if MAYA_API_VERSION >= 201400
         #include <maya/MFnFloatArrayData.h>
@@ -217,6 +219,41 @@ getAttributeDataWrapper(
             );
 }
 
+static
+HAPI_Result
+getAttributeDataWrapper(
+        int asset_id,
+        int object_id,
+        int geo_id,
+        int part_id,
+        const char* name,
+        HAPI_AttributeInfo* attr_info,
+        std::string* data,
+        int start, int length
+        )
+{
+    std::vector<HAPI_StringHandle> stringHandles(length);
+
+    HAPI_Result hapiResult = HAPI_GetAttributeIntData(
+            asset_id, object_id, geo_id, part_id,
+            name,
+            attr_info,
+            &stringHandles.front(),
+            start, length
+            );
+    if(HAPI_FAIL(hapiResult) || !attr_info->exists)
+    {
+        return hapiResult;
+    }
+
+    for(int i = 0; i < (int) stringHandles.size(); i++)
+    {
+        data[i] = Util::getString(stringHandles[i]).asChar();
+    }
+
+    return hapiResult;
+}
+
 template<typename T>
 bool
 OutputGeometryPart::getAttributeData(
@@ -320,6 +357,12 @@ OutputGeometryPart::compute(
         {
             clearCurves(curvesHandle, curvesIsBezierHandle);
         }
+
+        // Extra attributes
+        MDataHandle extraAttributesHandle = handle.child(
+                AssetNode::outputPartExtraAttributes
+                );
+        computeExtraAttributes(time, extraAttributesHandle);
     }
 
     if(myNeverBuilt || hasMaterialChanged)
@@ -522,6 +565,16 @@ convertArray(MIntArray &dstArray, const std::vector<int> &srcArray)
 }
 
 static void
+convertArray(MStringArray &dstArray, const std::vector<std::string> &srcArray)
+{
+    dstArray.setLength(srcArray.size());
+    for(unsigned int i = 0; i < dstArray.length(); i++)
+    {
+        dstArray[i] = srcArray[i].c_str();
+    }
+}
+
+static void
 zeroArray(MVectorArray &dstArray, int count)
 {
     dstArray.setLength(count);
@@ -606,6 +659,184 @@ OutputGeometryPart::convertParticleAttribute(
         getParticleArray(particleArray, arrayDataFn, mayaName);
         zeroArray(particleArray, particleCount);
     }
+}
+
+bool
+OutputGeometryPart::convertGenericDataAttribute(
+        MDataHandle &dataHandle,
+        const char* attributeName,
+        const HAPI_AttributeInfo &attributeInfo
+        )
+{
+    if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT)
+    {
+        std::vector<float> floatArray;
+        getAttributeData(floatArray, attributeName, attributeInfo.owner);
+
+        if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 1)
+        {
+            dataHandle.setGenericDouble(floatArray[0], true);
+
+            return true;
+        }
+        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 2)
+        {
+            MFnNumericData numericData;
+            MObject dataObject = numericData.create(
+                    MFnNumericData::k2Double
+                    );
+            numericData.setData2Double(
+                    floatArray[0],
+                    floatArray[1]
+                    );
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 3)
+        {
+            MFnNumericData numericData;
+            MObject dataObject = numericData.create(
+                    MFnNumericData::k3Double
+                    );
+            numericData.setData3Double(
+                    floatArray[0],
+                    floatArray[1],
+                    floatArray[2]
+                    );
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 4)
+        {
+            MFnNumericData numericData;
+            MObject dataObject = numericData.create(
+                    MFnNumericData::k4Double
+                    );
+            numericData.setData4Double(
+                    floatArray[0],
+                    floatArray[1],
+                    floatArray[2],
+                    floatArray[3]
+                    );
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+        else if(attributeInfo.tupleSize == 3)
+        {
+            MFnVectorArrayData vectorArrayData;
+            MObject dataObject = vectorArrayData.create();
+            MVectorArray outputVectorArray = vectorArrayData.array();
+            convertArray(outputVectorArray, floatArray);
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+        else
+        {
+            MFnDoubleArrayData doubleArrayData;
+            MObject dataObject = doubleArrayData.create();
+            MDoubleArray outputDoubleArray = doubleArrayData.array();
+            convertArray(outputDoubleArray, floatArray);
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+    }
+    else if(attributeInfo.storage == HAPI_STORAGETYPE_INT)
+    {
+        std::vector<int> intArray;
+        getAttributeData(intArray, attributeName, attributeInfo.owner);
+
+        if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 1)
+        {
+            dataHandle.setGenericInt(intArray[0], true);
+
+            return true;
+        }
+        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 2)
+        {
+            MFnNumericData numericData;
+            MObject dataObject = numericData.create(
+                    MFnNumericData::k2Int
+                    );
+            numericData.setData2Int(
+                    intArray[0],
+                    intArray[1]
+                    );
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 3)
+        {
+            MFnNumericData numericData;
+            MObject dataObject = numericData.create(
+                    MFnNumericData::k3Int
+                    );
+            numericData.setData3Int(
+                    intArray[0],
+                    intArray[1],
+                    intArray[2]
+                    );
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+        else
+        {
+            MFnIntArrayData intArrayData;
+            MObject dataObject = intArrayData.create();
+            MIntArray outputIntArray = intArrayData.array();
+            convertArray(outputIntArray, intArray);
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+    }
+    else if(attributeInfo.storage == HAPI_STORAGETYPE_STRING)
+    {
+        std::vector<std::string> stringArray;
+        getAttributeData(stringArray, attributeName, attributeInfo.owner);
+
+        if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 1)
+        {
+            dataHandle.setString(stringArray[0].c_str());
+
+            return true;
+        }
+        else
+        {
+            MFnStringArrayData stringArrayData;
+            MObject dataObject = stringArrayData.create();
+            MStringArray outputStringArray = stringArrayData.array();
+            convertArray(outputStringArray, stringArray);
+
+            dataHandle.setMObject(dataObject);
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void
@@ -1503,4 +1734,107 @@ OutputGeometryPart::computeMaterial(
     specularHandle.setClean();
     alphaHandle.setClean();
     texturePathHandle.setClean();
+}
+
+void
+OutputGeometryPart::computeExtraAttributes(
+        const MTime &time,
+        MDataHandle &extraAttributesHandle
+        )
+{
+    MArrayDataHandle extraAttributesArrayHandle(extraAttributesHandle);
+    MArrayDataBuilder extraAttributesBuilder =
+        extraAttributesArrayHandle.builder();
+
+    const size_t attributeOwnerSize = HAPI_ATTROWNER_MAX;
+    const HAPI_AttributeOwner attributeOwners[attributeOwnerSize] = {
+        HAPI_ATTROWNER_DETAIL,
+        HAPI_ATTROWNER_PRIM,
+        HAPI_ATTROWNER_POINT,
+        HAPI_ATTROWNER_VERTEX,
+    };
+    const MString attributeOwnersString[attributeOwnerSize] = {
+        "detail",
+        "primitive",
+        "point",
+        "vertex",
+    };
+    const int HAPI_PartInfo::*attributeCounts[attributeOwnerSize] = {
+        &HAPI_PartInfo::detailAttributeCount,
+        &HAPI_PartInfo::faceAttributeCount,
+        &HAPI_PartInfo::pointAttributeCount,
+        &HAPI_PartInfo::vertexAttributeCount,
+    };
+
+    size_t elementIndex = 0;
+
+    for(size_t i = 0; i < attributeOwnerSize; i++)
+    {
+        const HAPI_AttributeOwner &owner = attributeOwners[i];
+        const MString &ownerString = attributeOwnersString[i];
+        const int HAPI_PartInfo::*&attributeCount = attributeCounts[i];
+
+        std::vector<HAPI_StringHandle> attributeNames(
+                myPartInfo.*attributeCount
+                );
+        HAPI_GetAttributeNames(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                owner,
+                &attributeNames[0],
+                attributeNames.size()
+                );
+
+        for(size_t j = 0; j < attributeNames.size(); j++)
+        {
+            const MString attributeName = Util::getString(attributeNames[j]);
+            MDataHandle extraAttributeHandle =
+                extraAttributesBuilder.addElement(elementIndex);
+            elementIndex++;
+
+            MDataHandle nameHandle = extraAttributeHandle.child(
+                    AssetNode::outputPartExtraAttributeName
+                    );
+            MDataHandle ownerHandle = extraAttributeHandle.child(
+                    AssetNode::outputPartExtraAttributeOwner
+                    );
+            MDataHandle tupleHandle = extraAttributeHandle.child(
+                    AssetNode::outputPartExtraAttributeTuple
+                    );
+            MDataHandle dataHandle = extraAttributeHandle.child(
+                    AssetNode::outputPartExtraAttributeData
+                    );
+
+            HAPI_AttributeInfo attributeInfo;
+            CHECK_HAPI(HAPI_GetAttributeInfo(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    attributeName.asChar(),
+                    owner,
+                    &attributeInfo
+                    ));
+
+            nameHandle.setString(attributeName);
+            ownerHandle.setString(ownerString);
+            tupleHandle.setInt(attributeInfo.tupleSize);
+
+            if(!convertGenericDataAttribute(
+                    dataHandle,
+                    attributeName.asChar(),
+                    attributeInfo
+                    ))
+            {
+                DISPLAY_WARNING(
+                        "Unsupported data type in attribute:\n"
+                        "    ^1s",
+                        attributeName
+                        );
+            }
+        }
+    }
+
+    for(size_t i = extraAttributesBuilder.elementCount(); i-- > elementIndex;)
+    {
+        extraAttributesBuilder.removeElement(i);
+    }
+
+    extraAttributesArrayHandle.set(extraAttributesBuilder);
 }

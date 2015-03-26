@@ -62,6 +62,10 @@ class OutputGeometryPart
                 const MTime &time,
                 MDataHandle &volumeTransformHandle
                 );
+        void computeExtraAttributes(
+                const MTime &time,
+                MDataHandle &extraAttributesHandle
+                );
 
         template<typename T>
         bool getAttributeData(
@@ -78,6 +82,17 @@ class OutputGeometryPart
                 const char* houdiniName,
                 int particleCount
                 );
+
+        bool convertGenericDataAttribute(
+                MDataHandle &dataHandle,
+                const char* attributeName,
+                const HAPI_AttributeInfo &attributeInfo
+                );
+
+        std::vector<std::string> myUsedDetailAttributeNames;
+        std::vector<std::string> myUsedPrimAttributeNames;
+        std::vector<std::string> myUsedPointAttributeNames;
+        std::vector<std::string> myUsedVertexAttributeNames;
 
     private:
         int myAssetId;

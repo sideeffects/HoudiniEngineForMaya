@@ -425,8 +425,7 @@ proc setInput(string $inputAttr, string $object)
         connectAttr -force
             ($inputNode + ".outputObjectMetaData")
             $inputGeoAttr;
-                
-        connectAttr -force ($inputNode + ".worldMatrix") $inputTransformAttr;
+
         houdiniEngine_syncAssetOutput $nodeName;        
     }
     else

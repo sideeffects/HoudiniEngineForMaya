@@ -3,6 +3,7 @@
 
 #include <maya/MPxTransform.h>
 #include <maya/MTypeId.h>
+#include <HAPI/HAPI.h>
 
 class MPlugArray;
 
@@ -40,11 +41,12 @@ class CurveMeshInputNode: public MPxTransform
         static void* creator();
         static MStatus initialize();
 
-    public:
         static MString typeName;
         static MTypeId typeId;
 
-    public:
+    private:
+        HAPI_AssetId myAssetId;
+
         static MObject theInputCurves;
         static MObject theOutputObjectMetaData;
 };

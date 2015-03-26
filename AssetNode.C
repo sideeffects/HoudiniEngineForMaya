@@ -877,6 +877,22 @@ AssetNode::initialize()
     AssetNode::outputPartExtraAttributeData = gAttr.create(
             "outputPartExtraAttributeData", "outputPartExtraAttributeData"
             );
+    // double
+    gAttr.addNumericDataAccept(MFnNumericData::kDouble);
+    gAttr.addNumericDataAccept(MFnNumericData::k2Double);
+    gAttr.addNumericDataAccept(MFnNumericData::k3Double);
+    gAttr.addNumericDataAccept(MFnNumericData::k4Double);
+    gAttr.addDataAccept(MFnData::kDoubleArray);
+    gAttr.addDataAccept(MFnData::kVectorArray);
+    gAttr.addDataAccept(MFnData::kPointArray);
+    // int
+    gAttr.addNumericDataAccept(MFnNumericData::kInt);
+    gAttr.addNumericDataAccept(MFnNumericData::k2Int);
+    gAttr.addNumericDataAccept(MFnNumericData::k3Int);
+    gAttr.addDataAccept(MFnData::kIntArray);
+    // string
+    gAttr.addDataAccept(MFnData::kString);
+    gAttr.addDataAccept(MFnData::kStringArray);
     gAttr.setStorable(false);
     gAttr.setWritable(false);
     AssetNode::outputPartExtraAttributes = cAttr.create(

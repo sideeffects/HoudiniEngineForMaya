@@ -47,6 +47,9 @@ class SyncOutputGeometryPart : public SubCommand
                 const MString &partName,
                 bool isBezier
                 );
+        MStatus createOutputExtraAttributes(
+                const MObject &targetNode
+                );
 
     protected:
         //This is the output plug from the asset node that represents an object

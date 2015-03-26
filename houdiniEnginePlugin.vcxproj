@@ -169,7 +169,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Autodesk\Maya2013\lib;C:\Program Files (x86)\Side Effects Software\Houdini 13.0.368\custom\houdini\dsolib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenMaya.lib;OpenMayaFX.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenMaya.lib;OpenMayaFX.lib;OpenMayaAnim.lib;Foundation.lib;libHAPI.a;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>

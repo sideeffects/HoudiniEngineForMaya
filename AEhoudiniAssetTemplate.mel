@@ -244,7 +244,9 @@ global proc houdiniAssetAdjustMulti(
 proc int isSupportedInput(string $object)
 {
     string $supportedTypes[] = {
+        "hairSystem",
         "houdiniAsset",
+        "houdiniCurveMeshInput",
         "mesh",
         "nurbsCurve",
         "particle"
@@ -329,7 +331,10 @@ proc setInput(string $inputAttr, string $object)
     if(`objectType -isAType "houdiniAsset" $object`)
     {
         // if we just got the houdiniAsset, just assume the first output
-        connectAttr -force ($object + ".output.outputObjects[0].outputObjectMetaData") $inputGeoAttr;
+        connectAttr -force
+            ($object + ".output.outputObjects[0].outputObjectMetaData")
+            $inputGeoAttr;
+                
         connectAttr -force ($object + ".worldMatrix") $inputTransformAttr;
 
         houdiniEngine_syncAssetOutput $nodeName;
@@ -348,7 +353,10 @@ proc setInput(string $inputAttr, string $object)
             // not a node.
             string $obj = plugNode(plugAttr($histPlug));
 
-            connectAttr -force ($histNode + "." + $obj + ".outputObjectMetaData") $inputGeoAttr;
+            connectAttr -force
+                ($histNode + "." + $obj + ".outputObjectMetaData")
+                $inputGeoAttr;
+
             connectAttr -force ($histNode + ".worldMatrix") $inputTransformAttr;
         }
         else
@@ -387,6 +395,38 @@ proc setInput(string $inputAttr, string $object)
         }
 
         houdiniEngine_syncAssetOutput $nodeName;
+    }
+    else if(`objectType -isAType "hairSystem" $object`)
+    {
+        string $path[];
+        int $pathLen = `tokenize $object "|" $path`;
+        string $inputNode = $path[$pathLen - 1] + "_HoudiniInput";
+        $inputNode = `createNode "houdiniCurveMeshInput" -name $inputNode`;
+        
+        string $outputHairs[] = `listAttr -multi ($object + ".outputHair")`;
+        
+        int $iInput = 0;
+        for ($outputHair in $outputHairs)
+        {
+            string $follicleShapes[] =
+                `listConnections ($object + "." + $outputHair)`;
+                
+            for ($follicleShape in $follicleShapes)
+            {
+                string $inputPlug =
+                    `format -s $inputNode -s $iInput "^1s.inputCurves[^2s]"`;
+                     
+                connectAttr ($follicleShape + ".outCurve") $inputPlug;                
+            }
+            
+            $iInput += 1;
+        }        
+
+        connectAttr -force
+            ($inputNode + ".outputObjectMetaData")
+            $inputGeoAttr;
+                
+        connectAttr -force ($inputNode + ".worldMatrix") $inputTransformAttr;        
     }
     else
     {

@@ -261,7 +261,8 @@ CXXFILES = \
 	   SyncOutputGeometryPart.C \
 	   SyncOutputInstance.C \
 	   FluidVelocityConvert.C \
-	   plugin.C
+	   plugin.C \
+	   CurveMeshInputNode.C
 
 MELFILES = AEhoudiniAssetTemplate.mel \
 	   houdiniEngineCreateUI.mel \

@@ -145,7 +145,8 @@ EngineCommand::newSyntax()
     // -houdiniVersion returns the Houdini version that's being used.
     CHECK_MSTATUS(syntax.addFlag(kHoudiniVersionFlag, kHoudiniVersionFlagLong));
 
-    // -houdiniVersion returns the Houdini version that's being used.
+    // -houdiniEngineVersion returns the Houdini Engine version that's being
+    // used.
     CHECK_MSTATUS(syntax.addFlag(kHoudiniEngineVersionFlag, kHoudiniEngineVersionFlagLong));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file

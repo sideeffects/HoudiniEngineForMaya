@@ -245,13 +245,11 @@ initializePlugin(MObject obj)
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = plugin.registerTransform(
+    status = plugin.registerNode(
             CurveMeshInputNode::typeName,
             CurveMeshInputNode::typeId,
             CurveMeshInputNode::creator,
-            CurveMeshInputNode::initialize,
-            MPxTransformationMatrix::creator,
-            MPxTransformationMatrix::baseTransformationMatrixId
+            CurveMeshInputNode::initialize
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 

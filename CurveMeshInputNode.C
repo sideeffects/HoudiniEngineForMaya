@@ -70,7 +70,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     if ( plug != theOutputObjectMetaData )
     {
-        return MPxTransform::compute(plug, data);
+        return MPxNode::compute(plug, data);
     }
 
     if ( myAssetId < 0 )
@@ -265,12 +265,4 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     data.setClean(plug);
     return MStatus::kSuccess;
-}
-
-void
-CurveMeshInputNode::copyInternalData(MPxNode* node)
-{
-    MStatus status;
-
-    MPxTransform::copyInternalData(node);
 }

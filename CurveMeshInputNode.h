@@ -15,28 +15,9 @@ class CurveMeshInputNode: public MPxTransform
         CurveMeshInputNode();
         virtual ~CurveMeshInputNode();
 
-        virtual void postConstructor();
-
         virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 
-        virtual bool getInternalValueInContext(
-                const MPlug &plug,
-                MDataHandle &dataHandle,
-                MDGContext &ctx);
-
-        virtual bool setInternalValueInContext(
-                const MPlug &plug,
-                const MDataHandle &dataHandle,
-                MDGContext &ctx
-                );
-
-        virtual int internalArrayCount( const MPlug &plug,
-                                        const MDGContext &ctx) const;
-
         virtual void copyInternalData(MPxNode* node);
-
-        virtual MStatus setDependentsDirty( const MPlug& plugBeingDirtied,
-                                            MPlugArray& affectedPlugs);
 
         static void* creator();
         static MStatus initialize();

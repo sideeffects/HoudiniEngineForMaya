@@ -489,41 +489,45 @@ OutputGeometryPart::computeCurves(
 }
 
 static void
-bufferToParticleArray(MVectorArray &particleArray, const std::vector<float> &buffer)
+convertArray(MVectorArray &dstArray, const std::vector<float> &srcArray)
 {
-    for(unsigned int i = 0, j = 0; i < particleArray.length(); i++, j += 3)
+    dstArray.setLength(srcArray.size() / 3);
+    for(unsigned int i = 0, j = 0; i < dstArray.length(); i++, j += 3)
     {
-        MVector &vector = particleArray[i];
-        vector.x = buffer[j + 0];
-        vector.y = buffer[j + 1];
-        vector.z = buffer[j + 2];
+        MVector &vector = dstArray[i];
+        vector.x = srcArray[j + 0];
+        vector.y = srcArray[j + 1];
+        vector.z = srcArray[j + 2];
     }
 }
 
 static void
-bufferToParticleArray(MDoubleArray &particleArray, const std::vector<float> &buffer)
+convertArray(MDoubleArray &dstArray, const std::vector<float> &srcArray)
 {
-    for(unsigned int i = 0; i < particleArray.length(); i++)
+    dstArray.setLength(srcArray.size());
+    for(unsigned int i = 0; i < dstArray.length(); i++)
     {
-        particleArray[i] = buffer[i];
+        dstArray[i] = srcArray[i];
     }
 }
 
 static void
-bufferToParticleArray(MIntArray &particleArray, const std::vector<int> &buffer)
+convertArray(MIntArray &dstArray, const std::vector<int> &srcArray)
 {
-    for(unsigned int i = 0; i < particleArray.length(); i++)
+    dstArray.setLength(srcArray.size());
+    for(unsigned int i = 0; i < dstArray.length(); i++)
     {
-        particleArray[i] = buffer[i];
+        dstArray[i] = srcArray[i];
     }
 }
 
 static void
-zeroParticleArray(MVectorArray &particleArray)
+zeroArray(MVectorArray &dstArray, int count)
 {
-    for(unsigned int i = 0; i < particleArray.length(); i++)
+    dstArray.setLength(count);
+    for(unsigned int i = 0; i < dstArray.length(); i++)
     {
-        MVector &vector = particleArray[i];
+        MVector &vector = dstArray[i];
         vector.x = 0.0;
         vector.y = 0.0;
         vector.z = 0.0;
@@ -531,20 +535,22 @@ zeroParticleArray(MVectorArray &particleArray)
 }
 
 static void
-zeroParticleArray(MDoubleArray &particleArray)
+zeroArray(MDoubleArray &dstArray, int count)
 {
-    for(unsigned int i = 0; i < particleArray.length(); i++)
+    dstArray.setLength(count);
+    for(unsigned int i = 0; i < dstArray.length(); i++)
     {
-        particleArray[i] = 0.0;
+        dstArray[i] = 0.0;
     }
 }
 
 static void
-zeroParticleArray(MIntArray &particleArray)
+zeroArray(MIntArray &dstArray, int count)
 {
-    for(unsigned int i = 0; i < particleArray.length(); i++)
+    dstArray.setLength(count);
+    for(unsigned int i = 0; i < dstArray.length(); i++)
     {
-        particleArray[i] = 0;
+        dstArray[i] = 0;
     }
 }
 
@@ -552,36 +558,30 @@ static void
 getParticleArray(
         MVectorArray &particleArray,
         MFnArrayAttrsData &arrayDataFn,
-        const MString &attrName,
-        int particleCount
+        const MString &attrName
         )
 {
     particleArray = arrayDataFn.vectorArray(attrName);
-    particleArray.setLength(particleCount);
 }
 
 static void
 getParticleArray(
         MDoubleArray &particleArray,
         MFnArrayAttrsData &arrayDataFn,
-        const MString &attrName,
-        int particleCount
+        const MString &attrName
         )
 {
     particleArray = arrayDataFn.doubleArray(attrName);
-    particleArray.setLength(particleCount);
 }
 
 static void
 getParticleArray(
         MIntArray &particleArray,
         MFnArrayAttrsData &arrayDataFn,
-        const MString &attrName,
-        int particleCount
+        const MString &attrName
         )
 {
     particleArray = arrayDataFn.intArray(attrName);
-    particleArray.setLength(particleCount);
 }
 
 template<typename T, typename U>
@@ -597,14 +597,14 @@ OutputGeometryPart::convertParticleAttribute(
     if(getAttributeData(buffer, houdiniName, HAPI_ATTROWNER_POINT))
     {
         T particleArray;
-        getParticleArray(particleArray, arrayDataFn, mayaName, particleCount);
-        bufferToParticleArray(particleArray, buffer);
+        getParticleArray(particleArray, arrayDataFn, mayaName);
+        convertArray(particleArray, buffer);
     }
     else
     {
         T particleArray;
-        getParticleArray(particleArray, arrayDataFn, mayaName, particleCount);
-        zeroParticleArray(particleArray);
+        getParticleArray(particleArray, arrayDataFn, mayaName);
+        zeroArray(particleArray, particleCount);
     }
 }
 
@@ -642,7 +642,7 @@ OutputGeometryPart::computeParticle(
     {
         getAttributeData(floatArray, "P", HAPI_ATTROWNER_POINT);
         positions.setLength(particleCount);
-        bufferToParticleArray(positions, floatArray);
+        convertArray(positions, floatArray);
     }
 
     // array data
@@ -667,7 +667,7 @@ OutputGeometryPart::computeParticle(
         }
         else
         {
-            zeroParticleArray(idArray);
+            zeroArray(idArray, particleCount);
         }
     }
 
@@ -681,14 +681,14 @@ OutputGeometryPart::computeParticle(
 
     // velocity
     MVectorArray velocityArray;
-    getParticleArray(velocityArray, arrayDataFn, "velocity", particleCount);
+    getParticleArray(velocityArray, arrayDataFn, "velocity");
     if(getAttributeData(floatArray, "v", HAPI_ATTROWNER_POINT))
     {
-        bufferToParticleArray(velocityArray, floatArray);
+        convertArray(velocityArray, floatArray);
     }
     else
     {
-        zeroParticleArray(velocityArray);
+        zeroArray(velocityArray, particleCount);
     }
 
     // acceleration

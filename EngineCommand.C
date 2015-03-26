@@ -5,6 +5,7 @@
 #include <maya/MStatus.h>
 
 #include <HAPI/HAPI.h>
+#include <HAPI/HAPI_Version.h>
 
 #include "SubCommand.h"
 
@@ -14,6 +15,10 @@
 #define kHoudiniVersionFlagLong "-houdiniVersion"
 #define kHoudiniEngineVersionFlag "-hev"
 #define kHoudiniEngineVersionFlagLong "-houdiniEngineVersion"
+#define kBuildHoudiniVersionFlag "-bhv"
+#define kBuildHoudiniVersionFlagLong "-buildHoudiniVersion"
+#define kBuildHoudiniEngineVersionFlag "-bev"
+#define kBuildHoudiniEngineVersionFlagLong "-buildHoudiniEngineVersion"
 #define kSaveHIPFlag "-sh"
 #define kSaveHIPFlagLong "-saveHIP"
 
@@ -129,6 +134,52 @@ class EngineSubCommandHoudiniEngineVersion : public SubCommand
         }
 };
 
+class EngineSubCommandBuildHoudiniVersion : public SubCommand
+{
+    public:
+        virtual MStatus doIt()
+        {
+            int major = HAPI_VERSION_HOUDINI_MAJOR;
+            int minor = HAPI_VERSION_HOUDINI_MINOR;
+            int build = HAPI_VERSION_HOUDINI_BUILD;
+
+            MString version_string;
+            version_string.format(
+                    "^1s.^2s.^3s",
+                    MString() + major,
+                    MString() + minor,
+                    MString() + build
+                    );
+
+            MPxCommand::setResult(version_string);
+
+            return MStatus::kSuccess;
+        }
+};
+
+class EngineSubCommandBuildHoudiniEngineVersion : public SubCommand
+{
+    public:
+        virtual MStatus doIt()
+        {
+            int major = HAPI_VERSION_HOUDINI_ENGINE_MAJOR;
+            int minor = HAPI_VERSION_HOUDINI_ENGINE_MINOR;
+            int api = HAPI_VERSION_HOUDINI_ENGINE_API;
+
+            MString version_string;
+            version_string.format(
+                    "^1s.^2s (API: ^3s)",
+                    MString() + major,
+                    MString() + minor,
+                    MString() + api
+                    );
+
+            MPxCommand::setResult(version_string);
+
+            return MStatus::kSuccess;
+        }
+};
+
 void* EngineCommand::creator()
 {
     return new EngineCommand();
@@ -148,6 +199,19 @@ EngineCommand::newSyntax()
     // -houdiniEngineVersion returns the Houdini Engine version that's being
     // used.
     CHECK_MSTATUS(syntax.addFlag(kHoudiniEngineVersionFlag, kHoudiniEngineVersionFlagLong));
+
+    // -buildHoudiniVersion returns the Houdini version that was built with.
+    CHECK_MSTATUS(syntax.addFlag(
+                kBuildHoudiniVersionFlag,
+                kBuildHoudiniVersionFlagLong
+                ));
+
+    // -buildHoudiniEngineVersion returns the Houdini Engine version that was
+    // built with.
+    CHECK_MSTATUS(syntax.addFlag(
+                kBuildHoudiniEngineVersionFlag,
+                kBuildHoudiniEngineVersionFlagLong
+                ));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file
     // expected arguments: hip_file_name - the name of the hip file to save
@@ -180,6 +244,8 @@ EngineCommand::parseArgs(const MArgList &args)
                 argData.isFlagSet(kLicenseFlag)
                 ^ argData.isFlagSet(kHoudiniVersionFlag)
                 ^ argData.isFlagSet(kHoudiniEngineVersionFlag)
+                ^ argData.isFlagSet(kBuildHoudiniVersionFlag)
+                ^ argData.isFlagSet(kBuildHoudiniEngineVersionFlag)
                 ^ argData.isFlagSet(kSaveHIPFlag)
         ))
     {
@@ -202,6 +268,16 @@ EngineCommand::parseArgs(const MArgList &args)
     if(argData.isFlagSet(kHoudiniEngineVersionFlag))
     {
         mySubCommand = new EngineSubCommandHoudiniEngineVersion();
+    }
+
+    if(argData.isFlagSet(kBuildHoudiniVersionFlag))
+    {
+        mySubCommand = new EngineSubCommandBuildHoudiniVersion();
+    }
+
+    if(argData.isFlagSet(kBuildHoudiniEngineVersionFlag))
+    {
+        mySubCommand = new EngineSubCommandBuildHoudiniEngineVersion();
     }
 
     if(argData.isFlagSet(kSaveHIPFlag))

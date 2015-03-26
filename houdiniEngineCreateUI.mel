@@ -2,6 +2,25 @@ source houdiniEngineAssetLibraryManager;
 source houdiniEngineAssetSync;
 source houdiniEngineUtils;
 
+proc string[] getHoudiniVersions()
+{
+    string $houdiniVersion = `houdiniEngine -houdiniVersion`;
+
+    string $houdiniVersionTokens[];
+    tokenize $houdiniVersion "." $houdiniVersionTokens;
+
+    string $houdiniMajorMinor = `format
+        -stringArg $houdiniVersionTokens[0]
+        -stringArg $houdiniVersionTokens[1]
+        "^1s.^2s"`;
+
+    stringArrayRemoveAtIndex(0, $houdiniVersionTokens);
+    stringArrayRemoveAtIndex(0, $houdiniVersionTokens);
+    string $houdiniBuild = stringArrayToString($houdiniVersionTokens, ".");
+
+    return {$houdiniMajorMinor, $houdiniBuild};
+}
+
 global proc
 houdiniEngine_browseAssetLibrary()
 {
@@ -304,6 +323,119 @@ houdiniEngine_launchForum()
 }
 
 global proc
+houdiniEngine_launchSubmitBugs()
+{
+    string $houdiniEngineVersion  = `houdiniEngine -houdiniEngineVersion`;
+
+    string $operatingSystem = `about -operatingSystem`;
+    string $mayaVersion = `about -version`;
+    string $mayaCutIdentifier = `about -cutIdentifier`;
+
+    string $houdiniVersions[] = getHoudiniVersions();
+
+    string $extraURLParameters;
+
+    // version
+    $extraURLParameters += `format
+        -stringArg $houdiniVersions[0] "&version=^1s"`;
+
+    // build
+    $extraURLParameters += `format
+        -stringArg $houdiniVersions[1] "&build=^1s"`;
+
+    // category
+    $extraURLParameters += "&category=Maya%20Plug-in";
+
+    // platform
+    if($operatingSystem == "linux64")
+    {
+        $extraURLParameters += "&platform=Linux%2064-bit";
+    }
+    else if($operatingSystem == "linux")
+    {
+        $extraURLParameters += "&platform=Linux%2032-bit";
+    }
+    else if($operatingSystem == "win64")
+    {
+        $extraURLParameters += "&platform=Windows%2064-bit";
+    }
+    else if($operatingSystem == "nt")
+    {
+        $extraURLParameters += "&platform=Windows%2032-bit";
+    }
+    else if($operatingSystem == "mac")
+    {
+        $extraURLParameters += "&platform=Mac%20OSX%2064-bit";
+    }
+
+    // description
+    // It seems like "launch -web" will automatically convert "\n" to "%0A".
+    string $description;
+    string $temp;
+
+    $temp = `format
+        -stringArg $mayaVersion
+        -stringArg $mayaCutIdentifier
+        "Maya Version: ^1s (^2s)\n"`;
+
+    $description += substituteAllString(
+            $temp,
+            " ",
+            "%20"
+            );
+
+    if(`houdiniEngine -houdiniVersion`
+            != `houdiniEngine -buildHoudiniVersion`)
+    {
+        string $buildHoudiniVersion = `houdiniEngine -buildHoudiniVersion`;
+
+        $temp = `format
+            -stringArg $buildHoudiniVersion
+            "Build Houdini Version: ^1s\n"`;
+
+        $description += substituteAllString(
+                $temp,
+                " ",
+                "%20"
+                );
+    }
+
+    $extraURLParameters += `format
+        -stringArg $description
+        "&description=^1s"`;
+
+    launch -web ("http://www.sidefx.com/index.php?option=com_content&task=view&id=768&Itemid=239"
+            + $extraURLParameters);
+}
+
+global proc
+houdiniEngine_launchChangeLog()
+{
+    string $houdiniVersions[] = getHoudiniVersions();
+
+    string $extraURLParameters;
+
+    // version
+    $extraURLParameters += `format
+        -stringArg $houdiniVersions[0]
+        "&version=^1s"`;
+
+    // buildend
+    $extraURLParameters += `format
+        -stringArg $houdiniVersions[1]
+        "&buildend=^1s"`;
+
+    launch -web ("https://www.sidefx.com/index.php?option=com_journal&Itemid=213&page=index&journal=default&view=FULL&logfile=ALL&icon=maya&perpage=20"
+            + $extraURLParameters);
+}
+
+global proc
+houdiniEngine_launchGitHub()
+{
+    launch -web "https://github.com/sideeffects/HoudiniEngineForMaya";
+}
+
+global proc
 houdiniEngineCreateUI()
 {
     //cleanup UI
@@ -353,8 +485,23 @@ houdiniEngineCreateUI()
 
     menuItem -divider true;
 
-    menuItem -label "Visit Houdini Engine for Maya forum..."
-        -command "houdiniEngine_launchForum";
+    menuItem
+        -label "Help and Support"
+        -subMenu true;
+
+        menuItem -label "Visit Houdini Engine for Maya forum..."
+            -command "houdiniEngine_launchForum";
+
+        menuItem -label "Submit Bugs and RFEs..."
+            -command "houdiniEngine_launchSubmitBugs";
+
+        menuItem -label "View Change Log..."
+            -command "houdiniEngine_launchChangeLog";
+
+        menuItem -label "Contribute on GitHub..."
+            -command "houdiniEngine_launchGitHub";
+
+    setParent -menu ..;
 
     menuItem -e -postMenuCommand ("houdiniEngine_buildRecentAssetsMenu"
             + " \"" + $recentAssetsMenu + "\"")

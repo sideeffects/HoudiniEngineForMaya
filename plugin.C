@@ -8,6 +8,7 @@
 #include "EngineCommand.h"
 #include "AssetCommand.h"
 #include "AssetNode.h"
+#include "CurveMeshInputNode.h"
 #include "FluidVelocityConvert.h"
 #include "util.h"
 
@@ -244,6 +245,16 @@ initializePlugin(MObject obj)
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    status = plugin.registerTransform(
+            CurveMeshInputNode::typeName,
+            CurveMeshInputNode::typeId,
+            CurveMeshInputNode::creator,
+            CurveMeshInputNode::initialize,
+            MPxTransformationMatrix::creator,
+            MPxTransformationMatrix::baseTransformationMatrixId
+            );
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
             FluidVelocityConvert::typeName,
@@ -260,7 +271,9 @@ initializePlugin(MObject obj)
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = plugin.registerCommand("houdiniAsset", AssetCommand::creator, AssetCommand::newSyntax);
+    status = plugin.registerCommand( "houdiniAsset", AssetCommand::creator,
+                                     AssetCommand::newSyntax);
+
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     initializeMessageCallbacks();

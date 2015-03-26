@@ -5,10 +5,59 @@
 #include <maya/MSelectionList.h>
 
 #include <maya/MFnDagNode.h>
+#include <maya/MFnGenericAttribute.h>
+#include <maya/MFnNumericAttribute.h>
 #include <maya/MFnNurbsCurve.h>
+#include <maya/MFnTypedAttribute.h>
 
 #include "AssetNode.h"
 #include "util.h"
+
+static MObject
+createAttributeFromDataHandle(
+        const MString &attributeName,
+        const MDataHandle &dataHandle
+        )
+{
+    MObject attribute;
+
+    bool isNumeric = false;
+    bool isNull = false;
+    dataHandle.isGeneric(isNumeric, isNull);
+
+    if(isNumeric)
+    {
+        // This is a singleton generic type. It is not MFnNumericData, and
+        // needs to be handled differently. This is stored internally as a
+        // double, and there's no way to determine the original type.
+        MFnNumericAttribute numericAttribute;
+        attribute = numericAttribute.create(
+                attributeName,
+                attributeName,
+                MFnNumericData::kDouble
+                );
+    }
+    else if(dataHandle.numericType() != MFnNumericData::kInvalid)
+    {
+        MFnNumericAttribute numericAttribute;
+        attribute = numericAttribute.create(
+                attributeName,
+                attributeName,
+                dataHandle.numericType()
+                );
+    }
+    else if(dataHandle.type() != MFnData::kInvalid)
+    {
+        MFnTypedAttribute typedAttribute;
+        attribute = typedAttribute.create(
+                attributeName,
+                attributeName,
+                dataHandle.type()
+                );
+    }
+
+    return attribute;
+}
 
 SyncOutputGeometryPart::SyncOutputGeometryPart(
         const MPlug &outputPlug,
@@ -186,6 +235,8 @@ SyncOutputGeometryPart::createOutputMesh(
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
+
+    createOutputExtraAttributes(meshShape);
 
     return MStatus::kSuccess;
 }
@@ -412,4 +463,91 @@ SyncOutputGeometryPart::createOutputParticle(
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return MStatus::kSuccess;
+}
+
+MStatus
+SyncOutputGeometryPart::createOutputExtraAttributes(
+        const MObject &dstNode
+        )
+{
+    MStatus status;
+
+    MFnDependencyNode dstNodeFn(dstNode);
+
+    MPlug extraAttributesPlug = myOutputPlug.child(
+            AssetNode::outputPartExtraAttributes
+            );
+
+    int numExtraAttributes = extraAttributesPlug.numElements();
+    for(int i = 0; i < numExtraAttributes; i++)
+    {
+        MPlug extraAttributePlug = extraAttributesPlug[i];
+        MPlug extraAttributeNamePlug = extraAttributePlug.child(
+                AssetNode::outputPartExtraAttributeName
+                );
+        MPlug extraAttributeDataPlug = extraAttributePlug.child(
+                AssetNode::outputPartExtraAttributeData
+                );
+
+        MString dstAttributeName = extraAttributeNamePlug.asString();
+
+        // Use existing attribute if it exists.
+        MObject dstAttribute = dstNodeFn.attribute(dstAttributeName);
+
+        // If it doesn't exist, create it.
+        if(dstAttribute.isNull())
+        {
+            MDataHandle dataHandle = extraAttributeDataPlug.asMDataHandle();
+
+            dstAttribute = createAttributeFromDataHandle(
+                    dstAttributeName,
+                    dataHandle
+                    );
+
+            if(!dstAttribute.isNull())
+            {
+                CHECK_MSTATUS(myDagModifier.addAttribute(
+                            dstNode,
+                            dstAttribute
+                            ));
+                CHECK_MSTATUS(myDagModifier.doIt());
+            }
+        }
+
+        // If there's still no attribute, skip it.
+        if(dstAttribute.isNull())
+        {
+            DISPLAY_WARNING(
+                    "Cannot create attribute on:\n"
+                    "    ^1s\n"
+                    "for attribute:\n"
+                    "    ^2s\n",
+                    dstNodeFn.name(),
+                    extraAttributeDataPlug.name()
+                    );
+
+            continue;
+        }
+
+        MPlug dstPlug(dstNode, dstAttribute);
+        CHECK_MSTATUS(myDagModifier.connect(
+                    extraAttributeDataPlug,
+                    dstPlug
+                    ));
+        status = (myDagModifier.doIt());
+        if(!status)
+        {
+            DISPLAY_WARNING(
+                    "Failed to connect:\n"
+                    "    ^1s\n"
+                    "    to:\n"
+                    "    ^2s\n",
+                    extraAttributeDataPlug.name(),
+                    dstPlug.name()
+                    );
+            CHECK_MSTATUS(status);
+        }
+    }
+
+    return status;
 }

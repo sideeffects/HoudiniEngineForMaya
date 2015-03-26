@@ -1,3 +1,4 @@
+#include <maya/MFnGenericAttribute.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnTypedAttribute.h>
@@ -113,6 +114,12 @@ MObject AssetNode::outputPartVolumeScaleZ;
 
 #endif
 
+MObject AssetNode::outputPartExtraAttributes;
+MObject AssetNode::outputPartExtraAttributeName;
+MObject AssetNode::outputPartExtraAttributeOwner;
+MObject AssetNode::outputPartExtraAttributeTuple;
+MObject AssetNode::outputPartExtraAttributeData;
+
 MObject AssetNode::outputVisibility;
 MObject AssetNode::outputIsInstanced;
 MObject AssetNode::outputInstancers;
@@ -180,6 +187,7 @@ MStatus
 AssetNode::initialize()
 {
     // maya plugin stuff
+    MFnGenericAttribute gAttr;
     MFnNumericAttribute nAttr;
     MFnTypedAttribute tAttr;
     MFnCompoundAttribute cAttr;
@@ -846,6 +854,43 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::outputPartVolume);
 #endif
 
+    // extra attributes
+    AssetNode::outputPartExtraAttributeName = tAttr.create(
+            "outputPartExtraAttributeName", "outputPartExtraAttributeName",
+            MFnData::kString
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    AssetNode::outputPartExtraAttributeOwner = tAttr.create(
+            "outputPartExtraAttributeOwner", "outputPartExtraAttributeOwner",
+            MFnData::kString
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    AssetNode::outputPartExtraAttributeTuple = nAttr.create(
+            "outputPartExtraAttributeTuple", "outputPartExtraAttributeTuple",
+            MFnNumericData::kInt,
+            0.0
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    AssetNode::outputPartExtraAttributeData = gAttr.create(
+            "outputPartExtraAttributeData", "outputPartExtraAttributeData"
+            );
+    gAttr.setStorable(false);
+    gAttr.setWritable(false);
+    AssetNode::outputPartExtraAttributes = cAttr.create(
+            "outputPartExtraAttributes", "outputPartExtraAttributes"
+            );
+    cAttr.addChild(AssetNode::outputPartExtraAttributeName);
+    cAttr.addChild(AssetNode::outputPartExtraAttributeOwner);
+    cAttr.addChild(AssetNode::outputPartExtraAttributeTuple);
+    cAttr.addChild(AssetNode::outputPartExtraAttributeData);
+    cAttr.setStorable(false);
+    cAttr.setWritable(false);
+    cAttr.setArray(true);
+    cAttr.setUsesArrayDataBuilder(true);
+
     AssetNode::outputParts = cAttr.create(
             "outputParts", "outputParts"
             );
@@ -857,6 +902,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartParticle);
     cAttr.addChild(AssetNode::outputPartCurves);
     cAttr.addChild(AssetNode::outputPartCurvesIsBezier);
+    cAttr.addChild(AssetNode::outputPartExtraAttributes);
 
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
@@ -1177,6 +1223,17 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                     affectedPlugs.append(outputPartCurves[i]);
 
                 affectedPlugs.append(elemPlug.child(outputPartCurvesIsBezier));
+
+                MPlug outputPartsExtraAttributesPlug = elemPlug.child(AssetNode::outputPartExtraAttributes);
+                for(unsigned int l = 0; l < outputPartsExtraAttributesPlug.numElements(); ++l)
+                {
+                    MPlug elemExtraAttributePlug = outputPartsExtraAttributesPlug[l];
+
+                    affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeName));
+                    affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeOwner));
+                    affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeTuple));
+                    affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeData));
+                }
             }
         }
     }

@@ -173,6 +173,12 @@ class AssetNode: public MPxTransform
         static MObject outputPartVolumeScaleZ;
 #endif
 
+        static MObject outputPartExtraAttributes;
+        static MObject outputPartExtraAttributeName;
+        static MObject outputPartExtraAttributeOwner;
+        static MObject outputPartExtraAttributeTuple;
+        static MObject outputPartExtraAttributeData;
+
         static MObject outputVisibility;
         static MObject outputIsInstanced;
 

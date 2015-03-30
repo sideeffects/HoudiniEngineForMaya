@@ -1782,6 +1782,13 @@ OutputGeometryPart::computeExtraAttributes(
         for(size_t j = 0; j < attributeNames.size(); j++)
         {
             const MString attributeName = Util::getString(attributeNames[j]);
+
+            if(isAttributeUsed(attributeName.asChar())
+                        || attributeName.substring(0, 1) == "__")
+            {
+                continue;
+            }
+
             MDataHandle extraAttributeHandle =
                 extraAttributesBuilder.addElement(elementIndex);
             elementIndex++;

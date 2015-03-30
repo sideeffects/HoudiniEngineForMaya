@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <vector>
 #include <limits>
+#include <string>
 
 #include "Asset.h"
 #include "AssetNode.h"

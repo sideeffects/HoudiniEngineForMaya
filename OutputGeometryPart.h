@@ -89,16 +89,17 @@ class OutputGeometryPart
                 const HAPI_AttributeInfo &attributeInfo
                 );
 
-        std::vector<std::string> myUsedDetailAttributeNames;
-        std::vector<std::string> myUsedPrimAttributeNames;
-        std::vector<std::string> myUsedPointAttributeNames;
-        std::vector<std::string> myUsedVertexAttributeNames;
+        void markAttributeUsed(const std::string &attributeName);
+        bool isAttributeUsed(const std::string &attributeName);
+        void clearAttributesUsed();
 
     private:
         int myAssetId;
         int myObjectId;
         int myGeoId;
         int myPartId;
+
+        std::vector<std::string> myAttributesUsed;
 
         HAPI_PartInfo myPartInfo;
         HAPI_VolumeInfo myVolumeInfo;

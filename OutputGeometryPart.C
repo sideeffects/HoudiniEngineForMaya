@@ -869,6 +869,9 @@ OutputGeometryPart::computeParticle(
     {
         arrayDataObj = arrayDataFn.create();
         arrayDataHandle.setMObject(arrayDataObj);
+
+        arrayDataObj = arrayDataHandle.data();
+        arrayDataFn.setObject(arrayDataObj);
     }
 
     // id

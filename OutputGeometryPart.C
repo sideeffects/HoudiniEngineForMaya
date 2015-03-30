@@ -598,16 +598,6 @@ zeroArray(MDoubleArray &dstArray, int count)
 }
 
 static void
-zeroArray(MIntArray &dstArray, int count)
-{
-    dstArray.setLength(count);
-    for(unsigned int i = 0; i < dstArray.length(); i++)
-    {
-        dstArray[i] = 0;
-    }
-}
-
-static void
 getParticleArray(
         MVectorArray &particleArray,
         MFnArrayAttrsData &arrayDataFn,
@@ -625,16 +615,6 @@ getParticleArray(
         )
 {
     particleArray = arrayDataFn.doubleArray(attrName);
-}
-
-static void
-getParticleArray(
-        MIntArray &particleArray,
-        MFnArrayAttrsData &arrayDataFn,
-        const MString &attrName
-        )
-{
-    particleArray = arrayDataFn.intArray(attrName);
 }
 
 template<typename T, typename U>
@@ -1053,16 +1033,6 @@ OutputGeometryPart::computeParticle(
             convertParticleAttribute<MDoubleArray>(
                     arrayDataFn, translatedAttributeName,
                     floatArray,
-                    attributeName.asChar(),
-                    particleCount
-                    );
-        }
-        else if(attributeInfo.storage == HAPI_STORAGETYPE_INT
-                && attributeInfo.tupleSize == 1)
-        {
-            convertParticleAttribute<MIntArray>(
-                    arrayDataFn, translatedAttributeName,
-                    intArray,
                     attributeName.asChar(),
                     particleCount
                     );

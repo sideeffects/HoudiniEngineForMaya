@@ -767,6 +767,7 @@ Asset::compute(
         const MPlug& plug,
         MDataBlock& data,
         bool splitGeosByGroup,
+        bool cookTemplatedGeos,
         bool &needToSyncOutputs
         )
 {
@@ -780,6 +781,7 @@ Asset::compute(
         HAPI_CookOptions cookOptions;
         HAPI_CookOptions_Init(&cookOptions);
         cookOptions.splitGeosByGroup = splitGeosByGroup;
+        cookOptions.cookTemplatedGeos = cookTemplatedGeos;
 
         HAPI_CookAsset(myAssetInfo.id, &cookOptions);
 

@@ -52,6 +52,7 @@ class Asset {
                 const MPlug& plug,
                 MDataBlock& data,
                 bool splitGeosByGroup,
+                bool cookTemplatedGeos,
                 bool &needToSyncOutputs
                 );
 

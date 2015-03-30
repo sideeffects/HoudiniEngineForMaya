@@ -555,11 +555,11 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
                         "The particle node:\n"
                         "    ^1s\n"
                         "cannot support the attribute:\n"
-                        "    owner: ^2s, type: ^3s, tuple: ^4s\n"
+                        "    owner: ^2s, name: ^3s, type: ^4s, tuple: ^5s\n"
                         "from the plug:"
-                        "    ^5s\n",
+                        "    ^6s\n",
                         dstNodeFn.name(),
-                        owner, dataType, MString() + tuple,
+                        owner, dstAttributeName, dataType, MString() + tuple,
                         extraAttributeDataPlug.name()
                         );
                 continue;
@@ -596,11 +596,11 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
                     "Cannot create attribute on the node:\n"
                     "    ^1s\n"
                     "for the attribute:\n"
-                    "    owner: ^2s, type: ^3s, tuple: ^4s\n"
+                    "    owner: ^2s, name: ^3s, type: ^4s, tuple: ^5s\n"
                     "from the plug:\n"
-                    "    ^5s\n",
+                    "    ^6s\n",
                     dstNodeFn.name(),
-                    owner, dataType, MString() + tuple,
+                    owner, dstAttributeName, dataType, MString() + tuple,
                     extraAttributeDataPlug.name()
                     );
 

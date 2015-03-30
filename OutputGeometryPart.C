@@ -1716,6 +1716,13 @@ OutputGeometryPart::computeExtraAttributes(
     MArrayDataBuilder extraAttributesBuilder =
         extraAttributesArrayHandle.builder();
 
+    const size_t dataTypeSize = HAPI_STORAGETYPE_MAX;
+    const MString dataTypesString[dataTypeSize] = {
+        "int",
+        "float",
+        "string",
+    };
+
     const size_t attributeOwnerSize = HAPI_ATTROWNER_MAX;
     const HAPI_AttributeOwner attributeOwners[attributeOwnerSize] = {
         HAPI_ATTROWNER_DETAIL,
@@ -1767,6 +1774,9 @@ OutputGeometryPart::computeExtraAttributes(
             MDataHandle ownerHandle = extraAttributeHandle.child(
                     AssetNode::outputPartExtraAttributeOwner
                     );
+            MDataHandle dataTypeHandle = extraAttributeHandle.child(
+                    AssetNode::outputPartExtraAttributeDataType
+                    );
             MDataHandle tupleHandle = extraAttributeHandle.child(
                     AssetNode::outputPartExtraAttributeTuple
                     );
@@ -1782,8 +1792,12 @@ OutputGeometryPart::computeExtraAttributes(
                     &attributeInfo
                     ));
 
+            const MString &dataTypeString =
+                dataTypesString[attributeInfo.storage];
+
             nameHandle.setString(attributeName);
             ownerHandle.setString(ownerString);
+            dataTypeHandle.setString(dataTypeString);
             tupleHandle.setInt(attributeInfo.tupleSize);
 
             if(!convertGenericDataAttribute(

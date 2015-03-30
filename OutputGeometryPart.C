@@ -1542,8 +1542,6 @@ OutputGeometryPart::computeMesh(
 
             if(owner == HAPI_ATTROWNER_VERTEX)
             {
-                Util::reverseWindingOrder(promotedColors, polygonCounts);
-
                 MIntArray faceList;
                 faceList.setLength(polygonConnects.length());
                 for(unsigned int i = 0, j = 0, length = polygonCounts.length();

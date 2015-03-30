@@ -48,7 +48,7 @@ class SyncOutputGeometryPart : public SubCommand
                 bool isBezier
                 );
         MStatus createOutputExtraAttributes(
-                const MObject &targetNode
+                const MObject &dstNode
                 );
 
     protected:

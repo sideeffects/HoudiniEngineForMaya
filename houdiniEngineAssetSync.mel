@@ -37,7 +37,7 @@ syncAsset(string $assetNode, int $syncAttributes, int $syncOutputs)
         $cmd += "-syncHidden ";
     }
 
-    if(`getAttr ($assetNode + ".outputTemplateObjects")`)
+    if(`getAttr ($assetNode + ".outputTemplatedGeometries")`)
     {
         $cmd += "-syncTemplatedGeos ";
     }

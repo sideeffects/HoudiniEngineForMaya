@@ -92,7 +92,7 @@ class AssetNode: public MPxTransform
         static MObject autoSyncOutputs;
         static MObject splitGeosByGroup;
         static MObject outputHiddenObjects;
-        static MObject outputTemplateObjects;
+        static MObject outputTemplatedGeometries;
 
         static MObject input;
 

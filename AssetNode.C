@@ -31,7 +31,7 @@ MObject AssetNode::assetName;
 MObject AssetNode::autoSyncOutputs;
 MObject AssetNode::splitGeosByGroup;
 MObject AssetNode::outputHiddenObjects;
-MObject AssetNode::outputTemplateObjects;
+MObject AssetNode::outputTemplatedGeometries;
 
 MObject AssetNode::input;
 
@@ -231,8 +231,8 @@ AssetNode::initialize()
             "outputHiddenObjects", "outputHiddenObjects",
             MFnNumericData::kBoolean
             );
-    AssetNode::outputTemplateObjects = nAttr.create(
-            "outputTemplateObjects", "outputTemplateObjects",
+    AssetNode::outputTemplatedGeometries = nAttr.create(
+            "outputTemplatedGeometries", "outputTemplatedGeometries",
             MFnNumericData::kBoolean
             );
 
@@ -1117,7 +1117,7 @@ AssetNode::initialize()
     addAttribute(AssetNode::autoSyncOutputs);
     addAttribute(AssetNode::splitGeosByGroup);
     addAttribute(AssetNode::outputHiddenObjects);
-    addAttribute(AssetNode::outputTemplateObjects);
+    addAttribute(AssetNode::outputTemplatedGeometries);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);

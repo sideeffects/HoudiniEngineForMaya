@@ -744,8 +744,11 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         createAttrCheckBox("outputHiddenObjects", "Output Hidden Objects",
                 "Output hidden objects.");
 
-        createAttrCheckBox("outputTemplateObjects", "Output Template Objects",
-                "Output templated objects.");
+        createAttrCheckBox(
+                "outputTemplatedGeometries",
+                "Output Templated Geometries",
+                "Output templated geometries."
+                );
 
     setParent ..;
 
@@ -790,8 +793,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|outputHiddenObjects",
             $nodeName + ".outputHiddenObjects",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
-    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|outputTemplateObjects",
-            $nodeName + ".outputTemplateObjects",
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|outputTemplatedGeometries",
+            $nodeName + ".outputTemplatedGeometries",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
 }
 
@@ -836,7 +840,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "splitGeosByGroup";
         editorTemplate -suppress "useInstancerNode";
         editorTemplate -suppress "outputHiddenObjects";
-        editorTemplate -suppress "outputTemplateObjects";
+        editorTemplate -suppress "outputTemplatedGeometries";
 
     editorTemplate -endLayout;
 

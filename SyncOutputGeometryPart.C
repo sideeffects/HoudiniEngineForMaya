@@ -593,11 +593,14 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
         if(dstAttribute.isNull())
         {
             DISPLAY_WARNING(
-                    "Cannot create attribute on:\n"
+                    "Cannot create attribute on the node:\n"
                     "    ^1s\n"
-                    "for attribute:\n"
-                    "    ^2s\n",
+                    "for the attribute:\n"
+                    "    owner: ^2s, type: ^3s, tuple: ^4s\n"
+                    "from the plug:\n"
+                    "    ^5s\n",
                     dstNodeFn.name(),
+                    owner, dataType, MString() + tuple,
                     extraAttributeDataPlug.name()
                     );
 

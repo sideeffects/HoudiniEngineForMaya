@@ -18,6 +18,7 @@
 #endif
 #include <maya/MFnVectorArrayData.h>
 
+#include <algorithm>
 #include <vector>
 #include <limits>
 
@@ -303,6 +304,8 @@ OutputGeometryPart::compute(
 
     if(myNeverBuilt || hasGeoChanged)
     {
+        clearAttributesUsed();
+
         // Name
         MDataHandle nameHandle = handle.child(AssetNode::outputPartName);
         MString partName;
@@ -391,6 +394,8 @@ OutputGeometryPart::computeCurves(
     std::vector<float> pArray, pwArray;
     getAttributeData(pArray,  "P",  HAPI_ATTROWNER_POINT);
     getAttributeData(pwArray, "Pw", HAPI_ATTROWNER_POINT);
+    markAttributeUsed("P");
+    markAttributeUsed("Pw");
 
     int vertexOffset = 0;
     int knotOffset = 0;
@@ -881,14 +886,18 @@ OutputGeometryPart::computeParticle(
             zeroArray(idArray, particleCount);
         }
     }
+    markAttributeUsed("id");
 
     // count
     MDoubleArray countArray = arrayDataFn.doubleArray("count");
     countArray.setLength(1);
     countArray[0] = particleCount;
+    markAttributeUsed("count");
 
     // position
     arrayDataFn.vectorArray("position").copy(positions);
+    markAttributeUsed("P");
+    markAttributeUsed("position");
 
     // velocity
     MVectorArray velocityArray;
@@ -901,6 +910,7 @@ OutputGeometryPart::computeParticle(
     {
         zeroArray(velocityArray, particleCount);
     }
+    markAttributeUsed("velocity");
 
     // acceleration
     convertParticleAttribute<MVectorArray>(
@@ -909,15 +919,20 @@ OutputGeometryPart::computeParticle(
             "force",
             particleCount
             );
+    markAttributeUsed("acceleration");
+    markAttributeUsed("force");
 
     // worldPosition
     arrayDataFn.vectorArray("worldPosition").copy(positions);
+    markAttributeUsed("worldPosition");
 
     // worldVelocity
     arrayDataFn.vectorArray("worldVelocity").copy(velocityArray);
+    markAttributeUsed("worldVelocity");
 
     // worldVelocityInObjectSpace
     arrayDataFn.vectorArray("worldVelocityInObjectSpace").copy(velocityArray);
+    markAttributeUsed("worldVelocityInObjectSpace");
 
     // mass
     convertParticleAttribute<MDoubleArray>(
@@ -926,6 +941,7 @@ OutputGeometryPart::computeParticle(
             "mass",
             particleCount
             );
+    markAttributeUsed("mass");
 
     // birthTime
     convertParticleAttribute<MDoubleArray>(
@@ -934,6 +950,7 @@ OutputGeometryPart::computeParticle(
             "birthTime",
             particleCount
             );
+    markAttributeUsed("birthTime");
 
     // age
     convertParticleAttribute<MDoubleArray>(
@@ -942,6 +959,7 @@ OutputGeometryPart::computeParticle(
             "age",
             particleCount
             );
+    markAttributeUsed("age");
 
     // finalLifespanPP
     convertParticleAttribute<MDoubleArray>(
@@ -950,6 +968,7 @@ OutputGeometryPart::computeParticle(
             "finalLifespanPP",
             particleCount
             );
+    markAttributeUsed("finalLifespanPP");
 
     // lifespanPP
     convertParticleAttribute<MDoubleArray>(
@@ -958,6 +977,7 @@ OutputGeometryPart::computeParticle(
             "life",
             particleCount
             );
+    markAttributeUsed("lifespanPP");
 
     // other attributes
     int* attributeNames = new int[myPartInfo.pointAttributeCount];
@@ -969,24 +989,7 @@ OutputGeometryPart::computeParticle(
         MString attributeName = Util::getString(attributeNames[i]);
 
         // skip attributes that were done above already
-        if(attributeName == "id"
-                || attributeName == "count"
-                || attributeName == "P" // houdini name
-                || attributeName == "position"
-                || attributeName == "v" // houdini name
-                || attributeName == "velocity"
-                || attributeName == "force" // houdini name
-                || attributeName == "acceleration"
-                || attributeName == "worldPosition"
-                || attributeName == "worldVelocity"
-                || attributeName == "worldVelocityInObjectSpace"
-                || attributeName == "mass"
-                || attributeName == "birthTime"
-                || attributeName == "age"
-                || attributeName == "finalLifespanPP"
-                || attributeName == "life"
-                || attributeName == "lifespanPP"
-          )
+        if(isAttributeUsed(attributeName.asChar()))
         {
             continue;
         }
@@ -1180,6 +1183,7 @@ OutputGeometryPart::computeMesh(
             floatPoint.w = 1.0f;
         }
     }
+    markAttributeUsed("P");
 
     // polygon counts
     MIntArray polygonCounts;
@@ -1304,6 +1308,8 @@ OutputGeometryPart::computeMesh(
 
         if(owner != HAPI_ATTROWNER_MAX)
         {
+            markAttributeUsed("N");
+
             // assume 3 tuple
             MVectorArray normals(
                     reinterpret_cast<float(*)[3]>(&floatArray.front()),
@@ -1356,6 +1362,8 @@ OutputGeometryPart::computeMesh(
 
         if(owner != HAPI_ATTROWNER_MAX)
         {
+            markAttributeUsed("uv");
+
             // assume 3 tuple
             MFloatArray uArray;
             MFloatArray vArray;
@@ -1440,6 +1448,15 @@ OutputGeometryPart::computeMesh(
 
         if(colorOwner != HAPI_ATTROWNER_MAX || alphaOwner != HAPI_ATTROWNER_MAX)
         {
+            if(colorOwner != HAPI_ATTROWNER_MAX)
+            {
+                markAttributeUsed("Cd");
+            }
+            if(alphaOwner != HAPI_ATTROWNER_MAX)
+            {
+                markAttributeUsed("Alpha");
+            }
+
             // Convert to color array
             MColorArray colors(floatArray.size() / 3);
             if(colorOwner != HAPI_ATTROWNER_MAX)
@@ -1821,4 +1838,39 @@ OutputGeometryPart::computeExtraAttributes(
     }
 
     extraAttributesArrayHandle.set(extraAttributesBuilder);
+}
+
+void
+OutputGeometryPart::markAttributeUsed(const std::string &attributeName)
+{
+    std::vector<std::string>::iterator pos = std::lower_bound(
+            myAttributesUsed.begin(),
+            myAttributesUsed.end(),
+            attributeName
+            );
+
+    // Attribute already exist.
+    if(pos != myAttributesUsed.end()
+            && *pos == attributeName)
+    {
+        return;
+    }
+
+    myAttributesUsed.insert(pos, attributeName);
+}
+
+bool
+OutputGeometryPart::isAttributeUsed(const std::string &attributeName)
+{
+    return std::binary_search(
+            myAttributesUsed.begin(),
+            myAttributesUsed.end(),
+            attributeName
+            );
+}
+
+void
+OutputGeometryPart::clearAttributesUsed()
+{
+    myAttributesUsed.clear();
 }

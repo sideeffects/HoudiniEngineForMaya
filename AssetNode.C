@@ -117,6 +117,7 @@ MObject AssetNode::outputPartVolumeScaleZ;
 MObject AssetNode::outputPartExtraAttributes;
 MObject AssetNode::outputPartExtraAttributeName;
 MObject AssetNode::outputPartExtraAttributeOwner;
+MObject AssetNode::outputPartExtraAttributeDataType;
 MObject AssetNode::outputPartExtraAttributeTuple;
 MObject AssetNode::outputPartExtraAttributeData;
 
@@ -867,6 +868,12 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
+    AssetNode::outputPartExtraAttributeDataType = tAttr.create(
+            "outputPartExtraAttributeDataType", "outputPartExtraAttributeDataType",
+            MFnData::kString
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
     AssetNode::outputPartExtraAttributeTuple = nAttr.create(
             "outputPartExtraAttributeTuple", "outputPartExtraAttributeTuple",
             MFnNumericData::kInt,
@@ -900,6 +907,7 @@ AssetNode::initialize()
             );
     cAttr.addChild(AssetNode::outputPartExtraAttributeName);
     cAttr.addChild(AssetNode::outputPartExtraAttributeOwner);
+    cAttr.addChild(AssetNode::outputPartExtraAttributeDataType);
     cAttr.addChild(AssetNode::outputPartExtraAttributeTuple);
     cAttr.addChild(AssetNode::outputPartExtraAttributeData);
     cAttr.setStorable(false);
@@ -1247,6 +1255,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
                     affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeName));
                     affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeOwner));
+                    affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeDataType));
                     affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeTuple));
                     affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeData));
                 }

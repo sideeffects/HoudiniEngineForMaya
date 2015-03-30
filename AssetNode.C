@@ -1407,8 +1407,12 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
                     );
         }
 
-        bool autoSyncOutputs = data.inputValue(AssetNode::autoSyncOutputs).asBool();
-        bool splitGeosByGroup = data.inputValue(AssetNode::splitGeosByGroup).asBool();
+        bool autoSyncOutputs = data
+            .inputValue(AssetNode::autoSyncOutputs).asBool();
+        bool splitGeosByGroup = data
+            .inputValue(AssetNode::splitGeosByGroup).asBool();
+        bool outputTemplatedGeometries = data
+            .inputValue(AssetNode::outputTemplatedGeometries).asBool();
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
@@ -1416,6 +1420,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
                 outputPlug,
                 data,
                 splitGeosByGroup,
+                outputTemplatedGeometries,
                 needToSyncOutputs
                 );
         if(autoSyncOutputs && needToSyncOutputs)

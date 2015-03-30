@@ -462,6 +462,8 @@ SyncOutputGeometryPart::createOutputParticle(
             true);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    createOutputExtraAttributes(particleShapeObj);
+
     return MStatus::kSuccess;
 }
 
@@ -478,6 +480,8 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
             AssetNode::outputPartExtraAttributes
             );
 
+    bool isParticle = dstNode.hasFn(MFn::kParticle);
+
     int numExtraAttributes = extraAttributesPlug.numElements();
     for(int i = 0; i < numExtraAttributes; i++)
     {
@@ -485,11 +489,82 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
         MPlug extraAttributeNamePlug = extraAttributePlug.child(
                 AssetNode::outputPartExtraAttributeName
                 );
+        MPlug extraAttributeOwnerPlug = extraAttributePlug.child(
+                AssetNode::outputPartExtraAttributeOwner
+                );
+        MPlug extraAttributeDataTypePlug = extraAttributePlug.child(
+                AssetNode::outputPartExtraAttributeDataType
+                );
+        MPlug extraAttributeTuplePlug = extraAttributePlug.child(
+                AssetNode::outputPartExtraAttributeTuple
+                );
         MPlug extraAttributeDataPlug = extraAttributePlug.child(
                 AssetNode::outputPartExtraAttributeData
                 );
 
         MString dstAttributeName = extraAttributeNamePlug.asString();
+
+        MString owner = extraAttributeOwnerPlug.asString();
+        MString dataType = extraAttributeDataTypePlug.asString();
+        int tuple = extraAttributeTuplePlug.asInt();
+
+        bool isPerParticleAttribute = false;
+        if(isParticle)
+        {
+            // Not every attribute type can be supported on a particle node.
+            bool canSupportAttribute = false;
+
+            if(owner == "detail")
+            {
+                // Make sure the data is not array type.
+                if((dataType == "float"
+                            || dataType == "int")
+                        && tuple <= 3)
+                {
+                    canSupportAttribute = true;
+                }
+                else if(dataType == "string"
+                        && tuple == 1)
+                {
+                    canSupportAttribute = true;
+                }
+            }
+            else if(owner == "primitive")
+            {
+                // Shouldn't be possible.
+            }
+            else if(owner == "point")
+            {
+                // Particles don't support int and string attributes. Also,
+                // make sure the one particle maps to one element of the array.
+                if((dataType == "float" && tuple == 1)
+                        || (dataType == "float" && tuple == 3))
+                {
+                    isPerParticleAttribute = true;
+                    canSupportAttribute = true;
+                }
+            }
+            else if(owner == "vertex")
+            {
+                // Shouldn't be possible.
+            }
+
+            if(!canSupportAttribute)
+            {
+                DISPLAY_WARNING(
+                        "The particle node:\n"
+                        "    ^1s\n"
+                        "cannot support the attribute:\n"
+                        "    owner: ^2s, type: ^3s, tuple: ^4s\n"
+                        "from the plug:"
+                        "    ^5s\n",
+                        dstNodeFn.name(),
+                        owner, dataType, MString() + tuple,
+                        extraAttributeDataPlug.name()
+                        );
+                continue;
+            }
+        }
 
         // Use existing attribute if it exists.
         MObject dstAttribute = dstNodeFn.attribute(dstAttributeName);
@@ -526,6 +601,13 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
                     extraAttributeDataPlug.name()
                     );
 
+            continue;
+        }
+
+        // Per-particle attributes does not need to be, and cannot be,
+        // connected.
+        if(isParticle && isPerParticleAttribute)
+        {
             continue;
         }
 

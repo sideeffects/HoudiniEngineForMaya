@@ -234,9 +234,11 @@ getAttributeDataWrapper(
         int start, int length
         )
 {
-    std::vector<HAPI_StringHandle> stringHandles(length);
+    std::vector<HAPI_StringHandle> stringHandles(
+            attr_info->count * attr_info->tupleSize
+            );
 
-    HAPI_Result hapiResult = HAPI_GetAttributeIntData(
+    HAPI_Result hapiResult = HAPI_GetAttributeStringData(
             asset_id, object_id, geo_id, part_id,
             name,
             attr_info,

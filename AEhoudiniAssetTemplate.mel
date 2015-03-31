@@ -1,15 +1,15 @@
 global proc
-AEhoudiniAssetTemplate_fileAttributeBrowse(string $textField)
+AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
 {
     string $fileDialogResults[] = `fileDialog2
+        -caption $plug
         -fileMode 4
         -okCaption "Select"`;
     if(size($fileDialogResults))
     {
-        textFieldButtonGrp -e
-            -text $fileDialogResults[0]
-            -forceChangeCommand
-            $textField;
+        setAttr -type "string"
+            $plug
+            $fileDialogResults[0];
     }
 }
 
@@ -56,7 +56,8 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         // simple attributes
         else if($isSimpleAttribute)
         {
-            if(`addAttr -q -usedAsFilename ($fullAttrName + "." + $child)`)
+            if($type == "string"
+                    && `addAttr -q -usedAsFilename ($fullAttrName + "." + $child)`)
             {
                 string $niceName = `attributeQuery -node $nodeName -niceName $child`;
                 string $text = `getAttr ($fullAttrName + "." + $child)`;
@@ -75,7 +76,9 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                     -changeCommand ("setAttr -type \"string\""
                             + " \"" + $fullAttrName + "." + $child + "\""
                             + " `textFieldButtonGrp -q -text " + $textField + "`")
-                    -buttonCommand ("AEhoudiniAssetTemplate_fileAttributeBrowse \"" + $textField + "\"") $textField;
+                    -buttonCommand ("AEhoudiniAssetTemplate_fileAttributeBrowse "
+                            + "\"" + ($fullAttrName + "." + $child) + "\"")
+                    $textField;
             }
             else
             {

@@ -13,6 +13,88 @@ AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
     }
 }
 
+global proc
+AEhoudiniAssetTemplate_textEdit(string $plug)
+{
+    string $window = stringArrayToString(
+            stringToStringArray(
+                "houdiniEngine_textEdit_" + $plug,
+                "|."
+                ),
+            "_");
+
+    if(`window -exists $window`)
+    {
+        showWindow $window;
+        return;
+    }
+
+    window
+        -title $plug
+        $window;
+
+    string $mainLayout = `formLayout`;
+
+    string $descriptionText = `text
+        -label ("Editing: " + $plug)
+        -align "left"`;
+
+    string $currentText = `getAttr $plug`;
+    string $scrollField = `scrollField
+        -text $currentText`;
+
+    scrollField -e
+        -enterCommand ("setAttr -type \"string\" " + $plug + " "
+                + "`scrollField -q -text " + $scrollField + "`")
+        $scrollField;
+
+    string $buttonLayout = `formLayout`;
+
+    button
+        -label "Apply"
+        -command ("setAttr -type \"string\" " + $plug + " "
+                + "`scrollField -q -text " + $scrollField + "`")
+        applyButton;
+    button
+        -label "Cancel"
+        -command ("evalDeferred \"deleteUI " + $window + "\"")
+        cancelButton;
+
+    setParent ..;
+
+    formLayout -e
+        -attachNone applyButton "top"
+        -attachForm applyButton "left" 5
+        -attachForm applyButton "bottom" 5
+        -attachPosition applyButton "right" 1 50
+
+        -attachNone cancelButton "top"
+        -attachPosition cancelButton "left" 1 50
+        -attachForm cancelButton "bottom" 5
+        -attachForm cancelButton "right" 5
+
+        $buttonLayout;
+
+    setParent ..;
+
+    formLayout -e
+        -attachForm $descriptionText "top" 5
+        -attachForm $descriptionText "left" 5
+        -attachForm $descriptionText "right" 5
+
+        -attachControl $scrollField "top" 5 $descriptionText
+        -attachForm $scrollField "left" 5
+        -attachControl $scrollField "bottom" 5 $buttonLayout
+        -attachForm $scrollField "right" 5
+
+        -attachForm $buttonLayout "left" 5
+        -attachForm $buttonLayout "bottom" 5
+        -attachForm $buttonLayout "right" 5
+        $mainLayout;
+
+    showWindow $window;
+}
+
 proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 {
     string $fullAttrName = $nodeName + "." + $fullAttr;
@@ -78,6 +160,29 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                             + " `textFieldButtonGrp -q -text " + $textField + "`")
                     -buttonCommand ("AEhoudiniAssetTemplate_fileAttributeBrowse "
                             + "\"" + ($fullAttrName + "." + $child) + "\"")
+                    $textField;
+            }
+            else if($type == "string")
+            {
+                string $niceName = `attributeQuery -node $nodeName -niceName $child`;
+                string $text = `getAttr ($fullAttrName + "." + $child)`;
+
+                string $textField = `textFieldButtonGrp
+                    -label $niceName
+                    -buttonLabel "..."
+                    -text $text`;
+
+                scriptJob
+                    -parent $textField
+                    -attributeChange ($fullAttrName + "." + $child)
+                    ("textFieldButtonGrp -e -text `getAttr " + $fullAttrName + "." + $child + "`"
+                     + " \"" + $textField + "\"");
+                textFieldButtonGrp -e
+                    -changeCommand ("setAttr -type \"string\""
+                            + " \"" + $fullAttrName + "." + $child + "\""
+                            + " `textFieldButtonGrp -q -text " + $textField + "`")
+                    -buttonCommand ("AEhoudiniAssetTemplate_textEdit "
+                            + "\"" + $fullAttrName + "." + $child + "\"")
                     $textField;
             }
             else

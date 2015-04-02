@@ -1139,7 +1139,10 @@ AssetNode::AssetNode() :
     myNeedToMarshalInput(false)
 {
     myAsset = NULL;
-    myIsLoadedFromFile = MFileIO::isOpeningFile();
+
+    myIsLoadedFromFile = MFileIO::isOpeningFile()
+        || MFileIO::isImportingFile()
+        || MFileIO::isReferencingFile();
 
     myResultsClean = false;
 }
@@ -1383,7 +1386,11 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             MObjectVector* attrs = &myDirtyParmAttributes;
 
             // If we just loaded this node from a file, then push all the
-            // parameter values.
+            // parameter values. We can't simply determine this from
+            // myDirtyParmAttributes, which is set by setDependentsDirty().
+            // This is because where the asset node is first created, we want
+            // to pull all the parameter values from the asset, but
+            // myDirtyParmAttributes is also empty.
             if(myIsLoadedFromFile)
             {
                 attrs = NULL;

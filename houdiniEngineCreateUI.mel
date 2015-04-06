@@ -311,6 +311,43 @@ global proc houdiniEngine_saveHipFile()
 }
 
 global proc
+houdiniEngine_viewInHoudini()
+{
+    int $isLinux = `about -linux`;
+    int $isWindows = `about -win`;
+    int $isMac = `about -mac`;
+
+    string $hipFile;
+    if($isWindows || $isMac)
+    {
+        $hipFile = getenv("TMPDIR");
+    }
+    else if($isLinux)
+    {
+        $hipFile = "/tmp";
+    }
+
+    $hipFile += "/houdiniEngineForMaya_" + `getpid` + ".hip";
+    $hipFile = toNativePath($hipFile);
+
+    houdiniEngine -saveHIP $hipFile;
+
+    string $cmds[];
+
+    $cmds[size($cmds)] = "houdini -foreground \"" + $hipFile + "\"";
+    if($isLinux || $isMac)
+    {
+        $cmds[size($cmds)] = "rm -f \"" + $hipFile + "\"";
+    }
+    else if($isWindows)
+    {
+        $cmds[size($cmds)] = "del \"" + $hipFile + "\"";
+    }
+
+    houdiniEngine_run($cmds);
+}
+
+global proc
 houdiniEngine_launchOrboltPageClick()
 {
     launch -web "http://www.orbolt.com/maya";
@@ -485,8 +522,21 @@ houdiniEngineCreateUI()
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";
-    menuItem -label "Save Underlying Houdini Scene..."
-        -command "houdiniEngine_saveHipFile";
+
+    menuItem -divider true;
+
+    menuItem
+        -label "Debugging"
+        -subMenu true
+        -tearOff true;
+
+        menuItem -label "View Assets in Houdini..."
+            -command "houdiniEngine_viewInHoudini";
+
+        menuItem -label "Save Assets to Houdini Scene..."
+            -command "houdiniEngine_saveHipFile";
+
+    setParent -menu ..;
 
     menuItem -divider true;
 

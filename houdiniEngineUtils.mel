@@ -28,3 +28,43 @@ houdiniEngine_getSelectedAssetNodes()
 
     return $assetNodes;
 }
+
+global proc
+houdiniEngine_run(string $cmds[])
+{
+    int $isLinux = `about -linux`;
+    int $isWindows = `about -win`;
+    int $isMac = `about -mac`;
+
+    string $final_cmd;
+
+    if($isLinux || $isMac)
+    {
+        $final_cmd += "( ";
+
+        if($isLinux)
+        {
+            $final_cmd += "unset LD_LIBRARY_PATH; ";
+        }
+
+        $final_cmd += "PATH=\"$HFS/bin:$PATH\"; ";
+
+        $final_cmd += stringArrayToString($cmds, " ; ");
+
+        $final_cmd += " ) &";
+    }
+    else if($isWindows)
+    {
+        $final_cmd += "start cmd /c \"";
+
+        // PATH should already be set on Windows.
+
+        string $temp = stringArrayToString($cmds, " & ");
+
+        $final_cmd += $temp;
+
+        $final_cmd += "\"";
+    }
+
+    system($final_cmd);
+}

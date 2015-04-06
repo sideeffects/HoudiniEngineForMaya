@@ -323,6 +323,16 @@ houdiniEngine_launchForum()
 }
 
 global proc
+houdiniEngine_runHKey()
+{
+    string $cmds[];
+
+    $cmds[size($cmds)] = "hkey";
+
+    houdiniEngine_run($cmds);
+}
+
+global proc
 houdiniEngine_launchSubmitBugs()
 {
     string $houdiniEngineVersion  = `houdiniEngine -houdiniEngineVersion`;
@@ -500,6 +510,11 @@ houdiniEngineCreateUI()
 
         menuItem -label "Contribute on GitHub..."
             -command "houdiniEngine_launchGitHub";
+
+        menuItem -divider true;
+
+        menuItem -label "Houdini License Administrator..."
+            -command "houdiniEngine_runHKey";
 
     setParent -menu ..;
 

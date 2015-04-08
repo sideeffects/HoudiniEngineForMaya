@@ -94,17 +94,26 @@ OutputGeometryPart::computeVolumeTransform(
 {
     HAPI_Transform transform = myVolumeInfo.transform;
 
-    MDataHandle translateHandle = volumeTransformHandle.child(AssetNode::outputPartVolumeTranslate);
-    MDataHandle rotateHandle = volumeTransformHandle.child(AssetNode::outputPartVolumeRotate);
-    MDataHandle scaleHandle = volumeTransformHandle.child(AssetNode::outputPartVolumeScale);
+    MDataHandle translateHandle
+        = volumeTransformHandle.child(AssetNode::outputPartVolumeTranslate);
+    MDataHandle rotateHandle
+        = volumeTransformHandle.child(AssetNode::outputPartVolumeRotate);
+    MDataHandle scaleHandle
+        = volumeTransformHandle.child(AssetNode::outputPartVolumeScale);
 
-    MEulerRotation r = MQuaternion(transform.rotationQuaternion[0],
-                                   transform.rotationQuaternion[1],
-                                   transform.rotationQuaternion[2],
-                                   transform.rotationQuaternion[3]).asEulerRotation();
+    MEulerRotation r = MQuaternion(
+            transform.rotationQuaternion[0],
+            transform.rotationQuaternion[1],
+            transform.rotationQuaternion[2],
+            transform.rotationQuaternion[3]
+            ).asEulerRotation();
 
     const double rot[3] = {r[0], r[1], r[2]};
-    const double scale[3] = {transform.scale[0], transform.scale[1], transform.scale[2]};
+    const double scale[3] = {
+        transform.scale[0],
+        transform.scale[1],
+        transform.scale[2]
+    };
 
     MTransformationMatrix matrix;
     matrix.addScale(scale, MSpace::kTransform);
@@ -120,7 +129,10 @@ OutputGeometryPart::computeVolumeTransform(
     const double scale2[3] = {2, 2, 2};
     matrix.addScale(scale2, MSpace::kPreTransform);
     matrix.addTranslation(MVector(-0.5, -0.5, -0.5), MSpace::kPreTransform);
-    matrix.addTranslation(MVector(xoffset, yoffset, zoffset), MSpace::kPreTransform);
+    matrix.addTranslation(
+            MVector(xoffset, yoffset, zoffset),
+            MSpace::kPreTransform
+            );
 
     const double scale3[3] = {
         static_cast<double>(myVolumeInfo.xLength),
@@ -151,18 +163,27 @@ OutputGeometryPart::update()
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
-        hstat = HAPI_GetPartInfo(myAssetId, myObjectId, myGeoId, myPartId, &myPartInfo);
+        hstat = HAPI_GetPartInfo(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                &myPartInfo
+                );
         Util::checkHAPIStatus(hstat);
 
         if(myPartInfo.hasVolume)
         {
-            hstat = HAPI_GetVolumeInfo(myAssetId, myObjectId, myGeoId, myPartId, &myVolumeInfo);
+            hstat = HAPI_GetVolumeInfo(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    &myVolumeInfo
+                    );
             Util::checkHAPIStatus(hstat);
         }
 
         if(myPartInfo.isCurve)
         {
-            hstat = HAPI_GetCurveInfo(myAssetId, myObjectId, myGeoId, myPartId, &myCurveInfo);
+            hstat = HAPI_GetCurveInfo(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    &myCurveInfo
+                    );
             Util::checkHAPIStatus(hstat);
         }
         else
@@ -333,8 +354,10 @@ OutputGeometryPart::compute(
         }
 
         // Particle
-        MDataHandle hasParticlesHandle = handle.child(AssetNode::outputPartHasParticles);
-        MDataHandle particleHandle = handle.child(AssetNode::outputPartParticle);
+        MDataHandle hasParticlesHandle =
+            handle.child(AssetNode::outputPartHasParticles);
+        MDataHandle particleHandle =
+            handle.child(AssetNode::outputPartParticle);
         if(myPartInfo.pointCount != 0
                 && myPartInfo.vertexCount == 0
                 && myPartInfo.faceCount == 0)
@@ -373,7 +396,8 @@ OutputGeometryPart::compute(
 
     if(myNeverBuilt || hasMaterialChanged)
     {
-        MDataHandle materialHandle = handle.child(AssetNode::outputPartMaterial);
+        MDataHandle materialHandle =
+            handle.child(AssetNode::outputPartMaterial);
         computeMaterial(time, materialHandle);
     }
 
@@ -420,8 +444,11 @@ OutputGeometryPart::computeCurves(
 
         // Number of CVs
         int numVertices = 0;
-        HAPI_GetCurveCounts(myAssetId, myObjectId, myGeoId, myPartId,
-                            &numVertices, iCurve , 1);
+        HAPI_GetCurveCounts(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                &numVertices,
+                iCurve, 1
+                );
 
         const int nextVertexOffset = vertexOffset + numVertices;
         if ( nextVertexOffset > static_cast<int>( pArray.size() ) * 3
@@ -442,8 +469,11 @@ OutputGeometryPart::computeCurves(
         }
         else
         {
-            HAPI_GetCurveOrders(myAssetId, myObjectId, myGeoId, myPartId,
-                                &order, iCurve , 1);
+            HAPI_GetCurveOrders(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    &order,
+                    iCurve, 1
+                    );
         }
 
         // If there's not enough vertices, then don't try to create the curve.
@@ -483,8 +513,11 @@ OutputGeometryPart::computeCurves(
             // The Maya knot vector has two fewer knots;
             // the first and last houdini knot are excluded
             knotSequences.setLength(numVertices + order - 2);
-            HAPI_GetCurveKnots(myAssetId, myObjectId, myGeoId, myPartId,
-                               &knots.front(), knotOffset, numVertices + order);
+            HAPI_GetCurveKnots(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    &knots.front(),
+                    knotOffset, numVertices + order
+                    );
             // Maya doesn't need the first and last knots
             for(int j=0; j<numVertices + order - 2; j++)
                 knotSequences[j] = knots[j+1];
@@ -536,7 +569,9 @@ OutputGeometryPart::computeCurves(
 
     curvesArrayHandle.set(curvesBuilder);
 
-    curvesIsBezierHandle.setBool(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER);
+    curvesIsBezierHandle.setBool(
+            myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER
+            );
 }
 
 static void
@@ -836,9 +871,12 @@ OutputGeometryPart::computeParticle(
 {
     hasParticlesHandle.setBool(true);
 
-    MDataHandle currentTimeHandle = particleHandle.child(AssetNode::outputPartParticleCurrentTime);
-    MDataHandle positionsHandle = particleHandle.child(AssetNode::outputPartParticlePositions);
-    MDataHandle arrayDataHandle = particleHandle.child(AssetNode::outputPartParticleArrayData);
+    MDataHandle currentTimeHandle
+        = particleHandle.child(AssetNode::outputPartParticleCurrentTime);
+    MDataHandle positionsHandle
+        = particleHandle.child(AssetNode::outputPartParticlePositions);
+    MDataHandle arrayDataHandle
+        = particleHandle.child(AssetNode::outputPartParticleArrayData);
 
     std::vector<float> floatArray;
     std::vector<int> intArray;
@@ -987,9 +1025,12 @@ OutputGeometryPart::computeParticle(
 
     // other attributes
     int* attributeNames = new int[myPartInfo.pointAttributeCount];
-    HAPI_GetAttributeNames(myAssetId, myObjectId, myGeoId, myPartId,
+    HAPI_GetAttributeNames(
+            myAssetId, myObjectId, myGeoId, myPartId,
             HAPI_ATTROWNER_POINT,
-            attributeNames, myPartInfo.pointAttributeCount);
+            attributeNames,
+            myPartInfo.pointAttributeCount
+            );
     for(int i = 0; i < myPartInfo.pointAttributeCount; i++)
     {
         MString attributeName = Util::getString(attributeNames[i]);
@@ -1021,9 +1062,12 @@ OutputGeometryPart::computeParticle(
 
         HAPI_AttributeInfo attributeInfo;
 
-        HAPI_GetAttributeInfo(myAssetId, myObjectId, myGeoId, myPartId,
-                attributeName.asChar(), HAPI_ATTROWNER_POINT,
-                &attributeInfo);
+        HAPI_GetAttributeInfo(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                attributeName.asChar(),
+                HAPI_ATTROWNER_POINT,
+                &attributeInfo
+                );
 
         // put the data into MFnArrayAttrsData
         if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT
@@ -1061,10 +1105,14 @@ OutputGeometryPart::computeVolume(
         MDataHandle &volumeHandle
         )
 {
-    MDataHandle gridHandle = volumeHandle.child(AssetNode::outputPartVolumeGrid);
-    MDataHandle transformHandle = volumeHandle.child(AssetNode::outputPartVolumeTransform);
-    MDataHandle resHandle = volumeHandle.child(AssetNode::outputPartVolumeRes);
-    MDataHandle nameHandle = volumeHandle.child(AssetNode::outputPartVolumeName);
+    MDataHandle gridHandle
+        = volumeHandle.child(AssetNode::outputPartVolumeGrid);
+    MDataHandle transformHandle
+        = volumeHandle.child(AssetNode::outputPartVolumeTransform);
+    MDataHandle resHandle
+        = volumeHandle.child(AssetNode::outputPartVolumeRes);
+    MDataHandle nameHandle
+        = volumeHandle.child(AssetNode::outputPartVolumeName);
 
     // grid
     {
@@ -1091,7 +1139,10 @@ OutputGeometryPart::computeVolume(
         tile.resize(tileSize * tileSize * tileSize);
 
         HAPI_VolumeTileInfo tileInfo;
-        HAPI_GetFirstVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
+        HAPI_GetFirstVolumeTile(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                &tileInfo
+                );
 
 #ifdef max
 #undef max
@@ -1101,7 +1152,11 @@ OutputGeometryPart::computeVolume(
                 tileInfo.minY != std::numeric_limits<int>::max() &&
                 tileInfo.minZ != std::numeric_limits<int>::max())
         {
-            HAPI_GetVolumeTileFloatData(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo, &tile.front());
+            HAPI_GetVolumeTileFloatData(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    &tileInfo,
+                    &tile.front()
+                    );
 
             for(int k=0; k<tileSize; k++)
                 for(int j=0; j<tileSize; j++)
@@ -1116,7 +1171,11 @@ OutputGeometryPart::computeVolume(
                             xres * y +
                             x;
 
-                        float value = tile[k * tileSize*tileSize + j * tileSize + i];
+                        float value = tile[
+                            k * tileSize*tileSize
+                            + j * tileSize
+                            + i
+                        ];
                         if(x < xres && y < yres && z < zres
                                 && x > 0 && y > 0 && z > 0)
                         {
@@ -1124,7 +1183,10 @@ OutputGeometryPart::computeVolume(
                         }
                     }
 
-            HAPI_GetNextVolumeTile(myAssetId, myObjectId, myGeoId, myPartId, &tileInfo);
+            HAPI_GetNextVolumeTile(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    &tileInfo
+                    );
         }
     }
 
@@ -1199,13 +1261,9 @@ OutputGeometryPart::computeMesh(
         if(myPartInfo.faceCount)
         {
             HAPI_GetFaceCounts(
-                    myAssetId,
-                    myObjectId,
-                    myGeoId,
-                    myPartId,
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &intArray.front(),
-                    0,
-                    myPartInfo.faceCount
+                    0, myPartInfo.faceCount
                     );
         }
 
@@ -1220,13 +1278,9 @@ OutputGeometryPart::computeMesh(
         if(myPartInfo.vertexCount)
         {
             HAPI_GetVertexList(
-                    myAssetId,
-                    myObjectId,
-                    myGeoId,
-                    myPartId,
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &intArray.front(),
-                    0,
-                    myPartInfo.vertexCount
+                    0, myPartInfo.vertexCount
                     );
         }
 
@@ -1478,8 +1532,10 @@ OutputGeometryPart::computeMesh(
             }
 
             HAPI_AttributeOwner owner;
-            if((colorOwner == HAPI_ATTROWNER_POINT && alphaOwner == HAPI_ATTROWNER_PRIM)
-                    || (colorOwner == HAPI_ATTROWNER_PRIM && alphaOwner == HAPI_ATTROWNER_POINT))
+            if((colorOwner == HAPI_ATTROWNER_POINT
+                        && alphaOwner == HAPI_ATTROWNER_PRIM)
+                    || (colorOwner == HAPI_ATTROWNER_PRIM
+                        && alphaOwner == HAPI_ATTROWNER_POINT))
             {
                 // Don't convert the prim attributes to point attributes,
                 // because that would lose information. Convert everything to
@@ -1555,7 +1611,11 @@ OutputGeometryPart::computeMesh(
                     }
                 }
 
-                meshFn.setFaceVertexColors(promotedColors, faceList, polygonConnects);
+                meshFn.setFaceVertexColors(
+                        promotedColors,
+                        faceList,
+                        polygonConnects
+                        );
             }
             else if(owner == HAPI_ATTROWNER_POINT)
             {
@@ -1591,28 +1651,31 @@ OutputGeometryPart::computeMaterial(
         MDataHandle& materialHandle
         )
 {
-    MDataHandle matExistsHandle = materialHandle.child(AssetNode::outputPartMaterialExists);
-    MDataHandle nameHandle = materialHandle.child(AssetNode::outputPartMaterialName);
-    MDataHandle ambientHandle = materialHandle.child(AssetNode::outputPartAmbientColor);
-    MDataHandle diffuseHandle = materialHandle.child(AssetNode::outputPartDiffuseColor);
-    MDataHandle specularHandle = materialHandle.child(AssetNode::outputPartSpecularColor);
-    MDataHandle alphaHandle = materialHandle.child(AssetNode::outputPartAlphaColor);
-    MDataHandle texturePathHandle = materialHandle.child(AssetNode::outputPartTexturePath);
+    MDataHandle matExistsHandle
+        = materialHandle.child(AssetNode::outputPartMaterialExists);
+    MDataHandle nameHandle
+        = materialHandle.child(AssetNode::outputPartMaterialName);
+    MDataHandle ambientHandle
+        = materialHandle.child(AssetNode::outputPartAmbientColor);
+    MDataHandle diffuseHandle
+        = materialHandle.child(AssetNode::outputPartDiffuseColor);
+    MDataHandle specularHandle
+        = materialHandle.child(AssetNode::outputPartSpecularColor);
+    MDataHandle alphaHandle
+        = materialHandle.child(AssetNode::outputPartAlphaColor);
+    MDataHandle texturePathHandle
+        = materialHandle.child(AssetNode::outputPartTexturePath);
 
     HAPI_MaterialId materialId;
     HAPI_GetMaterialIdsOnFaces(
-            myAssetId,
-            myObjectId,
-            myGeoId,
-            myPartId,
+            myAssetId, myObjectId, myGeoId, myPartId,
             NULL,
             &materialId,
             0, 1
             );
 
     HAPI_GetMaterialInfo(
-            myAssetId,
-            materialId,
+            myAssetId, materialId,
             &myMaterialInfo
             );
 
@@ -1627,7 +1690,11 @@ OutputGeometryPart::computeMaterial(
         HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
 
         std::vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);
-        HAPI_GetParameters(myMaterialInfo.nodeId, &parms[0], 0, materialNodeInfo.parmCount);
+        HAPI_GetParameters(
+                myMaterialInfo.nodeId,
+                &parms[0],
+                0, materialNodeInfo.parmCount
+                );
 
         int ambientParmIndex = Util::findParm(parms, "ogl_amb");
         int diffuseParmIndex = Util::findParm(parms, "ogl_diff");
@@ -1644,29 +1711,52 @@ OutputGeometryPart::computeMaterial(
 
         if(ambientParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-                    parms[ambientParmIndex].floatValuesIndex, 3);
-            ambientHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+            HAPI_GetParmFloatValues(
+                    myMaterialInfo.nodeId, valueHolder,
+                    parms[ambientParmIndex].floatValuesIndex, 3
+                    );
+            ambientHandle.set3Float(
+                    valueHolder[0],
+                    valueHolder[1],
+                    valueHolder[2]
+                    );
         }
 
         if(specularParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-                    parms[specularParmIndex].floatValuesIndex, 3);
-            specularHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+            HAPI_GetParmFloatValues(
+                    myMaterialInfo.nodeId,
+                    valueHolder,
+                    parms[specularParmIndex].floatValuesIndex, 3
+                    );
+            specularHandle.set3Float(
+                    valueHolder[0],
+                    valueHolder[1],
+                    valueHolder[2]
+                    );
         }
 
         if(diffuseParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-                    parms[diffuseParmIndex].floatValuesIndex, 3);
-            diffuseHandle.set3Float(valueHolder[0], valueHolder[1], valueHolder[2]);
+            HAPI_GetParmFloatValues(
+                    myMaterialInfo.nodeId,
+                    valueHolder,
+                    parms[diffuseParmIndex].floatValuesIndex, 3
+                    );
+            diffuseHandle.set3Float(
+                    valueHolder[0],
+                    valueHolder[1],
+                    valueHolder[2]
+                    );
         }
 
         if(alphaParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(myMaterialInfo.nodeId, valueHolder,
-                    parms[alphaParmIndex].floatValuesIndex, 1);
+            HAPI_GetParmFloatValues(
+                    myMaterialInfo.nodeId,
+                    valueHolder,
+                    parms[alphaParmIndex].floatValuesIndex, 1
+                    );
             float alpha = 1 - valueHolder[0];
             alphaHandle.set3Float(alpha, alpha, alpha);
         }
@@ -1677,8 +1767,7 @@ OutputGeometryPart::computeMaterial(
             HAPI_GetParameters(
                     myMaterialInfo.nodeId,
                     &texturePathParm,
-                    texturePathSHParmIndex,
-                    1
+                    texturePathSHParmIndex, 1
                     );
 
             int texturePathSH;
@@ -1686,8 +1775,7 @@ OutputGeometryPart::computeMaterial(
                     myMaterialInfo.nodeId,
                     true,
                     &texturePathSH,
-                    texturePathParm.stringValuesIndex,
-                    1
+                    texturePathParm.stringValuesIndex, 1
                     );
 
             bool hasTextureSource = Util::getString(texturePathSH).length() > 0;
@@ -1698,8 +1786,7 @@ OutputGeometryPart::computeMaterial(
 
                 // this could fail if texture parameter is empty
                 hapiResult = HAPI_RenderTextureToImage(
-                        myAssetId,
-                        myMaterialInfo.id,
+                        myAssetId, myMaterialInfo.id,
                         texturePathSHParmIndex
                         );
 
@@ -1710,13 +1797,13 @@ OutputGeometryPart::computeMaterial(
             if(canRenderTexture)
             {
                 MString destinationFolderPath;
-                MGlobal::executeCommand("workspace -expandName `workspace -q -fileRuleEntry sourceImages`;",
+                MGlobal::executeCommand("workspace -expandName "
+                        "`workspace -q -fileRuleEntry sourceImages`;",
                         destinationFolderPath);
 
                 // this could fail if the image planes don't exist
                 HAPI_ExtractImageToFile(
-                        myAssetId,
-                        myMaterialInfo.id,
+                        myAssetId, myMaterialInfo.id,
                         HAPI_PNG_FORMAT_NAME,
                         "C A",
                         destinationFolderPath.asChar(),

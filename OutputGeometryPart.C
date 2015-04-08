@@ -1599,7 +1599,22 @@ OutputGeometryPart::computeMaterial(
     MDataHandle alphaHandle = materialHandle.child(AssetNode::outputPartAlphaColor);
     MDataHandle texturePathHandle = materialHandle.child(AssetNode::outputPartTexturePath);
 
-    HAPI_GetMaterialOnPart( myAssetId, myObjectId, myGeoId, myPartId, &myMaterialInfo );
+    HAPI_MaterialId materialId;
+    HAPI_GetMaterialIdsOnFaces(
+            myAssetId,
+            myObjectId,
+            myGeoId,
+            myPartId,
+            NULL,
+            &materialId,
+            0, 1
+            );
+
+    HAPI_GetMaterialInfo(
+            myAssetId,
+            materialId,
+            &myMaterialInfo
+            );
 
     if(!myMaterialInfo.exists)
     {

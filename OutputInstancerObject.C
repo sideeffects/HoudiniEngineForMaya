@@ -231,6 +231,27 @@ OutputInstancerObject::compute(
             szHandle.set(s.z);
         }
 
+        // clean up extra elements
+        for(unsigned int i = houdiniInstanceAttributeBuilder.elementCount();
+                i-- > size;)
+        {
+            houdiniInstanceAttributeBuilder.removeElement(i);
+        }
+
+        // clean up extra elements
+        for(unsigned int i = houdiniNameAttributeBuilder.elementCount();
+                i-- > size;)
+        {
+            houdiniNameAttributeBuilder.removeElement(i);
+        }
+
+        // clean up extra elements
+        for(unsigned int i = instanceTransformBuilder.elementCount();
+                i-- > size;)
+        {
+            instanceTransformBuilder.removeElement(i);
+        }
+
         houdiniInstanceAttributeHandle.set(houdiniInstanceAttributeBuilder);
         houdiniInstanceAttributeHandle.setAllClean();
 
@@ -258,6 +279,12 @@ OutputInstancerObject::compute(
 
             MDataHandle h = builder.addElement(0);
             h.set(name);
+
+            // clean up extra elements
+            for(int i= builder.elementCount(); i-- > 1;)
+            {
+                builder.removeElement(i);
+            }
         } else
         {
             // instancing multiple objects
@@ -268,13 +295,9 @@ OutputInstancerObject::compute(
             }
 
             // clean up extra elements
-            int builderSizeCheck = builder.elementCount();
-            if(builderSizeCheck > (int) myUniqueInstObjNames.length())
+            for(int i= builder.elementCount(); i-- > myUniqueInstObjNames.length();)
             {
-                for(int i= myUniqueInstObjNames.length(); i<builderSizeCheck; i++)
-                {
-                    builder.removeElement(i);
-                }
+                builder.removeElement(i);
             }
         }
         instancedObjectNamesHandle.set(builder);

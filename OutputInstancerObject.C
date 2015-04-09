@@ -281,7 +281,7 @@ OutputInstancerObject::compute(
             h.set(name);
 
             // clean up extra elements
-            for(int i= builder.elementCount(); i-- > 1;)
+            for(unsigned int i= builder.elementCount(); i-- > 1;)
             {
                 builder.removeElement(i);
             }
@@ -295,7 +295,8 @@ OutputInstancerObject::compute(
             }
 
             // clean up extra elements
-            for(int i= builder.elementCount(); i-- > myUniqueInstObjNames.length();)
+            for(unsigned int i= builder.elementCount();
+                    i-- > myUniqueInstObjNames.length();)
             {
                 builder.removeElement(i);
             }

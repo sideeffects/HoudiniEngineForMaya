@@ -954,6 +954,7 @@ OutputGeometryPart::computeParticle(
     {
         zeroArray(velocityArray, particleCount);
     }
+    markAttributeUsed("v");
     markAttributeUsed("velocity");
 
     // acceleration

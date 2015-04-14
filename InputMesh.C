@@ -168,21 +168,38 @@ InputMesh::setInputGeo(
 
     // UVs
     {
-        // get UV IDs
-        MIntArray uvCounts;
-        MIntArray uvIds;
-        meshFn.getAssignedUVs(uvCounts, uvIds);
+        MString currentUVSetName;
+        currentUVSetName = meshFn.currentUVSetName();
 
-        // if there's UVs
-        if(uvIds.length())
+        MStringArray uvSetNames;
+        meshFn.getUVSetNames(uvSetNames);
+
+        for(unsigned int i = 0; i < uvSetNames.length(); i++)
         {
+            const MString uvSetName = uvSetNames[i];
+
+            MString uvAttributeName;
+            if(uvSetName == currentUVSetName)
+            {
+                uvAttributeName = "uv";
+            }
+            else
+            {
+                uvAttributeName = uvSetName;
+            }
+
+            // get UV IDs
+            MIntArray uvCounts;
+            MIntArray uvIds;
+            meshFn.getAssignedUVs(uvCounts, uvIds, &uvSetName);
+
             // reverse winding order
             Util::reverseWindingOrder(uvIds, uvCounts);
 
             // get UV values
             MFloatArray uArray;
             MFloatArray vArray;
-            meshFn.getUVs(uArray, vArray);
+            meshFn.getUVs(uArray, vArray, &uvSetName);
 
             // build the per-vertex UVs
             std::vector<float> vertexUVs;
@@ -223,12 +240,12 @@ InputMesh::setInputGeo(
             attributeInfo.tupleSize = 3;
             HAPI_AddAttribute(
                     myInputAssetId, myInputObjectId, myInputGeoId,
-                    "uv", &attributeInfo
+                    uvAttributeName.asChar(), &attributeInfo
                     );
 
             HAPI_SetAttributeFloatData(
                     myInputAssetId, myInputObjectId, myInputGeoId,
-                    "uv", &attributeInfo,
+                    uvAttributeName.asChar(), &attributeInfo,
                     &vertexUVs.front(), 0, vertexList.length()
                     );
         }

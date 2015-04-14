@@ -566,6 +566,16 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
             }
         }
 
+        // Some special cases to remap certain attributes.
+        if(owner != "detail" && dstAttributeName == "v")
+        {
+            // "v" means velocity in Houdini. However, in Maya, "v" happens to
+            // be the short name of the "visibility" attribute. Instead of
+            // connecting velocity to visibility, which would be very confusing
+            // for the user, we rename "v" to "velocity".
+            dstAttributeName = "velocity";
+        }
+
         // Use existing attribute if it exists.
         MObject dstAttribute = dstNodeFn.attribute(dstAttributeName);
 

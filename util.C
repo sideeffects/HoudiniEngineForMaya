@@ -132,7 +132,7 @@ Util::checkHAPIStatus(HAPI_Result stat)
         HAPI_GetStatusStringBufLength(
             HAPI_STATUS_CALL_RESULT, HAPI_STATUSVERBOSITY_ERRORS, &bufLen);
         char * buffer = new char[bufLen];
-        HAPI_GetStatusString(HAPI_STATUS_CALL_RESULT, buffer);
+        HAPI_GetStatusString(HAPI_STATUS_CALL_RESULT, buffer, bufLen);
         throw HAPIError(buffer);
     }
 }
@@ -520,7 +520,7 @@ Util::statusCheckLoop(bool wantMainProgressBar)
             if(statusBufSize > 0)
             {
                 statusBuf = new char[statusBufSize];
-                HAPI_GetStatusString(HAPI_STATUS_COOK_STATE, statusBuf);
+                HAPI_GetStatusString(HAPI_STATUS_COOK_STATE, statusBuf, statusBufSize);
             }
 
             progressBar->updateProgress(currCookCount, totalCookCount, statusBuf);

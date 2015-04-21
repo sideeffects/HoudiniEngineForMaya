@@ -1652,6 +1652,8 @@ OutputGeometryPart::computeMaterial(
         MDataHandle& materialHandle
         )
 {
+    HAPI_Result hapiResult;
+
     MDataHandle matExistsHandle
         = materialHandle.child(AssetNode::outputPartMaterialExists);
     MDataHandle nameHandle
@@ -1783,8 +1785,6 @@ OutputGeometryPart::computeMaterial(
             bool canRenderTexture = false;
             if(hasTextureSource)
             {
-                HAPI_Result hapiResult;
-
                 // this could fail if texture parameter is empty
                 hapiResult = HAPI_RenderTextureToImage(
                         myAssetId, myMaterialInfo.id,
@@ -1803,7 +1803,7 @@ OutputGeometryPart::computeMaterial(
                         destinationFolderPath);
 
                 // this could fail if the image planes don't exist
-                HAPI_ExtractImageToFile(
+                hapiResult = HAPI_ExtractImageToFile(
                         myAssetId, myMaterialInfo.id,
                         HAPI_PNG_FORMAT_NAME,
                         "C A",
@@ -1811,6 +1811,15 @@ OutputGeometryPart::computeMaterial(
                         NULL,
                         &destinationFilePathSH
                         );
+                if(HAPI_FAIL(hapiResult))
+                {
+                    DISPLAY_ERROR(
+                            "Could not extract image to directory:\n"
+                            "    ^1s",
+                            destinationFolderPath
+                            );
+                    DISPLAY_ERROR_HAPI_STATUS_CALL();
+                }
             }
 
             if(destinationFilePathSH > 0)

@@ -169,7 +169,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
                 string $textField = `textFieldButtonGrp
                     -label $niceName
-                    -buttonLabel "..."
+                    -buttonLabel "Edit"
                     -text $text`;
 
                 scriptJob

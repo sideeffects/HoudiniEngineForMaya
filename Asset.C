@@ -789,6 +789,8 @@ Asset::compute(
         {
             GET_HAPI_STATUS_COOK();
             DISPLAY_MSG(displayError, hapiStatus);
+
+            return MStatus::kFailure;
         }
     }
 

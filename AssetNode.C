@@ -1374,6 +1374,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         // push the inputs to Houdini, such as transforms and geometries
         if(myNeedToMarshalInput)
         {
+            myNeedToMarshalInput = false;
+
             myAsset->setInputs(plug, data);
         }
 
@@ -1393,6 +1395,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             // myDirtyParmAttributes is also empty.
             if(myIsLoadedFromFile)
             {
+                myIsLoadedFromFile = false;
+
                 attrs = NULL;
             }
 
@@ -1423,23 +1427,21 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
-        myAsset->compute(
+        status = myAsset->compute(
                 outputPlug,
                 data,
                 splitGeosByGroup,
                 outputTemplatedGeometries,
                 needToSyncOutputs
                 );
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
         if(autoSyncOutputs && needToSyncOutputs)
         {
             MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.fullPathName());
         }
 
-        myIsLoadedFromFile = false;
-
         myResultsClean = true;
-
-        myNeedToMarshalInput = false;
 
         data.setClean(plug);
         return MStatus::kSuccess;

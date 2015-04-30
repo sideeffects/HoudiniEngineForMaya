@@ -1366,6 +1366,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             return MStatus::kFailure;
         }
 
+        myResultsClean = true;
+
         // Set the time
         MDataHandle inTimeHandle = data.inputValue(AssetNode::inTime);
         MTime mayaTime = inTimeHandle.asTime();
@@ -1440,8 +1442,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         {
             MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.fullPathName());
         }
-
-        myResultsClean = true;
 
         data.setClean(plug);
         return MStatus::kSuccess;

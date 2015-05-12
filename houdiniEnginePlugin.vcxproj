@@ -37,6 +37,7 @@
   <ItemGroup>
     <ClCompile Include="Asset.C" />
     <ClCompile Include="AssetCommand.C" />
+    <ClCompile Include="CurveMeshInputNode.C" />
     <ClCompile Include="EngineCommand.C" />
     <ClCompile Include="Input.C" />
     <ClCompile Include="InputAsset.C" />
@@ -63,6 +64,7 @@
   <ItemGroup>
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetCommand.h" />
+    <ClInclude Include="CurveMeshInputNode.h" />
     <ClInclude Include="enginecommand.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InputAsset.h" />

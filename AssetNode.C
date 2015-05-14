@@ -1436,7 +1436,12 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
                 outputTemplatedGeometries,
                 needToSyncOutputs
                 );
-        CHECK_MSTATUS_AND_RETURN_IT(status);
+        // No need to print error messages from Asset::compute(). It should
+        // have been printed already.
+        if(MFAIL(status))
+        {
+            return status;
+        }
 
         if(autoSyncOutputs && needToSyncOutputs)
         {

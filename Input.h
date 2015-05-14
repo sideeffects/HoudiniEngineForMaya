@@ -53,6 +53,13 @@ class Input
 
         static Input* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);
 
+        static void setInputPlugMetaData(
+                const MPlug &plug,
+                int inputAssetId,
+                int inputObjectId,
+                int inputGeoId
+                );
+
     public:
         Input(int assetId, int inputIdx);
         virtual ~Input();

@@ -367,6 +367,11 @@ InputMesh::setInputGeo(
         }
     }
 
+    Input::setInputPlugMetaData(
+            plug,
+            myInputAssetId, myInputObjectId, myInputGeoId
+            );
+
     // Commit it
     HAPI_CommitGeo(myInputAssetId, myInputObjectId, myInputGeoId);
 

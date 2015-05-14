@@ -1,6 +1,7 @@
 #include "Input.h"
 
 #include <maya/MFnCompoundAttribute.h>
+#include <maya/MFnDependencyNode.h>
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnTypedAttribute.h>
@@ -252,4 +253,50 @@ Input::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType
             break;
     }
     return assetInput;
+}
+
+void
+Input::setInputPlugMetaData(
+        const MPlug &plug,
+        int inputAssetId,
+        int inputObjectId,
+        int inputGeoId
+        )
+{
+    // maya_source_node
+    {
+        MString shapeName;
+
+        MPlugArray plugs;
+        if(plug.connectedTo(plugs, true, false))
+        {
+            assert(plugs.length() == 1);
+            shapeName = MFnDependencyNode(plugs[0].node()).name();
+        }
+
+        if(shapeName.length())
+        {
+            HAPI_AttributeInfo shape_name_info;
+            shape_name_info.exists = true;
+            shape_name_info.owner = HAPI_ATTROWNER_DETAIL;
+            shape_name_info.storage = HAPI_STORAGETYPE_STRING;
+            shape_name_info.count = 1;
+            shape_name_info.tupleSize = 1;
+
+            HAPI_AddAttribute(
+                    inputAssetId, inputObjectId, inputGeoId,
+                    "maya_source_node",
+                    &shape_name_info
+                    );
+
+            const char* temp = shapeName.asChar();
+            CHECK_HAPI(HAPI_SetAttributeStringData(
+                    inputAssetId, inputObjectId, inputGeoId,
+                    "maya_source_node",
+                    &shape_name_info,
+                    &temp,
+                    0, 1
+                    ));
+        }
+    }
 }

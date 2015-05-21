@@ -219,7 +219,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
     HAPI_PartInfo partInfo = HAPI_PartInfo_Create();
     partInfo.vertexCount = partInfo.pointCount = curveInfo.vertexCount;
     partInfo.faceCount = curveInfo.curveCount;
-    partInfo.isCurve = true;
+    partInfo.type = HAPI_PARTTYPE_CURVE;
     CHECK_HAPI( HAPI_SetPartInfo( myAssetId, 0, 0, &partInfo ) );
 
     CHECK_HAPI( HAPI_SetCurveInfo( myAssetId, 0, 0, 0, &curveInfo ) );

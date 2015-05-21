@@ -169,7 +169,7 @@ OutputGeometryPart::update()
                 );
         Util::checkHAPIStatus(hstat);
 
-        if(myPartInfo.hasVolume)
+        if(myPartInfo.type == HAPI_PARTTYPE_VOLUME)
         {
             hstat = HAPI_GetVolumeInfo(
                     myAssetId, myObjectId, myGeoId, myPartId,
@@ -178,7 +178,7 @@ OutputGeometryPart::update()
             Util::checkHAPIStatus(hstat);
         }
 
-        if(myPartInfo.isCurve)
+        if(myPartInfo.type == HAPI_PARTTYPE_CURVE)
         {
             hstat = HAPI_GetCurveInfo(
                     myAssetId, myObjectId, myGeoId, myPartId,
@@ -368,7 +368,7 @@ OutputGeometryPart::compute(
 #if MAYA_API_VERSION >= 201400
         // Volume
         MDataHandle volumeHandle = handle.child(AssetNode::outputPartVolume);
-        if(myPartInfo.hasVolume)
+        if(myPartInfo.type == HAPI_PARTTYPE_VOLUME)
         {
             computeVolume(time, volumeHandle);
         }

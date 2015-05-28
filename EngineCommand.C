@@ -75,7 +75,7 @@ class EngineSubCommandSaveHIPFile : public SubCommand
 
         virtual MStatus doIt()
         {
-            HAPI_SaveHIPFile(myHIPFilePath.asChar());
+            HAPI_SaveHIPFile(myHIPFilePath.asChar(), false);
 
             return MStatus::kSuccess;
         }

@@ -216,7 +216,6 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
         for(int jj=0; jj<partCount; jj++)
         {
             MPlug outputVolume = partsPlug[jj].child(AssetNode::outputPartVolume);
-            MPlug outputPartName = partsPlug[jj].child(AssetNode::outputPartName);
             MPlug outputVolumeName = outputVolume.child(AssetNode::outputPartVolumeName);
 
             MString name = outputVolumeName.asString();

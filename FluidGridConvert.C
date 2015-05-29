@@ -3,14 +3,14 @@
 #if MAYA_API_VERSION >= 201400
 
 #include "MayaTypeID.h"
-#include "util.h"
 
-#include <maya/MDataHandle.h>
 #include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnFloatArrayData.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
-#include <maya/MObject.h>
+
+#include <maya/MDataHandle.h>
+#include <maya/MFloatArray.h>
 
 MString FluidGridConvert::typeName("houdiniFluidGridConvert");
 MTypeId FluidGridConvert::typeId(MayaTypeID_HoudiniFluidGridConvert);
@@ -86,7 +86,7 @@ index(int i, int j, int k,
 }
 
 MFloatArray
-FluidGridConvert::extrapolateZ(const MFloatArray& vel,
+extrapolateZ(const MFloatArray& vel,
                                    int resX, int resY, int resZ)
 {
     // First interpolate
@@ -125,7 +125,7 @@ FluidGridConvert::extrapolateZ(const MFloatArray& vel,
 }
 
 MFloatArray
-FluidGridConvert::extrapolateY(const MFloatArray& vel,
+extrapolateY(const MFloatArray& vel,
                                    int resX, int resY, int resZ)
 {
     // First interpolate
@@ -165,7 +165,7 @@ FluidGridConvert::extrapolateY(const MFloatArray& vel,
 }
 
 MFloatArray
-FluidGridConvert::extrapolateX(const MFloatArray& vel,
+extrapolateX(const MFloatArray& vel,
                                    int resX, int resY, int resZ)
 {
     // First interpolate
@@ -206,69 +206,72 @@ FluidGridConvert::extrapolateX(const MFloatArray& vel,
 MStatus
 FluidGridConvert::compute(const MPlug& plug, MDataBlock& data)
 {
-    if(plug != MPlug(thisMObject(), outGrid))
-        return MS::kSuccess;
-
-    MStatus status;
-    // Extract our grids as float arrays
-    MDataHandle gridXHandle = data.inputValue(inGridX, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    MDataHandle gridYHandle = data.inputValue(inGridY, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    MDataHandle gridZHandle = data.inputValue(inGridZ, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    MFnFloatArrayData gridXFn(gridXHandle.data());
-    MFnFloatArrayData gridYFn(gridYHandle.data());
-    MFnFloatArrayData gridZFn(gridZHandle.data());
-
-    MFloatArray gridX = gridXFn.array();
-    MFloatArray gridY = gridYFn.array();
-    MFloatArray gridZ = gridZFn.array();
-
-    MFnFloatArrayData res(data.inputValue(resolution, &status).data());
-    MFloatArray resArray = res.array();
-    int resW = resArray[0];
-    int resH = resArray[1];
-    int resD = resArray[2];
-
-    // Convert from houdini's velocity at voxel center format
-    // into Maya's velocity at voxel face format.
-    MFloatArray extrapolatedX = extrapolateX(gridX, resW, resH, resD);
-    MFloatArray extrapolatedY = extrapolateY(gridY, resW, resH, resD);
-    MFloatArray extrapolatedZ = extrapolateZ(gridZ, resW, resH, resD);
-
-    // Maya's inVelocity expects the input components to be concatenated
-    // onto each other.
-    MFloatArray result;
-    result.setLength(extrapolatedX.length() +
-                     extrapolatedY.length() +
-                     extrapolatedZ.length());
-    int j = 0;
-    for(unsigned int i=0; i<extrapolatedX.length(); i++)
+    if(plug == outGrid)
     {
-        result[j] = extrapolatedX[i];
-        j++;
-    }
-    for(unsigned int i=0; i<extrapolatedY.length(); i++)
-    {
-        result[j] = extrapolatedY[i];
-        j++;
-    }
-    for(unsigned int i=0; i<extrapolatedZ.length(); i++)
-    {
-        result[j] = extrapolatedZ[i];
-        j++;
+        MStatus status;
+        // Extract our grids as float arrays
+        MDataHandle gridXHandle = data.inputValue(inGridX, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        MDataHandle gridYHandle = data.inputValue(inGridY, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        MDataHandle gridZHandle = data.inputValue(inGridZ, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        MFnFloatArrayData gridXFn(gridXHandle.data());
+        MFnFloatArrayData gridYFn(gridYHandle.data());
+        MFnFloatArrayData gridZFn(gridZHandle.data());
+
+        MFloatArray gridX = gridXFn.array();
+        MFloatArray gridY = gridYFn.array();
+        MFloatArray gridZ = gridZFn.array();
+
+        MFnFloatArrayData res(data.inputValue(resolution, &status).data());
+        MFloatArray resArray = res.array();
+        int resW = resArray[0];
+        int resH = resArray[1];
+        int resD = resArray[2];
+
+        // Convert from houdini's velocity at voxel center format
+        // into Maya's velocity at voxel face format.
+        MFloatArray extrapolatedX = extrapolateX(gridX, resW, resH, resD);
+        MFloatArray extrapolatedY = extrapolateY(gridY, resW, resH, resD);
+        MFloatArray extrapolatedZ = extrapolateZ(gridZ, resW, resH, resD);
+
+        // Maya's inVelocity expects the input components to be concatenated
+        // onto each other.
+        MFloatArray result;
+        result.setLength(extrapolatedX.length() +
+                extrapolatedY.length() +
+                extrapolatedZ.length());
+        int j = 0;
+        for(unsigned int i=0; i<extrapolatedX.length(); i++)
+        {
+            result[j] = extrapolatedX[i];
+            j++;
+        }
+        for(unsigned int i=0; i<extrapolatedY.length(); i++)
+        {
+            result[j] = extrapolatedY[i];
+            j++;
+        }
+        for(unsigned int i=0; i<extrapolatedZ.length(); i++)
+        {
+            result[j] = extrapolatedZ[i];
+            j++;
+        }
+
+        MFnFloatArrayData gridCreator;
+
+        MDataHandle outGridHandle = data.outputValue(outGrid, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        outGridHandle.set(gridCreator.create(result));
+        outGridHandle.setClean();
+
+        data.setClean(plug);
+        return MStatus::kSuccess;
     }
 
-    MFnFloatArrayData gridCreator;
-
-    MDataHandle outGridHandle = data.outputValue(outGrid, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    outGridHandle.set(gridCreator.create(result));
-    outGridHandle.setClean();
-
-    data.setClean(plug);
-    return MStatus::kSuccess;
+    return MPxNode::compute(plug, data);
 }
+
 #endif // MAYA_API_VERSION check

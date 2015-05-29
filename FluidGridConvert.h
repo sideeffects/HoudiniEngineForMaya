@@ -25,6 +25,8 @@ public:
     static MString typeName;
     static MTypeId typeId;
 
+    static MObject conversionMode;
+
     static MObject resolution;
 
     static MObject inGridX;

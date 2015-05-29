@@ -5,6 +5,7 @@
 #include "MayaTypeID.h"
 
 #include <maya/MFnCompoundAttribute.h>
+#include <maya/MFnEnumAttribute.h>
 #include <maya/MFnFloatArrayData.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
@@ -14,6 +15,8 @@
 
 MString FluidGridConvert::typeName("houdiniFluidGridConvert");
 MTypeId FluidGridConvert::typeId(MayaTypeID_HoudiniFluidGridConvert);
+
+MObject FluidGridConvert::conversionMode;
 
 MObject FluidGridConvert::resolution;
 
@@ -42,7 +45,16 @@ FluidGridConvert::initialize()
 {
     MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
+    MFnEnumAttribute eAttr;
     MFnTypedAttribute tAttr;
+
+
+    conversionMode = eAttr.create(
+            "conversionMode",
+            "conversionMode"
+            );
+    eAttr.addField("None", 0);
+    eAttr.addField("Center to Face", 1);
 
     resolution = tAttr.create("resolution", "resolution", MFnData::kFloatArray);
     cAttr.setStorable(false);
@@ -62,10 +74,12 @@ FluidGridConvert::initialize()
     addAttribute(inGridX);
     addAttribute(inGridY);
     addAttribute(inGridZ);
+    addAttribute(conversionMode);
     addAttribute(resolution);
     attributeAffects(inGridX, outGrid);
     attributeAffects(inGridY, outGrid);
     attributeAffects(inGridZ, outGrid);
+    attributeAffects(conversionMode, outGrid);
     attributeAffects(resolution, outGrid);
 
     return MS::kSuccess;
@@ -209,6 +223,12 @@ FluidGridConvert::compute(const MPlug& plug, MDataBlock& data)
     if(plug == outGrid)
     {
         MStatus status;
+
+        MDataHandle conversionModeHandle
+            = data.inputValue(conversionMode, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        short mode = conversionModeHandle.asShort();
+
         // Extract our grids as float arrays
         MDataHandle gridXHandle = data.inputValue(inGridX, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -225,17 +245,29 @@ FluidGridConvert::compute(const MPlug& plug, MDataBlock& data)
         MFloatArray gridY = gridYFn.array();
         MFloatArray gridZ = gridZFn.array();
 
-        MFnFloatArrayData res(data.inputValue(resolution, &status).data());
-        MFloatArray resArray = res.array();
-        int resW = resArray[0];
-        int resH = resArray[1];
-        int resD = resArray[2];
+        MFloatArray outputGridX;
+        MFloatArray outputGridY;
+        MFloatArray outputGridZ;
+        if(mode == 0)
+        {
+            outputGridX = gridX;
+            outputGridY = gridY;
+            outputGridZ = gridZ;
+        }
+        else if(mode == 1)
+        {
+            MFnFloatArrayData res(data.inputValue(resolution, &status).data());
+            MFloatArray resArray = res.array();
+            int resW = resArray[0];
+            int resH = resArray[1];
+            int resD = resArray[2];
 
-        // Convert from houdini's velocity at voxel center format
-        // into Maya's velocity at voxel face format.
-        MFloatArray outputGridX = extrapolateX(gridX, resW, resH, resD);
-        MFloatArray outputGridY = extrapolateY(gridY, resW, resH, resD);
-        MFloatArray outputGridZ = extrapolateZ(gridZ, resW, resH, resD);
+            // Convert from houdini's velocity at voxel center format
+            // into Maya's velocity at voxel face format.
+            outputGridX = extrapolateX(gridX, resW, resH, resD);
+            outputGridY = extrapolateY(gridY, resW, resH, resD);
+            outputGridZ = extrapolateZ(gridZ, resW, resH, resD);
+        }
 
         MDataHandle outGridHandle = data.outputValue(outGrid, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);

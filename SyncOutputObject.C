@@ -394,6 +394,12 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             MFnDependencyNode velConverterFn(velConverter, &status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
+            myDagModifier.newPlugValueShort(
+                    velConverterFn.findPlug(
+                        FluidGridConvert::conversionMode
+                        ),
+                    1);
+
             MPlug srcPlug;
             MPlug dstPlug;
 

@@ -1,4 +1,4 @@
-#include "FluidVelocityConvert.h"
+#include "FluidGridConvert.h"
 
 #if MAYA_API_VERSION >= 201400
 
@@ -12,33 +12,33 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MObject.h>
 
-MString FluidVelocityConvert::typeName("houdiniFluidVelocityConvert");
-MTypeId FluidVelocityConvert::typeId(MayaTypeID_HoudiniFluidVelocityConvert);
+MString FluidGridConvert::typeName("houdiniFluidGridConvert");
+MTypeId FluidGridConvert::typeId(MayaTypeID_HoudiniFluidGridConvert);
 
-MObject FluidVelocityConvert::resolution;
+MObject FluidGridConvert::resolution;
 
-MObject FluidVelocityConvert::inGridX;
-MObject FluidVelocityConvert::inGridY;
-MObject FluidVelocityConvert::inGridZ;
+MObject FluidGridConvert::inGridX;
+MObject FluidGridConvert::inGridY;
+MObject FluidGridConvert::inGridZ;
 
-MObject FluidVelocityConvert::outGrid;
+MObject FluidGridConvert::outGrid;
 
-FluidVelocityConvert::FluidVelocityConvert()
+FluidGridConvert::FluidGridConvert()
 {
 }
 
-FluidVelocityConvert::~FluidVelocityConvert()
+FluidGridConvert::~FluidGridConvert()
 {
 }
 
 void*
-FluidVelocityConvert::creator()
+FluidGridConvert::creator()
 {
-    return new FluidVelocityConvert();
+    return new FluidGridConvert();
 }
 
 MStatus
-FluidVelocityConvert::initialize()
+FluidGridConvert::initialize()
 {
     MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
@@ -86,7 +86,7 @@ index(int i, int j, int k,
 }
 
 MFloatArray
-FluidVelocityConvert::extrapolateZ(const MFloatArray& vel,
+FluidGridConvert::extrapolateZ(const MFloatArray& vel,
                                    int resX, int resY, int resZ)
 {
     // First interpolate
@@ -125,7 +125,7 @@ FluidVelocityConvert::extrapolateZ(const MFloatArray& vel,
 }
 
 MFloatArray
-FluidVelocityConvert::extrapolateY(const MFloatArray& vel,
+FluidGridConvert::extrapolateY(const MFloatArray& vel,
                                    int resX, int resY, int resZ)
 {
     // First interpolate
@@ -165,7 +165,7 @@ FluidVelocityConvert::extrapolateY(const MFloatArray& vel,
 }
 
 MFloatArray
-FluidVelocityConvert::extrapolateX(const MFloatArray& vel,
+FluidGridConvert::extrapolateX(const MFloatArray& vel,
                                    int resX, int resY, int resZ)
 {
     // First interpolate
@@ -204,7 +204,7 @@ FluidVelocityConvert::extrapolateX(const MFloatArray& vel,
 }
 
 MStatus
-FluidVelocityConvert::compute(const MPlug& plug, MDataBlock& data)
+FluidGridConvert::compute(const MPlug& plug, MDataBlock& data)
 {
     if(plug != MPlug(thisMObject(), outGrid))
         return MS::kSuccess;

@@ -260,7 +260,7 @@ CXXFILES = \
 	   SyncOutputObject.C \
 	   SyncOutputGeometryPart.C \
 	   SyncOutputInstance.C \
-	   FluidVelocityConvert.C \
+	   FluidGridConvert.C \
 	   plugin.C \
 	   CurveMeshInputNode.C
 

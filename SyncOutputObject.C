@@ -228,6 +228,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
         // Map each volume part to a grid in a fluidShape.
         MPlug densityVolumePlug;
         MPlug velVolumePlug[3];
+        int velConversionMode = -1;
         MPlug temperatureVolumePlug;
         MPlug fuelVolumePlug;
         MPlug cdVolumePlug[3];
@@ -290,10 +291,77 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             }
 
             // Check against reference resolution
-            bool matchReferenceResolution
-                = referenceResolution[0] == volumeResolution[0]
-                && referenceResolution[1] == volumeResolution[1]
-                && referenceResolution[2] == volumeResolution[2];
+            bool matchReferenceResolution = false;
+            {
+                // For velocity volumes, Maya require face-sampled volumes, so
+                // we need to make sure we output face-sampled volumes, which
+                // may or may not require conversion. Also, note that all
+                // velocity volumes have to use the same conversion.
+                if(outputVolumeName == "vel.x"
+                            || outputVolumeName == "vel.y"
+                            || outputVolumeName == "vel.z")
+                {
+                    // Center sampled
+                    if(!matchReferenceResolution)
+                    {
+                        bool canConvert
+                            = referenceResolution[0] == volumeResolution[0]
+                            && referenceResolution[1] == volumeResolution[1]
+                            && referenceResolution[2] == volumeResolution[2];
+
+                        // If we previously decided on a conversion mode, then
+                        // this volume must also use that conversion mode.
+                        if(canConvert && (velConversionMode == -1
+                                    || velConversionMode == 1))
+                        {
+                            // Center sampled needs to be converted to face
+                            // sampled.
+                            velConversionMode = 1;
+                            matchReferenceResolution = true;
+                        }
+                    }
+
+                    // Face sampled
+                    if(!matchReferenceResolution)
+                    {
+                        int convertedResolution[3] = {
+                            volumeResolution[0],
+                            volumeResolution[1],
+                            volumeResolution[2]
+                        };
+
+                        if(outputVolumeName == "vel.x")
+                            convertedResolution[0] -= 1;
+                        else if(outputVolumeName == "vel.y")
+                            convertedResolution[1] -= 1;
+                        else if(outputVolumeName == "vel.z")
+                            convertedResolution[2] -= 1;
+
+                        bool canConvert
+                            = referenceResolution[0] == convertedResolution[0]
+                            && referenceResolution[1] == convertedResolution[1]
+                            && referenceResolution[2] == convertedResolution[2];
+
+                        // If we previously decided on a conversion mode, then
+                        // this volume must also use that conversion mode.
+                        if(canConvert && (velConversionMode == -1
+                                    || velConversionMode == 0))
+                        {
+                            // Volume is already Face sampled. No need to
+                            // convert.
+                            velConversionMode = 0;
+                            matchReferenceResolution = true;
+                        }
+                    }
+                }
+                else
+                {
+                    matchReferenceResolution
+                        = referenceResolution[0] == volumeResolution[0]
+                        && referenceResolution[1] == volumeResolution[1]
+                        && referenceResolution[2] == volumeResolution[2];
+                }
+            }
 
             // Skip volumes that don't have the same resolution as the
             // reference volume.
@@ -411,7 +479,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
                     velConverterFn.findPlug(
                         FluidGridConvert::conversionMode
                         ),
-                    1);
+                    velConversionMode);
 
             MPlug srcPlug;
             MPlug dstPlug;

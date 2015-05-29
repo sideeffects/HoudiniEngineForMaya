@@ -233,41 +233,46 @@ FluidGridConvert::compute(const MPlug& plug, MDataBlock& data)
 
         // Convert from houdini's velocity at voxel center format
         // into Maya's velocity at voxel face format.
-        MFloatArray extrapolatedX = extrapolateX(gridX, resW, resH, resD);
-        MFloatArray extrapolatedY = extrapolateY(gridY, resW, resH, resD);
-        MFloatArray extrapolatedZ = extrapolateZ(gridZ, resW, resH, resD);
-
-        // Maya's inVelocity expects the input components to be concatenated
-        // onto each other.
-        MFloatArray result;
-        result.setLength(extrapolatedX.length() +
-                extrapolatedY.length() +
-                extrapolatedZ.length());
-        int j = 0;
-        for(unsigned int i=0; i<extrapolatedX.length(); i++)
-        {
-            result[j] = extrapolatedX[i];
-            j++;
-        }
-        for(unsigned int i=0; i<extrapolatedY.length(); i++)
-        {
-            result[j] = extrapolatedY[i];
-            j++;
-        }
-        for(unsigned int i=0; i<extrapolatedZ.length(); i++)
-        {
-            result[j] = extrapolatedZ[i];
-            j++;
-        }
-
-        MFnFloatArrayData gridCreator;
+        MFloatArray outputGridX = extrapolateX(gridX, resW, resH, resD);
+        MFloatArray outputGridY = extrapolateY(gridY, resW, resH, resD);
+        MFloatArray outputGridZ = extrapolateZ(gridZ, resW, resH, resD);
 
         MDataHandle outGridHandle = data.outputValue(outGrid, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
-        outGridHandle.set(gridCreator.create(result));
-        outGridHandle.setClean();
+        MObject outGridObj = outGridHandle.data();
+        MFnFloatArrayData outGridFn(outGridObj);
+        if(outGridHandle.data().isNull())
+        {
+            outGridObj = outGridFn.create();
+            outGridHandle.setMObject(outGridObj);
 
-        data.setClean(plug);
+            outGridObj = outGridHandle.data();
+            outGridFn.setObject(outGridObj);
+        }
+
+        // Maya's inVelocity expects the input components to be concatenated
+        // onto each other.
+        MFloatArray outGridArray = outGridFn.array();
+        outGridArray.setLength(outputGridX.length() +
+                outputGridY.length() +
+                outputGridZ.length());
+        int j = 0;
+        for(unsigned int i=0; i<outputGridX.length(); i++)
+        {
+            outGridArray[j] = outputGridX[i];
+            j++;
+        }
+        for(unsigned int i=0; i<outputGridY.length(); i++)
+        {
+            outGridArray[j] = outputGridY[i];
+            j++;
+        }
+        for(unsigned int i=0; i<outputGridZ.length(); i++)
+        {
+            outGridArray[j] = outputGridZ[i];
+            j++;
+        }
+
         return MStatus::kSuccess;
     }
 

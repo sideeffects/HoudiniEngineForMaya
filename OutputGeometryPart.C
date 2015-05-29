@@ -1178,7 +1178,7 @@ OutputGeometryPart::computeVolume(
                             + i
                         ];
                         if(x < xres && y < yres && z < zres
-                                && x > 0 && y > 0 && z > 0)
+                                && x >= 0 && y >= 0 && z >= 0)
                         {
                             grid[index] = value;
                         }

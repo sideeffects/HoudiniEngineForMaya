@@ -192,7 +192,10 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             // face-centered, so the resolution is slightly off.
             if(outputVolumeName == "density"
                     || outputVolumeName == "temperature"
-                    || outputVolumeName == "fuel")
+                    || outputVolumeName == "fuel"
+                    || outputVolumeName == "Cd.x"
+                    || outputVolumeName == "Cd.y"
+                    || outputVolumeName == "Cd.z")
             {
                 referenceVolumePlug = outputVolumePlug;
                 break;
@@ -227,6 +230,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
         MPlug velVolumePlug[3];
         MPlug temperatureVolumePlug;
         MPlug fuelVolumePlug;
+        MPlug cdVolumePlug[3];
         for(int jj=0; jj<partCount; jj++)
         {
             MPlug outputVolumePlug
@@ -256,6 +260,15 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             else if(velVolumePlug[2].isNull()
                     && outputVolumeName == "vel.z")
                 mappedVolumePlug = &velVolumePlug[2];
+            else if(cdVolumePlug[0].isNull()
+                    && outputVolumeName == "Cd.x")
+                mappedVolumePlug = &cdVolumePlug[0];
+            else if(cdVolumePlug[1].isNull()
+                    && outputVolumeName == "Cd.y")
+                mappedVolumePlug = &cdVolumePlug[1];
+            else if(cdVolumePlug[2].isNull()
+                    && outputVolumeName == "Cd.z")
+                mappedVolumePlug = &cdVolumePlug[2];
 
             // Skip if we don't recognize the volume name
             if(!mappedVolumePlug)
@@ -434,6 +447,67 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             // converter to fluidShape
             srcPlug = velConverterFn.findPlug(FluidGridConvert::outGrid);
             dstPlug = partVolumeFn.findPlug("inVelocity");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
+
+        if(!cdVolumePlug[0].isNull()
+                && !cdVolumePlug[1].isNull()
+                && !cdVolumePlug[2].isNull())
+        {
+            MObject cdConverter = ((MDGModifier&)myDagModifier).createNode(
+                    "houdiniFluidGridConvert",
+                    &status
+                    );
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            MFnDependencyNode cdConverterFn(cdConverter, &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            myDagModifier.newPlugValueShort(
+                    cdConverterFn.findPlug(
+                        FluidGridConvert::conversionMode
+                        ),
+                    0);
+
+            MPlug srcPlug;
+            MPlug dstPlug;
+
+            // resolution
+            srcPlug = referenceVolumePlug.child(AssetNode::outputPartVolumeRes);
+            dstPlug = cdConverterFn.findPlug(FluidGridConvert::resolution);
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            // grids
+            srcPlug = cdVolumePlug[0].child(
+                    AssetNode::outputPartVolumeGrid
+                    );
+            dstPlug = cdConverterFn.findPlug("inGridX");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            srcPlug = cdVolumePlug[1].child(
+                    AssetNode::outputPartVolumeGrid
+                    );
+            dstPlug = cdConverterFn.findPlug("inGridY");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            srcPlug = cdVolumePlug[2].child(AssetNode::outputPartVolumeGrid);
+            dstPlug = cdConverterFn.findPlug("inGridZ");
+            status = myDagModifier.connect(srcPlug, dstPlug);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            status = myDagModifier.newPlugValueInt(
+                    partVolumeFn.findPlug("colorMethod"),
+                    2
+                    );
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            // converter to fluidShape
+            srcPlug = cdConverterFn.findPlug(FluidGridConvert::outGrid);
+            dstPlug = partVolumeFn.findPlug("inColor");
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }

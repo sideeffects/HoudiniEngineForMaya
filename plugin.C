@@ -9,7 +9,7 @@
 #include "AssetCommand.h"
 #include "AssetNode.h"
 #include "CurveMeshInputNode.h"
-#include "FluidVelocityConvert.h"
+#include "FluidGridConvert.h"
 #include "util.h"
 
 #include <HAPI/HAPI_Version.h>
@@ -255,10 +255,10 @@ initializePlugin(MObject obj)
 
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
-            FluidVelocityConvert::typeName,
-            FluidVelocityConvert::typeId,
-            FluidVelocityConvert::creator,
-            FluidVelocityConvert::initialize
+            FluidGridConvert::typeName,
+            FluidGridConvert::typeId,
+            FluidGridConvert::creator,
+            FluidGridConvert::initialize
             );
 #endif
 
@@ -294,7 +294,7 @@ uninitializePlugin(MObject obj)
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
 #if MAYA_API_VERSION >= 201400
-    status = plugin.deregisterNode(FluidVelocityConvert::typeId);
+    status = plugin.deregisterNode(FluidGridConvert::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 #endif
 

@@ -52,7 +52,7 @@
     <ClCompile Include="SyncOutputGeometryPart.C" />
     <ClCompile Include="SyncOutputInstance.C" />
     <ClCompile Include="SyncOutputObject.C" />
-    <ClCompile Include="FluidVelocityConvert.C" />
+    <ClCompile Include="FluidGridConvert.C" />
     <ClCompile Include="OutputGeometry.C" />
     <ClCompile Include="OutputGeometryObject.C" />
     <ClCompile Include="OutputGeometryPart.C" />
@@ -79,7 +79,7 @@
     <ClInclude Include="SyncOutputGeometryPart.h" />
     <ClInclude Include="SyncOutputInstance.h" />
     <ClInclude Include="SyncOutputObject.h" />
-    <ClInclude Include="FluidVelocityConvert.h" />
+    <ClInclude Include="FluidGridConvert.h" />
     <ClInclude Include="OutputGeometry.h" />
     <ClInclude Include="OutputGeometryObject.h" />
     <ClInclude Include="OutputGeometryPart.h" />

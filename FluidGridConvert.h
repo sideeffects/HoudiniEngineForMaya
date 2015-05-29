@@ -1,5 +1,5 @@
-#ifndef __FluidVelocityConvert_h__
-#define __FluidVelocityConvert_h__
+#ifndef __FluidGridConvert_h__
+#define __FluidGridConvert_h__
 
 #include <maya/MGlobal.h>
 
@@ -19,11 +19,11 @@
 
 class MFloatArray;
 
-class FluidVelocityConvert : public MPxNode
+class FluidGridConvert : public MPxNode
 {
 public:
-    FluidVelocityConvert();
-    virtual ~FluidVelocityConvert();
+    FluidGridConvert();
+    virtual ~FluidGridConvert();
 
     virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 

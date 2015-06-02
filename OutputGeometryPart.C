@@ -1155,6 +1155,7 @@ OutputGeometryPart::computeVolume(
         {
             HAPI_GetVolumeTileFloatData(
                     myAssetId, myObjectId, myGeoId, myPartId,
+                    0.0f,
                     &tileInfo,
                     &tile.front(),
                     (int) tile.size()

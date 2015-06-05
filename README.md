@@ -34,6 +34,7 @@ For support and reporting bugs:
 ## Supported Maya versions
 Currently, the supported Maya versions are:
 
+* 2016
 * 2015
 * 2014
 * 2013.5

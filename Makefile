@@ -42,7 +42,7 @@ SONAME = $(LIBNAME).$(SOSUFFIX)
 # external directories
 MAYA_VERSION = 2014
 ifeq ($(OS), Linux)
-    ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015),)
+    ifneq ($(findstring $(MAYA_VERSION), 2012 2013 2013.5 2014 2015),)
 	MAYA_DIR = /usr/autodesk/maya$(MAYA_VERSION)-x64
     else ifneq ($(findstring $(MAYA_VERSION), 2016),)
 	MAYA_DIR = /usr/autodesk/maya$(MAYA_VERSION)

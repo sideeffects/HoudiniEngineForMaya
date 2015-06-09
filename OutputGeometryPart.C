@@ -1141,6 +1141,7 @@ OutputGeometryPart::computeVolume(
 
         HAPI_VolumeTileInfo tileInfo;
         HAPI_GetFirstVolumeTile(
+                NULL,
                 myAssetId, myObjectId, myGeoId, myPartId,
                 &tileInfo
                 );
@@ -1154,6 +1155,7 @@ OutputGeometryPart::computeVolume(
                 tileInfo.minZ != std::numeric_limits<int>::max())
         {
             HAPI_GetVolumeTileFloatData(
+                    NULL,
                     myAssetId, myObjectId, myGeoId, myPartId,
                     0.0f,
                     &tileInfo,
@@ -1187,6 +1189,7 @@ OutputGeometryPart::computeVolume(
                     }
 
             HAPI_GetNextVolumeTile(
+                    NULL,
                     myAssetId, myObjectId, myGeoId, myPartId,
                     &tileInfo
                     );

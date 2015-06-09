@@ -164,7 +164,7 @@ OutputGeometryPart::update()
     try
     {
         hstat = HAPI_GetPartInfo(
-                myAssetId, myObjectId, myGeoId, myPartId,
+                NULL, myAssetId, myObjectId, myGeoId, myPartId,
                 &myPartInfo
                 );
         Util::checkHAPIStatus(hstat);
@@ -172,7 +172,7 @@ OutputGeometryPart::update()
         if(myPartInfo.type == HAPI_PARTTYPE_VOLUME)
         {
             hstat = HAPI_GetVolumeInfo(
-                    myAssetId, myObjectId, myGeoId, myPartId,
+                    NULL, myAssetId, myObjectId, myGeoId, myPartId,
                     &myVolumeInfo
                     );
             Util::checkHAPIStatus(hstat);
@@ -181,7 +181,7 @@ OutputGeometryPart::update()
         if(myPartInfo.type == HAPI_PARTTYPE_CURVE)
         {
             hstat = HAPI_GetCurveInfo(
-                    myAssetId, myObjectId, myGeoId, myPartId,
+                    NULL, myAssetId, myObjectId, myGeoId, myPartId,
                     &myCurveInfo
                     );
             Util::checkHAPIStatus(hstat);
@@ -212,7 +212,7 @@ getAttributeDataWrapper(
         )
 {
     return HAPI_GetAttributeFloatData(
-            asset_id, object_id, geo_id, part_id,
+            NULL, asset_id, object_id, geo_id, part_id,
             name,
             attr_info,
             data,
@@ -234,7 +234,7 @@ getAttributeDataWrapper(
         )
 {
     return HAPI_GetAttributeIntData(
-            asset_id, object_id, geo_id, part_id,
+            NULL, asset_id, object_id, geo_id, part_id,
             name,
             attr_info,
             data,
@@ -260,7 +260,7 @@ getAttributeDataWrapper(
             );
 
     HAPI_Result hapiResult = HAPI_GetAttributeStringData(
-            asset_id, object_id, geo_id, part_id,
+            NULL, asset_id, object_id, geo_id, part_id,
             name,
             attr_info,
             &stringHandles.front(),
@@ -290,7 +290,7 @@ OutputGeometryPart::getAttributeData(
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
     HAPI_GetAttributeInfo(
-            myAssetId, myObjectId, myGeoId, myPartId,
+            NULL, myAssetId, myObjectId, myGeoId, myPartId,
             name,
             owner,
             &attr_info
@@ -445,7 +445,7 @@ OutputGeometryPart::computeCurves(
         // Number of CVs
         int numVertices = 0;
         HAPI_GetCurveCounts(
-                myAssetId, myObjectId, myGeoId, myPartId,
+                NULL, myAssetId, myObjectId, myGeoId, myPartId,
                 &numVertices,
                 iCurve, 1
                 );
@@ -470,7 +470,7 @@ OutputGeometryPart::computeCurves(
         else
         {
             HAPI_GetCurveOrders(
-                    myAssetId, myObjectId, myGeoId, myPartId,
+                    NULL, myAssetId, myObjectId, myGeoId, myPartId,
                     &order,
                     iCurve, 1
                     );
@@ -514,7 +514,7 @@ OutputGeometryPart::computeCurves(
             // the first and last houdini knot are excluded
             knotSequences.setLength(numVertices + order - 2);
             HAPI_GetCurveKnots(
-                    myAssetId, myObjectId, myGeoId, myPartId,
+                    NULL, myAssetId, myObjectId, myGeoId, myPartId,
                     &knots.front(),
                     knotOffset, numVertices + order
                     );
@@ -1027,7 +1027,7 @@ OutputGeometryPart::computeParticle(
     // other attributes
     int* attributeNames = new int[myPartInfo.pointAttributeCount];
     HAPI_GetAttributeNames(
-            myAssetId, myObjectId, myGeoId, myPartId,
+            NULL, myAssetId, myObjectId, myGeoId, myPartId,
             HAPI_ATTROWNER_POINT,
             attributeNames,
             myPartInfo.pointAttributeCount
@@ -1064,7 +1064,7 @@ OutputGeometryPart::computeParticle(
         HAPI_AttributeInfo attributeInfo;
 
         HAPI_GetAttributeInfo(
-                myAssetId, myObjectId, myGeoId, myPartId,
+                NULL, myAssetId, myObjectId, myGeoId, myPartId,
                 attributeName.asChar(),
                 HAPI_ATTROWNER_POINT,
                 &attributeInfo
@@ -1264,7 +1264,7 @@ OutputGeometryPart::computeMesh(
         if(myPartInfo.faceCount)
         {
             HAPI_GetFaceCounts(
-                    myAssetId, myObjectId, myGeoId, myPartId,
+                    NULL, myAssetId, myObjectId, myGeoId, myPartId,
                     &intArray.front(),
                     0, myPartInfo.faceCount
                     );
@@ -1281,7 +1281,7 @@ OutputGeometryPart::computeMesh(
         if(myPartInfo.vertexCount)
         {
             HAPI_GetVertexList(
-                    myAssetId, myObjectId, myGeoId, myPartId,
+                    NULL, myAssetId, myObjectId, myGeoId, myPartId,
                     &intArray.front(),
                     0, myPartInfo.vertexCount
                     );
@@ -1673,14 +1673,14 @@ OutputGeometryPart::computeMaterial(
 
     HAPI_MaterialId materialId;
     HAPI_GetMaterialIdsOnFaces(
-            myAssetId, myObjectId, myGeoId, myPartId,
+            NULL, myAssetId, myObjectId, myGeoId, myPartId,
             NULL,
             &materialId,
             0, 1
             );
 
     HAPI_GetMaterialInfo(
-            myAssetId, materialId,
+            NULL, myAssetId, materialId,
             &myMaterialInfo
             );
 
@@ -1692,11 +1692,11 @@ OutputGeometryPart::computeMaterial(
     {
         // get material info
         HAPI_NodeInfo materialNodeInfo;
-        HAPI_GetNodeInfo(myMaterialInfo.nodeId, &materialNodeInfo);
+        HAPI_GetNodeInfo(NULL, myMaterialInfo.nodeId, &materialNodeInfo);
 
         std::vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);
         HAPI_GetParameters(
-                myMaterialInfo.nodeId,
+                NULL, myMaterialInfo.nodeId,
                 &parms[0],
                 0, materialNodeInfo.parmCount
                 );
@@ -1717,7 +1717,7 @@ OutputGeometryPart::computeMaterial(
         if(ambientParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    myMaterialInfo.nodeId, valueHolder,
+                    NULL, myMaterialInfo.nodeId, valueHolder,
                     parms[ambientParmIndex].floatValuesIndex, 3
                     );
             ambientHandle.set3Float(
@@ -1730,7 +1730,7 @@ OutputGeometryPart::computeMaterial(
         if(specularParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    myMaterialInfo.nodeId,
+                    NULL, myMaterialInfo.nodeId,
                     valueHolder,
                     parms[specularParmIndex].floatValuesIndex, 3
                     );
@@ -1744,7 +1744,7 @@ OutputGeometryPart::computeMaterial(
         if(diffuseParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    myMaterialInfo.nodeId,
+                    NULL, myMaterialInfo.nodeId,
                     valueHolder,
                     parms[diffuseParmIndex].floatValuesIndex, 3
                     );
@@ -1758,7 +1758,7 @@ OutputGeometryPart::computeMaterial(
         if(alphaParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    myMaterialInfo.nodeId,
+                    NULL, myMaterialInfo.nodeId,
                     valueHolder,
                     parms[alphaParmIndex].floatValuesIndex, 1
                     );
@@ -1770,14 +1770,14 @@ OutputGeometryPart::computeMaterial(
         {
             HAPI_ParmInfo texturePathParm;
             HAPI_GetParameters(
-                    myMaterialInfo.nodeId,
+                    NULL, myMaterialInfo.nodeId,
                     &texturePathParm,
                     texturePathSHParmIndex, 1
                     );
 
             int texturePathSH;
             HAPI_GetParmStringValues(
-                    myMaterialInfo.nodeId,
+                    NULL, myMaterialInfo.nodeId,
                     true,
                     &texturePathSH,
                     texturePathParm.stringValuesIndex, 1
@@ -1789,7 +1789,7 @@ OutputGeometryPart::computeMaterial(
             {
                 // this could fail if texture parameter is empty
                 hapiResult = HAPI_RenderTextureToImage(
-                        myAssetId, myMaterialInfo.id,
+                        NULL, myAssetId, myMaterialInfo.id,
                         texturePathSHParmIndex
                         );
 
@@ -1806,7 +1806,7 @@ OutputGeometryPart::computeMaterial(
 
                 // this could fail if the image planes don't exist
                 hapiResult = HAPI_ExtractImageToFile(
-                        myAssetId, myMaterialInfo.id,
+                        NULL, myAssetId, myMaterialInfo.id,
                         HAPI_PNG_FORMAT_NAME,
                         "C A",
                         destinationFolderPath.asChar(),
@@ -1890,7 +1890,7 @@ OutputGeometryPart::computeExtraAttributes(
                 myPartInfo.*attributeCount
                 );
         HAPI_GetAttributeNames(
-                myAssetId, myObjectId, myGeoId, myPartId,
+                NULL, myAssetId, myObjectId, myGeoId, myPartId,
                 owner,
                 &attributeNames[0],
                 attributeNames.size()
@@ -1928,7 +1928,7 @@ OutputGeometryPart::computeExtraAttributes(
 
             HAPI_AttributeInfo attributeInfo;
             CHECK_HAPI(HAPI_GetAttributeInfo(
-                    myAssetId, myObjectId, myGeoId, myPartId,
+                    NULL, myAssetId, myObjectId, myGeoId, myPartId,
                     attributeName.asChar(),
                     owner,
                     &attributeInfo

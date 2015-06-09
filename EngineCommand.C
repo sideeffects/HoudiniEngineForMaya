@@ -31,7 +31,7 @@ class EngineSubCommandLicense : public SubCommand
         {
             int license;
 
-            HAPI_GetEnvInt(HAPI_ENVINT_LICENSE, &license);
+            HAPI_GetEnvInt(NULL, HAPI_ENVINT_LICENSE, &license);
 
             MString version_string;
             switch(license)
@@ -75,7 +75,7 @@ class EngineSubCommandSaveHIPFile : public SubCommand
 
         virtual MStatus doIt()
         {
-            HAPI_SaveHIPFile(myHIPFilePath.asChar(), false);
+            HAPI_SaveHIPFile(NULL, myHIPFilePath.asChar(), false);
 
             return MStatus::kSuccess;
         }
@@ -91,9 +91,9 @@ class EngineSubCommandHoudiniVersion : public SubCommand
         {
             int major, minor, build;
 
-            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &major);
-            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &minor);
-            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &build);
+            HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &major);
+            HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_MINOR, &minor);
+            HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_BUILD, &build);
 
             MString version_string;
             version_string.format(
@@ -116,9 +116,9 @@ class EngineSubCommandHoudiniEngineVersion : public SubCommand
         {
             int major, minor, api;
 
-            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &major);
-            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &minor);
-            HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &api);
+            HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &major);
+            HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &minor);
+            HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &api);
 
             MString version_string;
             version_string.format(

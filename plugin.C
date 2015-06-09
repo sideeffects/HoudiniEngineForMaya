@@ -24,9 +24,9 @@ printHAPIVersion()
     MString msg;
 
     {
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &i);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &j);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &k);
+        HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &i);
+        HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_MINOR, &j);
+        HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_BUILD, &k);
 
         msg = "Houdini version: ";
         sprintf(version, "%d.%d.%d", i, j, k);
@@ -47,9 +47,9 @@ printHAPIVersion()
     }
 
     {
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &i);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &j);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &k);
+        HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &i);
+        HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &j);
+        HAPI_GetEnvInt(NULL, HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &k);
 
         msg = "Houdini Engine version: ";
         sprintf(version, "%d.%d (API: %d)", i, j, k);
@@ -86,7 +86,7 @@ initializeOptionVars()
 bool
 initializeHAPI()
 {
-    if(HAPI_IsInitialized() == HAPI_RESULT_SUCCESS)
+    if(HAPI_IsInitialized( NULL ) == HAPI_RESULT_SUCCESS)
     {
         MGlobal::displayInfo("Houdini Engine is already initialized. Skipping initialization.");
         return true;
@@ -105,7 +105,7 @@ initializeHAPI()
         MGlobal::optionVarIntValue("houdiniEngineAsynchronousMode") == 1;
 
     hstat = HAPI_Initialize(
-            otl_dir, dso_dir,
+            NULL, otl_dir, dso_dir,
             &cook_options,
             use_cooking_thread,
             -1
@@ -124,7 +124,7 @@ cleanupHAPI()
 {
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
-    hstat = HAPI_Cleanup();
+    hstat = HAPI_Cleanup( NULL );
     if(hstat != HAPI_RESULT_SUCCESS)
     {
         CHECK_HAPI(hstat);
@@ -142,7 +142,7 @@ void updateTimelineCallback(void* clientData)
 
     // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
     // So we need to offset the time by 1.
-    timelineOptions.fps = 1.0 / oneUnitTime.as(MTime::kSeconds);
+    timelineOptions.fps = float( 1.0 / oneUnitTime.as(MTime::kSeconds) );
     timelineOptions.startTime =
         (MAnimControl::animationStartTime() - oneUnitTime)
         .as(MTime::kSeconds);
@@ -150,7 +150,7 @@ void updateTimelineCallback(void* clientData)
         (MAnimControl::animationEndTime() - oneUnitTime)
         .as(MTime::kSeconds);
 
-    HAPI_SetTimelineOptions(&timelineOptions);
+    HAPI_SetTimelineOptions(NULL, &timelineOptions);
 }
 
 MCallbackIdArray messageCallbacks;

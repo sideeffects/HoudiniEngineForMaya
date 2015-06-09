@@ -139,7 +139,7 @@ void OutputGeometryObject::updateTransform(MDataHandle& handle)
     MDataHandle rotateHandle = handle.child(AssetNode::outputObjectRotate);
     MDataHandle scaleHandle = handle.child(AssetNode::outputObjectScale);
 
-    HAPI_GetObjectTransforms(myAssetId, HAPI_SRT, &myTransformInfo, myObjectId, 1);
+    HAPI_GetObjectTransforms(NULL, myAssetId, HAPI_SRT, &myTransformInfo, myObjectId, 1);
     //transformInfo = objectControl->getTransformInfo(objectId);
 
     // convert to euler angle

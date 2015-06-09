@@ -100,7 +100,7 @@ Inputs::compute(MDataBlock &dataBlock)
         MDataHandle inputNameHandle = inputHandle.child(Inputs::inputName);
 
         HAPI_StringHandle nameSH;
-        HAPI_GetInputName(myAssetId, i,
+        HAPI_GetInputName(NULL, myAssetId, i,
                 HAPI_INPUT_GEOMETRY,
                 &nameSH);
 
@@ -168,7 +168,7 @@ Inputs::setInput(
 
     if(!isValidInput)
     {
-        HAPI_DisconnectAssetGeometry(myAssetId, inputIdx);
+        HAPI_DisconnectAssetGeometry(NULL, myAssetId, inputIdx);
         delete assetInput;
         assetInput = NULL;
         return;
@@ -284,14 +284,14 @@ Input::setInputPlugMetaData(
             shape_name_info.tupleSize = 1;
 
             HAPI_AddAttribute(
-                    inputAssetId, inputObjectId, inputGeoId,
+                    NULL, inputAssetId, inputObjectId, inputGeoId,
                     "maya_source_node",
                     &shape_name_info
                     );
 
             const char* temp = shapeName.asChar();
             CHECK_HAPI(HAPI_SetAttributeStringData(
-                    inputAssetId, inputObjectId, inputGeoId,
+                    NULL, inputAssetId, inputObjectId, inputGeoId,
                     "maya_source_node",
                     &shape_name_info,
                     &temp,

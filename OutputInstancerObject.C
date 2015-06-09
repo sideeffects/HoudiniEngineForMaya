@@ -43,7 +43,7 @@ OutputInstancerObject::update()
     try
     {
         HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-        hstat = HAPI_GetGeoInfo(myAssetId, myObjectId, 0, &myGeoInfo);
+        hstat = HAPI_GetGeoInfo(NULL, myAssetId, myObjectId, 0, &myGeoInfo);
         Util::checkHAPIStatus(hstat);
     }
     catch (HAPIError& e)
@@ -67,7 +67,7 @@ OutputInstancerObject::update()
                 return;
 
             HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-            hstat = HAPI_GetPartInfo(myAssetId, myObjectId, 0, 0, &myPartInfo);
+            hstat = HAPI_GetPartInfo(NULL, myAssetId, myObjectId, 0, 0, &myPartInfo);
             Util::checkHAPIStatus(hstat);
         }
         catch (HAPIError& e)
@@ -170,7 +170,7 @@ OutputInstancerObject::compute(
 
         unsigned int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
-        HAPI_GetInstanceTransforms(myAssetId, myObjectInfo.id, 0, HAPI_SRT, instTransforms, 0, size);
+        HAPI_GetInstanceTransforms(NULL, myAssetId, myObjectInfo.id, 0, HAPI_SRT, instTransforms, 0, size);
 
         MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
         MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
@@ -271,7 +271,7 @@ OutputInstancerObject::compute(
             // instancing a single object
             HAPI_ObjectInfo instanceObjectInfo;
             HAPI_GetObjects(
-                    myAssetId,
+                    NULL, myAssetId,
                     &instanceObjectInfo,
                     myObjectInfo.objectToInstanceId, 1
                     );

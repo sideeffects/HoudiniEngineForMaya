@@ -36,7 +36,7 @@ InputAsset::setInputGeo(
     MFnIntArrayData fnIAD(dataHandle.data());
     MIntArray metaData = fnIAD.array();
     HAPI_ConnectAssetGeometry(
-            metaData[0], metaData[1],
+            NULL, metaData[0], metaData[1],
             myAssetId, myInputIdx
             );
 }

@@ -182,8 +182,7 @@ ifeq ($(OS), Linux)
 else ifeq ($(OS), Cygwin)
     LDLIBS += -LIBPATH:$(HFS)/custom/houdini/dsolib libHAPI.a
 else ifeq ($(OS), Darwin)
-    # No need to (or can't) use -rpath, because HAPI_Loader has absolute path
-    # as the install_name.
+    LDFLAGS += -Wl,-rpath,$(HFS)/Frameworks/Houdini.framework/Libraries
     LDLIBS += -L$(HFS)/Frameworks/Houdini.framework/Libraries
     LDLIBS += -lHAPIL
 endif

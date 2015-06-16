@@ -165,7 +165,7 @@ initializeMessageCallbacks()
     callbackId = MEventMessage::addEventCallback(
             "playbackRangeSliderChanged",
             updateTimelineCallback,
-            Util::theHAPISession.get(),
+            NULL,
             &status
             );
     if(status)
@@ -180,7 +180,7 @@ initializeMessageCallbacks()
     callbackId = MEventMessage::addEventCallback(
             "timeUnitChanged",
             updateTimelineCallback,
-            Util::theHAPISession.get(),
+            NULL,
             &status
             );
     if(status)
@@ -277,7 +277,7 @@ initializePlugin(MObject obj)
     initializeMessageCallbacks();
 
     // update the timeline option for the first time
-    updateTimelineCallback(Util::theHAPISession.get());
+    updateTimelineCallback(NULL);
 
     return status;
 }

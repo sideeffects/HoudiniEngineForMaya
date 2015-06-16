@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <vector>
+#include <memory>
 
 #include <HAPI/HAPI.h>
 
@@ -60,9 +61,9 @@ class HAPIError: public std::exception
     { \
         int bufferLength; \
         HAPI_GetStatusStringBufLength( \
-            NULL, (status_type), (verbosity), &bufferLength); \
+            Util::theHAPISession.get(), (status_type), (verbosity), &bufferLength); \
         _hapiStatusBuffer.resize(bufferLength); \
-        HAPI_GetStatusString(NULL, (status_type), &_hapiStatusBuffer.front(), bufferLength); \
+        HAPI_GetStatusString(Util::theHAPISession.get(), (status_type), &_hapiStatusBuffer.front(), bufferLength); \
     } \
     const char * hapiStatus = &_hapiStatusBuffer.front();
 
@@ -108,6 +109,8 @@ class HAPIError: public std::exception
 
 class Util {
     public:
+        static std::auto_ptr<HAPI_Session> theHAPISession;
+
         static void displayInfoForNode(
                 const MString &typeName,
                 const MString &message

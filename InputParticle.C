@@ -18,7 +18,9 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
 
-    CHECK_HAPI(HAPI_CreateInputAsset(NULL, &myInputAssetId, NULL));
+    CHECK_HAPI(HAPI_CreateInputAsset(
+        Util::theHAPISession.get(), &myInputAssetId, NULL ));
+
     if(!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
@@ -28,14 +30,14 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
     myInputGeoId = 0;
 
     CHECK_HAPI(HAPI_ConnectAssetGeometry(
-                NULL, myInputAssetId, myInputObjectId,
+                Util::theHAPISession.get(), myInputAssetId, myInputObjectId,
                 myAssetId, myInputIdx
                 ));
 }
 
 InputParticle::~InputParticle()
 {
-    CHECK_HAPI(HAPI_DestroyAsset(NULL, myInputAssetId));
+    CHECK_HAPI(HAPI_DestroyAsset(Util::theHAPISession.get(), myInputAssetId));
 }
 
 Input::AssetInputType
@@ -53,8 +55,8 @@ InputParticle::setInputTransform(MDataHandle &dataHandle)
     transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(NULL, matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(NULL, myInputAssetId, myInputObjectId, &transformEuler);
+    HAPI_ConvertMatrixToEuler(Util::theHAPISession.get(), matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
+    HAPI_SetObjectTransform(Util::theHAPISession.get(), myInputAssetId, myInputObjectId, &transformEuler);
 }
 
 void
@@ -74,7 +76,7 @@ InputParticle::setAttributePointData(
     attributeInfo.tupleSize = tupleSize;
 
     HAPI_AddAttribute(
-            NULL, myInputAssetId, myInputObjectId, myInputGeoId,
+            Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
             attributeName,
             &attributeInfo
             );
@@ -83,7 +85,7 @@ InputParticle::setAttributePointData(
     {
         case HAPI_STORAGETYPE_FLOAT:
             HAPI_SetAttributeFloatData(
-                    NULL, myInputAssetId, myInputObjectId, myInputGeoId,
+                    Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
                     attributeName,
                     &attributeInfo,
                     static_cast<float*>(data),
@@ -92,7 +94,7 @@ InputParticle::setAttributePointData(
             break;
         case HAPI_STORAGETYPE_INT:
             HAPI_SetAttributeIntData(
-                    NULL, myInputAssetId, myInputObjectId, myInputGeoId,
+                    Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
                     attributeName,
                     &attributeInfo,
                     static_cast<int*>(data),
@@ -155,7 +157,7 @@ InputParticle::setInputGeo(
     partInfo.pointCount = particleFn.count();
 
     HAPI_SetPartInfo(
-            NULL, myInputAssetId, myInputObjectId, myInputGeoId,
+            Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
             &partInfo
             );
 
@@ -323,5 +325,5 @@ InputParticle::setInputGeo(
             );
 
     // Commit it
-    HAPI_CommitGeo(NULL, myInputAssetId, myInputObjectId, myInputGeoId);
+    HAPI_CommitGeo(Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId);
 }

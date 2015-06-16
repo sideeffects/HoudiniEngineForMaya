@@ -28,7 +28,7 @@ OutputGeometry::update()
 {
     HAPI_Result hapiResult;
 
-    hapiResult = HAPI_GetGeoInfo(NULL, myAssetId,
+    hapiResult = HAPI_GetGeoInfo(Util::theHAPISession.get(), myAssetId,
             myObjectId,
             myGeoId,
             &myGeoInfo);

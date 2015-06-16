@@ -5,6 +5,7 @@
 #include <maya/MIntArray.h>
 
 #include <HAPI/HAPI.h>
+#include "util.h"
 
 InputAsset::InputAsset(int assetId, int inputIdx) :
     Input(assetId, inputIdx)
@@ -36,7 +37,7 @@ InputAsset::setInputGeo(
     MFnIntArrayData fnIAD(dataHandle.data());
     MIntArray metaData = fnIAD.array();
     HAPI_ConnectAssetGeometry(
-            NULL, metaData[0], metaData[1],
+            Util::theHAPISession.get(), metaData[0], metaData[1],
             myAssetId, myInputIdx
             );
 }

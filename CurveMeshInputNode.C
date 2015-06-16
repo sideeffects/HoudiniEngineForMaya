@@ -59,7 +59,7 @@ CurveMeshInputNode::~CurveMeshInputNode()
 {
     if ( myAssetId > 0 )
     {
-        CHECK_HAPI(HAPI_DestroyAsset(NULL, myAssetId));
+        CHECK_HAPI(HAPI_DestroyAsset(Util::theHAPISession.get(), myAssetId));
     }
 }
 
@@ -75,7 +75,9 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     if ( myAssetId < 0 )
     {
-        CHECK_HAPI( HAPI_CreateInputAsset(NULL, &myAssetId, NULL) );
+        CHECK_HAPI( HAPI_CreateInputAsset(
+            Util::theHAPISession.get(), &myAssetId, NULL) );
+
         if ( !Util::statusCheckLoop() )
         {
             DISPLAY_ERROR(
@@ -220,10 +222,10 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
     partInfo.vertexCount = partInfo.pointCount = curveInfo.vertexCount;
     partInfo.faceCount = curveInfo.curveCount;
     partInfo.type = HAPI_PARTTYPE_CURVE;
-    CHECK_HAPI( HAPI_SetPartInfo( NULL, myAssetId, 0, 0, &partInfo ) );
+    CHECK_HAPI( HAPI_SetPartInfo( Util::theHAPISession.get(), myAssetId, 0, 0, &partInfo ) );
 
-    CHECK_HAPI( HAPI_SetCurveInfo( NULL, myAssetId, 0, 0, 0, &curveInfo ) );
-    CHECK_HAPI( HAPI_SetCurveCounts( NULL, myAssetId, 0, 0, 0,
+    CHECK_HAPI( HAPI_SetCurveInfo( Util::theHAPISession.get(), myAssetId, 0, 0, 0, &curveInfo ) );
+    CHECK_HAPI( HAPI_SetCurveCounts( Util::theHAPISession.get(), myAssetId, 0, 0, 0,
                                     &cvCounts.front(), 0, cvCounts.size() ) );
 
     HAPI_AttributeInfo attrInfo = HAPI_AttributeInfo_Create();
@@ -233,11 +235,11 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
     attrInfo.owner = HAPI_ATTROWNER_POINT;
     attrInfo.storage = HAPI_STORAGETYPE_FLOAT;
 
-    CHECK_HAPI( HAPI_AddAttribute( NULL, myAssetId, 0, 0, "P", &attrInfo ) );
+    CHECK_HAPI( HAPI_AddAttribute( Util::theHAPISession.get(), myAssetId, 0, 0, "P", &attrInfo ) );
 
     CHECK_HAPI(
         HAPI_SetAttributeFloatData(
-            NULL, myAssetId, 0, 0, "P", &attrInfo,
+            Util::theHAPISession.get(), myAssetId, 0, 0, "P", &attrInfo,
             &cvP.front(), 0, static_cast<int>(cvP.size() / 3)
         )
     );
@@ -245,11 +247,11 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
     if ( curveInfo.isRational )
     {
         attrInfo.tupleSize = 1;
-        CHECK_HAPI( HAPI_AddAttribute( NULL, myAssetId, 0, 0, "Pw", &attrInfo ) );
+        CHECK_HAPI( HAPI_AddAttribute( Util::theHAPISession.get(), myAssetId, 0, 0, "Pw", &attrInfo ) );
 
         CHECK_HAPI(
             HAPI_SetAttributeFloatData(
-                NULL, myAssetId, 0, 0, "Pw", &attrInfo,
+                Util::theHAPISession.get(), myAssetId, 0, 0, "Pw", &attrInfo,
                 &cvPw.front(), 0, static_cast<int>(cvPw.size())
             )
         );
@@ -257,11 +259,11 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     if ( curveInfo.hasKnots )
     {
-        CHECK_HAPI( HAPI_SetCurveKnots( NULL, myAssetId, 0, 0, 0, &knots.front(),
+        CHECK_HAPI( HAPI_SetCurveKnots( Util::theHAPISession.get(), myAssetId, 0, 0, 0, &knots.front(),
                                         0, static_cast<int>(knots.size()) ) );
     }
 
-    CHECK_HAPI( HAPI_CommitGeo( NULL, myAssetId, 0, 0 ) );
+    CHECK_HAPI( HAPI_CommitGeo( Util::theHAPISession.get(), myAssetId, 0, 0 ) );
 
     data.setClean(plug);
     return MStatus::kSuccess;

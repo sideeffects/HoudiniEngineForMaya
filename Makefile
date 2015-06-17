@@ -180,7 +180,13 @@ ifeq ($(OS), Linux)
     LDFLAGS += -Wl,-rpath,'$$ORIGIN/../../../../dsolib'
     LDLIBS += -L$(HFS)/dsolib -lHAPI
 else ifeq ($(OS), Cygwin)
-    LDLIBS += -LIBPATH:$(HFS)/custom/houdini/dsolib libHAPI.a
+    LDLIBS += -LIBPATH:$(HFS)/custom/houdini/dsolib    
+    ifeq ($(USE_LIBHASH), 1)
+		LDLIBS += libHASH.a
+		CXXFLAGS += -DUSE_LIBHASH
+	else
+		LDLIBS += libHAPI.a
+	endif
 else ifeq ($(OS), Darwin)
     LDFLAGS += -Wl,-rpath,$(HFS)/Frameworks/Houdini.framework/Libraries
     LDLIBS += -L$(HFS)/Frameworks/Houdini.framework/Libraries

@@ -71,20 +71,101 @@ printHAPIVersion()
     }
 }
 
-void
-initializeOptionVars()
+namespace
 {
-    bool exists;
-
-    MGlobal::optionVarIntValue("houdiniEngineAsynchronousMode", &exists);
-    if(!exists)
+    template <typename VAL, class CHILD>
+    class OptionVarBase
     {
-        MGlobal::setOptionVarValue("houdiniEngineAsynchronousMode", 1);
-    }
+    public:
+        OptionVarBase(const char* name, const VAL& defaultValue)
+            : myDefaultValue(defaultValue)
+        {
+            myName = "houdiniEngine";
+            myName += name;
+
+            bool exists = false;
+            static_cast<const CHILD&>(*this).getImpl(exists);
+
+            if (!exists)
+            {
+                MGlobal::setOptionVarValue(myName.c_str(), myDefaultValue);
+            }
+        }
+
+        VAL get() const
+        {
+            bool exists = false;
+            const VAL value = static_cast<const CHILD&>(*this).getImpl(exists);
+            return exists ? value : myDefaultValue;
+        }
+
+    protected:
+        std::string myName;
+        const VAL myDefaultValue;
+
+    private:
+        OptionVarBase& operator=(const OptionVarBase&);
+    };
+
+    class IntOptionVar: public OptionVarBase<int, IntOptionVar>
+    {
+    public:
+        typedef OptionVarBase<int, IntOptionVar> Base;
+
+        IntOptionVar(const char* name, int defaultValue)
+            : Base(name, defaultValue)
+        {}
+
+    private:
+        friend class Base;
+
+        int getImpl(bool& exists) const
+        {
+            return MGlobal::optionVarIntValue(myName.c_str(), &exists);
+        }
+    };
+
+    class StringOptionVar: public OptionVarBase<MString, StringOptionVar>
+    {
+    public:
+        typedef OptionVarBase<MString, StringOptionVar> Base;
+
+        StringOptionVar(const char* name, const char* defaultValue)
+            : Base(name, defaultValue)
+        {}
+
+    private:
+        friend class Base;
+
+        MString getImpl(bool& exists) const
+        {
+            return MGlobal::optionVarStringValue(myName.c_str(), &exists);
+        }
+    };
+
+    struct OptionVars
+    {
+        OptionVars()
+            : asyncMode("AsynchronousMode", 1)
+            , sessionType("SessionType", 0)
+            , thriftServer("ThriftServer", "localhost")
+            , thriftPort("ThriftPort", 9090)
+            , thriftPipe("ThriftPipe", "hapi")
+        {}
+
+        IntOptionVar     asyncMode;
+        IntOptionVar     sessionType;
+        StringOptionVar  thriftServer;
+        IntOptionVar     thriftPort;
+        StringOptionVar  thriftPipe;
+
+    private:
+        OptionVars& operator=(const OptionVars&);
+    };
 }
 
 bool
-initializeHAPI()
+initializeHAPI(const OptionVars& optionVars)
 {
     if(HAPI_IsInitialized( Util::theHAPISession.get() ) == HAPI_RESULT_SUCCESS)
     {
@@ -101,8 +182,7 @@ initializeHAPI()
     cook_options.maxVerticesPerPrimitive = -1;
     cook_options.refineCurveToLinear = false;
 
-    bool use_cooking_thread =
-        MGlobal::optionVarIntValue("houdiniEngineAsynchronousMode") == 1;
+    bool use_cooking_thread = optionVars.asyncMode.get() == 1;
 
     hstat = HAPI_Initialize(
             Util::theHAPISession.get(), otl_dir, dso_dir,
@@ -202,12 +282,60 @@ cleanupMessageCallbacks()
     CHECK_MSTATUS(status);
 }
 
+#ifdef USE_LIBHASH
+namespace SessionType
+{
+    enum Enum
+    {
+        ST_INPROCESS,
+        ST_THRIFT_SOCKET,
+        ST_THRIFT_PIPE
+    };
+}
+#endif
+
 MStatus
 initializePlugin(MObject obj)
 {
-    printHAPIVersion();
+    OptionVars optionVars;
 
-    initializeOptionVars();
+#ifdef USE_LIBHASH
+    if ( Util::theHAPISession.get() )
+    {
+        MGlobal::displayInfo(
+            "Houdini Engine session is already created. Skipping.");
+    }
+    else
+    {
+        const SessionType::Enum sessionType =
+            static_cast<SessionType::Enum>( optionVars.sessionType.get() );
+
+        switch (sessionType)
+        {
+        case SessionType::ST_INPROCESS:
+            Util::theHAPISession.reset( new HAPI_Session );
+            HAPI_CreateInProcessSession( Util::theHAPISession.get() );
+            break;
+
+        case SessionType::ST_THRIFT_SOCKET:
+            Util::theHAPISession.reset( new HAPI_Session );
+            HAPI_CreateThriftSocketSession(
+                Util::theHAPISession.get(),
+                optionVars.thriftServer.get().asChar(),
+                optionVars.thriftPort.get() );
+            break;
+
+        case SessionType::ST_THRIFT_PIPE:
+            Util::theHAPISession.reset( new HAPI_Session );
+            HAPI_CreateThriftNamedPipeSession(
+                Util::theHAPISession.get(),
+                optionVars.thriftPipe.get().asChar() );
+            break;
+        }
+    }
+#endif
+
+    printHAPIVersion();
 
     char engine_version[32];
     sprintf(engine_version, "%d.%d (API: %d)",
@@ -222,7 +350,7 @@ initializePlugin(MObject obj)
             "Any"
             );
 
-    if(initializeHAPI())
+    if ( initializeHAPI(optionVars) )
     {
         MGlobal::displayInfo("Houdini Engine initialized successfully.");
     }

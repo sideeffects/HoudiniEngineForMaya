@@ -17,21 +17,39 @@ InputCurve::InputCurve(int assetId, int inputIdx) :
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     int curveAssetId;
-    CHECK_HAPI(HAPI_CreateCurve(Util::theHAPISession.get(), &curveAssetId));
+    CHECK_HAPI(HAPI_CreateCurve(
+                Util::theHAPISession.get(),
+                &curveAssetId
+                ));
     if(!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input curve."));
     }
 
-    HAPI_GetAssetInfo(Util::theHAPISession.get(), curveAssetId, &myCurveAssetInfo);
-    HAPI_GetNodeInfo(Util::theHAPISession.get(), myCurveAssetInfo.nodeId, &myCurveNodeInfo);
+    HAPI_GetAssetInfo(
+            Util::theHAPISession.get(),
+            curveAssetId,
+            &myCurveAssetInfo
+            );
+    HAPI_GetNodeInfo(
+            Util::theHAPISession.get(),
+            myCurveAssetInfo.nodeId,
+            &myCurveNodeInfo
+            );
 }
 
 InputCurve::~InputCurve()
 {
-    HAPI_DisconnectAssetGeometry(Util::theHAPISession.get(), myAssetId, myInputIdx);
+    HAPI_DisconnectAssetGeometry(
+            Util::theHAPISession.get(),
+            myAssetId,
+            myInputIdx
+            );
 
-    HAPI_DestroyAsset(Util::theHAPISession.get(), myCurveAssetInfo.id);
+    HAPI_DestroyAsset(
+            Util::theHAPISession.get(),
+            myCurveAssetInfo.id
+            );
 }
 
 InputCurve::AssetInputType
@@ -49,8 +67,19 @@ InputCurve::setInputTransform(MDataHandle &dataHandle)
     transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(Util::theHAPISession.get(), matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(Util::theHAPISession.get(), myCurveAssetInfo.id, 0, &transformEuler);
+    HAPI_ConvertMatrixToEuler(
+            Util::theHAPISession.get(),
+            matrix,
+            HAPI_SRT,
+            HAPI_XYZ,
+            &transformEuler
+            );
+    HAPI_SetObjectTransform(
+            Util::theHAPISession.get(),
+            myCurveAssetInfo.id,
+            0,
+            &transformEuler
+            );
 }
 
 void
@@ -59,7 +88,11 @@ InputCurve::setInputGeo(
         const MPlug &plug
         )
 {
-    HAPI_ConnectAssetGeometry(Util::theHAPISession.get(), myCurveAssetInfo.id, 0, myAssetId, myInputIdx);
+    HAPI_ConnectAssetGeometry(
+            Util::theHAPISession.get(),
+            myCurveAssetInfo.id, 0,
+            myAssetId, myInputIdx
+            );
 
     MDataHandle dataHandle = dataBlock.inputValue(plug);
 
@@ -71,7 +104,12 @@ InputCurve::setInputGeo(
 
     // find coords parm
     std::vector<HAPI_ParmInfo> parms(myCurveNodeInfo.parmCount);
-    HAPI_GetParameters(Util::theHAPISession.get(), myCurveNodeInfo.id, &parms[0], 0, myCurveNodeInfo.parmCount);
+    HAPI_GetParameters(
+            Util::theHAPISession.get(),
+            myCurveNodeInfo.id,
+            &parms[0],
+            0, myCurveNodeInfo.parmCount
+            );
     int typeParmIndex = Util::findParm(parms, "type");
     int coordsParmIndex = Util::findParm(parms, "coords");
     int orderParmIndex = Util::findParm(parms, "order");
@@ -94,8 +132,12 @@ InputCurve::setInputGeo(
     // type
     {
         HAPI_ParmChoiceInfo* choices = new HAPI_ParmChoiceInfo[typeParm.choiceCount];
-        HAPI_GetParmChoiceLists(Util::theHAPISession.get(), myCurveNodeInfo.id, choices,
-                typeParm.choiceIndex, typeParm.choiceCount);
+        HAPI_GetParmChoiceLists(
+                Util::theHAPISession.get(),
+                myCurveNodeInfo.id,
+                choices,
+                typeParm.choiceIndex, typeParm.choiceCount
+                );
 
         int nurbsIdx = -1;
         for(int i = 0; i < typeParm.choiceCount; i++)
@@ -114,8 +156,13 @@ InputCurve::setInputGeo(
             return;
         }
 
-        HAPI_SetParmIntValues(Util::theHAPISession.get(), myCurveNodeInfo.id, &nurbsIdx,
-                typeParm.intValuesIndex, 1);
+        HAPI_SetParmIntValues(
+                Util::theHAPISession.get(),
+                myCurveNodeInfo.id,
+                &nurbsIdx,
+                typeParm.intValuesIndex,
+                1
+                );
     }
 
     // coords
@@ -139,7 +186,8 @@ InputCurve::setInputGeo(
             coords << pt.x << "," << pt.y << "," << pt.z << " ";
         }
         HAPI_SetParmStringValue(
-                Util::theHAPISession.get(), myCurveNodeInfo.id,
+                Util::theHAPISession.get(),
+                myCurveNodeInfo.id,
                 coords.str().c_str(),
                 coordsParm.id,
                 coordsParm.stringValuesIndex
@@ -151,7 +199,8 @@ InputCurve::setInputGeo(
         int order = fnCurve.degree() + 1;
 
         HAPI_SetParmIntValues(
-                Util::theHAPISession.get(), myCurveNodeInfo.id,
+                Util::theHAPISession.get(),
+                myCurveNodeInfo.id,
                 &order,
                 orderParm.intValuesIndex, 1
                 );
@@ -161,7 +210,8 @@ InputCurve::setInputGeo(
     {
         int close = fnCurve.form() == MFnNurbsCurve::kPeriodic;
         HAPI_SetParmIntValues(
-                Util::theHAPISession.get(), myCurveNodeInfo.id,
+                Util::theHAPISession.get(),
+                myCurveNodeInfo.id,
                 &close,
                 closeParm.intValuesIndex, 1
                 );

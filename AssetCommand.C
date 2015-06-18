@@ -81,7 +81,12 @@ class AssetSubCommandListAssets : public SubCommand
             HAPI_Result hapiResult;
 
             int libraryId = -1;
-            hapiResult = HAPI_LoadAssetLibraryFromFile(Util::theHAPISession.get(), myOTLFilePath.asChar(), true, &libraryId);
+            hapiResult = HAPI_LoadAssetLibraryFromFile(
+                    Util::theHAPISession.get(),
+                    myOTLFilePath.asChar(),
+                    true,
+                    &libraryId
+                    );
             if(HAPI_FAIL(hapiResult))
             {
                 DISPLAY_ERROR("Could not load OTL file: ^1s", myOTLFilePath);
@@ -91,13 +96,20 @@ class AssetSubCommandListAssets : public SubCommand
             }
 
             int assetCount = 0;
-            hapiResult = HAPI_GetAvailableAssetCount(Util::theHAPISession.get(), libraryId, &assetCount);
+            hapiResult = HAPI_GetAvailableAssetCount(
+                    Util::theHAPISession.get(),
+                    libraryId,
+                    &assetCount
+                    );
             CHECK_HAPI_AND_RETURN(hapiResult, MStatus::kFailure);
 
             std::vector<HAPI_StringHandle> assetNamesSH(assetCount);
-            hapiResult = HAPI_GetAvailableAssets(Util::theHAPISession.get(), libraryId,
+            hapiResult = HAPI_GetAvailableAssets(
+                    Util::theHAPISession.get(),
+                    libraryId,
                     &assetNamesSH.front(),
-                    assetNamesSH.size());
+                    assetNamesSH.size()
+                    );
             CHECK_HAPI_AND_RETURN(hapiResult, MStatus::kFailure);
 
             for(unsigned int i = 0; i < assetNamesSH.size(); i++)

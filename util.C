@@ -80,9 +80,18 @@ MString
 Util::getString(int handle)
 {
     int bufLen;
-    HAPI_GetStringBufLength(Util::theHAPISession.get(), handle, &bufLen);
+    HAPI_GetStringBufLength(
+            Util::theHAPISession.get(),
+            handle,
+            &bufLen
+            );
     char * buffer = new char[bufLen];
-    HAPI_GetString(Util::theHAPISession.get(), handle, buffer, bufLen);
+    HAPI_GetString(
+            Util::theHAPISession.get(),
+            handle,
+            buffer,
+            bufLen
+            );
 
     MString ret(buffer);
     delete[] buffer;
@@ -133,21 +142,36 @@ Util::checkHAPIStatus(HAPI_Result stat)
     {
         int bufLen;
         HAPI_GetStatusStringBufLength(
-            Util::theHAPISession.get(), HAPI_STATUS_CALL_RESULT, HAPI_STATUSVERBOSITY_ERRORS, &bufLen);
+                Util::theHAPISession.get(),
+                HAPI_STATUS_CALL_RESULT,
+                HAPI_STATUSVERBOSITY_ERRORS,
+                &bufLen
+                );
         char * buffer = new char[bufLen];
-        HAPI_GetStatusString(Util::theHAPISession.get(), HAPI_STATUS_CALL_RESULT, buffer, bufLen);
+        HAPI_GetStatusString(
+                Util::theHAPISession.get(),
+                HAPI_STATUS_CALL_RESULT,
+                buffer,
+                bufLen
+                );
         throw HAPIError(buffer);
     }
 }
 
 Util::PythonInterpreterLock::PythonInterpreterLock()
 {
-    HAPI_PythonThreadInterpreterLock(Util::theHAPISession.get(), true);
+    HAPI_PythonThreadInterpreterLock(
+            Util::theHAPISession.get(),
+            true
+            );
 }
 
 Util::PythonInterpreterLock::~PythonInterpreterLock()
 {
-    HAPI_PythonThreadInterpreterLock(Util::theHAPISession.get(), false);
+    HAPI_PythonThreadInterpreterLock(
+            Util::theHAPISession.get(),
+            false
+            );
 }
 
 MString
@@ -499,13 +523,23 @@ Util::statusCheckLoop(bool wantMainProgressBar)
 
     while(state > HAPI_STATE_MAX_READY_STATE)
     {
-            HAPI_GetStatus(Util::theHAPISession.get(), HAPI_STATUS_COOK_STATE, &currState);
+            HAPI_GetStatus(
+                    Util::theHAPISession.get(),
+                    HAPI_STATUS_COOK_STATE,
+                    &currState
+                    );
             state = (HAPI_State) currState;
 
             if(state == HAPI_STATE_COOKING)
             {
-                    HAPI_GetCookingCurrentCount(Util::theHAPISession.get(), &currCookCount);
-                    HAPI_GetCookingTotalCount(Util::theHAPISession.get(), &totalCookCount);
+                    HAPI_GetCookingCurrentCount(
+                            Util::theHAPISession.get(),
+                            &currCookCount
+                            );
+                    HAPI_GetCookingTotalCount(
+                            Util::theHAPISession.get(),
+                            &totalCookCount
+                            );
             }
             else
             {
@@ -689,7 +723,13 @@ Util::getAttributeStringData(int assetId,
 {
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
-    HAPI_GetAttributeInfo(Util::theHAPISession.get(), assetId, objectId, geoId, partId, name.asChar(), owner, &attr_info);
+    HAPI_GetAttributeInfo(
+            Util::theHAPISession.get(),
+            assetId, objectId, geoId, partId,
+            name.asChar(),
+            owner,
+            &attr_info
+            );
 
     MStringArray ret;
     if(!attr_info.exists)
@@ -701,8 +741,14 @@ Util::getAttributeStringData(int assetId,
     for(int j=0; j<size; j++){
         data[j] = 0;
     }
-    HAPI_GetAttributeStringData(Util::theHAPISession.get(), assetId, objectId, geoId, partId, name.asChar(),
-            &attr_info, data, 0, attr_info.count);
+    HAPI_GetAttributeStringData(
+            Util::theHAPISession.get(),
+            assetId, objectId, geoId, partId,
+            name.asChar(),
+            &attr_info,
+            data,
+            0, attr_info.count
+            );
 
     for(int j=0; j<size; j++){
         ret.append(Util::getString(data[j]));

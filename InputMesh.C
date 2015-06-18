@@ -16,7 +16,10 @@ InputMesh::InputMesh(int assetId, int inputIdx) :
     myInputGeoId(-1)
 {
     CHECK_HAPI(HAPI_CreateInputAsset(
-        Util::theHAPISession.get(), &myInputAssetId, NULL ));
+        Util::theHAPISession.get(),
+        &myInputAssetId,
+        NULL
+        ));
 
     if(!Util::statusCheckLoop())
     {
@@ -27,14 +30,18 @@ InputMesh::InputMesh(int assetId, int inputIdx) :
     myInputGeoId = 0;
 
     CHECK_HAPI(HAPI_ConnectAssetGeometry(
-                Util::theHAPISession.get(), myInputAssetId, myInputObjectId,
+                Util::theHAPISession.get(),
+                myInputAssetId, myInputObjectId,
                 myAssetId, myInputIdx
                 ));
 }
 
 InputMesh::~InputMesh()
 {
-    CHECK_HAPI(HAPI_DestroyAsset(Util::theHAPISession.get(), myInputAssetId));
+    CHECK_HAPI(HAPI_DestroyAsset(
+                Util::theHAPISession.get(),
+                myInputAssetId
+                ));
 }
 
 Input::AssetInputType
@@ -52,9 +59,16 @@ InputMesh::setInputTransform(MDataHandle &dataHandle)
     transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(Util::theHAPISession.get(), matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
+    HAPI_ConvertMatrixToEuler(
+            Util::theHAPISession.get(),
+            matrix,
+            HAPI_SRT,
+            HAPI_XYZ,
+            &transformEuler
+            );
     HAPI_SetObjectTransform(
-            Util::theHAPISession.get(), myInputAssetId, myInputObjectId,
+            Util::theHAPISession.get(),
+            myInputAssetId, myInputObjectId,
             &transformEuler
             );
 }
@@ -94,15 +108,18 @@ InputMesh::setInputGeo(
 
     // Set the data
     HAPI_SetPartInfo(
-            Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+            Util::theHAPISession.get(),
+            myInputAssetId, myInputObjectId, myInputGeoId,
             &partInfo
             );
     HAPI_SetFaceCounts(
-            Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+            Util::theHAPISession.get(),
+            myInputAssetId, myInputObjectId, myInputGeoId,
             fc, 0, partInfo.faceCount
             );
     HAPI_SetVertexList(
-            Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+            Util::theHAPISession.get(),
+            myInputAssetId, myInputObjectId, myInputGeoId,
             vl, 0, partInfo.vertexCount
             );
 
@@ -114,12 +131,14 @@ InputMesh::setInputGeo(
     pos_attr_info.count              = meshFn.numVertices();
     pos_attr_info.tupleSize          = 3;
     HAPI_AddAttribute(
-            Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+            Util::theHAPISession.get(),
+            myInputAssetId, myInputObjectId, myInputGeoId,
             "P", &pos_attr_info
             );
 
     HAPI_SetAttributeFloatData(
-            Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+            Util::theHAPISession.get(),
+            myInputAssetId, myInputObjectId, myInputGeoId,
             "P", &pos_attr_info,
             meshFn.getRawPoints(NULL), 0, meshFn.numVertices()
             );
@@ -157,11 +176,14 @@ InputMesh::setInputGeo(
             attributeInfo.count = normalIds.length();
             attributeInfo.tupleSize = 3;
             HAPI_AddAttribute(
-                    Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+                    Util::theHAPISession.get(),
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     "N", &attributeInfo
                     );
 
-            HAPI_SetAttributeFloatData(Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+            HAPI_SetAttributeFloatData(
+                    Util::theHAPISession.get(),
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     "N", &attributeInfo,
                     &vertexNormals.front(), 0, normalIds.length()
                     );
@@ -241,12 +263,14 @@ InputMesh::setInputGeo(
             attributeInfo.count = vertexList.length();
             attributeInfo.tupleSize = 3;
             HAPI_AddAttribute(
-                    Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+                    Util::theHAPISession.get(),
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     uvAttributeName.asChar(), &attributeInfo
                     );
 
             HAPI_SetAttributeFloatData(
-                    Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+                    Util::theHAPISession.get(),
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     uvAttributeName.asChar(), &attributeInfo,
                     &vertexUVs.front(), 0, vertexList.length()
                     );
@@ -329,12 +353,14 @@ InputMesh::setInputGeo(
                 colorAttributeInfo.count = vertexList.length();
                 colorAttributeInfo.tupleSize = 3;
                 HAPI_AddAttribute(
-                        Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+                        Util::theHAPISession.get(),
+                        myInputAssetId, myInputObjectId, myInputGeoId,
                         colorAttributeName.asChar(), &colorAttributeInfo
                         );
 
                 HAPI_SetAttributeFloatData(
-                        Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+                        Util::theHAPISession.get(),
+                        myInputAssetId, myInputObjectId, myInputGeoId,
                         colorAttributeName.asChar(), &colorAttributeInfo,
                         &buffer.front(), 0, vertexList.length()
                         );
@@ -356,12 +382,14 @@ InputMesh::setInputGeo(
                 alphaAttributeInfo.count = vertexList.length();
                 alphaAttributeInfo.tupleSize = 1;
                 HAPI_AddAttribute(
-                        Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+                        Util::theHAPISession.get(),
+                        myInputAssetId, myInputObjectId, myInputGeoId,
                         alphaAttributeName.asChar(), &alphaAttributeInfo
                         );
 
                 HAPI_SetAttributeFloatData(
-                        Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId,
+                        Util::theHAPISession.get(),
+                        myInputAssetId, myInputObjectId, myInputGeoId,
                         alphaAttributeName.asChar(), &alphaAttributeInfo,
                         &buffer.front(), 0, vertexList.length()
                         );
@@ -375,7 +403,10 @@ InputMesh::setInputGeo(
             );
 
     // Commit it
-    HAPI_CommitGeo(Util::theHAPISession.get(), myInputAssetId, myInputObjectId, myInputGeoId);
+    HAPI_CommitGeo(
+            Util::theHAPISession.get(),
+            myInputAssetId, myInputObjectId, myInputGeoId
+            );
 
     delete[] vl;
     delete[] fc;

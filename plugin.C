@@ -24,9 +24,21 @@ printHAPIVersion()
     MString msg;
 
     {
-        HAPI_GetEnvInt(Util::theHAPISession.get(), HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &i);
-        HAPI_GetEnvInt(Util::theHAPISession.get(), HAPI_ENVINT_VERSION_HOUDINI_MINOR, &j);
-        HAPI_GetEnvInt(Util::theHAPISession.get(), HAPI_ENVINT_VERSION_HOUDINI_BUILD, &k);
+        HAPI_GetEnvInt(
+                Util::theHAPISession.get(),
+                HAPI_ENVINT_VERSION_HOUDINI_MAJOR,
+                &i
+                );
+        HAPI_GetEnvInt(
+                Util::theHAPISession.get(),
+                HAPI_ENVINT_VERSION_HOUDINI_MINOR,
+                &j
+                );
+        HAPI_GetEnvInt(
+                Util::theHAPISession.get(),
+                HAPI_ENVINT_VERSION_HOUDINI_BUILD,
+                &k
+                );
 
         msg = "Houdini version: ";
         sprintf(version, "%d.%d.%d", i, j, k);
@@ -47,9 +59,21 @@ printHAPIVersion()
     }
 
     {
-        HAPI_GetEnvInt(Util::theHAPISession.get(), HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &i);
-        HAPI_GetEnvInt(Util::theHAPISession.get(), HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &j);
-        HAPI_GetEnvInt(Util::theHAPISession.get(), HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &k);
+        HAPI_GetEnvInt(
+                Util::theHAPISession.get(),
+                HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR,
+                &i
+                );
+        HAPI_GetEnvInt(
+                Util::theHAPISession.get(),
+                HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR,
+                &j
+                );
+        HAPI_GetEnvInt(
+                Util::theHAPISession.get(),
+                HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API,
+                &k
+                );
 
         msg = "Houdini Engine version: ";
         sprintf(version, "%d.%d (API: %d)", i, j, k);
@@ -224,7 +248,10 @@ void updateTimelineCallback(void* clientData)
         (MAnimControl::animationEndTime() - oneUnitTime)
         .as(MTime::kSeconds);
 
-    HAPI_SetTimelineOptions(Util::theHAPISession.get(), &timelineOptions);
+    HAPI_SetTimelineOptions(
+            Util::theHAPISession.get(),
+            &timelineOptions
+            );
 }
 
 MCallbackIdArray messageCallbacks;

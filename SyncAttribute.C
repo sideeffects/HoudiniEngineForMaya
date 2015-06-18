@@ -371,7 +371,12 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
     eAttr.setNiceNameOverride(niceName);
 
     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parm.choiceCount];
-    HAPI_GetParmChoiceLists(Util::theHAPISession.get(), myNodeInfo.id, choiceInfos, parm.choiceIndex, parm.choiceCount);
+    HAPI_GetParmChoiceLists(
+            Util::theHAPISession.get(),
+            myNodeInfo.id,
+            choiceInfos,
+            parm.choiceIndex, parm.choiceCount
+            );
 
     int enumIndex = 0;
 
@@ -496,7 +501,12 @@ SyncAttribute::doIt()
     {
         std::vector<HAPI_ParmInfo> parmInfos;
         parmInfos.resize(nodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), nodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                Util::theHAPISession.get(),
+                nodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         // create root attribute
         MFnCompoundAttribute attrFn;

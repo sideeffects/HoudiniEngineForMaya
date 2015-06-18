@@ -363,7 +363,12 @@ Asset::Asset(
 
     // load the otl
     int libraryId = -1;
-    hapiResult = HAPI_LoadAssetLibraryFromFile(Util::theHAPISession.get(), otlFilePath.asChar(), true, &libraryId);
+    hapiResult = HAPI_LoadAssetLibraryFromFile(
+            Util::theHAPISession.get(),
+            otlFilePath.asChar(),
+            true,
+            &libraryId
+            );
     if(HAPI_FAIL(hapiResult))
     {
         DISPLAY_WARNING("Could not load OTL file: ^1s\n"
@@ -377,11 +382,20 @@ Asset::Asset(
     if(libraryId >= 0)
     {
         int assetCount = 0;
-        hapiResult = HAPI_GetAvailableAssetCount(Util::theHAPISession.get(), libraryId, &assetCount);
+        hapiResult = HAPI_GetAvailableAssetCount(
+                Util::theHAPISession.get(),
+                libraryId,
+                &assetCount
+                );
         CHECK_HAPI(hapiResult);
 
         assetNamesSH.resize(assetCount);
-        hapiResult = HAPI_GetAvailableAssets(Util::theHAPISession.get(), libraryId, &assetNamesSH.front(), assetCount);
+        hapiResult = HAPI_GetAvailableAssets(
+                Util::theHAPISession.get(),
+                libraryId,
+                &assetNamesSH.front(),
+                assetCount
+                );
         CHECK_HAPI(hapiResult);
     }
 
@@ -445,9 +459,17 @@ Asset::Asset(
         }
     }
 
-    hapiResult = HAPI_GetAssetInfo(Util::theHAPISession.get(), assetId, &myAssetInfo);
+    hapiResult = HAPI_GetAssetInfo(
+            Util::theHAPISession.get(),
+            assetId,
+            &myAssetInfo
+            );
     CHECK_HAPI(hapiResult);
-    hapiResult = HAPI_GetNodeInfo(Util::theHAPISession.get(), myAssetInfo.nodeId, & myNodeInfo);
+    hapiResult = HAPI_GetNodeInfo(
+            Util::theHAPISession.get(),
+            myAssetInfo.nodeId,
+            &myNodeInfo
+            );
     CHECK_HAPI(hapiResult);
 
     // Warn the user if the OTL path is not what was originally requested.
@@ -481,7 +503,10 @@ Asset::~Asset()
 
     if(myAssetInfo.id >= 0)
     {
-        hstat = HAPI_DestroyAsset(Util::theHAPISession.get(), myAssetInfo.id);
+        hstat = HAPI_DestroyAsset(
+                Util::theHAPISession.get(),
+                myAssetInfo.id
+                );
         Util::checkHAPIStatus(hstat);
     }
 }
@@ -543,7 +568,10 @@ Asset::resetSimulation()
 {
     assert(myAssetInfo.id >= 0);
 
-    HAPI_ResetSimulation(Util::theHAPISession.get(), myAssetInfo.id);
+    HAPI_ResetSimulation(
+            Util::theHAPISession.get(),
+            myAssetInfo.id
+            );
 }
 
 MString
@@ -554,7 +582,11 @@ Asset::getCookMessages()
     // Trigger a cook so that the asset will become the "last cooked asset",
     // because HAPI_STATUS_COOK_RESULT only consider the "last cooked asset".
     // In most cases, this shouldn't do any actual cooking.
-    HAPI_CookAsset(Util::theHAPISession.get(), myAssetInfo.id, NULL);
+    HAPI_CookAsset(
+            Util::theHAPISession.get(),
+            myAssetInfo.id,
+            NULL
+            );
 
     GET_HAPI_STATUS_COOK();
 
@@ -569,7 +601,8 @@ Asset::update()
     // update object infos
     myObjectInfos.resize(myAssetInfo.objectCount);
     HAPI_GetObjects(
-            Util::theHAPISession.get(), myAssetInfo.id,
+            Util::theHAPISession.get(),
+            myAssetInfo.id,
             &myObjectInfos.front(),
             0, myAssetInfo.objectCount
             );
@@ -739,7 +772,10 @@ Asset::setTime(const MTime &mayaTime)
     // So we need to offset the time by 1.
     MTime hapiTime = myTime - MTime(1, MTime::uiUnit());
     float hapiTimeSeconds = (float)hapiTime.as(MTime::kSeconds);
-    HAPI_SetTime(Util::theHAPISession.get(), hapiTimeSeconds);
+    HAPI_SetTime(
+            Util::theHAPISession.get(),
+            hapiTimeSeconds
+            );
 }
 
 void
@@ -783,7 +819,11 @@ Asset::compute(
         cookOptions.splitGeosByGroup = splitGeosByGroup;
         cookOptions.cookTemplatedGeos = cookTemplatedGeos;
 
-        HAPI_CookAsset(Util::theHAPISession.get(), myAssetInfo.id, &cookOptions);
+        HAPI_CookAsset(
+                Util::theHAPISession.get(),
+                myAssetInfo.id,
+                &cookOptions
+                );
 
         if(!Util::statusCheckLoop())
         {
@@ -988,7 +1028,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 {
                     int value;
                     HAPI_GetParmStringValues(
-                            Util::theHAPISession.get(), myNodeInfo.id,
+                            Util::theHAPISession.get(),
+                            myNodeInfo.id,
                             false,
                             &value,
                             parmInfo.stringValuesIndex, parmInfo.size
@@ -998,7 +1039,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     HAPI_ParmChoiceInfo * choiceInfos =
                         new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
                     HAPI_GetParmChoiceLists(
-                            Util::theHAPISession.get(), myNodeInfo.id,
+                            Util::theHAPISession.get(),
+                            myNodeInfo.id,
                             choiceInfos,
                             parmInfo.choiceIndex, parmInfo.choiceCount
                             );
@@ -1016,7 +1058,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 else
                 {
                     HAPI_GetParmIntValues(
-                            Util::theHAPISession.get(), myNodeInfo.id,
+                            Util::theHAPISession.get(),
+                            myNodeInfo.id,
                             &enumIndex,
                             parmInfo.intValuesIndex, parmInfo.size
                             );
@@ -1033,7 +1076,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         {
                             float* values = new float[parmInfo.size];
                             HAPI_GetParmFloatValues(
-                                    Util::theHAPISession.get(), myNodeInfo.id,
+                                    Util::theHAPISession.get(),
+                                    myNodeInfo.id,
                                     values,
                                     parmInfo.floatValuesIndex, parmInfo.size
                                     );
@@ -1079,7 +1123,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             else
                             {
                                 HAPI_GetParmIntValues(
-                                        Util::theHAPISession.get(), myNodeInfo.id,
+                                        Util::theHAPISession.get(),
+                                        myNodeInfo.id,
                                         values,
                                         parmInfo.intValuesIndex, parmInfo.size
                                         );
@@ -1129,7 +1174,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         {
                             int* values = new int[parmInfo.size];
                             HAPI_GetParmStringValues(
-                                    Util::theHAPISession.get(), myNodeInfo.id,
+                                    Util::theHAPISession.get(),
+                                    myNodeInfo.id,
                                     false,
                                     values,
                                     parmInfo.stringValuesIndex, parmInfo.size
@@ -1178,7 +1224,12 @@ Asset::getParmValues(
     // Get multiparm length
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                Util::theHAPISession.get(),
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         GetMultiparmLengthOperation operation(
                 dataBlock,
@@ -1193,7 +1244,12 @@ Asset::getParmValues(
     // Get value
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                Util::theHAPISession.get(),
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         GetAttrOperation operation(
                 dataBlock,
@@ -1263,7 +1319,8 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
             for(int i = parmInfo.instanceCount; i < multiSize; ++i)
             {
                 HAPI_InsertMultiparmInstance(
-                        Util::theHAPISession.get(), myNodeInfo.id,
+                        Util::theHAPISession.get(),
+                        myNodeInfo.id,
                         parmInfo.id,
                         i + parmInfo.instanceStartOffset
                         );
@@ -1274,7 +1331,8 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
             for(int i = parmInfo.instanceCount; i-- > multiSize;)
             {
                 HAPI_RemoveMultiparmInstance(
-                        Util::theHAPISession.get(), myNodeInfo.id,
+                        Util::theHAPISession.get(),
+                        myNodeInfo.id,
                         parmInfo.id,
                         i + parmInfo.instanceStartOffset
                         );
@@ -1351,7 +1409,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     if(value >= 0)
                     {
                         HAPI_SetParmIntValues(
-                                Util::theHAPISession.get(), myNodeInfo.id,
+                                Util::theHAPISession.get(),
+                                myNodeInfo.id,
                                 &value,
                                 parmInfo.intValuesIndex, 1
                                 );
@@ -1361,14 +1420,16 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 {
                     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
                     HAPI_GetParmChoiceLists(
-                            Util::theHAPISession.get(), myNodeInfo.id,
+                            Util::theHAPISession.get(),
+                            myNodeInfo.id,
                             choiceInfos,
                             parmInfo.choiceIndex, parmInfo.choiceCount);
 
                     MString valueString = Util::getString(choiceInfos[enumIndex].valueSH);
 
                     HAPI_SetParmStringValue(
-                            Util::theHAPISession.get(), myNodeInfo.id,
+                            Util::theHAPISession.get(),
+                            myNodeInfo.id,
                             valueString.asChar(),
                             parmInfo.id,
                             0
@@ -1379,7 +1440,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 else
                 {
                     HAPI_SetParmIntValues(
-                            Util::theHAPISession.get(), myNodeInfo.id,
+                            Util::theHAPISession.get(),
+                            myNodeInfo.id,
                             &enumIndex,
                             parmInfo.intValuesIndex, 1
                             );
@@ -1407,7 +1469,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 }
                             }
                             HAPI_SetParmFloatValues(
-                                    Util::theHAPISession.get(), myNodeInfo.id,
+                                    Util::theHAPISession.get(),
+                                    myNodeInfo.id,
                                     values,
                                     parmInfo.floatValuesIndex, parmInfo.size
                                     );
@@ -1457,7 +1520,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 int* currentValues = new int[parmInfo.size];
 
                                 HAPI_GetParmIntValues(
-                                        Util::theHAPISession.get(), myNodeInfo.id,
+                                        Util::theHAPISession.get(),
+                                        myNodeInfo.id,
                                         currentValues,
                                         parmInfo.intValuesIndex, parmInfo.size
                                         );
@@ -1470,7 +1534,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                         // don't have to worry about the value
                                         // changing.
                                         HAPI_SetParmIntValues(
-                                                Util::theHAPISession.get(), myNodeInfo.id,
+                                                Util::theHAPISession.get(),
+                                                myNodeInfo.id,
                                                 &currentValues[i],
                                                 parmInfo.intValuesIndex + i, 1
                                                 );
@@ -1482,7 +1547,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             else
                             {
                                 HAPI_SetParmIntValues(
-                                        Util::theHAPISession.get(), myNodeInfo.id,
+                                        Util::theHAPISession.get(),
+                                        myNodeInfo.id,
                                         values,
                                         parmInfo.intValuesIndex, parmInfo.size
                                         );
@@ -1500,7 +1566,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             {
                                 const char* val = dataHandle.asString().asChar();
                                 HAPI_SetParmStringValue(
-                                        Util::theHAPISession.get(), myNodeInfo.id,
+                                        Util::theHAPISession.get(),
+                                        myNodeInfo.id,
                                         val,
                                         parmInfo.id,
                                         0
@@ -1551,7 +1618,12 @@ Asset::setParmValues(
     // Set multiparm length
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                Util::theHAPISession.get(),
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         SetMultiparmLengthOperation operation(
                 dataBlock,
@@ -1562,7 +1634,11 @@ Asset::setParmValues(
         Util::walkParm(parmInfos, operation);
 
         // multiparm length could change, so we need to get the new parmCount
-        HAPI_GetNodeInfo(Util::theHAPISession.get(), myAssetInfo.nodeId, &myNodeInfo);
+        HAPI_GetNodeInfo(
+                Util::theHAPISession.get(),
+                myAssetInfo.nodeId,
+                &myNodeInfo
+                );
     }
 
     // Set value

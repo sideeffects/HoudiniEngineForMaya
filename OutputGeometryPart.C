@@ -164,7 +164,8 @@ OutputGeometryPart::update()
     try
     {
         hstat = HAPI_GetPartInfo(
-                Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId, myPartId,
                 &myPartInfo
                 );
         Util::checkHAPIStatus(hstat);
@@ -172,7 +173,8 @@ OutputGeometryPart::update()
         if(myPartInfo.type == HAPI_PARTTYPE_VOLUME)
         {
             hstat = HAPI_GetVolumeInfo(
-                    Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &myVolumeInfo
                     );
             Util::checkHAPIStatus(hstat);
@@ -181,7 +183,8 @@ OutputGeometryPart::update()
         if(myPartInfo.type == HAPI_PARTTYPE_CURVE)
         {
             hstat = HAPI_GetCurveInfo(
-                    Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &myCurveInfo
                     );
             Util::checkHAPIStatus(hstat);
@@ -212,7 +215,8 @@ getAttributeDataWrapper(
         )
 {
     return HAPI_GetAttributeFloatData(
-            Util::theHAPISession.get(), asset_id, object_id, geo_id, part_id,
+            Util::theHAPISession.get(),
+            asset_id, object_id, geo_id, part_id,
             name,
             attr_info,
             data,
@@ -234,7 +238,8 @@ getAttributeDataWrapper(
         )
 {
     return HAPI_GetAttributeIntData(
-            Util::theHAPISession.get(), asset_id, object_id, geo_id, part_id,
+            Util::theHAPISession.get(),
+            asset_id, object_id, geo_id, part_id,
             name,
             attr_info,
             data,
@@ -260,7 +265,8 @@ getAttributeDataWrapper(
             );
 
     HAPI_Result hapiResult = HAPI_GetAttributeStringData(
-            Util::theHAPISession.get(), asset_id, object_id, geo_id, part_id,
+            Util::theHAPISession.get(),
+            asset_id, object_id, geo_id, part_id,
             name,
             attr_info,
             &stringHandles.front(),
@@ -290,7 +296,8 @@ OutputGeometryPart::getAttributeData(
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
     HAPI_GetAttributeInfo(
-            Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+            Util::theHAPISession.get(),
+            myAssetId, myObjectId, myGeoId, myPartId,
             name,
             owner,
             &attr_info
@@ -445,7 +452,8 @@ OutputGeometryPart::computeCurves(
         // Number of CVs
         int numVertices = 0;
         HAPI_GetCurveCounts(
-                Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId, myPartId,
                 &numVertices,
                 iCurve, 1
                 );
@@ -470,7 +478,8 @@ OutputGeometryPart::computeCurves(
         else
         {
             HAPI_GetCurveOrders(
-                    Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &order,
                     iCurve, 1
                     );
@@ -514,7 +523,8 @@ OutputGeometryPart::computeCurves(
             // the first and last houdini knot are excluded
             knotSequences.setLength(numVertices + order - 2);
             HAPI_GetCurveKnots(
-                    Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &knots.front(),
                     knotOffset, numVertices + order
                     );
@@ -1027,7 +1037,8 @@ OutputGeometryPart::computeParticle(
     // other attributes
     int* attributeNames = new int[myPartInfo.pointAttributeCount];
     HAPI_GetAttributeNames(
-            Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+            Util::theHAPISession.get(),
+            myAssetId, myObjectId, myGeoId, myPartId,
             HAPI_ATTROWNER_POINT,
             attributeNames,
             myPartInfo.pointAttributeCount
@@ -1064,7 +1075,8 @@ OutputGeometryPart::computeParticle(
         HAPI_AttributeInfo attributeInfo;
 
         HAPI_GetAttributeInfo(
-                Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId, myPartId,
                 attributeName.asChar(),
                 HAPI_ATTROWNER_POINT,
                 &attributeInfo
@@ -1267,7 +1279,8 @@ OutputGeometryPart::computeMesh(
         if(myPartInfo.faceCount)
         {
             HAPI_GetFaceCounts(
-                    Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &intArray.front(),
                     0, myPartInfo.faceCount
                     );
@@ -1284,7 +1297,8 @@ OutputGeometryPart::computeMesh(
         if(myPartInfo.vertexCount)
         {
             HAPI_GetVertexList(
-                    Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     &intArray.front(),
                     0, myPartInfo.vertexCount
                     );
@@ -1684,7 +1698,8 @@ OutputGeometryPart::computeMaterial(
             );
 
     HAPI_GetMaterialInfo(
-            Util::theHAPISession.get(), myAssetId, materialId,
+            Util::theHAPISession.get(),
+            myAssetId, materialId,
             &myMaterialInfo
             );
 
@@ -1704,7 +1719,8 @@ OutputGeometryPart::computeMaterial(
 
         std::vector<HAPI_ParmInfo> parms(materialNodeInfo.parmCount);
         HAPI_GetParameters(
-                Util::theHAPISession.get(), myMaterialInfo.nodeId,
+                Util::theHAPISession.get(),
+                myMaterialInfo.nodeId,
                 &parms[0],
                 0, materialNodeInfo.parmCount
                 );
@@ -1725,7 +1741,8 @@ OutputGeometryPart::computeMaterial(
         if(ambientParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    Util::theHAPISession.get(), myMaterialInfo.nodeId, valueHolder,
+                    Util::theHAPISession.get(),
+                    myMaterialInfo.nodeId, valueHolder,
                     parms[ambientParmIndex].floatValuesIndex, 3
                     );
             ambientHandle.set3Float(
@@ -1738,7 +1755,8 @@ OutputGeometryPart::computeMaterial(
         if(specularParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    Util::theHAPISession.get(), myMaterialInfo.nodeId,
+                    Util::theHAPISession.get(),
+                    myMaterialInfo.nodeId,
                     valueHolder,
                     parms[specularParmIndex].floatValuesIndex, 3
                     );
@@ -1752,7 +1770,8 @@ OutputGeometryPart::computeMaterial(
         if(diffuseParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    Util::theHAPISession.get(), myMaterialInfo.nodeId,
+                    Util::theHAPISession.get(),
+                    myMaterialInfo.nodeId,
                     valueHolder,
                     parms[diffuseParmIndex].floatValuesIndex, 3
                     );
@@ -1766,7 +1785,8 @@ OutputGeometryPart::computeMaterial(
         if(alphaParmIndex >= 0)
         {
             HAPI_GetParmFloatValues(
-                    Util::theHAPISession.get(), myMaterialInfo.nodeId,
+                    Util::theHAPISession.get(),
+                    myMaterialInfo.nodeId,
                     valueHolder,
                     parms[alphaParmIndex].floatValuesIndex, 1
                     );
@@ -1778,14 +1798,16 @@ OutputGeometryPart::computeMaterial(
         {
             HAPI_ParmInfo texturePathParm;
             HAPI_GetParameters(
-                    Util::theHAPISession.get(), myMaterialInfo.nodeId,
+                    Util::theHAPISession.get(),
+                    myMaterialInfo.nodeId,
                     &texturePathParm,
                     texturePathSHParmIndex, 1
                     );
 
             int texturePathSH;
             HAPI_GetParmStringValues(
-                    Util::theHAPISession.get(), myMaterialInfo.nodeId,
+                    Util::theHAPISession.get(),
+                    myMaterialInfo.nodeId,
                     true,
                     &texturePathSH,
                     texturePathParm.stringValuesIndex, 1
@@ -1797,7 +1819,8 @@ OutputGeometryPart::computeMaterial(
             {
                 // this could fail if texture parameter is empty
                 hapiResult = HAPI_RenderTextureToImage(
-                        Util::theHAPISession.get(), myAssetId, myMaterialInfo.id,
+                        Util::theHAPISession.get(),
+                        myAssetId, myMaterialInfo.id,
                         texturePathSHParmIndex
                         );
 
@@ -1899,7 +1922,8 @@ OutputGeometryPart::computeExtraAttributes(
                 myPartInfo.*attributeCount
                 );
         HAPI_GetAttributeNames(
-                Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId, myPartId,
                 owner,
                 &attributeNames[0],
                 attributeNames.size()
@@ -1937,7 +1961,8 @@ OutputGeometryPart::computeExtraAttributes(
 
             HAPI_AttributeInfo attributeInfo;
             CHECK_HAPI(HAPI_GetAttributeInfo(
-                    Util::theHAPISession.get(), myAssetId, myObjectId, myGeoId, myPartId,
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
                     attributeName.asChar(),
                     owner,
                     &attributeInfo

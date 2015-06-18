@@ -116,9 +116,6 @@ namespace
             : Base(name, defaultValue)
         {}
 
-    private:
-        friend class Base;
-
         int getImpl(bool& exists) const
         {
             return MGlobal::optionVarIntValue(myName.c_str(), &exists);
@@ -133,9 +130,6 @@ namespace
         StringOptionVar(const char* name, const char* defaultValue)
             : Base(name, defaultValue)
         {}
-
-    private:
-        friend class Base;
 
         MString getImpl(bool& exists) const
         {

@@ -60,9 +60,14 @@ class HAPIError: public std::exception
     { \
         int bufferLength; \
         HAPI_GetStatusStringBufLength( \
-            (status_type), (verbosity), &bufferLength); \
+                (status_type), (verbosity), &bufferLength \
+                ); \
         _hapiStatusBuffer.resize(bufferLength); \
-        HAPI_GetStatusString((status_type), &_hapiStatusBuffer.front(), bufferLength); \
+        HAPI_GetStatusString( \
+                (status_type), \
+                &_hapiStatusBuffer.front(), \
+                bufferLength \
+                ); \
     } \
     const char * hapiStatus = &_hapiStatusBuffer.front();
 

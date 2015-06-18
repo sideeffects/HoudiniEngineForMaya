@@ -18,7 +18,10 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
 
-    CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
+     CHECK_HAPI(HAPI_CreateInputAsset(
+                &myInputAssetId,
+                NULL
+                ));
     if(!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
@@ -35,7 +38,9 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
 
 InputParticle::~InputParticle()
 {
-    CHECK_HAPI(HAPI_DestroyAsset(myInputAssetId));
+    CHECK_HAPI(HAPI_DestroyAsset(
+                myInputAssetId
+                ));
 }
 
 Input::AssetInputType
@@ -53,8 +58,17 @@ InputParticle::setInputTransform(MDataHandle &dataHandle)
     transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(myInputAssetId, myInputObjectId, &transformEuler);
+    HAPI_ConvertMatrixToEuler(
+            matrix,
+            HAPI_SRT,
+            HAPI_XYZ,
+            &transformEuler
+            );
+    HAPI_SetObjectTransform(
+            myInputAssetId,
+            myInputObjectId,
+            &transformEuler
+            );
 }
 
 void
@@ -323,5 +337,7 @@ InputParticle::setInputGeo(
             );
 
     // Commit it
-    HAPI_CommitGeo(myInputAssetId, myInputObjectId, myInputGeoId);
+    HAPI_CommitGeo(
+            myInputAssetId, myInputObjectId, myInputGeoId
+            );
 }

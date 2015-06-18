@@ -17,21 +17,34 @@ InputCurve::InputCurve(int assetId, int inputIdx) :
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     int curveAssetId;
-    CHECK_HAPI(HAPI_CreateCurve(&curveAssetId));
+    CHECK_HAPI(HAPI_CreateCurve(
+                &curveAssetId
+                ));
     if(!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input curve."));
     }
 
-    HAPI_GetAssetInfo(curveAssetId, &myCurveAssetInfo);
-    HAPI_GetNodeInfo(myCurveAssetInfo.nodeId, &myCurveNodeInfo);
+    HAPI_GetAssetInfo(
+            curveAssetId,
+            &myCurveAssetInfo
+            );
+    HAPI_GetNodeInfo(
+            myCurveAssetInfo.nodeId,
+            &myCurveNodeInfo
+            );
 }
 
 InputCurve::~InputCurve()
 {
-    HAPI_DisconnectAssetGeometry(myAssetId, myInputIdx);
+    HAPI_DisconnectAssetGeometry(
+            myAssetId,
+            myInputIdx
+            );
 
-    HAPI_DestroyAsset(myCurveAssetInfo.id);
+    HAPI_DestroyAsset(
+            myCurveAssetInfo.id
+            );
 }
 
 InputCurve::AssetInputType
@@ -49,8 +62,17 @@ InputCurve::setInputTransform(MDataHandle &dataHandle)
     transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
-    HAPI_SetObjectTransform(myCurveAssetInfo.id, 0, &transformEuler);
+    HAPI_ConvertMatrixToEuler(
+            matrix,
+            HAPI_SRT,
+            HAPI_XYZ,
+            &transformEuler
+            );
+    HAPI_SetObjectTransform(
+            myCurveAssetInfo.id,
+            0,
+            &transformEuler
+            );
 }
 
 void
@@ -59,7 +81,10 @@ InputCurve::setInputGeo(
         const MPlug &plug
         )
 {
-    HAPI_ConnectAssetGeometry(myCurveAssetInfo.id, 0, myAssetId, myInputIdx);
+    HAPI_ConnectAssetGeometry(
+            myCurveAssetInfo.id, 0,
+            myAssetId, myInputIdx
+            );
 
     MDataHandle dataHandle = dataBlock.inputValue(plug);
 
@@ -71,7 +96,11 @@ InputCurve::setInputGeo(
 
     // find coords parm
     std::vector<HAPI_ParmInfo> parms(myCurveNodeInfo.parmCount);
-    HAPI_GetParameters(myCurveNodeInfo.id, &parms[0], 0, myCurveNodeInfo.parmCount);
+    HAPI_GetParameters(
+            myCurveNodeInfo.id,
+            &parms[0],
+            0, myCurveNodeInfo.parmCount
+            );
     int typeParmIndex = Util::findParm(parms, "type");
     int coordsParmIndex = Util::findParm(parms, "coords");
     int orderParmIndex = Util::findParm(parms, "order");
@@ -94,8 +123,11 @@ InputCurve::setInputGeo(
     // type
     {
         HAPI_ParmChoiceInfo* choices = new HAPI_ParmChoiceInfo[typeParm.choiceCount];
-        HAPI_GetParmChoiceLists(myCurveNodeInfo.id, choices,
-                typeParm.choiceIndex, typeParm.choiceCount);
+        HAPI_GetParmChoiceLists(
+                myCurveNodeInfo.id,
+                choices,
+                typeParm.choiceIndex, typeParm.choiceCount
+                );
 
         int nurbsIdx = -1;
         for(int i = 0; i < typeParm.choiceCount; i++)
@@ -114,8 +146,12 @@ InputCurve::setInputGeo(
             return;
         }
 
-        HAPI_SetParmIntValues(myCurveNodeInfo.id, &nurbsIdx,
-                typeParm.intValuesIndex, 1);
+        HAPI_SetParmIntValues(
+                myCurveNodeInfo.id,
+                &nurbsIdx,
+                typeParm.intValuesIndex,
+                1
+                );
     }
 
     // coords

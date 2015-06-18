@@ -363,7 +363,11 @@ Asset::Asset(
 
     // load the otl
     int libraryId = -1;
-    hapiResult = HAPI_LoadAssetLibraryFromFile(otlFilePath.asChar(), true, &libraryId);
+    hapiResult = HAPI_LoadAssetLibraryFromFile(
+            otlFilePath.asChar(),
+            true,
+            &libraryId
+            );
     if(HAPI_FAIL(hapiResult))
     {
         DISPLAY_WARNING("Could not load OTL file: ^1s\n"
@@ -377,11 +381,18 @@ Asset::Asset(
     if(libraryId >= 0)
     {
         int assetCount = 0;
-        hapiResult = HAPI_GetAvailableAssetCount(libraryId, &assetCount);
+        hapiResult = HAPI_GetAvailableAssetCount(
+                libraryId,
+                &assetCount
+                );
         CHECK_HAPI(hapiResult);
 
         assetNamesSH.resize(assetCount);
-        hapiResult = HAPI_GetAvailableAssets(libraryId, &assetNamesSH.front(), assetCount);
+        hapiResult = HAPI_GetAvailableAssets(
+                libraryId,
+                &assetNamesSH.front(),
+                assetCount
+                );
         CHECK_HAPI(hapiResult);
     }
 
@@ -445,9 +456,15 @@ Asset::Asset(
         }
     }
 
-    hapiResult = HAPI_GetAssetInfo(assetId, &myAssetInfo);
+    hapiResult = HAPI_GetAssetInfo(
+            assetId,
+            &myAssetInfo
+            );
     CHECK_HAPI(hapiResult);
-    hapiResult = HAPI_GetNodeInfo(myAssetInfo.nodeId, & myNodeInfo);
+    hapiResult = HAPI_GetNodeInfo(
+            myAssetInfo.nodeId,
+            &myNodeInfo
+            );
     CHECK_HAPI(hapiResult);
 
     // Warn the user if the OTL path is not what was originally requested.
@@ -481,7 +498,9 @@ Asset::~Asset()
 
     if(myAssetInfo.id >= 0)
     {
-        hstat = HAPI_DestroyAsset(myAssetInfo.id);
+        hstat = HAPI_DestroyAsset(
+                myAssetInfo.id
+                );
         Util::checkHAPIStatus(hstat);
     }
 }
@@ -543,7 +562,9 @@ Asset::resetSimulation()
 {
     assert(myAssetInfo.id >= 0);
 
-    HAPI_ResetSimulation(myAssetInfo.id);
+    HAPI_ResetSimulation(
+            myAssetInfo.id
+            );
 }
 
 MString
@@ -554,7 +575,10 @@ Asset::getCookMessages()
     // Trigger a cook so that the asset will become the "last cooked asset",
     // because HAPI_STATUS_COOK_RESULT only consider the "last cooked asset".
     // In most cases, this shouldn't do any actual cooking.
-    HAPI_CookAsset(myAssetInfo.id, NULL);
+    HAPI_CookAsset(
+            myAssetInfo.id,
+            NULL
+            );
 
     GET_HAPI_STATUS_COOK();
 
@@ -739,7 +763,9 @@ Asset::setTime(const MTime &mayaTime)
     // So we need to offset the time by 1.
     MTime hapiTime = myTime - MTime(1, MTime::uiUnit());
     float hapiTimeSeconds = (float)hapiTime.as(MTime::kSeconds);
-    HAPI_SetTime(hapiTimeSeconds);
+    HAPI_SetTime(
+            hapiTimeSeconds
+            );
 }
 
 void
@@ -783,7 +809,10 @@ Asset::compute(
         cookOptions.splitGeosByGroup = splitGeosByGroup;
         cookOptions.cookTemplatedGeos = cookTemplatedGeos;
 
-        HAPI_CookAsset(myAssetInfo.id, &cookOptions);
+        HAPI_CookAsset(
+                myAssetInfo.id,
+                &cookOptions
+                );
 
         if(!Util::statusCheckLoop())
         {
@@ -1178,7 +1207,11 @@ Asset::getParmValues(
     // Get multiparm length
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         GetMultiparmLengthOperation operation(
                 dataBlock,
@@ -1193,7 +1226,11 @@ Asset::getParmValues(
     // Get value
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         GetAttrOperation operation(
                 dataBlock,
@@ -1551,7 +1588,11 @@ Asset::setParmValues(
     // Set multiparm length
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(myNodeInfo.id, &parmInfos[0], 0, parmInfos.size());
+        HAPI_GetParameters(
+                myNodeInfo.id,
+                &parmInfos[0],
+                0, parmInfos.size()
+                );
 
         SetMultiparmLengthOperation operation(
                 dataBlock,
@@ -1562,7 +1603,10 @@ Asset::setParmValues(
         Util::walkParm(parmInfos, operation);
 
         // multiparm length could change, so we need to get the new parmCount
-        HAPI_GetNodeInfo(myAssetInfo.nodeId, &myNodeInfo);
+        HAPI_GetNodeInfo(
+                myAssetInfo.nodeId,
+                &myNodeInfo
+                );
     }
 
     // Set value

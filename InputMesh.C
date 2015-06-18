@@ -15,7 +15,10 @@ InputMesh::InputMesh(int assetId, int inputIdx) :
     myInputObjectId(-1),
     myInputGeoId(-1)
 {
-    CHECK_HAPI(HAPI_CreateInputAsset(&myInputAssetId, NULL));
+    CHECK_HAPI(HAPI_CreateInputAsset(
+        &myInputAssetId,
+        NULL
+        ));
     if(!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
@@ -32,7 +35,9 @@ InputMesh::InputMesh(int assetId, int inputIdx) :
 
 InputMesh::~InputMesh()
 {
-    CHECK_HAPI(HAPI_DestroyAsset(myInputAssetId));
+    CHECK_HAPI(HAPI_DestroyAsset(
+                myInputAssetId
+                ));
 }
 
 Input::AssetInputType
@@ -50,7 +55,12 @@ InputMesh::setInputTransform(MDataHandle &dataHandle)
     transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(matrix, HAPI_SRT, HAPI_XYZ, &transformEuler);
+    HAPI_ConvertMatrixToEuler(
+            matrix,
+            HAPI_SRT,
+            HAPI_XYZ,
+            &transformEuler
+            );
     HAPI_SetObjectTransform(
             myInputAssetId, myInputObjectId,
             &transformEuler
@@ -159,7 +169,8 @@ InputMesh::setInputGeo(
                     "N", &attributeInfo
                     );
 
-            HAPI_SetAttributeFloatData(myInputAssetId, myInputObjectId, myInputGeoId,
+            HAPI_SetAttributeFloatData(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     "N", &attributeInfo,
                     &vertexNormals.front(), 0, normalIds.length()
                     );
@@ -373,7 +384,9 @@ InputMesh::setInputGeo(
             );
 
     // Commit it
-    HAPI_CommitGeo(myInputAssetId, myInputObjectId, myInputGeoId);
+    HAPI_CommitGeo(
+            myInputAssetId, myInputObjectId, myInputGeoId
+            );
 
     delete[] vl;
     delete[] fc;

@@ -100,7 +100,9 @@ Inputs::compute(MDataBlock &dataBlock)
         MDataHandle inputNameHandle = inputHandle.child(Inputs::inputName);
 
         HAPI_StringHandle nameSH;
-        HAPI_GetInputName(myAssetId, i,
+        HAPI_GetInputName(
+                myAssetId,
+                i,
                 HAPI_INPUT_GEOMETRY,
                 &nameSH);
 
@@ -168,7 +170,10 @@ Inputs::setInput(
 
     if(!isValidInput)
     {
-        HAPI_DisconnectAssetGeometry(myAssetId, inputIdx);
+        HAPI_DisconnectAssetGeometry(
+                myAssetId,
+                inputIdx
+                );
         delete assetInput;
         assetInput = NULL;
         return;

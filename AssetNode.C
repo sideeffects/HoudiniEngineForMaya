@@ -5,6 +5,10 @@
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MDataHandle.h>
 #include <maya/MFnDependencyNode.h>
+#if MAYA_API_VERSION >= 201600
+#include <maya/MEvaluationNode.h>
+#include <maya/MEvaluationNodeIterator.h>
+#endif
 #include <maya/MFileIO.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
@@ -1335,6 +1339,43 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
     return MS::kSuccess;
 }
+
+#if MAYA_API_VERSION >= 201600
+MStatus
+AssetNode::preEvaluation(
+        const MDGContext& context,
+        const MEvaluationNode& evaluationNode
+        )
+{
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+    if(parmAttrObj.isNull())
+    {
+        return MStatus::kSuccess;
+    }
+
+    for(MEvaluationNodeIterator nodeIt = evaluationNode.iterator();
+            !nodeIt.isDone();
+            nodeIt.next())
+    {
+        myResultsClean = false;
+
+        printf("evaluation node: %s\n", nodeIt.plug().name().asChar());
+
+        if(isPlugBelow(nodeIt.plug(), parmAttrObj))
+        {
+            myDirtyParmAttributes.push_back(nodeIt.plug().attribute());
+        }
+
+        if(isPlugBelow(nodeIt.plug(), AssetNode::input))
+        {
+            myNeedToMarshalInput = true;
+        }
+    }
+
+    return MStatus::kSuccess;
+}
+#endif
 
 void
 AssetNode::rebuildAsset()

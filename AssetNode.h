@@ -56,6 +56,13 @@ class AssetNode: public MPxTransform
         virtual MStatus setDependentsDirty(const MPlug& plugBeingDirtied,
                 MPlugArray& affectedPlugs);
 
+#if MAYA_API_VERSION >= 201600
+        virtual MStatus preEvaluation(
+                const MDGContext& context,
+                const MEvaluationNode& evaluationNode
+                );
+#endif
+
         Asset* getAsset() const;
 
         static void* creator();

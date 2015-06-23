@@ -211,11 +211,16 @@ InputMesh::setInputGeo(
         MStringArray uvSetNames;
         meshFn.getUVSetNames(uvSetNames);
 
+        MStringArray mappedUVAttributeNames;
+        mappedUVAttributeNames.setLength(uvSetNames.length());
+
         for(unsigned int i = 0; i < uvSetNames.length(); i++)
         {
             const MString uvSetName = uvSetNames[i];
 
             const MString uvAttributeName = getLayerName("uv", i);
+
+            mappedUVAttributeNames[i] = uvAttributeName;
 
             // get UV IDs
             MIntArray uvCounts;
@@ -280,6 +285,22 @@ InputMesh::setInputGeo(
                     &vertexUVs.front(), 0, vertexList.length()
                     );
         }
+
+        Input::setDetailAttribute(
+                myInputAssetId,
+                myInputObjectId,
+                myInputGeoId,
+                "maya_uv_name",
+                uvSetNames
+                );
+
+        Input::setDetailAttribute(
+                myInputAssetId,
+                myInputObjectId,
+                myInputGeoId,
+                "maya_uv_mapped_uv",
+                mappedUVAttributeNames
+                );
     }
 
     // Colors and Alphas
@@ -289,6 +310,11 @@ InputMesh::setInputGeo(
 
         MStringArray colorSetNames;
         meshFn.getColorSetNames(colorSetNames);
+
+        MStringArray mappedCdNames;
+        MStringArray mappedAlphaNames;
+        mappedCdNames.setLength(colorSetNames.length());
+        mappedAlphaNames.setLength(colorSetNames.length());
 
         MColor defaultUnsetColor;
         MColorArray colors;
@@ -331,6 +357,8 @@ InputMesh::setInputGeo(
             {
                 const MString colorAttributeName = getLayerName("Cd", i);
 
+                mappedCdNames[i] = colorAttributeName;
+
                 buffer.resize(3 * vertexList.length());
                 for(unsigned int j = 0; j < vertexList.length(); j++)
                 {
@@ -364,6 +392,8 @@ InputMesh::setInputGeo(
             {
                 const MString alphaAttributeName = getLayerName("Alpha", i);
 
+                mappedAlphaNames[i] = alphaAttributeName;
+
                 buffer.resize(vertexList.length());
                 for(unsigned int j = 0; j < vertexList.length(); j++)
                 {
@@ -391,6 +421,30 @@ InputMesh::setInputGeo(
                         );
             }
         }
+
+        Input::setDetailAttribute(
+                myInputAssetId,
+                myInputObjectId,
+                myInputGeoId,
+                "maya_colorset_name",
+                colorSetNames
+                );
+
+        Input::setDetailAttribute(
+                myInputAssetId,
+                myInputObjectId,
+                myInputGeoId,
+                "maya_colorset_mapped_Cd",
+                mappedCdNames
+                );
+
+        Input::setDetailAttribute(
+                myInputAssetId,
+                myInputObjectId,
+                myInputGeoId,
+                "maya_colorset_mapped_Alpha",
+                mappedAlphaNames
+                );
     }
 
     Input::setInputPlugMetaData(

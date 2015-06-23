@@ -100,24 +100,28 @@ InputMesh::setInputGeo(
     MFnMesh meshFn(meshObj);
 
     // get face data
-    MIntArray faceCounts;
-    MIntArray vertexList;
-    meshFn.getVertices(faceCounts, vertexList);
-    Util::reverseWindingOrder(vertexList, faceCounts);
+    std::vector<int> vertexCount;
+    std::vector<int> vertexList;
+    {
+        MIntArray mayaVertexCount;
+        MIntArray mayaVertexList;
+        meshFn.getVertices(mayaVertexCount, mayaVertexList);
+
+        vertexCount.resize(mayaVertexCount.length());
+        mayaVertexCount.get(&vertexCount[0]);
+
+        vertexList.resize(mayaVertexList.length());
+        mayaVertexList.get(&vertexList[0]);
+    }
+    Util::reverseWindingOrder(vertexList, vertexCount);
 
     // set up part info
     HAPI_PartInfo partInfo;
     HAPI_PartInfo_Init(&partInfo);
     partInfo.id = 0;
-    partInfo.faceCount        = faceCounts.length();
-    partInfo.vertexCount      = vertexList.length();
+    partInfo.faceCount        = vertexCount.size();
+    partInfo.vertexCount      = vertexList.size();
     partInfo.pointCount       = meshFn.numVertices();
-
-    // copy data to arrays
-    int * vl = new int[partInfo.vertexCount];
-    int * fc = new int[partInfo.faceCount];
-    vertexList.get(vl);
-    faceCounts.get(fc);
 
     // Set the data
     HAPI_SetPartInfo(
@@ -128,12 +132,14 @@ InputMesh::setInputGeo(
     HAPI_SetFaceCounts(
             Util::theHAPISession.get(),
             myInputAssetId, myInputObjectId, myInputGeoId,
-            fc, 0, partInfo.faceCount
+            &vertexCount[0],
+            0, partInfo.faceCount
             );
     HAPI_SetVertexList(
             Util::theHAPISession.get(),
             myInputAssetId, myInputObjectId, myInputGeoId,
-            vl, 0, partInfo.vertexCount
+            &vertexList[0],
+            0, partInfo.vertexCount
             );
 
     // Set position attributes.
@@ -166,7 +172,7 @@ InputMesh::setInputGeo(
         if(normalIds.length())
         {
             // reverse winding order
-            Util::reverseWindingOrder(normalIds, faceCounts);
+            Util::reverseWindingOrder(normalIds, vertexCount);
 
             // get normal values
             const float* rawNormals = meshFn.getRawNormals(NULL);
@@ -237,11 +243,11 @@ InputMesh::setInputGeo(
 
             // build the per-vertex UVs
             std::vector<float> vertexUVs;
-            vertexUVs.reserve(vertexList.length() * 3);
+            vertexUVs.reserve(vertexList.size() * 3);
             unsigned int uvIdIndex = 0;
             for(unsigned int i = 0; i < uvCounts.length(); ++i)
             {
-                if(uvCounts[i] == faceCounts[i])
+                if(uvCounts[i] == vertexCount[i])
                 {
                     // has UVs assigned
                     for(int j = 0; j < uvCounts[i]; ++j)
@@ -256,7 +262,7 @@ InputMesh::setInputGeo(
                 else
                 {
                     // no UVs assigned
-                    for(int j = 0; j < faceCounts[i]; ++j)
+                    for(int j = 0; j < vertexCount[i]; ++j)
                     {
                         vertexUVs.push_back(0);
                         vertexUVs.push_back(0);
@@ -270,7 +276,7 @@ InputMesh::setInputGeo(
             attributeInfo.exists = true;
             attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
             attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
-            attributeInfo.count = vertexList.length();
+            attributeInfo.count = vertexList.size();
             attributeInfo.tupleSize = 3;
             HAPI_AddAttribute(
                     Util::theHAPISession.get(),
@@ -282,7 +288,7 @@ InputMesh::setInputGeo(
                     Util::theHAPISession.get(),
                     myInputAssetId, myInputObjectId, myInputGeoId,
                     uvAttributeName.asChar(), &attributeInfo,
-                    &vertexUVs.front(), 0, vertexList.length()
+                    &vertexUVs.front(), 0, vertexList.size()
                     );
         }
 
@@ -351,7 +357,7 @@ InputMesh::setInputGeo(
                         ));
 
             // reverse winding order
-            Util::reverseWindingOrder(colors, faceCounts);
+            Util::reverseWindingOrder(colors, vertexCount);
 
             if(hasColor)
             {
@@ -359,8 +365,8 @@ InputMesh::setInputGeo(
 
                 mappedCdNames[i] = colorAttributeName;
 
-                buffer.resize(3 * vertexList.length());
-                for(unsigned int j = 0; j < vertexList.length(); j++)
+                buffer.resize(3 * vertexList.size());
+                for(unsigned int j = 0; j < vertexList.size(); j++)
                 {
                     buffer[j * 3 + 0] = colors[j].r;
                     buffer[j * 3 + 1] = colors[j].g;
@@ -372,7 +378,7 @@ InputMesh::setInputGeo(
                 colorAttributeInfo.exists = true;
                 colorAttributeInfo.owner = HAPI_ATTROWNER_VERTEX;
                 colorAttributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
-                colorAttributeInfo.count = vertexList.length();
+                colorAttributeInfo.count = vertexList.size();
                 colorAttributeInfo.tupleSize = 3;
                 HAPI_AddAttribute(
                         Util::theHAPISession.get(),
@@ -384,7 +390,7 @@ InputMesh::setInputGeo(
                         Util::theHAPISession.get(),
                         myInputAssetId, myInputObjectId, myInputGeoId,
                         colorAttributeName.asChar(), &colorAttributeInfo,
-                        &buffer.front(), 0, vertexList.length()
+                        &buffer.front(), 0, vertexList.size()
                         );
             }
 
@@ -394,8 +400,8 @@ InputMesh::setInputGeo(
 
                 mappedAlphaNames[i] = alphaAttributeName;
 
-                buffer.resize(vertexList.length());
-                for(unsigned int j = 0; j < vertexList.length(); j++)
+                buffer.resize(vertexList.size());
+                for(unsigned int j = 0; j < vertexList.size(); j++)
                 {
                     buffer[j] = colors[j].a;
                 }
@@ -405,7 +411,7 @@ InputMesh::setInputGeo(
                 alphaAttributeInfo.exists = true;
                 alphaAttributeInfo.owner = HAPI_ATTROWNER_VERTEX;
                 alphaAttributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
-                alphaAttributeInfo.count = vertexList.length();
+                alphaAttributeInfo.count = vertexList.size();
                 alphaAttributeInfo.tupleSize = 1;
                 HAPI_AddAttribute(
                         Util::theHAPISession.get(),
@@ -417,7 +423,7 @@ InputMesh::setInputGeo(
                         Util::theHAPISession.get(),
                         myInputAssetId, myInputObjectId, myInputGeoId,
                         alphaAttributeName.asChar(), &alphaAttributeInfo,
-                        &buffer.front(), 0, vertexList.length()
+                        &buffer.front(), 0, vertexList.size()
                         );
             }
         }
@@ -457,7 +463,4 @@ InputMesh::setInputGeo(
             Util::theHAPISession.get(),
             myInputAssetId, myInputObjectId, myInputGeoId
             );
-
-    delete[] vl;
-    delete[] fc;
 }

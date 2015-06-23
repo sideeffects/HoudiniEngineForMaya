@@ -187,6 +187,11 @@ class AssetNode: public MPxTransform
         static MObject outputPartExtraAttributeTuple;
         static MObject outputPartExtraAttributeData;
 
+        static MObject outputPartGroups;
+        static MObject outputPartGroupName;
+        static MObject outputPartGroupType;
+        static MObject outputPartGroupMembers;
+
         static MObject outputVisibility;
         static MObject outputIsInstanced;
 

@@ -67,6 +67,19 @@ InputMesh::setInputTransform(MDataHandle &dataHandle)
             );
 }
 
+static
+MString
+getLayerName(const char *name, int layer)
+{
+    MString layerName = name;
+    if(layer > 0)
+    {
+        layerName += layer + 1;
+    }
+
+    return layerName;
+}
+
 void
 InputMesh::setInputGeo(
         MDataBlock &dataBlock,
@@ -189,15 +202,7 @@ InputMesh::setInputGeo(
         {
             const MString uvSetName = uvSetNames[i];
 
-            MString uvAttributeName;
-            if(uvSetName == currentUVSetName)
-            {
-                uvAttributeName = "uv";
-            }
-            else
-            {
-                uvAttributeName = uvSetName;
-            }
+            const MString uvAttributeName = getLayerName("uv", i);
 
             // get UV IDs
             MIntArray uvCounts;
@@ -277,19 +282,6 @@ InputMesh::setInputGeo(
         {
             const MString colorSetName = colorSetNames[i];
 
-            MString colorAttributeName;
-            MString alphaAttributeName;
-            if(colorSetName == currentColorSetName)
-            {
-                colorAttributeName = "Cd";
-                alphaAttributeName = "Alpha";
-            }
-            else
-            {
-                colorAttributeName = colorSetName;
-                alphaAttributeName = colorSetName + "Alpha";
-            }
-
             bool hasColor = false;
             bool hasAlpha = false;
             {
@@ -322,6 +314,8 @@ InputMesh::setInputGeo(
 
             if(hasColor)
             {
+                const MString colorAttributeName = getLayerName("Cd", i);
+
                 buffer.resize(3 * vertexList.length());
                 for(unsigned int j = 0; j < vertexList.length(); j++)
                 {
@@ -351,6 +345,8 @@ InputMesh::setInputGeo(
 
             if(hasAlpha)
             {
+                const MString alphaAttributeName = getLayerName("Alpha", i);
+
                 buffer.resize(vertexList.length());
                 for(unsigned int j = 0; j < vertexList.length(); j++)
                 {

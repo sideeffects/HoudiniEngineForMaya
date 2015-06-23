@@ -66,6 +66,10 @@ class OutputGeometryPart
                 const MTime &time,
                 MDataHandle &extraAttributesHandle
                 );
+        void computeGroups(
+                const MTime &time,
+                MDataHandle &extraAttributesHandle
+                );
 
         template<typename T>
         bool getAttributeData(
@@ -101,6 +105,7 @@ class OutputGeometryPart
 
         std::vector<std::string> myAttributesUsed;
 
+        HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
         HAPI_VolumeInfo myVolumeInfo;
         HAPI_CurveInfo myCurveInfo;

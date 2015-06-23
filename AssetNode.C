@@ -125,6 +125,11 @@ MObject AssetNode::outputPartExtraAttributeDataType;
 MObject AssetNode::outputPartExtraAttributeTuple;
 MObject AssetNode::outputPartExtraAttributeData;
 
+MObject AssetNode::outputPartGroups;
+MObject AssetNode::outputPartGroupName;
+MObject AssetNode::outputPartGroupType;
+MObject AssetNode::outputPartGroupMembers;
+
 MObject AssetNode::outputVisibility;
 MObject AssetNode::outputIsInstanced;
 MObject AssetNode::outputInstancers;
@@ -919,6 +924,38 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
 
+    AssetNode::outputPartGroupName = tAttr.create(
+            "outputPartGroupName", "outputPartGroupName",
+            MFnData::kString
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
+    AssetNode::outputPartGroupType = nAttr.create(
+            "outputPartGroupType", "outputPartGroupType",
+            MFnNumericData::kInt
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+
+    AssetNode::outputPartGroupMembers = tAttr.create(
+            "outputPartGroupMembers", "outputPartGroupMembers",
+            MFnData::kIntArray
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
+    AssetNode::outputPartGroups = cAttr.create(
+            "outputPartGroups", "outputPartGroups"
+            );
+    cAttr.addChild(AssetNode::outputPartGroupName);
+    cAttr.addChild(AssetNode::outputPartGroupType);
+    cAttr.addChild(AssetNode::outputPartGroupMembers);
+    cAttr.setStorable(false);
+    cAttr.setWritable(false);
+    cAttr.setArray(true);
+    cAttr.setUsesArrayDataBuilder(true);
+
     AssetNode::outputParts = cAttr.create(
             "outputParts", "outputParts"
             );
@@ -931,6 +968,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartCurves);
     cAttr.addChild(AssetNode::outputPartCurvesIsBezier);
     cAttr.addChild(AssetNode::outputPartExtraAttributes);
+    cAttr.addChild(AssetNode::outputPartGroups);
 
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
@@ -1255,6 +1293,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
                 affectedPlugs.append(elemPlug.child(outputPartCurvesIsBezier));
 
+                // Extra attributes
                 MPlug outputPartsExtraAttributesPlug = elemPlug.child(AssetNode::outputPartExtraAttributes);
                 for(unsigned int l = 0; l < outputPartsExtraAttributesPlug.numElements(); ++l)
                 {
@@ -1265,6 +1304,17 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                     affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeDataType));
                     affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeTuple));
                     affectedPlugs.append(elemExtraAttributePlug.child(AssetNode::outputPartExtraAttributeData));
+                }
+
+                // Sets
+                MPlug outputPartGroupsPlug = elemPlug.child(AssetNode::outputPartGroups);
+                for(unsigned int i = 0; i < outputPartGroupsPlug.numElements(); ++i)
+                {
+                    MPlug elemSetPlug = outputPartGroupsPlug[i];
+
+                    affectedPlugs.append(elemSetPlug.child(outputPartGroupName));
+                    affectedPlugs.append(elemSetPlug.child(outputPartGroupType));
+                    affectedPlugs.append(elemSetPlug.child(outputPartGroupMembers));
                 }
             }
         }

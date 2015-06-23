@@ -1409,8 +1409,6 @@ AssetNode::preEvaluation(
     {
         myResultsClean = false;
 
-        printf("evaluation node: %s\n", nodeIt.plug().name().asChar());
-
         if(isPlugBelow(nodeIt.plug(), parmAttrObj))
         {
             myDirtyParmAttributes.push_back(nodeIt.plug().attribute());

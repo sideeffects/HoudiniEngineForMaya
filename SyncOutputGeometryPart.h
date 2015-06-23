@@ -50,6 +50,9 @@ class SyncOutputGeometryPart : public SubCommand
         MStatus createOutputExtraAttributes(
                 const MObject &dstNode
                 );
+        MStatus createOutputGroups(
+                const MObject &dstNode
+                );
 
     protected:
         //This is the output plug from the asset node that represents an object

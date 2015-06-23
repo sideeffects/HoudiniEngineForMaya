@@ -233,8 +233,7 @@ AssetNode::initialize()
             );
     AssetNode::splitGeosByGroup = nAttr.create(
             "splitGeosByGroup", "splitGeosByGroup",
-            MFnNumericData::kBoolean,
-            1
+            MFnNumericData::kBoolean
             );
     AssetNode::outputHiddenObjects = nAttr.create(
             "outputHiddenObjects", "outputHiddenObjects",

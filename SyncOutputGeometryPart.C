@@ -6,8 +6,11 @@
 
 #include <maya/MFnDagNode.h>
 #include <maya/MFnGenericAttribute.h>
+#include <maya/MFnIntArrayData.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnNurbsCurve.h>
+#include <maya/MFnSet.h>
+#include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MFnTypedAttribute.h>
 
 #include "AssetNode.h"
@@ -237,6 +240,7 @@ SyncOutputGeometryPart::createOutputMesh(
     }
 
     createOutputExtraAttributes(meshShape);
+    createOutputGroups(meshShape);
 
     return MStatus::kSuccess;
 }
@@ -645,4 +649,81 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
     }
 
     return status;
+}
+
+MStatus
+SyncOutputGeometryPart::createOutputGroups(
+        const MObject &dstNode
+        )
+{
+    MStatus status;
+
+    MPlug groupsPlug = myOutputPlug.child(
+            AssetNode::outputPartGroups
+            );
+
+    int numGroups = groupsPlug.numElements();
+    for(int i = 0; i < numGroups; i++)
+    {
+        MPlug groupPlug = groupsPlug[i];
+
+        MPlug groupNamePlug = groupPlug.child(
+                AssetNode::outputPartGroupName
+                );
+        MPlug groupTypePlug = groupPlug.child(
+                AssetNode::outputPartGroupType
+                );
+        MPlug groupMembersPlug = groupPlug.child(
+                AssetNode::outputPartGroupMembers
+                );
+
+        MString setName = groupNamePlug.asString();
+
+        MFn::Type componentType = (MFn::Type) groupTypePlug.asInt();
+
+        MObject setObj = Util::findNodeByName(setName);
+        MFnSet setFn;
+        if(!setObj.isNull())
+        {
+            status = setFn.setObject(setObj);
+            if(MFAIL(status))
+            {
+                setObj = MObject::kNullObj;
+            }
+        }
+
+        if(setObj.isNull())
+        {
+            setObj = setFn.create(
+                    MSelectionList(),
+                    MFnSet::kNone,
+                    &status
+                    );
+            CHECK_MSTATUS(status);
+
+            status = myDagModifier.renameNode(setObj, setName);
+            CHECK_MSTATUS(status);
+        }
+        else
+        {
+            setFn.setObject(setObj);
+        }
+
+        MObject groupMembersObj = groupMembersPlug.asMObject();
+        MFnIntArrayData groupMembersDataFn(groupMembersObj, &status);
+        CHECK_MSTATUS(status);
+
+        MDagPath dagPath;
+        MDagPath::getAPathTo(dstNode, dagPath);
+
+        MFnSingleIndexedComponent componentFn;
+        MObject componentObj = componentFn.create(componentType);
+
+        MIntArray componentArray = groupMembersDataFn.array();
+        componentFn.addElements(componentArray);
+
+        setFn.addMember(dagPath, componentObj);
+    }
+
+    return MStatus::kSuccess;
 }

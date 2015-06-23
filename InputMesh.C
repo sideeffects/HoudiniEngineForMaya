@@ -1,12 +1,16 @@
 #include "InputMesh.h"
 
 #include <maya/MFnMesh.h>
+#include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MDagPath.h>
 #include <maya/MDataBlock.h>
 #include <maya/MFloatArray.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MFloatVectorArray.h>
 #include <maya/MIntArray.h>
 #include <maya/MMatrix.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
 
 #include "util.h"
 
@@ -144,6 +148,8 @@ InputMesh::setInputGeo(
 
     // Colors and Alphas
     processColorSets(meshFn, vertexCount, vertexList);
+
+    processSets(plug, meshFn);
 
     Input::setInputPlugMetaData(
             plug,
@@ -483,6 +489,98 @@ InputMesh::processColorSets(
             "maya_colorset_mapped_Alpha",
             mappedAlphaNames
             );
+
+    return true;
+}
+
+bool
+InputMesh::processSets(
+        const MPlug &plug,
+        const MFnMesh &meshFn
+        )
+{
+    MStatus status;
+
+    // The source node may not be actually mesh node.
+    MPlugArray srcPlugs;
+    if(!plug.connectedTo(srcPlugs, true, false))
+    {
+        return false;
+    }
+
+    // XXX: instance number
+    MDagPath srcDagPath = MDagPath::getAPathTo(srcPlugs[0].node());
+
+    // Sets and Members
+    MFnMesh srcNodeFn(srcDagPath, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    MObjectArray sets;
+    MObjectArray comps;
+    // XXX: instance number
+    srcNodeFn.getConnectedSetsAndMembers(0, sets, comps, false);
+
+    std::vector<int> groupMembership;
+    for(int i = 0; i < (int) sets.length(); i++)
+    {
+        const MObject &setObj = sets[i];
+        const MObject &compObj = comps[i];
+
+        MFnDependencyNode setFn(setObj, &status);
+        CHECK_MSTATUS(status);
+
+        HAPI_GroupType groupType;
+
+        if(compObj.isNull())
+        {
+            groupType = HAPI_GROUPTYPE_PRIM;
+            groupMembership.resize(meshFn.numPolygons());
+
+            std::fill(groupMembership.begin(), groupMembership.end(), 1);
+        }
+        else
+        {
+            MFnSingleIndexedComponent componentFn(compObj, &status);
+            CHECK_MSTATUS(status);
+
+            switch(componentFn.componentType())
+            {
+                case MFn::kMeshPolygonComponent:
+                    groupType = HAPI_GROUPTYPE_PRIM;
+                    groupMembership.resize(meshFn.numPolygons());
+                    break;
+                case MFn::kMeshVertComponent:
+                    groupType = HAPI_GROUPTYPE_POINT;
+                    groupMembership.resize(meshFn.numVertices());
+                    break;
+                default:
+                    continue;
+                    break;
+            }
+
+            std::fill(groupMembership.begin(), groupMembership.end(), 0);
+            for(int i = 0; i < componentFn.elementCount(); i++)
+            {
+                groupMembership[componentFn.element(i)] = 1;
+            }
+        }
+
+        MString setName = setFn.name();
+
+        CHECK_HAPI(HAPI_AddGroup(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    groupType,
+                    setName.asChar()
+                    ));
+
+        CHECK_HAPI(HAPI_SetGroupMembership(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    groupType,
+                    setName.asChar(),
+                    &groupMembership[0],
+                    0, groupMembership.size()
+                    ));
+    }
 
     return true;
 }

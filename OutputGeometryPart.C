@@ -164,7 +164,6 @@ OutputGeometryPart::update()
     try
     {
         hstat = HAPI_GetGeoInfo(
-                Util::theHAPISession.get(),
                 myAssetId, myObjectId, myGeoId,
                 &myGeoInfo
                 );
@@ -2018,7 +2017,6 @@ OutputGeometryPart::computeGroups(
         std::vector<HAPI_StringHandle> groupNames(myGeoInfo.*groupCount);
 
         HAPI_GetGroupNames(
-                Util::theHAPISession.get(),
                 myAssetId, myObjectId, myGeoId,
                 groupType,
                 &groupNames[0],
@@ -2050,7 +2048,6 @@ OutputGeometryPart::computeGroups(
                     );
 
             HAPI_GetGroupMembership(
-                    Util::theHAPISession.get(),
                     myAssetId, myObjectId, myGeoId, myPartId,
                     groupType,
                     groupName.asChar(),

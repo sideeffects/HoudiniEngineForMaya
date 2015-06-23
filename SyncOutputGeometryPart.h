@@ -25,12 +25,14 @@ class SyncOutputGeometryPart : public SubCommand
         MStatus createOutputPart(
                 const MObject &objectTransform,
                 const MString &partName,
-                MObject &partTransform
+                MObject &partTransform,
+                bool &hasMaterial
                 );
         MStatus createOutputMesh(
                 const MObject &partTransform,
                 const MString &partName,
-                const MPlug &meshPlug
+                const MPlug &meshPlug,
+                bool &hasMaterial
                 );
         MStatus createOutputMaterial(
                 const MPlug &materialPlug,
@@ -51,7 +53,8 @@ class SyncOutputGeometryPart : public SubCommand
                 const MObject &dstNode
                 );
         MStatus createOutputGroups(
-                const MObject &dstNode
+                const MObject &dstNode,
+                bool &hasMaterial
                 );
 
     protected:

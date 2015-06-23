@@ -90,25 +90,36 @@ SyncOutputGeometryPart::doIt()
         partName = "emptyPart";
     }
 
+    MPlug materialPlug = myOutputPlug.child(AssetNode::outputPartMaterial);
+    MPlug materialExistsPlug = materialPlug.child(AssetNode::outputPartMaterialExists);
+    bool materialExists = materialExistsPlug.asBool();
+
     MFnDagNode objectTransformFn(myObjectTransform);
 
     // create part
+    bool hasMaterial = materialExists;
     MObject partTransform = Util::findDagChild(objectTransformFn, partName);
     if(partTransform.isNull())
     {
-        status = createOutputPart(myObjectTransform, partName, partTransform);
+        status = createOutputPart(
+                myObjectTransform,
+                partName,
+                partTransform,
+                hasMaterial
+                );
     }
 
     // create material
-    MPlug materialPlug = myOutputPlug.child(AssetNode::outputPartMaterial);
-    MPlug materialExistsPlug = materialPlug.child(AssetNode::outputPartMaterialExists);
-    if(materialExistsPlug.asBool())
+    if(materialExists)
     {
         //TODO: check if material already exists
         status = createOutputMaterial(materialPlug, partTransform);
         CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        hasMaterial = true;
     }
-    else
+
+    if(!hasMaterial)
     {
         MFnDagNode partTransformFn(partTransform);
         status = myDagModifier.commandToExecute("assignSG \"lambert1\" \"" + partTransformFn.fullPathName() + "\";");
@@ -150,7 +161,8 @@ MStatus
 SyncOutputGeometryPart::createOutputPart(
         const MObject &objectTransform,
         const MString &partName,
-        MObject &partTransform
+        MObject &partTransform,
+        bool &hasMaterial
         )
 {
     MStatus status;
@@ -170,7 +182,8 @@ SyncOutputGeometryPart::createOutputPart(
         status = createOutputMesh(
                 partTransform,
                 partName,
-                myOutputPlug.child(AssetNode::outputPartMesh)
+                myOutputPlug.child(AssetNode::outputPartMesh),
+                hasMaterial
                 );
     }
 
@@ -206,7 +219,8 @@ MStatus
 SyncOutputGeometryPart::createOutputMesh(
         const MObject &partTransform,
         const MString &partName,
-        const MPlug &meshPlug
+        const MPlug &meshPlug,
+        bool &hasMaterial
         )
 {
     MStatus status;
@@ -240,7 +254,7 @@ SyncOutputGeometryPart::createOutputMesh(
     }
 
     createOutputExtraAttributes(meshShape);
-    createOutputGroups(meshShape);
+    createOutputGroups(meshShape, hasMaterial);
 
     return MStatus::kSuccess;
 }
@@ -653,10 +667,12 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
 
 MStatus
 SyncOutputGeometryPart::createOutputGroups(
-        const MObject &dstNode
+        const MObject &dstNode,
+        bool &hasMaterial
         )
 {
     MStatus status;
+    bool didAssignMaterial = false;
 
     MPlug groupsPlug = myOutputPlug.child(
             AssetNode::outputPartGroups
@@ -689,6 +705,18 @@ SyncOutputGeometryPart::createOutputGroups(
             if(MFAIL(status))
             {
                 setObj = MObject::kNullObj;
+            }
+
+            if(setFn.hasObj(MFn::kShadingEngine))
+            {
+                if(hasMaterial)
+                {
+                    continue;
+                }
+                else
+                {
+                    didAssignMaterial = true;
+                }
             }
         }
 
@@ -724,6 +752,8 @@ SyncOutputGeometryPart::createOutputGroups(
 
         setFn.addMember(dagPath, componentObj);
     }
+
+    hasMaterial |= didAssignMaterial;
 
     return MStatus::kSuccess;
 }

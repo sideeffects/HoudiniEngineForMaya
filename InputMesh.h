@@ -5,6 +5,8 @@
 
 #include <HAPI/HAPI.h>
 
+class MFnMesh;
+
 class InputMesh : public Input
 {
     public:
@@ -17,6 +19,25 @@ class InputMesh : public Input
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug
+                );
+
+    protected:
+        bool processPoints(
+                const MFnMesh &meshFn
+                );
+        bool processNormals(
+                const MFnMesh &meshFn,
+                std::vector<int> vertexCount
+                );
+        bool processUVs(
+                const MFnMesh &meshFn,
+                std::vector<int> vertexCount,
+                std::vector<int> vertexList
+                );
+        bool processColorSets(
+                const MFnMesh &meshFn,
+                std::vector<int> vertexCount,
+                std::vector<int> vertexList
                 );
 
     protected:

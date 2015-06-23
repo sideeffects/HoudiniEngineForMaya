@@ -163,6 +163,13 @@ OutputGeometryPart::update()
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
     try
     {
+        hstat = HAPI_GetGeoInfo(
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId,
+                &myGeoInfo
+                );
+        Util::checkHAPIStatus(hstat);
+
         hstat = HAPI_GetPartInfo(
                 Util::theHAPISession.get(),
                 myAssetId, myObjectId, myGeoId, myPartId,
@@ -399,6 +406,12 @@ OutputGeometryPart::compute(
                 AssetNode::outputPartExtraAttributes
                 );
         computeExtraAttributes(time, extraAttributesHandle);
+
+        // Groups
+        MDataHandle groupsHandle = handle.child(
+                AssetNode::outputPartGroups
+                );
+        computeGroups(time, groupsHandle);
     }
 
     if(myNeverBuilt || hasMaterialChanged)
@@ -1997,6 +2010,126 @@ OutputGeometryPart::computeExtraAttributes(
     }
 
     extraAttributesArrayHandle.set(extraAttributesBuilder);
+}
+
+void
+OutputGeometryPart::computeGroups(
+        const MTime &time,
+        MDataHandle &groupsHandle
+        )
+{
+    MArrayDataHandle groupsArrayHandle(groupsHandle);
+    MArrayDataBuilder groupsBuilder =
+       groupsArrayHandle.builder();
+
+    const HAPI_GroupType groupTypes[HAPI_GROUPTYPE_MAX] =
+    {
+        HAPI_GROUPTYPE_POINT,
+        HAPI_GROUPTYPE_PRIM,
+    };
+    const int HAPI_GeoInfo::*groupCounts[HAPI_GROUPTYPE_MAX] =
+    {
+        &HAPI_GeoInfo::pointGroupCount,
+        &HAPI_GeoInfo::primitiveGroupCount,
+    };
+    const int HAPI_PartInfo::*maxMemberCounts[HAPI_GROUPTYPE_MAX] =
+    {
+        &HAPI_PartInfo::pointCount,
+        &HAPI_PartInfo::faceCount,
+    };
+    const MFn::Type fnTypes[HAPI_GROUPTYPE_MAX] =
+    {
+        MFn::kMeshVertComponent,
+        MFn::kMeshPolygonComponent,
+    };
+
+    size_t groupElementIndex = 0;
+    for(int i = 0; i < 2; i++)
+    {
+        const HAPI_GroupType &groupType = groupTypes[i];
+        const int HAPI_GeoInfo::*&groupCount = groupCounts[i];
+        const int HAPI_PartInfo::*&maxMemberCount = maxMemberCounts[i];
+        const MFn::Type fnType = fnTypes[i];
+
+        std::vector<HAPI_StringHandle> groupNames(myGeoInfo.*groupCount);
+
+        HAPI_GetGroupNames(
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId,
+                groupType,
+                &groupNames[0],
+                myGeoInfo.*groupCount
+                );
+
+        std::vector<int> groupMembership(myPartInfo.*maxMemberCount);
+        for(size_t j = 0; j < groupNames.size(); j++)
+        {
+            MString groupName = Util::getString(groupNames[j]).asChar();
+
+            if(groupName == HAPI_UNGROUPED_GROUP_NAME)
+            {
+                continue;
+            }
+
+            MDataHandle groupHandle
+                = groupsBuilder.addElement(groupElementIndex);
+            groupElementIndex++;
+
+            MDataHandle groupNameHandle = groupHandle.child(
+                    AssetNode::outputPartGroupName
+                    );
+            MDataHandle groupTypeHandle = groupHandle.child(
+                    AssetNode::outputPartGroupType
+                    );
+            MDataHandle groupMembersHandle = groupHandle.child(
+                    AssetNode::outputPartGroupMembers
+                    );
+
+            HAPI_GetGroupMembership(
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    groupType,
+                    groupName.asChar(),
+                    &groupMembership[0],
+                    0, groupMembership.size()
+                    );
+
+            MObject groupMembersObj = groupMembersHandle.data();
+            MFnIntArrayData groupMembersDataFn(groupMembersObj);
+            if(groupMembersObj.isNull())
+            {
+                groupMembersObj = groupMembersDataFn.create();
+                groupMembersHandle.setMObject(groupMembersObj);
+
+                groupMembersObj = groupMembersHandle.data();
+                groupMembersDataFn.setObject(groupMembersObj);
+            }
+
+            MIntArray groupMembers = groupMembersDataFn.array();
+            groupMembers.setLength(groupMembership.size());
+
+            size_t groupMembersCount = 0;
+            for(size_t k = 0; k < groupMembership.size(); k++)
+            {
+                if(groupMembership[k])
+                {
+                    groupMembers[groupMembersCount] = k;
+                    groupMembersCount++;
+                }
+            }
+            groupMembers.setLength(groupMembersCount);
+
+            groupNameHandle.setString(groupName);
+            groupTypeHandle.setInt(fnType);
+        }
+    }
+
+    for(size_t i = groupsBuilder.elementCount(); i-- > groupElementIndex;)
+    {
+        groupsBuilder.removeElement(i);
+    }
+
+    groupsArrayHandle.set(groupsBuilder);
 }
 
 void

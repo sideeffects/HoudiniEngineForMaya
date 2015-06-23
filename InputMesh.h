@@ -39,6 +39,10 @@ class InputMesh : public Input
                 std::vector<int> vertexCount,
                 std::vector<int> vertexList
                 );
+        bool processSets(
+                const MPlug &plug,
+                const MFnMesh &meshFn
+                );
 
     protected:
         int myInputAssetId;

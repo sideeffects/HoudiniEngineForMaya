@@ -260,6 +260,80 @@ Input::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType
     return assetInput;
 }
 
+template<
+    typename T,
+    HAPI_StorageType storageType,
+    HAPI_Result (SetAttribute)(HAPI_AssetId asset_id,
+            HAPI_ObjectId object_id,
+            HAPI_GeoId geo_id,
+            const char * name,
+            const HAPI_AttributeInfo * attr_info,
+            T * data_array,
+            int start, int length)
+>
+void
+setDetailAttribute_internal(
+        int inputAssetId,
+        int inputObjectId,
+        int inputGeoId,
+        const char* attributeName,
+        T* value,
+        int tupleSize
+        )
+{
+    HAPI_AttributeInfo attributeInfo;
+    attributeInfo.exists = true;
+    attributeInfo.owner = HAPI_ATTROWNER_DETAIL;
+    attributeInfo.storage = storageType;
+    attributeInfo.count = 1;
+    attributeInfo.tupleSize = tupleSize;
+
+    HAPI_AddAttribute(
+            inputAssetId, inputObjectId, inputGeoId,
+            attributeName,
+            &attributeInfo
+            );
+
+    CHECK_HAPI(SetAttribute(
+                inputAssetId, inputObjectId, inputGeoId,
+                attributeName,
+                &attributeInfo,
+                value,
+                0, 1
+                ));
+}
+
+template<>
+void
+Input::setDetailAttribute(
+        int inputAssetId,
+        int inputObjectId,
+        int inputGeoId,
+        const char* attributeName,
+        const MStringArray &value
+        )
+{
+    std::vector<const char*> converted_value;
+    converted_value.resize(value.length());
+    for(unsigned int i = 0; i < value.length(); i++)
+    {
+        converted_value[i] = value[i].asChar();
+    }
+
+    setDetailAttribute_internal<
+        const char*,
+        HAPI_STORAGETYPE_STRING,
+        HAPI_SetAttributeStringData
+            >(
+                    inputAssetId,
+                    inputObjectId,
+                    inputGeoId,
+                    attributeName,
+                    &converted_value[0],
+                    converted_value.size()
+             );
+}
+
 void
 Input::setInputPlugMetaData(
         const MPlug &plug,
@@ -281,27 +355,16 @@ Input::setInputPlugMetaData(
 
         if(shapeName.length())
         {
-            HAPI_AttributeInfo shape_name_info;
-            shape_name_info.exists = true;
-            shape_name_info.owner = HAPI_ATTROWNER_DETAIL;
-            shape_name_info.storage = HAPI_STORAGETYPE_STRING;
-            shape_name_info.count = 1;
-            shape_name_info.tupleSize = 1;
+            MStringArray values;
+            values.append(shapeName);
 
-            HAPI_AddAttribute(
-                    inputAssetId, inputObjectId, inputGeoId,
+            setDetailAttribute(
+                    inputAssetId,
+                    inputObjectId,
+                    inputGeoId,
                     "maya_source_node",
-                    &shape_name_info
+                    values
                     );
-
-            const char* temp = shapeName.asChar();
-            CHECK_HAPI(HAPI_SetAttributeStringData(
-                    inputAssetId, inputObjectId, inputGeoId,
-                    "maya_source_node",
-                    &shape_name_info,
-                    &temp,
-                    0, 1
-                    ));
         }
     }
 }

@@ -50,10 +50,12 @@ class SyncOutputGeometryPart : public SubCommand
                 bool isBezier
                 );
         MStatus createOutputExtraAttributes(
-                const MObject &dstNode
+                const MObject &dstNode,
+                MPlug &mayaSGAttributePlug
                 );
         MStatus createOutputGroups(
                 const MObject &dstNode,
+                const MPlug &mayaSGAttributePlug,
                 bool &hasMaterial
                 );
 

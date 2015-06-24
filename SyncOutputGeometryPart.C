@@ -732,10 +732,6 @@ SyncOutputGeometryPart::createOutputGroups(
             status = myDagModifier.renameNode(setObj, setName);
             CHECK_MSTATUS(status);
         }
-        else
-        {
-            setFn.setObject(setObj);
-        }
 
         MObject groupMembersObj = groupMembersPlug.asMObject();
         MFnIntArrayData groupMembersDataFn(groupMembersObj, &status);

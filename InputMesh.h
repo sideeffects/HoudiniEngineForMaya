@@ -6,6 +6,8 @@
 #include <HAPI/HAPI.h>
 
 class MFnMesh;
+class MObjectArray;
+class MStringArray;
 
 class InputMesh : public Input
 {
@@ -42,6 +44,11 @@ class InputMesh : public Input
         bool processSets(
                 const MPlug &plug,
                 const MFnMesh &meshFn
+                );
+        bool processShadingGroups(
+                const MFnMesh &meshFn,
+                const MStringArray &sgNames,
+                const MObjectArray &sgCompObjs
                 );
 
     protected:

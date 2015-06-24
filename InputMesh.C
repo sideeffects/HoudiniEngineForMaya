@@ -520,6 +520,9 @@ InputMesh::processSets(
     // XXX: instance number
     srcNodeFn.getConnectedSetsAndMembers(0, sets, comps, false);
 
+    MStringArray sgNames;
+    MObjectArray sgCompObjs;
+
     std::vector<int> groupMembership;
     for(int i = 0; i < (int) sets.length(); i++)
     {
@@ -528,6 +531,13 @@ InputMesh::processSets(
 
         MFnDependencyNode setFn(setObj, &status);
         CHECK_MSTATUS(status);
+
+        if(setFn.hasAttribute("surfaceShader"))
+        {
+            sgNames.append(setFn.name());
+            sgCompObjs.append(compObj);
+            continue;
+        }
 
         HAPI_GroupType groupType;
 
@@ -581,6 +591,70 @@ InputMesh::processSets(
                     0, groupMembership.size()
                     ));
     }
+
+    processShadingGroups(meshFn, sgNames, sgCompObjs);
+
+    return true;
+}
+
+bool
+InputMesh::processShadingGroups(
+        const MFnMesh &meshFn,
+        const MStringArray &sgNames,
+        const MObjectArray &sgCompObjs
+        )
+{
+    MStatus status;
+
+    MString defaultShader;
+
+    std::vector<const char*> sgNamePerComp;
+    sgNamePerComp.resize(meshFn.numPolygons(), defaultShader.asChar());
+
+    for(int i = 0; i < (int) sgNames.length(); i++)
+    {
+        const char* sgName = sgNames[i].asChar();
+        const MObject &sgCompObj = sgCompObjs[i];
+
+        if(sgCompObj.isNull())
+        {
+            std::fill(
+                    sgNamePerComp.begin(), sgNamePerComp.end(),
+                    sgName
+                    );
+        }
+        else
+        {
+            MFnSingleIndexedComponent componentFn(sgCompObj, &status);
+            CHECK_MSTATUS(status);
+
+            assert(componentFn.componentType()
+                    == MFn::kMeshPolygonComponent);
+
+            for(int j = 0; j < componentFn.elementCount(); j++)
+            {
+                sgNamePerComp[componentFn.element(j)] = sgName;
+            }
+        }
+    }
+
+    HAPI_AttributeInfo sgNameAttrInfo;
+    sgNameAttrInfo.exists = true;
+    sgNameAttrInfo.owner = HAPI_ATTROWNER_PRIM;
+    sgNameAttrInfo.storage = HAPI_STORAGETYPE_STRING;
+    sgNameAttrInfo.count = sgNamePerComp.size();
+    sgNameAttrInfo.tupleSize = 1;
+    HAPI_AddAttribute(
+            myInputAssetId, myInputObjectId, myInputGeoId,
+            "maya_shading_group", &sgNameAttrInfo
+            );
+
+    CHECK_HAPI(HAPI_SetAttributeStringData(
+                myInputAssetId, myInputObjectId, myInputGeoId,
+                "maya_shading_group", &sgNameAttrInfo,
+                &sgNamePerComp[0],
+                0, sgNamePerComp.size()
+                ));
 
     return true;
 }

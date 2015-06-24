@@ -17,6 +17,7 @@
 #include "AssetNode.h"
 #include "util.h"
 
+#include <string>
 #include <algorithm>
 
 static MObject

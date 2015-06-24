@@ -17,6 +17,8 @@
 #include "AssetNode.h"
 #include "util.h"
 
+#include <algorithm>
+
 static MObject
 createAttributeFromDataHandle(
         const MString &attributeName,

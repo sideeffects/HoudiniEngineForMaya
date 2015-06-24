@@ -303,7 +303,6 @@ cleanupMessageCallbacks()
     CHECK_MSTATUS(status);
 }
 
-#ifdef USE_LIBHASH
 namespace SessionType
 {
     enum Enum
@@ -313,14 +312,12 @@ namespace SessionType
         ST_THRIFT_PIPE
     };
 }
-#endif
 
 MStatus
 initializePlugin(MObject obj)
 {
     OptionVars optionVars;
 
-#ifdef USE_LIBHASH
     if ( Util::theHAPISession.get() )
     {
         MGlobal::displayInfo(
@@ -354,7 +351,6 @@ initializePlugin(MObject obj)
             break;
         }
     }
-#endif
 
     printHAPIVersion();
 

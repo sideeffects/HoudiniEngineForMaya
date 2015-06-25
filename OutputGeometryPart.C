@@ -1938,7 +1938,7 @@ OutputGeometryPart::computeExtraAttributes(
                 Util::theHAPISession.get(),
                 myAssetId, myObjectId, myGeoId, myPartId,
                 owner,
-                &attributeNames[0],
+                attributeNames.empty() ? NULL : &attributeNames[0],
                 attributeNames.size()
                 );
 
@@ -2057,7 +2057,7 @@ OutputGeometryPart::computeGroups(
                 Util::theHAPISession.get(),
                 myAssetId, myObjectId, myGeoId,
                 groupType,
-                &groupNames[0],
+                groupNames.empty() ? NULL : &groupNames[0],
                 myGeoInfo.*groupCount
                 );
 

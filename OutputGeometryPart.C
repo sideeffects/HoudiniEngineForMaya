@@ -1931,6 +1931,11 @@ OutputGeometryPart::computeExtraAttributes(
         const MString &ownerString = attributeOwnersString[i];
         const int HAPI_PartInfo::*&attributeCount = attributeCounts[i];
 
+        if(myPartInfo.*attributeCount == 0)
+        {
+            continue;
+        }
+
         std::vector<HAPI_StringHandle> attributeNames(
                 myPartInfo.*attributeCount
                 );
@@ -1938,7 +1943,7 @@ OutputGeometryPart::computeExtraAttributes(
                 Util::theHAPISession.get(),
                 myAssetId, myObjectId, myGeoId, myPartId,
                 owner,
-                attributeNames.empty() ? NULL : &attributeNames[0],
+                &attributeNames[0],
                 attributeNames.size()
                 );
 
@@ -2051,13 +2056,18 @@ OutputGeometryPart::computeGroups(
         const int HAPI_PartInfo::*&maxMemberCount = maxMemberCounts[i];
         const MFn::Type fnType = fnTypes[i];
 
+        if(myGeoInfo.*groupCount == 0)
+        {
+            continue;
+        }
+
         std::vector<HAPI_StringHandle> groupNames(myGeoInfo.*groupCount);
 
         HAPI_GetGroupNames(
                 Util::theHAPISession.get(),
                 myAssetId, myObjectId, myGeoId,
                 groupType,
-                groupNames.empty() ? NULL : &groupNames[0],
+                &groupNames[0],
                 myGeoInfo.*groupCount
                 );
 

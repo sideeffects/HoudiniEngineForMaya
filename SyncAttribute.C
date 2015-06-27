@@ -498,6 +498,7 @@ SyncAttribute::doIt()
         myDGModifier.doIt();
     }
 
+    if(nodeInfo.parmCount != 0)
     {
         std::vector<HAPI_ParmInfo> parmInfos;
         parmInfos.resize(nodeInfo.parmCount);

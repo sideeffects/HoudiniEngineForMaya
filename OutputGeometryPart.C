@@ -1896,6 +1896,11 @@ OutputGeometryPart::computeExtraAttributes(
         const MString &ownerString = attributeOwnersString[i];
         const int HAPI_PartInfo::*&attributeCount = attributeCounts[i];
 
+        if(myPartInfo.*attributeCount == 0)
+        {
+            continue;
+        }
+
         std::vector<HAPI_StringHandle> attributeNames(
                 myPartInfo.*attributeCount
                 );
@@ -2013,6 +2018,11 @@ OutputGeometryPart::computeGroups(
         const int HAPI_GeoInfo::*&groupCount = groupCounts[i];
         const int HAPI_PartInfo::*&maxMemberCount = maxMemberCounts[i];
         const MFn::Type fnType = fnTypes[i];
+
+        if(myGeoInfo.*groupCount == 0)
+        {
+            continue;
+        }
 
         std::vector<HAPI_StringHandle> groupNames(myGeoInfo.*groupCount);
 

@@ -1202,6 +1202,11 @@ Asset::getParmValues(
 {
     MStatus status;
 
+    if(myNodeInfo.parmCount == 0)
+    {
+        return;
+    }
+
     std::vector<HAPI_ParmInfo> parmInfos;
 
     // Get multiparm length
@@ -1582,6 +1587,11 @@ Asset::setParmValues(
         )
 {
     MStatus status;
+
+    if(myNodeInfo.parmCount == 0)
+    {
+        return;
+    }
 
     std::vector<HAPI_ParmInfo> parmInfos;
 

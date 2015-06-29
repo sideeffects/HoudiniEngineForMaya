@@ -118,6 +118,10 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
     {
         name += "__folder";
     }
+    else if(parm.rampType != HAPI_RAMPTYPE_MAX)
+    {
+        name += "__ramp";
+    }
 
     return getParmAttrPrefix() + "_" + name;
 }

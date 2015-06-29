@@ -32,6 +32,7 @@ MObject AssetNode::inTime;
 MObject AssetNode::otlFilePath;
 MObject AssetNode::assetName;
 
+MObject AssetNode::syncWhenInputConnects;
 MObject AssetNode::autoSyncOutputs;
 MObject AssetNode::splitGeosByGroup;
 MObject AssetNode::outputHiddenObjects;
@@ -227,6 +228,11 @@ AssetNode::initialize()
             );
     tAttr.setInternal(true);
 
+    AssetNode::syncWhenInputConnects = nAttr.create(
+            "syncWhenInputConnects", "syncWhenInputConnects",
+            MFnNumericData::kBoolean,
+            true
+            );
     AssetNode::autoSyncOutputs = nAttr.create(
             "autoSyncOutputs", "autoSyncOutputs",
             MFnNumericData::kBoolean
@@ -1155,6 +1161,7 @@ AssetNode::initialize()
     nAttr.setDefault(false);
 
     // add the static attributes to the node
+    addAttribute(AssetNode::syncWhenInputConnects);
     addAttribute(AssetNode::autoSyncOutputs);
     addAttribute(AssetNode::splitGeosByGroup);
     addAttribute(AssetNode::outputHiddenObjects);

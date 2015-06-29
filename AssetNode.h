@@ -96,6 +96,7 @@ class AssetNode: public MPxTransform
         static MObject otlFilePath;
         static MObject assetName;
 
+        static MObject syncWhenInputConnects;
         static MObject autoSyncOutputs;
         static MObject splitGeosByGroup;
         static MObject outputHiddenObjects;

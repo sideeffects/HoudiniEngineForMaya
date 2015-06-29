@@ -7,6 +7,7 @@
 #include <maya/MFnTypedAttribute.h>
 
 #include <maya/MPlugArray.h>
+#include <maya/MRampAttribute.h>
 
 #include <HAPI/HAPI.h>
 
@@ -124,19 +125,49 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
     if(!invisible)
     {
-        MString attrName = Util::getAttrNameFromParm(parmInfo);
-        MString label = Util::getString(parmInfo.labelSH);
+        if(parmInfo.rampType != HAPI_RAMPTYPE_MAX)
+        {
+            MString attrName = Util::getAttrNameFromParm(parmInfo);
 
-        MFnNumericAttribute sizeAttrFn;
-        sizeAttrFn.create(attrName + "__multiSize", attrName + "__multiSize", MFnNumericData::kInt);
-        sizeAttrFn.setNiceNameOverride(label);
-        parentAttrFn->addChild(sizeAttrFn.object());
+            MObject attrObj;
+            if(parmInfo.rampType == HAPI_RAMPTYPE_FLOAT)
+            {
+                attrObj = MRampAttribute::createCurveRamp(
+                        attrName,
+                        attrName
+                        );
+            }
+            else if(parmInfo.rampType == HAPI_RAMPTYPE_COLOR)
+            {
+                attrObj = MRampAttribute::createColorRamp(
+                        attrName,
+                        attrName
+                        );
+            }
 
-        attrFn = new MFnCompoundAttribute();
-        MObject compoundAttrObj = attrFn->create(attrName, attrName);
-        attrFn->setNiceNameOverride(label);
-        attrFn->setArray(true);
-        attrFn->setUsesArrayDataBuilder(true);
+            MFnCompoundAttribute attrFn(attrObj);
+
+            MString niceName = Util::getString(parmInfo.labelSH);
+            attrFn.setNiceNameOverride(niceName);
+
+            parentAttrFn->addChild(attrObj);
+        }
+        else
+        {
+            MString attrName = Util::getAttrNameFromParm(parmInfo);
+            MString label = Util::getString(parmInfo.labelSH);
+
+            MFnNumericAttribute sizeAttrFn;
+            sizeAttrFn.create(attrName + "__multiSize", attrName + "__multiSize", MFnNumericData::kInt);
+            sizeAttrFn.setNiceNameOverride(label);
+            parentAttrFn->addChild(sizeAttrFn.object());
+
+            attrFn = new MFnCompoundAttribute();
+            MObject compoundAttrObj = attrFn->create(attrName, attrName);
+            attrFn->setNiceNameOverride(label);
+            attrFn->setArray(true);
+            attrFn->setUsesArrayDataBuilder(true);
+        }
     }
 
     myAttrFns.push_back(attrFn);
@@ -180,6 +211,13 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     // for multiparm, only build the first instance
     if(parmInfo.isChildOfMultiParm
             && parmInfo.instanceNum != parentParmInfo->instanceStartOffset)
+    {
+        invisible = true;
+    }
+
+    // for ramp, no need to create anything
+    if(parmInfo.isChildOfMultiParm
+            && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
     {
         invisible = true;
     }

@@ -45,8 +45,8 @@ class AttrOperation : public Util::WalkParmOperation
         virtual void popMultiparm();
 
         bool containsParm(
-                const HAPI_ParmInfo &parm,
-                bool multiSize = false
+                const MString &attrName,
+                const HAPI_ParmInfo &parm
                 ) const;
 
     protected:
@@ -317,19 +317,13 @@ AttrOperation::popMultiparm()
 
 bool
 AttrOperation::containsParm(
-        const HAPI_ParmInfo &parm,
-        bool multiSize
+        const MString &attrName,
+        const HAPI_ParmInfo &parm
         ) const
 {
     if(!myAttrs)
     {
         return true;
-    }
-
-    MString attrName = Util::getAttrNameFromParm(parm);
-    if(multiSize)
-    {
-        attrName += "__multiSize";
     }
 
     MPlug parmPlug = myNodeFn.findPlug(attrName);
@@ -910,7 +904,12 @@ GetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
-    if(isMulti && containsParm(parmInfo, true))
+    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    if(parmInfo.rampType == HAPI_RAMPTYPE_MAX)
+    {
+        attrName += "__multiSize";
+    }
+    if(isMulti && containsParm(attrName, parmInfo))
     {
         int multiSize = parmInfo.instanceCount;
 
@@ -990,7 +989,9 @@ GetAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
-    if(isMulti && containsParm(parmInfo, true))
+    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    attrName += "__multiSize";
+    if(isMulti && containsParm(attrName, parmInfo))
     {
         int multiSize = parmInfo.instanceCount;
 
@@ -1010,9 +1011,9 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     bool parentExists = myExists.back();
     //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
-    if(parentExists && containsParm(parmInfo))
+    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    if(parentExists && containsParm(attrName, parmInfo))
     {
-        MString attrName = Util::getAttrNameFromParm(parmInfo);
         MObject attrObj = myNodeFn.attribute(attrName);
         if(!attrObj.isNull())
         {
@@ -1329,7 +1330,12 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
-    if(isMulti && containsParm(parmInfo, true))
+    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    if(parmInfo.rampType == HAPI_RAMPTYPE_MAX)
+    {
+        attrName += "__multiSize";
+    }
+    if(isMulti && containsParm(attrName, parmInfo))
     {
         int multiSize = multiSizeDataHandle.asInt();
 
@@ -1402,9 +1408,9 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     bool parentExists = myExists.back();
     //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
-    if(parentExists && containsParm(parmInfo))
+    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    if(parentExists && containsParm(attrName, parmInfo))
     {
-        MString attrName = Util::getAttrNameFromParm(parmInfo);
         MObject attrObj = myNodeFn.attribute(attrName);
         if(!attrObj.isNull())
         {

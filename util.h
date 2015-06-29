@@ -140,6 +140,8 @@ class Util {
         static MString getParmAttrPrefix();
         static bool hasHAPICallFailed(HAPI_Result stat);
 
+        static bool startsWith(const MString &str, const MString &begin);
+        static bool endsWith(const MString &str, const MString &end);
         static MString escapeString(const MString &str);
 
         // Throws an exception if an error occurred

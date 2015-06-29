@@ -1952,7 +1952,7 @@ OutputGeometryPart::computeExtraAttributes(
             const MString attributeName = Util::getString(attributeNames[j]);
 
             if(isAttributeUsed(attributeName.asChar())
-                        || attributeName.substring(0, 1) == "__")
+                    || Util::startsWith(attributeName, "__"))
             {
                 continue;
             }

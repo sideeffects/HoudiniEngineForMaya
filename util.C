@@ -174,6 +174,28 @@ Util::PythonInterpreterLock::~PythonInterpreterLock()
             );
 }
 
+bool
+Util::startsWith(const MString &str, const MString &start)
+{
+    unsigned int strLength = str.length();
+    unsigned int startLength = start.length();
+    if(strLength < startLength)
+        return false;
+
+    return str.substring(0, startLength - 1) == start;
+}
+
+bool
+Util::endsWith(const MString &str, const MString &end)
+{
+    unsigned int strLength = str.length();
+    unsigned int endLength = end.length();
+    if(strLength < endLength)
+        return false;
+
+    return str.substring(strLength - endLength, strLength - 1) == end;
+}
+
 MString
 Util::escapeString(const MString &str)
 {

@@ -469,8 +469,6 @@ proc setInput(string $inputAttr, string $object)
             $inputGeoAttr;
                 
         connectAttr -force ($object + ".worldMatrix") $inputTransformAttr;
-
-        houdiniEngine_syncAssetOutput $nodeName;
     }
     else if(`objectType -isAType "mesh" $object`)
     {
@@ -502,8 +500,6 @@ proc setInput(string $inputAttr, string $object)
                 connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
             }
         }
-
-        houdiniEngine_syncAssetOutput $nodeName;
     }
     else if(`objectType -isAType "nurbsCurve" $object`)
     {
@@ -514,8 +510,6 @@ proc setInput(string $inputAttr, string $object)
             string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
             connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
         }
-
-        houdiniEngine_syncAssetOutput $nodeName;
     }
     else if(`objectType -isAType "particle" $object`)
     {
@@ -526,8 +520,6 @@ proc setInput(string $inputAttr, string $object)
             string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
             connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
         }
-
-        houdiniEngine_syncAssetOutput $nodeName;
     }
     else if(`objectType -isAType "hairSystem" $object`)
     {
@@ -559,11 +551,15 @@ proc setInput(string $inputAttr, string $object)
             ($inputNode + ".outputObjectMetaData")
             $inputGeoAttr;
 
-        houdiniEngine_syncAssetOutput $nodeName;        
     }
     else
     {
         error("Cannot handle object:" + $object + "\n");
+    }
+
+    if(`getAttr ($nodeName + ".syncWhenInputConnects")`)
+    {
+        houdiniEngine_syncAssetOutput $nodeName;
     }
 }
 
@@ -850,6 +846,9 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         -columnAttach "left" $gAttributeEditorTemplateLabelWidth
         syncLayout;
 
+        createAttrCheckBox("syncWhenInputConnects", "Sync When Input Connects",
+                "Sync the output nodes when an input is connected.");
+
         createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs",
                 "Attemps to automatically sync the output nodes when necessary.");
 
@@ -909,6 +908,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
         ($optionsLayoutFull + "|buttonLayout|reloadAssetButton");
 
     // syncLayout
+    replaceAttrCheckBox($optionsLayoutFull + "|syncLayout|syncWhenInputConnects",
+            $nodeName + ".syncWhenInputConnects",
+            "");
     replaceAttrCheckBox($optionsLayoutFull + "|syncLayout|autoSyncOutputs",
             $nodeName + ".autoSyncOutputs",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");

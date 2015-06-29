@@ -122,6 +122,42 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
 }
 
 MString
+Util::getAttrNameFromParm(
+        const HAPI_ParmInfo &parm,
+        const HAPI_ParmInfo *parentParm
+        )
+{
+    if(parentParm && parentParm->rampType != HAPI_RAMPTYPE_MAX)
+    {
+        // Map the parameters of a Houdini ramp to the equivalent attributes of
+        // a Maya ramp.
+        MString name = getString(parm.templateNameSH);
+        name = replaceString(name, "#", "_");
+
+        if(endsWith(name, "pos"))
+        {
+            name = getAttrNameFromParm(*parentParm) + "_Position";
+        }
+        else if(endsWith(name, "value"))
+        {
+            name = getAttrNameFromParm(*parentParm) + "_FloatValue";
+        }
+        else if(endsWith(name, "c"))
+        {
+            name = getAttrNameFromParm(*parentParm) + "_Color";
+        }
+        else if(endsWith(name, "interp"))
+        {
+            name = getAttrNameFromParm(*parentParm) + "_Interp";
+        }
+
+        return name;
+    }
+
+    return getAttrNameFromParm(parm);
+}
+
+MString
 Util::getParmAttrPrefix()
 {
     MString ret = "houdiniAssetParm";

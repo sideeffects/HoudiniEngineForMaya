@@ -1215,6 +1215,52 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     if(isPlugBelow(plugBeingDirtied, parmAttrObj))
     {
         myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
+
+        // This catches when an instance being removed. Since we always remove
+        // the last instance from the mulitparm, we need to shuffle all the
+        // values. So we mark them all dirty.
+        {
+            MPlug rampPlug;
+            if(plugBeingDirtied.isElement())
+            {
+                MPlug arrayPlug = plugBeingDirtied.array();
+                if(Util::endsWith(arrayPlug.name(), "__ramp"))
+                {
+                    rampPlug = arrayPlug;
+                }
+
+                if(!rampPlug.isNull())
+                {
+                    for(unsigned int i = 0; i < arrayPlug.numElements(); i++)
+                    {
+                        MPlug elemPlug = arrayPlug.elementByPhysicalIndex(i);
+                        myDirtyParmAttributes.push_back(elemPlug.child(0));
+                        myDirtyParmAttributes.push_back(elemPlug.child(1));
+                        myDirtyParmAttributes.push_back(elemPlug.child(2));
+                    }
+                }
+            }
+        }
+        // This catches when an instance is added. The ramp plug needs to be
+        // marked dirty so that the we can catch it in pushMultiparm().
+        {
+            MPlug plug;
+            MString attrName;
+            if(plugBeingDirtied.isChild())
+            {
+                MPlug parentPlug = plugBeingDirtied.parent();
+                if(parentPlug.isElement())
+                {
+                    plug = parentPlug.array();
+                    attrName = plug.name();
+                }
+            }
+
+            if(Util::endsWith(attrName, "__ramp"))
+            {
+                myDirtyParmAttributes.push_back(plug);
+            }
+        }
     }
 
     if(isPlugBelow(plugBeingDirtied, AssetNode::input))

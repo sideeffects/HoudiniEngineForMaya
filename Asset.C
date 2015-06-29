@@ -205,15 +205,23 @@ AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     if(parentExists)
     {
         MString multiAttrName = Util::getAttrNameFromParm(parmInfo);
-        MObject multiSizeAttrObj = myNodeFn.attribute(multiAttrName + "__multiSize");
         MObject multiAttrObj = myNodeFn.attribute(multiAttrName);
 
-        if(!multiSizeAttrObj.isNull())
+        // Ramp has no __multiSize attribute.
+        if(parmInfo.rampType != HAPI_RAMPTYPE_MAX)
         {
-            multiSizeDataHandle = parentDataHandle.child(multiSizeAttrObj);
-            multiSizePlug = parentPlug.child(multiSizeAttrObj);
-
             isMulti = true;
+        }
+        else
+        {
+            MObject multiSizeAttrObj = myNodeFn.attribute(multiAttrName + "__multiSize");
+            if(!multiSizeAttrObj.isNull())
+            {
+                multiSizeDataHandle = parentDataHandle.child(multiSizeAttrObj);
+                multiSizePlug = parentPlug.child(multiSizeAttrObj);
+
+                isMulti = true;
+            }
         }
 
         // multiAttrObj might not exist if the current instanceCount is 0
@@ -251,7 +259,7 @@ AttrOperation::nextMultiparm()
     MDataHandle &dataHandle = myDataHandles.back();
     MPlug &plug = myPlugs.back();
     bool exists = myExists.back();
-    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
+    const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     //bool isMulti = myIsMulti.back();
     //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
@@ -263,8 +271,21 @@ AttrOperation::nextMultiparm()
 
     if(hasMultiAttr)
     {
-        multiLogicalIndex++;
-        status = multiDataHandle.jumpToElement(multiLogicalIndex);
+        // For ramps, use next(), instead of jumpToElement(), because the array
+        // is sparse and the indicies don't matter.
+        if(parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
+        {
+            if(multiLogicalIndex != -1)
+            {
+                status = multiDataHandle.next();
+            }
+            multiLogicalIndex++;
+        }
+        else
+        {
+            multiLogicalIndex++;
+            status = multiDataHandle.jumpToArrayElement(multiLogicalIndex);
+        }
         exists = status;
 
         if(exists)
@@ -278,7 +299,7 @@ AttrOperation::nextMultiparm()
                 dataHandle = multiDataHandle.inputValue();
             }
 
-            plug = multiPlug.elementByLogicalIndex(multiLogicalIndex);
+            plug = multiPlug.elementByPhysicalIndex(multiLogicalIndex);
         }
     }
 
@@ -984,7 +1005,11 @@ GetAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     {
         int multiSize = parmInfo.instanceCount;
 
-        multiSizeDataHandle.setInt(multiSize);
+        // Ramp parameters doesn't have the "__multiSize" attribute.
+        if(parmInfo.rampType == HAPI_RAMPTYPE_MAX)
+        {
+            multiSizeDataHandle.setInt(multiSize);
+        }
     }
 }
 
@@ -998,9 +1023,10 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     MDataHandle &parentDataHandle = myDataHandles.back();
     MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
-    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
+    const HAPI_ParmInfo* parentParmInfo
+        = parentExists ? myParentParmInfos.back() : NULL;
 
-    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    MString attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
     if(parentExists && containsParm(attrName, parmInfo))
     {
         MObject attrObj = myNodeFn.attribute(attrName);
@@ -1064,6 +1090,24 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             &enumIndex,
                             parmInfo.intValuesIndex, parmInfo.size
                             );
+
+                    if(parentParmInfo && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
+                    {
+                        switch(enumIndex)
+                        {
+                            case 0:
+                                // constant -> constant
+                            case 1:
+                                // linear -> linear
+                            case 3:
+                                // monotonecubic -> spline
+                                break;
+                            default:
+                                // no equivalent
+                                enumIndex = 1;
+                                break;
+                        }
+                    }
                 }
 
                 dataHandle.setShort(static_cast<short>(enumIndex));
@@ -1307,7 +1351,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
     MPlug &multiSizePlug = myMultiSizePlugs.back();
     //bool hasMultiAttr = myHasMultiAttr.back();
-    //MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
+    MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
@@ -1318,7 +1362,16 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     }
     if(isMulti && containsParm(attrName, parmInfo))
     {
-        int multiSize = multiSizeDataHandle.asInt();
+        int multiSize;
+        if(parmInfo.rampType != HAPI_RAMPTYPE_MAX)
+        {
+            MArrayDataBuilder builder = multiDataHandle.builder(&status);
+            multiSize = builder.elementCount();
+        }
+        else
+        {
+            multiSize = multiSizeDataHandle.asInt();
+        }
 
         {
             // If the multiparm has less instances than the multiDataHandle, then
@@ -1385,9 +1438,10 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     MDataHandle &parentDataHandle = myDataHandles.back();
     MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
-    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
+    const HAPI_ParmInfo* parentParmInfo
+        = parentExists ? myParentParmInfos.back() : NULL;
 
-    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    MString attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
     if(parentExists && containsParm(attrName, parmInfo))
     {
         MObject attrObj = myNodeFn.attribute(attrName);
@@ -1442,6 +1496,25 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 }
                 else
                 {
+                    if(parentParmInfo && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
+                    {
+                        switch(enumIndex)
+                        {
+                            case 0:
+                                // constant -> constant
+                            case 1:
+                                // linear -> linear
+                            case 3:
+                                // spline -> monotonecubic
+                                break;
+                            case 2:
+                                // no equivalent for smooth
+                            default:
+                                enumIndex = 1;
+                                break;
+                        }
+                    }
+
                     HAPI_SetParmIntValues(
                             myNodeInfo.id,
                             &enumIndex,

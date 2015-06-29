@@ -145,10 +145,10 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
                         );
             }
 
-            MFnCompoundAttribute attrFn(attrObj);
+            attrFn = new MFnCompoundAttribute(attrObj);
 
             MString niceName = Util::getString(parmInfo.labelSH);
-            attrFn.setNiceNameOverride(niceName);
+            attrFn->setNiceNameOverride(niceName);
 
             parentAttrFn->addChild(attrObj);
         }

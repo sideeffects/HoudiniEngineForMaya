@@ -1,3 +1,5 @@
+source AEaddRampControl;
+
 global proc
 AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
 {
@@ -113,6 +115,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         string $type = `getAttr -type ($fullAttrName + "." + $child)`;
         int $isCompound = ($type == "TdataCompound");
         int $isMulti = `attributeQuery -node $nodeName -multi $child`;
+        int $isRamp = endsWith($child, "__ramp");
 
         string $multiparm_suffix = "__multiSize";
         int $isMultiSize = endsWith($child, $multiparm_suffix);
@@ -207,8 +210,25 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
             setParent ..;
             setParent ..;
         }
+        else if($isCompound && $isMulti && $isRamp)
+        {
+            print ("buildAttrTree: ramp: " + $fullAttrName + "." + $child + "\n");
+            string $niceName = `attributeQuery -node $nodeName -niceName $child`;
+
+            frameLayout
+                -collapsable true
+                -collapse false
+                -label $niceName;
+            columnLayout
+                -adjustableColumn true;
+
+            AEmakeLargeRamp($fullAttrName + "." + $child, 0, 0, 0, 0, 0);
+
+            setParent ..;
+            setParent ..;
+        }
         // a multiparm is represented by a "multiSize" attribute and a multi compound attribute
-        else if($isCompound && $isMulti)
+        else if($isCompound && $isMulti && !$isRamp)
         {
             // the actual UI for the multiparm attribute is generated when checking "multiSize"
         }

@@ -222,8 +222,13 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
             columnLayout
                 -adjustableColumn true;
 
+            string $parent = `setParent -q`;
+
             AEmakeLargeRamp($fullAttrName + "." + $child, 0, 0, 0, 0, 0);
 
+            // Workaround layout issue in AE where AEmakeLargeRamp doesn't
+            // correctly restore parent.
+            setParent $parent;
             setParent ..;
             setParent ..;
         }

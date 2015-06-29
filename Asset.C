@@ -53,6 +53,7 @@ class AttrOperation : public Util::WalkParmOperation
         std::vector<MDataHandle> myDataHandles;
         std::vector<MPlug> myPlugs;
         std::vector<bool> myExists;
+        std::vector<const HAPI_ParmInfo*> myParentParmInfos;
 
         std::vector<bool> myIsMulti;
         std::vector<MDataHandle> myMultiSizeDataHandles;
@@ -98,6 +99,7 @@ AttrOperation::AttrOperation(
     myDataHandles.push_back(dataHandle);
     myPlugs.push_back(plug);
     myExists.push_back(true);
+    myParentParmInfos.push_back(NULL);
 }
 
 AttrOperation::~AttrOperation()
@@ -105,6 +107,7 @@ AttrOperation::~AttrOperation()
     myDataHandles.pop_back();
     myPlugs.pop_back();
     myExists.pop_back();
+    myParentParmInfos.pop_back();
 }
 
 void
@@ -117,6 +120,7 @@ AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
     MDataHandle &parentDataHandle = myDataHandles.back();
     MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(parentExists)
     {
@@ -154,6 +158,7 @@ AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
     myDataHandles.push_back(dataHandle);
     myPlugs.push_back(plug);
     myExists.push_back(exists);
+    myParentParmInfos.push_back(&parmInfo);
 }
 
 void
@@ -166,6 +171,7 @@ AttrOperation::popFolder()
     myDataHandles.pop_back();
     myPlugs.pop_back();
     myExists.pop_back();
+    myParentParmInfos.pop_back();
 }
 
 void
@@ -194,6 +200,7 @@ AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     MDataHandle &parentDataHandle = myDataHandles.back();
     MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(parentExists)
     {
@@ -230,6 +237,7 @@ AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     myDataHandles.push_back(dataHandle);
     myPlugs.push_back(plug);
     myExists.push_back(exists);
+    myParentParmInfos.push_back(&parmInfo);
 
     // initializes the first element
     nextMultiparm();
@@ -243,6 +251,7 @@ AttrOperation::nextMultiparm()
     MDataHandle &dataHandle = myDataHandles.back();
     MPlug &plug = myPlugs.back();
     bool exists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     //bool isMulti = myIsMulti.back();
     //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
@@ -282,6 +291,7 @@ AttrOperation::popMultiparm()
     //MDataHandle &dataHandle = myDataHandles.back();
     //MPlug &plug = myPlugs.back();
     //bool exists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     //bool isMulti = myIsMulti.back();
     //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
@@ -302,6 +312,7 @@ AttrOperation::popMultiparm()
     myDataHandles.pop_back();
     myPlugs.pop_back();
     myExists.pop_back();
+    myParentParmInfos.pop_back();
 }
 
 bool
@@ -878,6 +889,7 @@ GetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MDataHandle &dataHandle = myDataHandles.back();
     //MPlug &plug = myPlugs.back();
     //bool exists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     bool isMulti = myIsMulti.back();
     //MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
@@ -957,6 +969,7 @@ GetAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MDataHandle &dataHandle = myDataHandles.back();
     //MPlug &plug = myPlugs.back();
     //bool exists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     bool isMulti = myIsMulti.back();
     MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
@@ -984,6 +997,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     MDataHandle &parentDataHandle = myDataHandles.back();
     MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(parentExists && containsParm(parmInfo))
     {
@@ -1286,6 +1300,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MDataHandle &dataHandle = myDataHandles.back();
     //MPlug &plug = myPlugs.back();
     //bool exists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     bool isMulti = myIsMulti.back();
     MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
@@ -1364,6 +1379,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     MDataHandle &parentDataHandle = myDataHandles.back();
     MPlug &parentPlug = myPlugs.back();
     bool parentExists = myExists.back();
+    //const HAPI_ParmInfo* &parentParmInfo = myParentParmInfos.back();
 
     if(parentExists && containsParm(parmInfo))
     {

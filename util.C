@@ -132,7 +132,9 @@ Util::getAttrNameFromParm(
         const HAPI_ParmInfo *parentParm
         )
 {
-    if(parentParm && parentParm->rampType != HAPI_RAMPTYPE_MAX)
+    if(parentParm
+            && parentParm->isChildOfMultiParm
+            && parentParm->rampType != HAPI_RAMPTYPE_MAX)
     {
         // Map the parameters of a Houdini ramp to the equivalent attributes of
         // a Maya ramp.

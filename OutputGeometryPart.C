@@ -2056,7 +2056,8 @@ OutputGeometryPart::computeGroups(
         const int HAPI_PartInfo::*&maxMemberCount = maxMemberCounts[i];
         const MFn::Type fnType = fnTypes[i];
 
-        if(myGeoInfo.*groupCount == 0)
+        if(myGeoInfo.*groupCount == 0
+                || myPartInfo.*maxMemberCount == 0)
         {
             continue;
         }

@@ -1091,8 +1091,8 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             parmInfo.intValuesIndex, parmInfo.size
                             );
 
-                    if(parentParmInfo
-                            && parentParmInfo->isChildOfMultiParm
+                    if(parmInfo.isChildOfMultiParm
+                            && parentParmInfo
                             && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
                     {
                         switch(enumIndex)
@@ -1498,8 +1498,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 }
                 else
                 {
-                    if(parentParmInfo
-                            && parentParmInfo->isChildOfMultiParm
+                    if(parmInfo.isChildOfMultiParm
+                            && parentParmInfo
                             && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
                     {
                         switch(enumIndex)

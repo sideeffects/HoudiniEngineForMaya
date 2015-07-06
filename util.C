@@ -132,8 +132,8 @@ Util::getAttrNameFromParm(
         const HAPI_ParmInfo *parentParm
         )
 {
-    if(parentParm
-            && parentParm->isChildOfMultiParm
+    if(parm.isChildOfMultiParm
+            && parentParm
             && parentParm->rampType != HAPI_RAMPTYPE_MAX)
     {
         // Map the parameters of a Houdini ramp to the equivalent attributes of

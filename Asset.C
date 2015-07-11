@@ -1371,7 +1371,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     bool isMulti = myIsMulti.back();
     MDataHandle &multiSizeDataHandle = myMultiSizeDataHandles.back();
     //MPlug &multiSizePlug = myMultiSizePlugs.back();
-    //bool hasMultiAttr = myHasMultiAttr.back();
+    bool hasMultiAttr = myHasMultiAttr.back();
     MArrayDataHandle &multiDataHandle = myMultiDataHandles.back();
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
@@ -1383,17 +1383,21 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     }
     if(isMulti && containsParm(attrName, parmInfo))
     {
-        int multiSize;
+        int multiSize = -1;
         if(parmInfo.rampType != HAPI_RAMPTYPE_MAX)
         {
-            MArrayDataBuilder builder = multiDataHandle.builder(&status);
-            multiSize = builder.elementCount();
+            if(hasMultiAttr)
+            {
+                MArrayDataBuilder builder = multiDataHandle.builder(&status);
+                multiSize = builder.elementCount();
+            }
         }
         else
         {
             multiSize = multiSizeDataHandle.asInt();
         }
 
+        if(multiSize != -1)
         {
             // If the multiparm has less instances than the multiDataHandle, then
             // we need to add to the multiparm.

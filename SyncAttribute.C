@@ -125,7 +125,7 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
     if(!invisible)
     {
-        if(parmInfo.rampType != HAPI_RAMPTYPE_MAX)
+        if(parmInfo.rampType != HAPI_RAMPTYPE_INVALID)
         {
             MString attrName = Util::getAttrNameFromParm(parmInfo);
 
@@ -217,7 +217,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
     // for ramp, no need to create anything
     if(parmInfo.isChildOfMultiParm
-            && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
+            && parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)
     {
         invisible = true;
     }

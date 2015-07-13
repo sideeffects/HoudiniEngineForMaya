@@ -208,7 +208,7 @@ AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
         MObject multiAttrObj = myNodeFn.attribute(multiAttrName);
 
         // Ramp has no __multiSize attribute.
-        if(parmInfo.rampType != HAPI_RAMPTYPE_MAX)
+        if(parmInfo.rampType != HAPI_RAMPTYPE_INVALID)
         {
             isMulti = true;
         }
@@ -273,7 +273,7 @@ AttrOperation::nextMultiparm()
     {
         // For ramps, use next(), instead of jumpToElement(), because the array
         // is sparse and the indicies don't matter.
-        if(parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
+        if(parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)
         {
             if(multiLogicalIndex != -1)
             {
@@ -915,7 +915,7 @@ GetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
     MString attrName = Util::getAttrNameFromParm(parmInfo);
-    if(parmInfo.rampType == HAPI_RAMPTYPE_MAX)
+    if(parmInfo.rampType == HAPI_RAMPTYPE_INVALID)
     {
         attrName += "__multiSize";
     }
@@ -1006,7 +1006,7 @@ GetAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
         int multiSize = parmInfo.instanceCount;
 
         // Ramp parameters doesn't have the "__multiSize" attribute.
-        if(parmInfo.rampType == HAPI_RAMPTYPE_MAX)
+        if(parmInfo.rampType == HAPI_RAMPTYPE_INVALID)
         {
             multiSizeDataHandle.setInt(multiSize);
         }
@@ -1093,7 +1093,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                     if(parmInfo.isChildOfMultiParm
                             && parentParmInfo
-                            && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
+                            && parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)
                     {
                         switch(enumIndex)
                         {
@@ -1358,14 +1358,14 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
     MString attrName = Util::getAttrNameFromParm(parmInfo);
-    if(parmInfo.rampType == HAPI_RAMPTYPE_MAX)
+    if(parmInfo.rampType == HAPI_RAMPTYPE_INVALID)
     {
         attrName += "__multiSize";
     }
     if(isMulti && containsParm(attrName, parmInfo))
     {
         int multiSize = -1;
-        if(parmInfo.rampType != HAPI_RAMPTYPE_MAX)
+        if(parmInfo.rampType != HAPI_RAMPTYPE_INVALID)
         {
             if(hasMultiAttr)
             {
@@ -1504,7 +1504,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 {
                     if(parmInfo.isChildOfMultiParm
                             && parentParmInfo
-                            && parentParmInfo->rampType != HAPI_RAMPTYPE_MAX)
+                            && parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)
                     {
                         switch(enumIndex)
                         {

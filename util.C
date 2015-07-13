@@ -118,7 +118,7 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
     {
         name += "__folder";
     }
-    else if(parm.rampType != HAPI_RAMPTYPE_MAX)
+    else if(parm.rampType != HAPI_RAMPTYPE_INVALID)
     {
         name += "__ramp";
     }
@@ -134,7 +134,7 @@ Util::getAttrNameFromParm(
 {
     if(parm.isChildOfMultiParm
             && parentParm
-            && parentParm->rampType != HAPI_RAMPTYPE_MAX)
+            && parentParm->rampType != HAPI_RAMPTYPE_INVALID)
     {
         // Map the parameters of a Houdini ramp to the equivalent attributes of
         // a Maya ramp.

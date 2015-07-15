@@ -1188,7 +1188,12 @@ AssetNode::AssetNode() :
 {
     myAsset = NULL;
 
-    myIsLoadedFromFile = MFileIO::isOpeningFile()
+    // If we just loaded this node from a file, then push all the parameter
+    // values. We can't simply determine this from myDirtyParmAttributes,
+    // which is set by setDependentsDirty().  This is because when the asset
+    // node is first created, we want to pull all the parameter values from
+    // the asset, but myDirtyParmAttributes is also empty.
+    mySetAllParms = MFileIO::isOpeningFile()
         || MFileIO::isImportingFile()
         || MFileIO::isReferencingFile();
 
@@ -1213,7 +1218,15 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
     if(plugBeingDirtied == AssetNode::otlFilePath
         || plugBeingDirtied == AssetNode::assetName)
+    {
+        // When the otl path or the asset name is changed, we need to push all
+        // the parameter values. Otherwise, the current values on the node
+        // would be replaced by the asset's default. This is similar to the
+        // case where the asset was just loaded back from file.
+        mySetAllParms = true;
+
         return MS::kSuccess;
+    }
 
     myResultsClean = false;
 
@@ -1530,15 +1543,9 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         {
             MObjectVector* attrs = &myDirtyParmAttributes;
 
-            // If we just loaded this node from a file, then push all the
-            // parameter values. We can't simply determine this from
-            // myDirtyParmAttributes, which is set by setDependentsDirty().
-            // This is because where the asset node is first created, we want
-            // to pull all the parameter values from the asset, but
-            // myDirtyParmAttributes is also empty.
-            if(myIsLoadedFromFile)
+            if(mySetAllParms)
             {
-                myIsLoadedFromFile = false;
+                mySetAllParms = false;
 
                 attrs = NULL;
             }

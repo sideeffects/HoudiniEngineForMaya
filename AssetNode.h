@@ -83,7 +83,7 @@ class AssetNode: public MPxTransform
         MString myOTLFilePath;
         MString myAssetName;
 
-        bool myIsLoadedFromFile;
+        bool mySetAllParms;
         bool myResultsClean;
         bool myNeedToMarshalInput;
 

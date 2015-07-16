@@ -113,6 +113,8 @@ AttrOperation::~AttrOperation()
 void
 AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 {
+    MStatus status;
+
     MDataHandle dataHandle;
     MPlug plug;
     bool exists = false;
@@ -129,8 +131,15 @@ AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 
         if(!folderAttrObj.isNull())
         {
-            exists = true;
-            plug = parentPlug.child(folderAttrObj);
+            plug = parentPlug.child(folderAttrObj, &status);
+            if(status)
+            {
+                exists = true;
+            }
+        }
+
+        if(exists)
+        {
             // When we got the parentDataHandle, Maya doesn't actually evaluate
             // the child compound attributes. So if we get the child dataHandle
             // with child(), it could still be dirty. Workaround it by calling
@@ -217,20 +226,32 @@ AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
             MObject multiSizeAttrObj = myNodeFn.attribute(multiAttrName + "__multiSize");
             if(!multiSizeAttrObj.isNull())
             {
-                multiSizeDataHandle = parentDataHandle.child(multiSizeAttrObj);
-                multiSizePlug = parentPlug.child(multiSizeAttrObj);
+                multiSizePlug = parentPlug.child(multiSizeAttrObj, &status);
+                if(status)
+                {
+                    isMulti = true;
+                }
+            }
 
-                isMulti = true;
+            if(isMulti)
+            {
+                multiSizeDataHandle = parentDataHandle.child(multiSizeAttrObj);
             }
         }
 
         // multiAttrObj might not exist if the current instanceCount is 0
         if(isMulti && !multiAttrObj.isNull())
         {
-            multiDataHandle = MArrayDataHandle(parentDataHandle.child(multiAttrObj));
-            multiPlug = parentPlug.child(multiAttrObj);
+            multiPlug = parentPlug.child(multiAttrObj, &status);
+            if(status)
+            {
+                hasMultiAttr = true;
+            }
 
-            hasMultiAttr = true;
+            if(hasMultiAttr)
+            {
+                multiDataHandle = MArrayDataHandle(parentDataHandle.child(multiAttrObj));
+            }
         }
     }
 
@@ -1027,6 +1048,8 @@ GetAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 void
 GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
+    MStatus status;
+
     MDataHandle dataHandle;
     MPlug plug;
     bool exists = false;
@@ -1043,13 +1066,16 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         MObject attrObj = myNodeFn.attribute(attrName);
         if(!attrObj.isNull())
         {
-            exists = true;
+            plug = parentPlug.child(attrObj, &status);
+            if(status)
+            {
+                exists = true;
+            }
         }
 
         if(exists)
         {
             dataHandle = parentDataHandle.child(attrObj);
-            plug = parentPlug.child(attrObj);
 
             if((parmInfo.type == HAPI_PARMTYPE_INT
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON
@@ -1458,6 +1484,8 @@ SetAttrOperation::SetAttrOperation(
 void
 SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
+    MStatus status;
+
     MDataHandle dataHandle;
     MPlug plug;
     bool exists = false;
@@ -1474,13 +1502,16 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         MObject attrObj = myNodeFn.attribute(attrName);
         if(!attrObj.isNull())
         {
-            exists = true;
+            plug = parentPlug.child(attrObj, &status);
+            if(status)
+            {
+                exists = true;
+            }
         }
 
         if(exists)
         {
             dataHandle = parentDataHandle.child(attrObj);
-            plug = parentPlug.child(attrObj);
 
             if((parmInfo.type == HAPI_PARMTYPE_INT
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON

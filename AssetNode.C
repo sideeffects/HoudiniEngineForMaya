@@ -1223,7 +1223,12 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         // the parameter values. Otherwise, the current values on the node
         // would be replaced by the asset's default. This is similar to the
         // case where the asset was just loaded back from file.
-        mySetAllParms = true;
+        // Also, we need to check isAssetValid(). Otherwise, when an asset node
+        // is newly created, we would clobber the default parameter values.
+        if(isAssetValid())
+        {
+            mySetAllParms = true;
+        }
 
         return MS::kSuccess;
     }

@@ -698,6 +698,11 @@ SyncOutputGeometryPart::createOutputGroups(
     MDagPath dagPath;
     MDagPath::getAPathTo(dstNode, dagPath);
 
+    // This is needed to make sure that the geometry connection are setup.
+    // Otherwise, set components can't be assigned.
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS(status);
+
     // Do material assignment according to primitive attribute.
     if(!hasMaterial && !mayaSGAttributePlug.isNull())
     {

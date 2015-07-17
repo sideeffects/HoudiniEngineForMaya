@@ -829,7 +829,9 @@ SyncOutputGeometryPart::createOutputGroups(
                 setObj = MObject::kNullObj;
             }
 
-            if(setFn.hasObj(MFn::kShadingEngine))
+            // Can't test with MFnSet::hasObj(MFn::kShadingEngine). Regular
+            // sets will also return true.
+            if(setObj.hasFn(MFn::kShadingEngine))
             {
                 if(hasMaterial)
                 {

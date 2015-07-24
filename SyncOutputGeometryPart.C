@@ -574,6 +574,21 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
                 {
                     isPerParticleAttribute = true;
                     canSupportAttribute = true;
+
+                    // This should match the list in
+                    // OutputGeometryPart::computeParticle().
+                    if(dstAttributeName == "Cd")
+                    {
+                        dstAttributeName = "rgbPP";
+                    }
+                    else if(dstAttributeName == "Alpha")
+                    {
+                        dstAttributeName = "opacityPP";
+                    }
+                    else if(dstAttributeName == "pscale")
+                    {
+                        dstAttributeName = "radiusPP";
+                    }
                 }
             }
             else if(owner == "vertex")

@@ -211,7 +211,7 @@ InputMesh::processNormals(
     MIntArray normalIds;
     meshFn.getNormalIds(normalCounts, normalIds);
 
-    if(normalIds.length())
+    if(!normalIds.length())
     {
         return false;
     }

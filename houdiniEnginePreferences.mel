@@ -6,6 +6,41 @@ houdiniEnginePreferences_refresh()
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineAsynchronousMode"`
         asynchronousModeCheck;
+        
+    int $sessionType = int(`optionVar -query "houdiniEngineSessionType"`);
+        
+    switch ( $sessionType )
+    {
+    case 0:
+        radioCollection -edit -select sessionTypeInProcess
+            sessionTypeList;
+        break;
+        
+    case 1:
+        radioCollection -edit -select sessionTypeSocket
+            sessionTypeList;
+        break;
+        
+    case 2:
+        radioCollection -edit -select sessionTypePipe
+            sessionTypeList;
+        break;
+    }
+    
+    textField -edit
+        -enable ($sessionType == 1)
+        -text `optionVar -query "houdiniEngineThriftServer"`
+        sessionHost;
+
+    textField -edit
+        -enable ($sessionType == 1)
+        -text `optionVar -query "houdiniEngineThriftPort"`
+        sessionPort;
+
+    textField -edit
+        -enable ($sessionType == 2)
+        -text `optionVar -query "houdiniEngineThriftPipe"`
+        sessionPipeName;
 }
 
 global proc
@@ -13,7 +48,34 @@ houdiniEnginePreferences_save()
 {
     global int $houdiniEngineAsynchronousMode;
 
-    optionVar -intValue "houdiniEngineAsynchronousMode" $houdiniEngineAsynchronousMode;
+    optionVar
+        -intValue "houdiniEngineAsynchronousMode"
+        $houdiniEngineAsynchronousMode;
+        
+    if (`radioButton -query -select sessionTypeInProcess`)
+    {    
+        optionVar -intValue "houdiniEngineSessionType" 0;
+    }    
+    else if (`radioButton -query -select sessionTypeSocket`)
+    {    
+        optionVar -intValue "houdiniEngineSessionType" 1;
+    }
+    else if (`radioButton -query -select sessionTypePipe`)
+    {    
+        optionVar -intValue "houdiniEngineSessionType" 2;
+    }
+        
+    optionVar
+        -stringValue "houdiniEngineThriftServer"
+        `textField -query -text sessionHost`;
+        
+    optionVar
+        -stringValue "houdiniEngineThriftPort"
+        `textField -query -text sessionPort`;
+        
+    optionVar
+        -stringValue "houdiniEngineThriftPipe"
+        `textField -query -text sessionPipeName`;
 
     houdiniEnginePreferences_close;
 }
@@ -30,6 +92,19 @@ houdiniEnginePreferences_toggleAsynchronousMode(int $state)
     global int $houdiniEngineAsynchronousMode;
 
     $houdiniEngineAsynchronousMode = $state;
+}
+
+global proc
+houdiniEnginePreferences_toggleSessionTypeSocket(int $state)
+{
+    textField -edit -enable $state sessionHost;
+    textField -edit -enable $state sessionPort;
+}
+
+global proc
+houdiniEnginePreferences_toggleSessionTypePipe(int $state)
+{
+    textField -edit -enable $state sessionPipeName;
 }
 
 global proc
@@ -58,30 +133,30 @@ houdiniEnginePreferences()
     // Global
     string $globalLayout = `frameLayout
         -label "Global"`;
-    formLayout
-        globalPreferences;
+        formLayout
+            globalPreferences;
+    
+            checkBoxGrp
+                -numberOfCheckBoxes 1
+                -label "Asynchronous Mode:"
+                -label1 "(requires restart)"
+                -changeCommand "houdiniEnginePreferences_toggleAsynchronousMode #1"
+                asynchronousModeCheck;
+    
+            button
+                -label "?"
+                -command ("confirmDialog -title \"Houdini Engine Preferences\"" +
+                "-button \"OK\" -message \"\\\"Asynchronous Mode\\\" controls " +
+                "whether Houdini Engine runs asynchronously. Running asynchronously " +
+                "enables some nice features, such as progress bars and interrupts. " +
+                "However, if an asset tries to interact with Maya, it may lead to " +
+                "some unexpected behaviors. Disabling this option may fix these " +
+                "issues. If unsure, leave it on. (Default: on)\"")
+                asynchronousModeHelp;
 
-        checkBoxGrp
-            -numberOfCheckBoxes 1
-            -label "Asynchronous Mode:"
-            -label1 "(requires restart)"
-            -changeCommand "houdiniEnginePreferences_toggleAsynchronousMode #1"
-            asynchronousModeCheck;
-
-        button
-            -label "?"
-            -command ("confirmDialog -title \"Houdini Engine Preferences\"" +
-            "-button \"OK\" -message \"\\\"Asynchronous Mode\\\" controls " +
-            "whether Houdini Engine runs asynchronously. Running asynchronously " +
-            "enables some nice features, such as progress bars and interrupts. " +
-            "However, if an asset tries to interact with Maya, it may lead to " +
-            "some unexpected behaviors. Disabling this option may fix these " +
-            "issues. If unsure, leave it on. (Default: on)\"")
-            asynchronousModeHelp;
-
+        setParent ..;
     setParent ..;
-    setParent ..;
-
+    
     formLayout -e
         -attachForm asynchronousModeCheck "top" 5
         -attachForm asynchronousModeCheck "left" 5
@@ -89,7 +164,67 @@ houdiniEnginePreferences()
 
         -attachForm asynchronousModeHelp "top" 5
         -attachForm asynchronousModeHelp "right" 5
-        globalPreferences;
+        globalPreferences;    
+    
+    // Sessions
+    string $sessionLayout = `frameLayout -label "Session (requires restart)"`;                
+        radioCollection
+            sessionTypeList;
+            
+        formLayout sessionLayout;
+            radioButton
+                -label "In Process"                
+                sessionTypeInProcess;
+
+            radioButton
+                -label "TCP Socket"
+                -changeCommand "houdiniEnginePreferences_toggleSessionTypeSocket #1"
+                sessionTypeSocket;
+                
+            text -label "Host:" sessionHostLabel;
+            textField sessionHost;
+            
+            text -label "Port:" sessionPortLabel;
+            textField sessionPort;
+            
+            radioButton
+                -label "Named Pipe:"
+                -changeCommand "houdiniEnginePreferences_toggleSessionTypePipe #1"
+                sessionTypePipe;
+
+            textField sessionPipeName;
+        setParent ..;
+        
+        formLayout -e
+            -attachForm sessionTypeInProcess "left" 5
+            -attachForm sessionTypeSocket "left" 5
+            -attachForm sessionTypePipe "left" 5            
+            
+            -attachOppositeControl sessionHost "left" 120 sessionTypeInProcess            
+                        
+            -attachOppositeForm sessionPort "left" -60
+            
+            -attachOppositeControl sessionPipeName "left" 120 sessionTypeInProcess            
+            
+            -attachForm sessionPort "right" 5
+            -attachControl sessionPortLabel "right" 5 sessionPort
+            -attachControl sessionHost "right" 5 sessionPortLabel
+            -attachControl sessionHostLabel "right" 5 sessionHost
+            
+            -attachForm sessionPipeName "right" 5
+            
+            -attachForm sessionTypeInProcess "top" 5
+            
+            -attachControl sessionTypeSocket "top" 5 sessionTypeInProcess
+            -attachOppositeControl sessionHostLabel "top" 2 sessionTypeSocket
+            -attachOppositeControl sessionHost "top" 0 sessionTypeSocket            
+            -attachOppositeControl sessionPortLabel "top" 2 sessionTypeSocket
+            -attachOppositeControl sessionPort "top" 0 sessionTypeSocket
+            
+            -attachControl sessionTypePipe "top" 5 sessionTypeSocket
+            -attachControl sessionPipeName "top" 5 sessionTypeSocket
+            sessionLayout;
+    setParent ..;
 
     // Buttons
     string $buttonLayout = `formLayout`;
@@ -129,8 +264,12 @@ houdiniEnginePreferences()
 
         -attachControl $globalLayout "top" 5 $versionText
         -attachForm $globalLayout "left" 5
-        -attachControl $globalLayout "bottom" 5 $buttonLayout
         -attachForm $globalLayout "right" 5
+        
+        -attachControl $sessionLayout "top" 5 $globalLayout
+        -attachForm $sessionLayout "left" 5
+        -attachControl $sessionLayout "bottom" 5 $buttonLayout
+        -attachForm $sessionLayout "right" 5
 
         -attachForm $buttonLayout "left" 5
         -attachForm $buttonLayout "bottom" 5

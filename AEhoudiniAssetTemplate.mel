@@ -971,6 +971,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
 
         editorTemplate -callCustom "AEhoudiniAssetOptionsNew" "AEhoudiniAssetOptionsReplace" "unused";
 
+        editorTemplate -suppress "syncWhenInputConnects";
         editorTemplate -suppress "autoSyncOutputs";
         editorTemplate -suppress "splitGeosByGroup";
         editorTemplate -suppress "useInstancerNode";

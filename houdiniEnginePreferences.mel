@@ -167,13 +167,13 @@ houdiniEnginePreferences()
         globalPreferences;    
     
     // Sessions
-    string $sessionLayout = `frameLayout -label "Session (requires restart)"`;                
+    string $sessionLayout = `frameLayout -label "Back End (requires restart)"`;
         radioCollection
             sessionTypeList;
             
         formLayout sessionLayout;
             radioButton
-                -label "In Process"                
+                -label "Within Maya Process"
                 sessionTypeInProcess;
 
             radioButton

@@ -34,6 +34,14 @@ class Asset;
 class AssetNode: public MPxTransform
 {
     public:
+        static void* creator();
+        static MStatus initialize();
+
+    public:
+        static MString typeName;
+        static MTypeId typeId;
+
+    public:
         AssetNode();
         virtual ~AssetNode();
 
@@ -65,14 +73,7 @@ class AssetNode: public MPxTransform
 
         Asset* getAsset() const;
 
-        static void* creator();
-        static MStatus initialize();
-
         void rebuildAsset();
-
-    public:
-        static MString typeName;
-        static MTypeId typeId;
 
     private:
         Asset* myAsset;

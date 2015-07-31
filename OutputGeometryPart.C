@@ -939,7 +939,10 @@ OutputGeometryPart::computeParticle(
         }
         else
         {
-            zeroArray(idArray, particleCount);
+            for(unsigned int i = 0; i < idArray.length(); i++)
+            {
+                idArray[i] = i;
+            }
         }
     }
     markAttributeUsed("id");

@@ -328,37 +328,72 @@ initializePlugin(MObject obj)
         const SessionType::Enum sessionType =
             static_cast<SessionType::Enum>( optionVars.sessionType.get() );
 
+        Util::theHAPISession.reset( new HAPI_Session );
+        HAPI_Result result = HAPI_RESULT_FAILURE;
+
         switch (sessionType)
         {
         case SessionType::ST_INPROCESS:
-            Util::theHAPISession.reset( new HAPI_Session );
-            HAPI_CreateInProcessSession( Util::theHAPISession.get() );
+            MGlobal::displayInfo(
+                "Creating an in-process Houdini Engine session.");
+
+            result = HAPI_CreateInProcessSession( Util::theHAPISession.get() );
             break;
 
         case SessionType::ST_THRIFT_SOCKET:
-            Util::theHAPISession.reset( new HAPI_Session );
-            HAPI_CreateThriftSocketSession(
-                Util::theHAPISession.get(),
-                optionVars.thriftServer.get().asChar(),
-                optionVars.thriftPort.get() );
+            {
+                const MString hostName = optionVars.thriftServer.get();
+                const int port = optionVars.thriftPort.get();
+
+                MString msg =
+                    "Establishing a remote Houdini Engine session "
+                    "using TCP socket at ";
+                msg += hostName;
+                msg += ":";
+                msg += port;
+
+                MGlobal::displayInfo(msg);
+
+                result = HAPI_CreateThriftSocketSession(
+                    Util::theHAPISession.get(),
+                    hostName.asChar(), port );
+            }
             break;
 
         case SessionType::ST_THRIFT_PIPE:
-            Util::theHAPISession.reset( new HAPI_Session );
-            HAPI_CreateThriftNamedPipeSession(
-                Util::theHAPISession.get(),
-                optionVars.thriftPipe.get().asChar() );
+            {
+                const MString pipeName = optionVars.thriftPipe.get();
+                MGlobal::displayInfo(
+                    "Establishing a remote Houdini Engine session "
+                    "using named pipe \"" + pipeName + "\"");
+
+                result = HAPI_CreateThriftNamedPipeSession(
+                    Util::theHAPISession.get(),
+                    pipeName.asChar() );
+            }
             break;
+        }
+
+        if ( result != HAPI_RESULT_SUCCESS )
+        {
+            Util::theHAPISession.reset(NULL);
+            MGlobal::displayError(
+                "Could not create a Houdini Engine session. "
+                "Please edit the Back End preferences and restart Maya." );
         }
     }
 
-    printHAPIVersion();
+    if ( Util::theHAPISession.get() )
+    {
+        printHAPIVersion();
+    }
 
     char engine_version[32];
     sprintf(engine_version, "%d.%d (API: %d)",
             HAPI_VERSION_HOUDINI_ENGINE_MAJOR,
             HAPI_VERSION_HOUDINI_ENGINE_MINOR,
             HAPI_VERSION_HOUDINI_ENGINE_API);
+
 
     MStatus status;
     MFnPlugin plugin(
@@ -367,14 +402,13 @@ initializePlugin(MObject obj)
             "Any"
             );
 
-    if ( initializeHAPI(optionVars) )
+    if ( Util::theHAPISession.get() && initializeHAPI(optionVars) )
     {
         MGlobal::displayInfo("Houdini Engine initialized successfully.");
     }
     else
     {
         MGlobal::displayInfo("Houdini Engine failed to initialize.");
-        return MStatus::kFailure;
     }
 
     status = plugin.registerUI("houdiniEngineCreateUI", "houdiniEngineDeleteUI");

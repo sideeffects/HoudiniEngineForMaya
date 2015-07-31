@@ -37,6 +37,8 @@ class AssetNode: public MPxTransform
         static void* creator();
         static MStatus initialize();
 
+        static void destroyAssetCallback(MObject &node, void *clientData);
+
     public:
         static MString typeName;
         static MTypeId typeId;

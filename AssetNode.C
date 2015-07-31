@@ -12,7 +12,6 @@
 #include <maya/MFileIO.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
-#include <maya/MNodeMessage.h>
 #include <maya/MPlugArray.h>
 
 #include <algorithm>
@@ -1184,12 +1183,6 @@ AssetNode::initialize()
     return MS::kSuccess;
 }
 
-void AssetNode::destroyAssetCallback(MObject &node, void *clientData)
-{
-    AssetNode* assetNode = (AssetNode*)clientData;
-    assetNode->destroyAsset();
-}
-
 AssetNode::AssetNode() :
     myNeedToMarshalInput(false)
 {
@@ -1215,16 +1208,6 @@ AssetNode::~AssetNode()
 void
 AssetNode::postConstructor()
 {
-    MStatus status;
-
-    MObject obj = thisMObject();
-    MNodeMessage::addNodePreRemovalCallback(
-            obj,
-            AssetNode::destroyAssetCallback,
-            this,
-            &status
-            );
-    CHECK_MSTATUS(status);
 }
 
 MStatus
@@ -1530,11 +1513,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
         != computeAttributes.end() && !myResultsClean)
     {
-        if(!isAssetValid())
-        {
-            createAsset();
-        }
-
         // make sure asset was created properly
         if(!isAssetValid())
         {

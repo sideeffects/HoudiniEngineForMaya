@@ -220,6 +220,11 @@ initializeHAPI(const OptionVars& optionVars)
 bool
 cleanupHAPI()
 {
+    if ( !Util::theHAPISession.get() )
+    {
+        return true;
+    }
+
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
     hstat = HAPI_Cleanup( Util::theHAPISession.get() );
@@ -379,13 +384,18 @@ initializePlugin(MObject obj)
             Util::theHAPISession.reset(NULL);
             MGlobal::displayError(
                 "Could not create a Houdini Engine session. "
-                "Please edit the Back End preferences and restart Maya." );
+                "Please edit the Back End preferences and reload the plug-in.");
         }
     }
 
-    if ( Util::theHAPISession.get() )
+    if ( Util::theHAPISession.get() && initializeHAPI(optionVars) )
     {
+        MGlobal::displayInfo("Houdini Engine initialized successfully.");
         printHAPIVersion();
+    }
+    else
+    {
+        MGlobal::displayInfo("Houdini Engine failed to initialize.");
     }
 
     char engine_version[32];
@@ -394,22 +404,12 @@ initializePlugin(MObject obj)
             HAPI_VERSION_HOUDINI_ENGINE_MINOR,
             HAPI_VERSION_HOUDINI_ENGINE_API);
 
-
     MStatus status;
     MFnPlugin plugin(
             obj, "Side Effects",
             engine_version,
             "Any"
             );
-
-    if ( Util::theHAPISession.get() && initializeHAPI(optionVars) )
-    {
-        MGlobal::displayInfo("Houdini Engine initialized successfully.");
-    }
-    else
-    {
-        MGlobal::displayInfo("Houdini Engine failed to initialize.");
-    }
 
     status = plugin.registerUI("houdiniEngineCreateUI", "houdiniEngineDeleteUI");
     CHECK_MSTATUS_AND_RETURN_IT(status);

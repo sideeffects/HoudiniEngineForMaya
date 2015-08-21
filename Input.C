@@ -313,6 +313,9 @@ Input::setDetailAttribute(
         const MStringArray &value
         )
 {
+    if(value.length() == 0)
+        return;
+
     std::vector<const char*> converted_value;
     converted_value.resize(value.length());
     for(unsigned int i = 0; i < value.length(); i++)

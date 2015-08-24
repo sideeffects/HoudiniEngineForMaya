@@ -203,10 +203,12 @@ initializeHAPI(const OptionVars& optionVars)
     bool use_cooking_thread = optionVars.asyncMode.get() == 1;
 
     hstat = HAPI_Initialize(
-            Util::theHAPISession.get(), otl_dir, dso_dir,
+            Util::theHAPISession.get(),
             &cook_options,
             use_cooking_thread,
-            -1
+            -1,
+            otl_dir, dso_dir,
+            NULL, NULL
             );
     if(hstat != HAPI_RESULT_SUCCESS)
     {

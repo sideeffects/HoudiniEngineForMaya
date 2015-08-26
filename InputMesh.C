@@ -576,6 +576,8 @@ InputMesh::processSets(
         }
 
         MString setName = setFn.name();
+        // If the set is in a namespace, the name will contain a colon.
+        setName = Util::sanitizeStringForNodeName(setName);
 
         CHECK_HAPI(HAPI_AddGroup(
                     myInputAssetId, myInputObjectId, myInputGeoId,

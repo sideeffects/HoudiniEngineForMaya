@@ -31,9 +31,9 @@ class EngineSubCommandLicense : public SubCommand
         {
             int license;
 
-            HAPI_GetEnvInt(
+            HAPI_GetSessionEnvInt(
                     Util::theHAPISession.get(),
-                    HAPI_ENVINT_LICENSE,
+                    HAPI_SESSIONENVINT_LICENSE,
                     &license
                     );
 
@@ -100,17 +100,14 @@ class EngineSubCommandHoudiniVersion : public SubCommand
             int major, minor, build;
 
             HAPI_GetEnvInt(
-                    Util::theHAPISession.get(),
                     HAPI_ENVINT_VERSION_HOUDINI_MAJOR,
                     &major
                     );
             HAPI_GetEnvInt(
-                    Util::theHAPISession.get(),
                     HAPI_ENVINT_VERSION_HOUDINI_MINOR,
                     &minor
                     );
             HAPI_GetEnvInt(
-                    Util::theHAPISession.get(),
                     HAPI_ENVINT_VERSION_HOUDINI_BUILD,
                     &build
                     );
@@ -137,17 +134,14 @@ class EngineSubCommandHoudiniEngineVersion : public SubCommand
             int major, minor, api;
 
             HAPI_GetEnvInt(
-                    Util::theHAPISession.get(),
                     HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR,
                     &major
                     );
             HAPI_GetEnvInt(
-                    Util::theHAPISession.get(),
                     HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR,
                     &minor
                     );
             HAPI_GetEnvInt(
-                    Util::theHAPISession.get(),
                     HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API,
                     &api
                     );

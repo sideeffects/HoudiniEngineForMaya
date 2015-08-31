@@ -25,17 +25,14 @@ printHAPIVersion()
 
     {
         HAPI_GetEnvInt(
-                Util::theHAPISession.get(),
                 HAPI_ENVINT_VERSION_HOUDINI_MAJOR,
                 &i
                 );
         HAPI_GetEnvInt(
-                Util::theHAPISession.get(),
                 HAPI_ENVINT_VERSION_HOUDINI_MINOR,
                 &j
                 );
         HAPI_GetEnvInt(
-                Util::theHAPISession.get(),
                 HAPI_ENVINT_VERSION_HOUDINI_BUILD,
                 &k
                 );
@@ -60,17 +57,14 @@ printHAPIVersion()
 
     {
         HAPI_GetEnvInt(
-                Util::theHAPISession.get(),
                 HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR,
                 &i
                 );
         HAPI_GetEnvInt(
-                Util::theHAPISession.get(),
                 HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR,
                 &j
                 );
         HAPI_GetEnvInt(
-                Util::theHAPISession.get(),
                 HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API,
                 &k
                 );

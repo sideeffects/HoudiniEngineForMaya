@@ -318,20 +318,20 @@ DST_SCRIPTS = $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(MELFILES)) \
 # check build requirement
 ifeq ($(OS), Linux)
     CAN_BUILD := $(and \
-	    $(realpath $(MAYA_DIR)), \
+	    $(realpath $(MAYA_DIR)/include/maya), \
 	    1)
 else ifeq ($(OS), Cygwin)
     # On Windows, we don't want to force everyone who has Maya to also build
     # this plugin for now, because building Maya plugin requires a specific
     # Visual C++ version, which may not be installed.
     CAN_BUILD := $(and \
-	    $(realpath $(MAYA_DIR)), \
+	    $(realpath $(MAYA_DIR)/include/maya), \
 	    $(realpath $(WIN32_SDK)), \
 	    $(realpath $(MSVC_SDK)), \
 	    1)
 else ifeq ($(OS), Darwin)
     CAN_BUILD := $(and \
-	    $(realpath $(MAYA_DIR)), \
+	    $(realpath $(MAYA_DIR)/../../devkit/include/maya), \
 	    1)
 endif
 

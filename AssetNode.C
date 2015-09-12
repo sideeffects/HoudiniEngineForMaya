@@ -1154,11 +1154,10 @@ AssetNode::initialize()
     AssetNode::useInstancerNode = nAttr.create(
             "useInstancerNode", "useInstancerNode",
             MFnNumericData::kBoolean,
-            false
+            1
             );
     nAttr.setStorable(true);
     nAttr.setWritable(true);
-    nAttr.setDefault(false);
 
     // add the static attributes to the node
     addAttribute(AssetNode::syncWhenInputConnects);

@@ -39,6 +39,42 @@ clearMesh(
     meshHandle.setMObject(MObject::kNullObj);
 }
 
+void
+clearParticle(
+        MDataHandle &hasParticlesHandle,
+        MDataHandle &particleHandle
+        )
+{
+    hasParticlesHandle.setBool(false);
+
+    MDataHandle currentTimeHandle
+        = particleHandle.child(AssetNode::outputPartParticleCurrentTime);
+    MDataHandle positionsHandle
+        = particleHandle.child(AssetNode::outputPartParticlePositions);
+    MDataHandle arrayDataHandle
+        = particleHandle.child(AssetNode::outputPartParticleArrayData);
+
+    currentTimeHandle.setMObject(MObject::kNullObj);
+    positionsHandle.setMObject(MObject::kNullObj);
+
+    // array data
+    MObject arrayDataObj = arrayDataHandle.data();
+    MFnArrayAttrsData arrayDataFn(arrayDataObj);
+    if(arrayDataObj.isNull())
+    {
+        arrayDataObj = arrayDataFn.create();
+        arrayDataHandle.setMObject(arrayDataObj);
+
+        arrayDataObj = arrayDataHandle.data();
+        arrayDataFn.setObject(arrayDataObj);
+    }
+
+    // count
+    MDoubleArray countArray = arrayDataFn.doubleArray("count");
+    countArray.setLength(1);
+    countArray[0] = 0;
+}
+
 static void
 clearCurvesBuilder(
         MArrayDataBuilder &curvesBuilder,
@@ -377,6 +413,10 @@ OutputGeometryPart::compute(
                 && myPartInfo.faceCount == 0)
         {
             computeParticle(time, hasParticlesHandle, particleHandle);
+        }
+        else if(hasParticlesHandle.asBool())
+        {
+            clearParticle(hasParticlesHandle, particleHandle);
         }
 
 #if MAYA_API_VERSION >= 201400

@@ -1076,19 +1076,10 @@ OutputGeometryPart::computeParticle(
     convertParticleAttribute<MDoubleArray>(
             arrayDataFn, "finalLifespanPP",
             floatArray,
-            "finalLifespanPP",
-            particleCount
-            );
-    markAttributeUsed("finalLifespanPP");
-
-    // lifespanPP
-    convertParticleAttribute<MDoubleArray>(
-            arrayDataFn, "lifespanPP",
-            floatArray,
             "life",
             particleCount
             );
-    markAttributeUsed("lifespanPP");
+    markAttributeUsed("life");
 
     // other attributes
     int* attributeNames = new int[myPartInfo.pointAttributeCount];
@@ -1122,6 +1113,10 @@ OutputGeometryPart::computeParticle(
         else if(attributeName == "pscale")
         {
             translatedAttributeName = "radiusPP";
+        }
+        else if(attributeName == "life")
+        {
+            translatedAttributeName = "finalLifespanPP";
         }
         else
         {

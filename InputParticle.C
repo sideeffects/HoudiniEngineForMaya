@@ -247,7 +247,8 @@ InputParticle::setInputGeo(
                 // mimics "listAttr -v -w" from AEokayAttr
                 MFnAttribute attributeFn(attributeObj);
                 if(!(!attributeFn.isHidden() && attributeFn.isWritable())
-                        && attributeName != "age")
+                        && (attributeName != "age"
+                            && attributeName != "finalLifespanPP"))
                 {
                     continue;
                 }
@@ -316,6 +317,10 @@ InputParticle::setInputGeo(
                         else if(strcmp(parameterName, "radiusPP") == 0)
                         {
                             parameterName = "pscale";
+                        }
+                        else if(strcmp(parameterName, "finalLifespanPP") == 0)
+                        {
+                            parameterName = "life";
                         }
                         break;
                 }

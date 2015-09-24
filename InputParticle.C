@@ -233,6 +233,17 @@ InputParticle::setInputGeo(
             MStringArray attributeNames;
             MGlobal::executeCommand(getAttributesCommand, attributeNames);
 
+            // explicitly include some special per-particle attributes that
+            // aren't returned by the MEL command
+            switch(i)
+            {
+                case 0:
+                    break;
+                case 1:
+                    attributeNames.append("age");
+                    break;
+            }
+
             for(unsigned int j = 0; j < attributeNames.length(); j++)
             {
                 const MString attributeName = attributeNames[j];
@@ -245,7 +256,8 @@ InputParticle::setInputGeo(
 
                 // mimics "listAttr -v -w" from AEokayAttr
                 MFnAttribute attributeFn(attributeObj);
-                if(!(!attributeFn.isHidden() && attributeFn.isWritable()))
+                if(!(!attributeFn.isHidden() && attributeFn.isWritable())
+                        && attributeName != "age")
                 {
                     continue;
                 }

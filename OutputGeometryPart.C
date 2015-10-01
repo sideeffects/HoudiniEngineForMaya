@@ -2120,6 +2120,39 @@ OutputGeometryPart::computeGroups(
                 continue;
             }
 
+            // Get the group membership first, because we want to skip the group
+            // completely if it's empty.
+            HAPI_GetGroupMembership(
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    groupType,
+                    groupName.asChar(),
+                    &groupMembership[0],
+                    0, groupMembership.size()
+                    );
+
+            MIntArray groupMembers(groupMembership.size());
+
+            size_t groupMembersCount = 0;
+            for(size_t k = 0; k < groupMembership.size(); k++)
+            {
+                if(groupMembership[k])
+                {
+                    groupMembers[groupMembersCount] = k;
+                    groupMembersCount++;
+                }
+            }
+            groupMembers.setLength(groupMembersCount);
+
+            // If this is an empty group, skip it. Otherwise, during sync, Maya
+            // would spend time assigning nothing to sets.  This is significant
+            // when using splitGeosByGroup with many groups, because there would
+            // be many empty groups for each part.
+            if(!groupMembers.length())
+            {
+                continue;
+            }
+
             MDataHandle groupHandle
                 = groupsBuilder.addElement(groupElementIndex);
             groupElementIndex++;
@@ -2134,15 +2167,6 @@ OutputGeometryPart::computeGroups(
                     AssetNode::outputPartGroupMembers
                     );
 
-            HAPI_GetGroupMembership(
-                    Util::theHAPISession.get(),
-                    myAssetId, myObjectId, myGeoId, myPartId,
-                    groupType,
-                    groupName.asChar(),
-                    &groupMembership[0],
-                    0, groupMembership.size()
-                    );
-
             MObject groupMembersObj = groupMembersHandle.data();
             MFnIntArrayData groupMembersDataFn(groupMembersObj);
             if(groupMembersObj.isNull())
@@ -2154,19 +2178,7 @@ OutputGeometryPart::computeGroups(
                 groupMembersDataFn.setObject(groupMembersObj);
             }
 
-            MIntArray groupMembers = groupMembersDataFn.array();
-            groupMembers.setLength(groupMembership.size());
-
-            size_t groupMembersCount = 0;
-            for(size_t k = 0; k < groupMembership.size(); k++)
-            {
-                if(groupMembership[k])
-                {
-                    groupMembers[groupMembersCount] = k;
-                    groupMembersCount++;
-                }
-            }
-            groupMembers.setLength(groupMembersCount);
+            groupMembersDataFn.set(groupMembers);
 
             groupNameHandle.setString(groupName);
             groupTypeHandle.setInt(fnType);

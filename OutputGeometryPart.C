@@ -1208,6 +1208,8 @@ OutputGeometryPart::computeMesh(
 
     hasMeshHandle.setBool(true);
 
+    MDataHandle meshCurrentUVHandle
+        = meshHandle.child(AssetNode::outputPartMeshCurrentUV);
     MDataHandle meshDataHandle
         = meshHandle.child(AssetNode::outputPartMeshData);
 

@@ -73,30 +73,9 @@ displayErrorForNode(
 }
 
 MString
-getString(int handle)
-{
-    int bufLen;
-    HAPI_GetStringBufLength(
-            handle,
-            &bufLen
-            );
-    char * buffer = new char[bufLen];
-    HAPI_GetString(
-            handle,
-            buffer,
-            bufLen
-            );
-
-    MString ret(buffer);
-    delete[] buffer;
-
-    return ret;
-}
-
-MString
 getAttrNameFromParm(const HAPI_ParmInfo &parm)
 {
-    MString name = getString(parm.templateNameSH);
+    MString name = HAPIString(parm.templateNameSH);
     if(parm.isChildOfMultiParm)
     {
         name = replaceString(name, "#", "_");
@@ -132,7 +111,7 @@ getAttrNameFromParm(
     {
         // Map the parameters of a Houdini ramp to the equivalent attributes of
         // a Maya ramp.
-        MString name = getString(parm.templateNameSH);
+        MString name = HAPIString(parm.templateNameSH);
         name = replaceString(name, "#", "_");
 
         if(endsWith(name, "pos"))
@@ -792,7 +771,7 @@ getAttributeStringData(int assetId,
             );
 
     for(int j=0; j<size; j++){
-        ret.append(getString(data[j]));
+        ret.append(HAPIString(data[j]));
     }
 
     delete[] data;
@@ -805,7 +784,7 @@ findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
 {
     for(size_t i = 0; i < parms.size(); i++)
     {
-        if(getString(parms[i].templateNameSH) == name
+        if(HAPIString(parms[i].templateNameSH) == name
                 && (instanceNum < 0 || parms[i].instanceNum == instanceNum)
           )
         {

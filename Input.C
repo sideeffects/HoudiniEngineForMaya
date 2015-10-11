@@ -107,7 +107,7 @@ Inputs::compute(MDataBlock &dataBlock)
                 &nameSH);
 
         inputNameHandle.set(
-                Util::getString(nameSH)
+                Util::HAPIString(nameSH)
                 );
     }
 

@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <vector>
+#include <string>
 
 #include <HAPI/HAPI.h>
 
@@ -126,7 +127,65 @@ void displayErrorForNode(
         const MString &message
         );
 
-MString getString(int handle);
+class HAPIString
+{
+    public:
+        HAPIString(int handle) :
+            myHandle(handle)
+        {
+            int bufLen;
+            HAPI_GetStringBufLength(
+                    myHandle,
+                    &bufLen
+                    );
+
+            if(bufLen == 0)
+            {
+                return;
+            }
+
+            myString.resize(bufLen);
+
+            HAPI_GetString(
+                    myHandle,
+                    &myString[0],
+                    myString.size()
+                    );
+        }
+
+        operator std::string() const
+        {
+            return myString;
+        }
+
+        operator MString() const
+        {
+            return myString.c_str();
+        }
+
+        template<typename T>
+        bool operator ==(const T &o) const
+        {
+            return ((const T &)*this) == o;
+        }
+
+        template<typename T>
+        bool operator !=(const T &o) const
+        {
+            return !(*this == o);
+        }
+
+    private:
+        int myHandle;
+        std::string myString;
+};
+
+template<>
+inline bool HAPIString::operator ==(const char* const &o) const
+{
+    return ((const std::string &)*this) == o;
+}
+
 MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
 MString getAttrNameFromParm(
         const HAPI_ParmInfo &parm,

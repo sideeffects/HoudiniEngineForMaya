@@ -76,7 +76,7 @@ CreateAttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
         attrFn = new MFnCompoundAttribute();
 
         MString attrName = Util::getAttrNameFromParm(parmInfo);
-        MString niceName = Util::getString(parmInfo.labelSH);
+        MString niceName = Util::HAPIString(parmInfo.labelSH);
 
         attrFn->create(attrName, attrName);
         attrFn->setNiceNameOverride(niceName);
@@ -147,7 +147,7 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
             attrFn = new MFnCompoundAttribute(attrObj);
 
-            MString niceName = Util::getString(parmInfo.labelSH);
+            MString niceName = Util::HAPIString(parmInfo.labelSH);
             attrFn->setNiceNameOverride(niceName);
 
             parentAttrFn->addChild(attrObj);
@@ -155,7 +155,7 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
         else
         {
             MString attrName = Util::getAttrNameFromParm(parmInfo);
-            MString label = Util::getString(parmInfo.labelSH);
+            MString label = Util::HAPIString(parmInfo.labelSH);
 
             MFnNumericAttribute sizeAttrFn;
             sizeAttrFn.create(attrName + "__multiSize", attrName + "__multiSize", MFnNumericData::kInt);
@@ -282,7 +282,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
     MFnCompoundAttribute cAttr;
 
     MString attrName = Util::getAttrNameFromParm(parm);
-    MString niceName = Util::getString(parm.labelSH);
+    MString niceName = Util::HAPIString(parm.labelSH);
 
     int size = parm.size;
 
@@ -324,7 +324,7 @@ MObject
 CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
 {
     MString attrName = Util::getAttrNameFromParm(parm);
-    MString niceName = Util::getString(parm.labelSH);
+    MString niceName = Util::HAPIString(parm.labelSH);
 
     MFnNumericAttribute nAttr;
     MFnCompoundAttribute cAttr;
@@ -400,7 +400,7 @@ MObject
 CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
 {
     MString attrName = Util::getAttrNameFromParm(parm);
-    MString niceName = Util::getString(parm.labelSH);
+    MString niceName = Util::HAPIString(parm.labelSH);
 
     MFnEnumAttribute eAttr;
 
@@ -425,7 +425,7 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
 
     for(int i = 0; i < parm.choiceCount; i++)
     {
-        MString field = Util::getString(choiceInfos[i].labelSH);
+        MString field = Util::HAPIString(choiceInfos[i].labelSH);
         eAttr.addField(field, static_cast<short>(enumIndex++));
     }
 

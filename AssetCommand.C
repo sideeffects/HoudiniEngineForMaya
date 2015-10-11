@@ -111,7 +111,7 @@ class AssetSubCommandListAssets : public SubCommand
 
             for(unsigned int i = 0; i < assetNamesSH.size(); i++)
             {
-                MPxCommand::appendToResult(Util::getString(assetNamesSH[i]));
+                MPxCommand::appendToResult(Util::HAPIString(assetNamesSH[i]));
             }
 
             return MStatus::kSuccess;

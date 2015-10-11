@@ -12,6 +12,8 @@
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
 
+#include "hapiutil.h"
+#include "types.h"
 #include "util.h"
 
 InputMesh::InputMesh(int assetId, int inputIdx) :
@@ -167,23 +169,15 @@ InputMesh::processPoints(
         const MFnMesh &meshFn
         )
 {
-    HAPI_AttributeInfo pos_attr_info;
-    pos_attr_info.exists             = true;
-    pos_attr_info.owner              = HAPI_ATTROWNER_POINT;
-    pos_attr_info.storage            = HAPI_STORAGETYPE_FLOAT;
-    pos_attr_info.count              = meshFn.numVertices();
-    pos_attr_info.tupleSize          = 3;
-
-    HAPI_AddAttribute(
+    CHECK_HAPI(hapiSetPointAttribute(
             myInputAssetId, myInputObjectId, myInputGeoId,
-            "P", &pos_attr_info
-            );
-
-    HAPI_SetAttributeFloatData(
-            myInputAssetId, myInputObjectId, myInputGeoId,
-            "P", &pos_attr_info,
-            meshFn.getRawPoints(NULL), 0, meshFn.numVertices()
-            );
+            3,
+            "P",
+            RawArray<float>(
+                meshFn.getRawPoints(NULL),
+                meshFn.numVertices() * 3
+                )
+            ));
 
     return true;
 }
@@ -221,22 +215,12 @@ InputMesh::processNormals(
     }
 
     // add and set it to HAPI
-    HAPI_AttributeInfo attributeInfo;
-    attributeInfo.exists = true;
-    attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
-    attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
-    attributeInfo.count = normalIds.length();
-    attributeInfo.tupleSize = 3;
-    HAPI_AddAttribute(
+    CHECK_HAPI(hapiSetVertexAttribute(
             myInputAssetId, myInputObjectId, myInputGeoId,
-            "N", &attributeInfo
-            );
-
-    HAPI_SetAttributeFloatData(
-            myInputAssetId, myInputObjectId, myInputGeoId,
-            "N", &attributeInfo,
-            &vertexNormals.front(), 0, normalIds.length()
-            );
+            3,
+            "N",
+            vertexNormals
+            ));
 
     return true;
 }
@@ -309,39 +293,25 @@ InputMesh::processUVs(
         }
 
         // add and set it to HAPI
-        HAPI_AttributeInfo attributeInfo;
-        attributeInfo.exists = true;
-        attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
-        attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
-        attributeInfo.count = vertexList.size();
-        attributeInfo.tupleSize = 3;
-        HAPI_AddAttribute(
+        CHECK_HAPI(hapiSetVertexAttribute(
                 myInputAssetId, myInputObjectId, myInputGeoId,
-                uvAttributeName.asChar(), &attributeInfo
-                );
-
-        HAPI_SetAttributeFloatData(
-                myInputAssetId, myInputObjectId, myInputGeoId,
-                uvAttributeName.asChar(), &attributeInfo,
-                &vertexUVs.front(), 0, vertexList.size()
-                );
+                3,
+                uvAttributeName.asChar(),
+                vertexUVs
+                ));
     }
 
-    Input::setDetailAttribute(
-            myInputAssetId,
-            myInputObjectId,
-            myInputGeoId,
+    CHECK_HAPI(hapiSetDetailAttribute(
+            myInputAssetId, myInputObjectId, myInputGeoId,
             "maya_uv_name",
             uvSetNames
-            );
+            ));
 
-    Input::setDetailAttribute(
-            myInputAssetId,
-            myInputObjectId,
-            myInputGeoId,
+    CHECK_HAPI(hapiSetDetailAttribute(
+            myInputAssetId, myInputObjectId, myInputGeoId,
             "maya_uv_mapped_uv",
             mappedUVAttributeNames
-            );
+            ));
 
     return true;
 }
@@ -416,22 +386,12 @@ InputMesh::processColorSets(
             }
 
             // add and set Cd
-            HAPI_AttributeInfo colorAttributeInfo;
-            colorAttributeInfo.exists = true;
-            colorAttributeInfo.owner = HAPI_ATTROWNER_VERTEX;
-            colorAttributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
-            colorAttributeInfo.count = vertexList.size();
-            colorAttributeInfo.tupleSize = 3;
-            HAPI_AddAttribute(
+            CHECK_HAPI(hapiSetVertexAttribute(
                     myInputAssetId, myInputObjectId, myInputGeoId,
-                    colorAttributeName.asChar(), &colorAttributeInfo
-                    );
-
-            HAPI_SetAttributeFloatData(
-                    myInputAssetId, myInputObjectId, myInputGeoId,
-                    colorAttributeName.asChar(), &colorAttributeInfo,
-                    &buffer.front(), 0, vertexList.size()
-                    );
+                    3,
+                    colorAttributeName.asChar(),
+                    buffer
+                    ));
         }
 
         if(hasAlpha)
@@ -447,48 +407,38 @@ InputMesh::processColorSets(
             }
 
             // add and set Alpha
-            HAPI_AttributeInfo alphaAttributeInfo;
-            alphaAttributeInfo.exists = true;
-            alphaAttributeInfo.owner = HAPI_ATTROWNER_VERTEX;
-            alphaAttributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
-            alphaAttributeInfo.count = vertexList.size();
-            alphaAttributeInfo.tupleSize = 1;
-            HAPI_AddAttribute(
+            CHECK_HAPI(hapiSetVertexAttribute(
                     myInputAssetId, myInputObjectId, myInputGeoId,
-                    alphaAttributeName.asChar(), &alphaAttributeInfo
-                    );
-
-            HAPI_SetAttributeFloatData(
-                    myInputAssetId, myInputObjectId, myInputGeoId,
-                    alphaAttributeName.asChar(), &alphaAttributeInfo,
-                    &buffer.front(), 0, vertexList.size()
-                    );
+                    3,
+                    alphaAttributeName.asChar(),
+                    buffer
+                    ));
         }
     }
 
-    Input::setDetailAttribute(
+    CHECK_HAPI(hapiSetDetailAttribute(
             myInputAssetId,
             myInputObjectId,
             myInputGeoId,
             "maya_colorset_name",
             colorSetNames
-            );
+            ));
 
-    Input::setDetailAttribute(
+    CHECK_HAPI(hapiSetDetailAttribute(
             myInputAssetId,
             myInputObjectId,
             myInputGeoId,
             "maya_colorset_mapped_Cd",
             mappedCdNames
-            );
+            ));
 
-    Input::setDetailAttribute(
+    CHECK_HAPI(hapiSetDetailAttribute(
             myInputAssetId,
             myInputObjectId,
             myInputGeoId,
             "maya_colorset_mapped_Alpha",
             mappedAlphaNames
-            );
+            ));
 
     return true;
 }
@@ -640,23 +590,12 @@ InputMesh::processShadingGroups(
         }
     }
 
-    HAPI_AttributeInfo sgNameAttrInfo;
-    sgNameAttrInfo.exists = true;
-    sgNameAttrInfo.owner = HAPI_ATTROWNER_PRIM;
-    sgNameAttrInfo.storage = HAPI_STORAGETYPE_STRING;
-    sgNameAttrInfo.count = sgNamePerComp.size();
-    sgNameAttrInfo.tupleSize = 1;
-    HAPI_AddAttribute(
+    CHECK_HAPI(hapiSetPrimAttribute(
             myInputAssetId, myInputObjectId, myInputGeoId,
-            "maya_shading_group", &sgNameAttrInfo
-            );
-
-    CHECK_HAPI(HAPI_SetAttributeStringData(
-                myInputAssetId, myInputObjectId, myInputGeoId,
-                "maya_shading_group", &sgNameAttrInfo,
-                &sgNamePerComp[0],
-                0, sgNamePerComp.size()
-                ));
+            1,
+            "maya_shading_group",
+            sgNamePerComp
+            ));
 
     return true;
 }

@@ -142,7 +142,7 @@ InputCurve::setInputGeo(
         int nurbsIdx = -1;
         for(int i = 0; i < typeParm.choiceCount; i++)
         {
-            if(Util::getString(choices[i].valueSH) == "nurbs")
+            if(Util::HAPIString(choices[i].valueSH) == "nurbs")
             {
                 nurbsIdx = i;
                 break;

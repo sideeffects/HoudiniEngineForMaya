@@ -452,7 +452,7 @@ Asset::Asset(
         bool foundAsset = false;
         for(unsigned int i = 0; i < assetNamesSH.size(); i++)
         {
-            if(Util::getString(assetNamesSH[i]) == assetName)
+            if(Util::HAPIString(assetNamesSH[i]) == assetName)
             {
                 foundAsset = true;
             }
@@ -520,13 +520,13 @@ Asset::Asset(
     CHECK_HAPI(hapiResult);
 
     // Warn the user if the OTL path is not what was originally requested.
-    if(Util::getString(myAssetInfo.filePathSH) != otlFilePath)
+    if(Util::HAPIString(myAssetInfo.filePathSH) != otlFilePath)
     {
         DISPLAY_WARNING("The asset: ^1s\n"
                 "was instantiated from: ^2s\n"
                 "but the expected path was: ^3s",
                 assetName,
-                Util::getString(myAssetInfo.filePathSH),
+                MString(Util::HAPIString(myAssetInfo.filePathSH)),
                 otlFilePath
                 );
     }
@@ -572,7 +572,7 @@ Asset::getOTLFilePath() const
         return MString();
     }
 
-    return Util::getString(myAssetInfo.filePathSH);
+    return Util::HAPIString(myAssetInfo.filePathSH);
 }
 
 MString
@@ -583,7 +583,7 @@ Asset::getAssetName() const
         return MString();
     }
 
-    return Util::getString(myAssetInfo.fullOpNameSH);
+    return Util::HAPIString(myAssetInfo.fullOpNameSH);
 }
 
 OutputObject*
@@ -1101,7 +1101,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             &value,
                             parmInfo.stringValuesIndex, parmInfo.size
                             );
-                    MString valueString = Util::getString(value);
+                    MString valueString = Util::HAPIString(value);
 
                     HAPI_ParmChoiceInfo * choiceInfos =
                         new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
@@ -1114,7 +1114,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                     for(int i = 0; i < parmInfo.choiceCount; i++)
                     {
-                        if(valueString == Util::getString(choiceInfos[i].valueSH))
+                        if(valueString == Util::HAPIString(choiceInfos[i].valueSH))
                         {
                             enumIndex = i;
                         }
@@ -1270,7 +1270,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                             if(parmInfo.size == 1)
                             {
-                                dataHandle.setString(Util::getString(values[0]));
+                                dataHandle.setString(Util::HAPIString(values[0]));
                             }
                             else
                             {
@@ -1282,7 +1282,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 {
                                     MDataHandle elementDataHandle =
                                         dataHandle.child(attrFn.child(i));
-                                    elementDataHandle.setString(Util::getString(values[i]));
+                                    elementDataHandle.setString(Util::HAPIString(values[i]));
                                 }
                             }
 
@@ -1543,7 +1543,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             choiceInfos,
                             parmInfo.choiceIndex, parmInfo.choiceCount);
 
-                    MString valueString = Util::getString(choiceInfos[enumIndex].valueSH);
+                    MString valueString = Util::HAPIString(choiceInfos[enumIndex].valueSH);
 
                     HAPI_SetParmStringValue(
                             Util::theHAPISession.get(),

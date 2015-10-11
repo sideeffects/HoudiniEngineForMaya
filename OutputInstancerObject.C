@@ -290,7 +290,7 @@ OutputInstancerObject::compute(
                     &instanceObjectInfo,
                     myObjectInfo.objectToInstanceId, 1
                     );
-            MString name = Util::getString(instanceObjectInfo.nameSH);
+            MString name = Util::HAPIString(instanceObjectInfo.nameSH);
 
             MDataHandle h = builder.addElement(0);
             h.set(name);

@@ -82,7 +82,7 @@ OutputGeometry::compute(
     MString geoName;
     if(myGeoInfo.nameSH != 0)
     {
-        geoName = Util::getString(myGeoInfo.nameSH);
+        geoName = Util::HAPIString(myGeoInfo.nameSH);
     }
     geoNameHandle.setString(geoName);
     geoNameHandle.setClean();

@@ -73,7 +73,7 @@ OutputGeometryObject::compute(
     MString objectName;
     if(myObjectInfo.nameSH != 0)
     {
-        objectName = Util::getString(myObjectInfo.nameSH);
+        objectName = Util::HAPIString(myObjectInfo.nameSH);
     }
     objectNameHandle.setString(objectName);
 

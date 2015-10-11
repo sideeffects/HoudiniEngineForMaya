@@ -246,10 +246,23 @@ SyncOutputGeometryPart::createOutputMesh(
             true
             );
 
+    // set mesh.currentUVSet
+    // Connecting outputPartMeshCurrentUV to currentUVSet doesn't seem to
+    // trigger updates.
+    myDagModifier.newPlugValueString(
+            partMeshFn.findPlug("currentUVSet"),
+            meshPlug.child(AssetNode::outputPartMeshCurrentUV).asString()
+            );
+
     // connect mesh attributes
     {
         MPlug srcPlug;
         MPlug dstPlug;
+
+        //srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentUV);
+        //dstPlug = partMeshFn.findPlug("currentUVSet");
+        //status = myDagModifier.connect(srcPlug, dstPlug);
+        //CHECK_MSTATUS_AND_RETURN_IT(status);
 
         srcPlug = meshPlug.child(AssetNode::outputPartMeshData);
         dstPlug = partMeshFn.findPlug("inMesh");

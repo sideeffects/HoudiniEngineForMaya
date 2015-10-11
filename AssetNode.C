@@ -78,7 +78,6 @@ MObject AssetNode::outputGeoCurveCVs;
 MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
 MObject AssetNode::outputPartHasMesh;
-MObject AssetNode::outputPartMesh;
 MObject AssetNode::outputPartHasParticles;
 MObject AssetNode::outputPartMaterial;
 MObject AssetNode::outputPartMaterialExists;
@@ -88,6 +87,9 @@ MObject AssetNode::outputPartAmbientColor;
 MObject AssetNode::outputPartDiffuseColor;
 MObject AssetNode::outputPartSpecularColor;
 MObject AssetNode::outputPartAlphaColor;
+
+MObject AssetNode::outputPartMesh;
+MObject AssetNode::outputPartMeshData;
 
 MObject AssetNode::outputPartParticle;
 MObject AssetNode::outputPartParticleCurrentTime;
@@ -584,15 +586,6 @@ AssetNode::initialize()
             );
     computeAttributes.push_back(AssetNode::outputPartHasParticles);
 
-    // mesh
-    AssetNode::outputPartMesh = tAttr.create(
-            "outputPartMesh", "outputPartMesh",
-            MFnData::kMesh
-            );
-    tAttr.setWritable(false);
-    tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartMesh);
-
     // material exists
     AssetNode::outputPartMaterialExists = nAttr.create(
             "outputPartMaterialExists", "outputPartMaterialExists",
@@ -663,6 +656,23 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartMaterial);
+
+    // mesh
+    AssetNode::outputPartMeshData = tAttr.create(
+            "outputPartMeshData", "outputPartMeshData",
+            MFnData::kMesh
+            );
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartMeshData);
+
+    AssetNode::outputPartMesh = cAttr.create(
+            "outputPartMesh", "outputPartMesh"
+            );
+    cAttr.addChild(AssetNode::outputPartMeshData);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartMesh);
 
     // particle
     AssetNode::outputPartParticleCurrentTime = uAttr.create(
@@ -967,8 +977,8 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartName);
     cAttr.addChild(AssetNode::outputPartHasMesh);
     cAttr.addChild(AssetNode::outputPartHasParticles);
-    cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartMaterial);
+    cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartParticle);
     cAttr.addChild(AssetNode::outputPartCurves);
     cAttr.addChild(AssetNode::outputPartCurvesIsBezier);
@@ -1317,10 +1327,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                 affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasMesh));
                 affectedPlugs.append(elemPlug.child(AssetNode::outputPartHasParticles));
 
-                // Mesh
-                MPlug meshPlug = elemPlug.child(AssetNode::outputPartMesh);
-                affectedPlugs.append(meshPlug);
-
                 // General part attributes
                 MPlug outputPartNamePlug = elemPlug.child(AssetNode::outputPartName);
                 MPlug outputPartMaterialPlug = elemPlug.child(AssetNode::outputPartMaterial);
@@ -1334,6 +1340,10 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                 affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartDiffuseColor));
                 affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartSpecularColor));
                 affectedPlugs.append(outputPartMaterialPlug.child(AssetNode::outputPartAlphaColor));
+
+                // Mesh
+                MPlug outputPartMesh = elemPlug.child(AssetNode::outputPartMesh);
+                affectedPlugs.append(outputPartMesh.child(AssetNode::outputPartMeshData));
 
                 // Particle
                 MPlug outputPartParticle = elemPlug.child(AssetNode::outputPartParticle);

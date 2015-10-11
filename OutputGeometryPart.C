@@ -27,6 +27,7 @@
 #include "AssetNode.h"
 #include "OutputGeometryPart.h"
 #include "hapiutil.h"
+#include "types.h"
 #include "util.h"
 
 void
@@ -1420,27 +1421,56 @@ OutputGeometryPart::computeMesh(
     // uv
     if(polygonCounts.length())
     {
-        HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
-        if(!HAPI_FAIL(hapiGetVertexAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "uv",
-                        floatArray
-                        )))
-        {
-            owner = HAPI_ATTROWNER_VERTEX;
-        }
-        else if(!HAPI_FAIL(hapiGetPointAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "uv",
-                        floatArray
-                        )))
-        {
-            owner = HAPI_ATTROWNER_POINT;
-        }
+        MStringArray uvSetNames;
+        MStringArray mappedUVAttributeNames;
 
-        if(owner != HAPI_ATTROWNER_MAX)
+        hapiGetDetailAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "maya_uv_name",
+                    uvSetNames
+                    );
+        markAttributeUsed("maya_uv_name");
+
+        hapiGetDetailAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "maya_uv_mapped_uv",
+                    mappedUVAttributeNames
+                    );
+        markAttributeUsed("maya_uv_mapped_uv");
+
+        bool useMappedUV
+            = uvSetNames.length() && mappedUVAttributeNames.length();
+
+        int layerIndex = 0;
+        for(;;)
         {
-            markAttributeUsed("uv");
+            MString uvAttributeName
+                = Util::getAttrLayerName("uv", layerIndex);
+
+            HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
+            if(!HAPI_FAIL(hapiGetVertexAttribute(
+                            myAssetId, myObjectId, myGeoId, myPartId,
+                            uvAttributeName.asChar(),
+                            floatArray
+                            )))
+            {
+                owner = HAPI_ATTROWNER_VERTEX;
+            }
+            else if(!HAPI_FAIL(hapiGetPointAttribute(
+                            myAssetId, myObjectId, myGeoId, myPartId,
+                            uvAttributeName.asChar(),
+                            floatArray
+                            )))
+            {
+                owner = HAPI_ATTROWNER_POINT;
+            }
+
+            if(owner == HAPI_ATTROWNER_MAX)
+            {
+                break;
+            }
+
+            markAttributeUsed(uvAttributeName.asChar());
 
             // assume 3 tuple
             MFloatArray uArray;
@@ -1476,8 +1506,40 @@ OutputGeometryPart::computeMesh(
                 }
             }
 
-            meshFn.setUVs(uArray, vArray);
-            meshFn.assignUVs(polygonCounts, vertexList);
+            MString uvSetName = uvAttributeName;
+            if(useMappedUV)
+            {
+                ArrayIterator<MStringArray> begin
+                    = arrayBegin(mappedUVAttributeNames);
+                ArrayIterator<MStringArray> end
+                    = arrayEnd(mappedUVAttributeNames);
+
+                ArrayIterator<MStringArray> iter = std::find(
+                        begin,
+                        end,
+                        uvSetName
+                        );
+                if(iter != end)
+                {
+                    uvSetName = uvSetNames[std::distance(begin, iter)];
+                }
+            }
+
+            if(uvSetName != meshFn.currentUVSetName())
+            {
+                meshFn.createUVSetDataMesh(uvSetName);
+            }
+
+            // use the first uv as the current UV set
+            if(layerIndex == 0)
+            {
+                meshCurrentUVHandle.setString(uvSetName);
+            }
+
+            meshFn.setUVs(uArray, vArray, &uvSetName);
+            meshFn.assignUVs(polygonCounts, vertexList, &uvSetName);
+
+            layerIndex++;
         }
     }
 

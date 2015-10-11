@@ -234,6 +234,8 @@ InputMesh::processUVs(
 
         const MString uvAttributeName
             = Util::getAttrLayerName("uv", i);
+        const MString uvNumberAttributeName
+            = Util::getAttrLayerName("uvNumber", i);
 
         mappedUVAttributeNames[i] = uvAttributeName;
 
@@ -252,6 +254,7 @@ InputMesh::processUVs(
 
         // build the per-vertex UVs
         std::vector<float> vertexUVs;
+        std::vector<int> vertexUVNumbers;
         vertexUVs.reserve(vertexList.size() * 3);
         unsigned int uvIdIndex = 0;
         for(unsigned int i = 0; i < uvCounts.length(); ++i)
@@ -264,6 +267,7 @@ InputMesh::processUVs(
                     vertexUVs.push_back(uArray[uvIds[uvIdIndex]]);
                     vertexUVs.push_back(vArray[uvIds[uvIdIndex]]);
                     vertexUVs.push_back(0);
+                    vertexUVNumbers.push_back(uvIds[uvIdIndex]);
 
                     uvIdIndex++;
                 }
@@ -286,6 +290,12 @@ InputMesh::processUVs(
                 3,
                 uvAttributeName.asChar(),
                 vertexUVs
+                ));
+        CHECK_HAPI(hapiSetVertexAttribute(
+                myInputAssetId, myInputObjectId, myInputGeoId,
+                1,
+                uvNumberAttributeName.asChar(),
+                vertexUVNumbers
                 ));
     }
 

@@ -45,7 +45,7 @@ OutputObject::OutputObject(
 // Getters ----------------------------------------------------
 
 int OutputObject::getId() { return myObjectId; }
-MString OutputObject::getName() { return Util::getString(myObjectInfo.nameSH); }
+MString OutputObject::getName() { return Util::HAPIString(myObjectInfo.nameSH); }
 
 void
 OutputObject::setObjectInfo(const HAPI_ObjectInfo &objectInfo)

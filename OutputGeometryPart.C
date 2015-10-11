@@ -322,7 +322,7 @@ getAttributeDataWrapper(
 
     for(int i = 0; i < (int) stringHandles.size(); i++)
     {
-        data[i] = Util::getString(stringHandles[i]).asChar();
+        data[i] = Util::HAPIString(stringHandles[i]);
     }
 
     return hapiResult;
@@ -385,7 +385,7 @@ OutputGeometryPart::compute(
         MString partName;
         if(myPartInfo.nameSH != 0)
         {
-            partName = Util::getString(myPartInfo.nameSH);
+            partName = Util::HAPIString(myPartInfo.nameSH);
         }
         nameHandle.set(partName);
 
@@ -1092,7 +1092,7 @@ OutputGeometryPart::computeParticle(
             );
     for(int i = 0; i < myPartInfo.pointAttributeCount; i++)
     {
-        MString attributeName = Util::getString(attributeNames[i]);
+        MString attributeName = Util::HAPIString(attributeNames[i]);
 
         // skip attributes that were done above already
         if(isAttributeUsed(attributeName.asChar()))
@@ -1271,7 +1271,7 @@ OutputGeometryPart::computeVolume(
     resHandle.set(resCreator.create(resolution));
 
     // name
-    nameHandle.set(Util::getString(myVolumeInfo.nameSH));
+    nameHandle.set(Util::HAPIString(myVolumeInfo.nameSH));
 }
 #endif
 
@@ -1786,7 +1786,7 @@ OutputGeometryPart::computeMaterial(
         matExistsHandle.set(true);
 
         nameHandle.setString(
-                Util::getString(materialNodeInfo.nameSH)
+                Util::HAPIString(materialNodeInfo.nameSH)
                 );
 
         if(ambientParmIndex >= 0)
@@ -1864,7 +1864,7 @@ OutputGeometryPart::computeMaterial(
                     texturePathParm.stringValuesIndex, 1
                     );
 
-            bool hasTextureSource = Util::getString(texturePathSH).length() > 0;
+            bool hasTextureSource = ((std::string)Util::HAPIString(texturePathSH)).size() > 0;
             bool canRenderTexture = false;
             if(hasTextureSource)
             {
@@ -1909,7 +1909,7 @@ OutputGeometryPart::computeMaterial(
 
             if(destinationFilePathSH > 0)
             {
-                MString texturePath = Util::getString(destinationFilePathSH);
+                MString texturePath = Util::HAPIString(destinationFilePathSH);
                 texturePathHandle.set(texturePath);
             }
         }
@@ -1987,7 +1987,7 @@ OutputGeometryPart::computeExtraAttributes(
 
         for(size_t j = 0; j < attributeNames.size(); j++)
         {
-            const MString attributeName = Util::getString(attributeNames[j]);
+            const MString attributeName = Util::HAPIString(attributeNames[j]);
 
             if(isAttributeUsed(attributeName.asChar())
                     || Util::startsWith(attributeName, "__"))
@@ -2119,7 +2119,7 @@ OutputGeometryPart::computeGroups(
         std::vector<int> groupMembership(myPartInfo.*maxMemberCount);
         for(size_t j = 0; j < groupNames.size(); j++)
         {
-            MString groupName = Util::getString(groupNames[j]).asChar();
+            MString groupName = Util::HAPIString(groupNames[j]);
 
             if(groupName == HAPI_UNGROUPED_GROUP_NAME)
             {

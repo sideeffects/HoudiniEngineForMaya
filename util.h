@@ -15,6 +15,8 @@
 
 #include <HAPI/HAPI.h>
 
+#include "traits.h"
+
 class MDGModifier;
 class MFnDagNode;
 
@@ -336,6 +338,53 @@ class WalkParmOperation
         WalkParmOperation& operator=(const WalkParmOperation &);
 };
 void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
+
+template<typename T, typename U>
+T convert(const U &src)
+{
+    return src;
+}
+
+// MString owns the returned char*
+template<>
+inline const char*
+convert(const MString &src)
+{
+    return src.asChar();
+}
+
+// Convert HAPI string
+template<>
+inline std::string
+convert(const int &src)
+{
+    return HAPIString(src);
+}
+
+// Convert HAPI string
+template<>
+inline MString
+convert(const int &src)
+{
+    return HAPIString(src);
+}
+
+template<typename T, typename U>
+T convertArray(const U &srcArray)
+{
+    T dstArray;
+
+    ArrayTrait<T>::resize(dstArray, ArrayTrait<U>::size(srcArray));
+    for(size_t i = 0; i < ArrayTrait<T>::size(dstArray); i++)
+    {
+        ArrayTrait<T>::getElement(dstArray, i)
+            = convert<
+            typename ArrayTrait<T>::ElementType
+            >(ArrayTrait<U>::getElement(srcArray, i));
+    }
+
+    return dstArray;
+}
 
 // STL style containers
 template <typename T, typename Alloc, template <typename, typename> class U>

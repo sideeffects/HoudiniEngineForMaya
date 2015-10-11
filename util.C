@@ -43,14 +43,12 @@ HAPIError::what() const throw()
     return myBuffer.asChar();
 }
 
-//=============================================================================
-// Util
-//=============================================================================
-
-std::auto_ptr<HAPI_Session> Util::theHAPISession;
+namespace Util
+{
+std::auto_ptr<HAPI_Session> theHAPISession;
 
 void
-Util::displayInfoForNode(
+displayInfoForNode(
         const MString &typeName,
         const MString &message
         )
@@ -59,7 +57,7 @@ Util::displayInfoForNode(
 }
 
 void
-Util::displayWarningForNode(
+displayWarningForNode(
         const MString &typeName,
         const MString &message
         )
@@ -68,7 +66,7 @@ Util::displayWarningForNode(
 }
 
 void
-Util::displayErrorForNode(
+displayErrorForNode(
         const MString &typeName,
         const MString &message
         )
@@ -77,17 +75,17 @@ Util::displayErrorForNode(
 }
 
 MString
-Util::getString(int handle)
+getString(int handle)
 {
     int bufLen;
     HAPI_GetStringBufLength(
-            Util::theHAPISession.get(),
+            theHAPISession.get(),
             handle,
             &bufLen
             );
     char * buffer = new char[bufLen];
     HAPI_GetString(
-            Util::theHAPISession.get(),
+            theHAPISession.get(),
             handle,
             buffer,
             bufLen
@@ -100,7 +98,7 @@ Util::getString(int handle)
 }
 
 MString
-Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
+getAttrNameFromParm(const HAPI_ParmInfo &parm)
 {
     MString name = getString(parm.templateNameSH);
     if(parm.isChildOfMultiParm)
@@ -127,7 +125,7 @@ Util::getAttrNameFromParm(const HAPI_ParmInfo &parm)
 }
 
 MString
-Util::getAttrNameFromParm(
+getAttrNameFromParm(
         const HAPI_ParmInfo &parm,
         const HAPI_ParmInfo *parentParm
         )
@@ -165,33 +163,33 @@ Util::getAttrNameFromParm(
 }
 
 MString
-Util::getParmAttrPrefix()
+getParmAttrPrefix()
 {
     MString ret = "houdiniAssetParm";
     return ret;
 }
 
 bool
-Util::hasHAPICallFailed(HAPI_Result stat)
+hasHAPICallFailed(HAPI_Result stat)
 {
     return stat > 0;
 }
 
 void
-Util::checkHAPIStatus(HAPI_Result stat)
+checkHAPIStatus(HAPI_Result stat)
 {
     if(hasHAPICallFailed(stat))
     {
         int bufLen;
         HAPI_GetStatusStringBufLength(
-                Util::theHAPISession.get(),
+                theHAPISession.get(),
                 HAPI_STATUS_CALL_RESULT,
                 HAPI_STATUSVERBOSITY_ERRORS,
                 &bufLen
                 );
         char * buffer = new char[bufLen];
         HAPI_GetStatusString(
-                Util::theHAPISession.get(),
+                theHAPISession.get(),
                 HAPI_STATUS_CALL_RESULT,
                 buffer,
                 bufLen
@@ -200,24 +198,24 @@ Util::checkHAPIStatus(HAPI_Result stat)
     }
 }
 
-Util::PythonInterpreterLock::PythonInterpreterLock()
+PythonInterpreterLock::PythonInterpreterLock()
 {
     HAPI_PythonThreadInterpreterLock(
-            Util::theHAPISession.get(),
+            theHAPISession.get(),
             true
             );
 }
 
-Util::PythonInterpreterLock::~PythonInterpreterLock()
+PythonInterpreterLock::~PythonInterpreterLock()
 {
     HAPI_PythonThreadInterpreterLock(
-            Util::theHAPISession.get(),
+            theHAPISession.get(),
             false
             );
 }
 
 bool
-Util::startsWith(const MString &str, const MString &start)
+startsWith(const MString &str, const MString &start)
 {
     unsigned int strLength = str.length();
     unsigned int startLength = start.length();
@@ -228,7 +226,7 @@ Util::startsWith(const MString &str, const MString &start)
 }
 
 bool
-Util::endsWith(const MString &str, const MString &end)
+endsWith(const MString &str, const MString &end)
 {
     unsigned int strLength = str.length();
     unsigned int endLength = end.length();
@@ -239,7 +237,7 @@ Util::endsWith(const MString &str, const MString &end)
 }
 
 MString
-Util::escapeString(const MString &str)
+escapeString(const MString &str)
 {
     MString escapedStr;
 
@@ -295,24 +293,24 @@ Util::escapeString(const MString &str)
     return escapedStr;
 }
 
-Util::ProgressBar::ProgressBar(double waitTimeBeforeShowing) :
+ProgressBar::ProgressBar(double waitTimeBeforeShowing) :
     myWaitTimeBeforeShowing(waitTimeBeforeShowing),
     myIsShowing(false)
 {
 }
 
-Util::ProgressBar::~ProgressBar()
+ProgressBar::~ProgressBar()
 {
 }
 
 void
-Util::ProgressBar::beginProgress()
+ProgressBar::beginProgress()
 {
     myTimer.beginTimer();
 }
 
 void
-Util::ProgressBar::updateProgress(
+ProgressBar::updateProgress(
         int progress,
         int maxProgress,
         const MString &status
@@ -334,7 +332,7 @@ Util::ProgressBar::updateProgress(
 }
 
 void
-Util::ProgressBar::endProgress()
+ProgressBar::endProgress()
 {
     if(isShowing())
     {
@@ -346,7 +344,7 @@ Util::ProgressBar::endProgress()
 }
 
 bool
-Util::ProgressBar::isInterrupted()
+ProgressBar::isInterrupted()
 {
     if(!isShowing())
     {
@@ -357,20 +355,20 @@ Util::ProgressBar::isInterrupted()
 }
 
 bool
-Util::ProgressBar::isShowing() const
+ProgressBar::isShowing() const
 {
     return myIsShowing;
 }
 
 double
-Util::ProgressBar::elapsedTime()
+ProgressBar::elapsedTime()
 {
     myTimer.endTimer();
     return myTimer.elapsedTime();
 }
 
 MString
-Util::ProgressBar::elapsedTimeString()
+ProgressBar::elapsedTimeString()
 {
     const int time = (int) elapsedTime();
 
@@ -408,12 +406,12 @@ Util::ProgressBar::elapsedTimeString()
 }
 
 void
-Util::ProgressBar::showProgress()
+ProgressBar::showProgress()
 {
 }
 
 void
-Util::ProgressBar::displayProgress(
+ProgressBar::displayProgress(
         int progress,
         int maxProgress,
         const MString &status
@@ -422,27 +420,27 @@ Util::ProgressBar::displayProgress(
 }
 
 void
-Util::ProgressBar::hideProgress()
+ProgressBar::hideProgress()
 {
 }
 
 bool
-Util::ProgressBar::checkInterrupted()
+ProgressBar::checkInterrupted()
 {
     return false;
 }
 
-Util::MainProgressBar::MainProgressBar(double waitTimeBeforeShowing) :
+MainProgressBar::MainProgressBar(double waitTimeBeforeShowing) :
     ProgressBar(waitTimeBeforeShowing)
 {
 }
 
-Util::MainProgressBar::~MainProgressBar()
+MainProgressBar::~MainProgressBar()
 {
 }
 
 void
-Util::MainProgressBar::showProgress()
+MainProgressBar::showProgress()
 {
     CHECK_MSTATUS(MGlobal::executeCommand("progressBar -edit"
                 " -beginProgress"
@@ -451,7 +449,7 @@ Util::MainProgressBar::showProgress()
 }
 
 void
-Util::MainProgressBar::displayProgress(
+MainProgressBar::displayProgress(
         int progress,
         int maxProgress,
         const MString &status
@@ -481,7 +479,7 @@ Util::MainProgressBar::displayProgress(
 }
 
 bool
-Util::MainProgressBar::checkInterrupted()
+MainProgressBar::checkInterrupted()
 {
     int interrupted;
 
@@ -494,13 +492,13 @@ Util::MainProgressBar::checkInterrupted()
 }
 
 void
-Util::MainProgressBar::hideProgress()
+MainProgressBar::hideProgress()
 {
     CHECK_MSTATUS(MGlobal::executeCommand("progressBar -edit -endProgress"
                 " $gMainProgressBar"));
 }
 
-Util::LogProgressBar::LogProgressBar(
+LogProgressBar::LogProgressBar(
         double timeBetweenLog,
         double waitTimeBeforeShowing
         ) :
@@ -509,18 +507,18 @@ Util::LogProgressBar::LogProgressBar(
 {
 }
 
-Util::LogProgressBar::~LogProgressBar()
+LogProgressBar::~LogProgressBar()
 {
 }
 
 void
-Util::LogProgressBar::showProgress()
+LogProgressBar::showProgress()
 {
     myComputation.beginComputation();
 }
 
 void
-Util::LogProgressBar::displayProgress(
+LogProgressBar::displayProgress(
         int progress,
         int maxProgress,
         const MString &status
@@ -553,19 +551,19 @@ Util::LogProgressBar::displayProgress(
 }
 
 bool
-Util::LogProgressBar::checkInterrupted()
+LogProgressBar::checkInterrupted()
 {
     return myComputation.isInterruptRequested();
 }
 
 void
-Util::LogProgressBar::hideProgress()
+LogProgressBar::hideProgress()
 {
     myComputation.endComputation();
 }
 
 bool
-Util::statusCheckLoop(bool wantMainProgressBar)
+statusCheckLoop(bool wantMainProgressBar)
 {
     HAPI_State state = HAPI_STATE_STARTING_LOAD;
     int currState = (int) state;
@@ -588,7 +586,7 @@ Util::statusCheckLoop(bool wantMainProgressBar)
     while(state > HAPI_STATE_MAX_READY_STATE)
     {
             HAPI_GetStatus(
-                    Util::theHAPISession.get(),
+                    theHAPISession.get(),
                     HAPI_STATUS_COOK_STATE,
                     &currState
                     );
@@ -597,11 +595,11 @@ Util::statusCheckLoop(bool wantMainProgressBar)
             if(state == HAPI_STATE_COOKING)
             {
                     HAPI_GetCookingCurrentCount(
-                            Util::theHAPISession.get(),
+                            theHAPISession.get(),
                             &currCookCount
                             );
                     HAPI_GetCookingTotalCount(
-                            Util::theHAPISession.get(),
+                            theHAPISession.get(),
                             &totalCookCount
                             );
             }
@@ -613,7 +611,7 @@ Util::statusCheckLoop(bool wantMainProgressBar)
 
             int statusBufSize = 0;
             HAPI_GetStatusStringBufLength(
-                Util::theHAPISession.get(),
+                theHAPISession.get(),
                 HAPI_STATUS_COOK_STATE,
                 HAPI_STATUSVERBOSITY_ERRORS,
                 &statusBufSize
@@ -625,7 +623,7 @@ Util::statusCheckLoop(bool wantMainProgressBar)
             {
                 statusBuf = new char[statusBufSize];
                 HAPI_GetStatusString(
-                    Util::theHAPISession.get(),
+                    theHAPISession.get(),
                     HAPI_STATUS_COOK_STATE,
                     statusBuf,
                     statusBufSize
@@ -641,7 +639,7 @@ Util::statusCheckLoop(bool wantMainProgressBar)
 
             if(progressBar->isInterrupted())
             {
-                HAPI_Interrupt( Util::theHAPISession.get() );
+                HAPI_Interrupt( theHAPISession.get() );
             }
 
 #ifdef _WIN32
@@ -663,7 +661,7 @@ Util::statusCheckLoop(bool wantMainProgressBar)
 }
 
 MObject
-Util::findNodeByName(const MString& name)
+findNodeByName(const MString& name)
 {
     MSelectionList selection;
     selection.add(name);
@@ -676,7 +674,7 @@ Util::findNodeByName(const MString& name)
 }
 
 MObject
-Util::findDagChild(const MFnDagNode &dag, const MString &name)
+findDagChild(const MFnDagNode &dag, const MString &name)
 {
     MObject childObj;
 
@@ -695,7 +693,7 @@ Util::findDagChild(const MFnDagNode &dag, const MString &name)
 }
 
 MStatus
-Util::createNodeByModifierCommand(
+createNodeByModifierCommand(
         MDGModifier &dgModifier,
         const MString &command,
         MObject &object,
@@ -729,7 +727,7 @@ Util::createNodeByModifierCommand(
 }
 
 MString
-Util::replaceString(const MString &str, const MString &searchStr, const MString &replaceStr)
+replaceString(const MString &str, const MString &searchStr, const MString &replaceStr)
 {
     MString remaining = str;
     MString result;
@@ -758,15 +756,15 @@ Util::replaceString(const MString &str, const MString &searchStr, const MString 
 }
 
 MString
-Util::sanitizeStringForNodeName(const MString &str)
+sanitizeStringForNodeName(const MString &str)
 {
     MString result = str;
     assert(result.length() > 0);
 
-    result = Util::replaceString(result, ":", "_");
-    result = Util::replaceString(result, ".", "_");
-    result = Util::replaceString(result, "/", "_");
-    result = Util::replaceString(result, " ", "_");
+    result = replaceString(result, ":", "_");
+    result = replaceString(result, ".", "_");
+    result = replaceString(result, "/", "_");
+    result = replaceString(result, " ", "_");
 
     // check that the first character is not a number
     if(result.substringW(0,0).isInt())
@@ -778,7 +776,7 @@ Util::sanitizeStringForNodeName(const MString &str)
 }
 
 MStringArray
-Util::getAttributeStringData(int assetId,
+getAttributeStringData(int assetId,
                             int objectId,
                             int geoId,
                             int partId,
@@ -788,7 +786,7 @@ Util::getAttributeStringData(int assetId,
     HAPI_AttributeInfo attr_info;
     attr_info.exists = false;
     HAPI_GetAttributeInfo(
-            Util::theHAPISession.get(),
+            theHAPISession.get(),
             assetId, objectId, geoId, partId,
             name.asChar(),
             owner,
@@ -806,7 +804,7 @@ Util::getAttributeStringData(int assetId,
         data[j] = 0;
     }
     HAPI_GetAttributeStringData(
-            Util::theHAPISession.get(),
+            theHAPISession.get(),
             assetId, objectId, geoId, partId,
             name.asChar(),
             &attr_info,
@@ -815,7 +813,7 @@ Util::getAttributeStringData(int assetId,
             );
 
     for(int j=0; j<size; j++){
-        ret.append(Util::getString(data[j]));
+        ret.append(getString(data[j]));
     }
 
     delete[] data;
@@ -824,7 +822,7 @@ Util::getAttributeStringData(int assetId,
 }
 
 int
-Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
+findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
 {
     for(size_t i = 0; i < parms.size(); i++)
     {
@@ -839,61 +837,61 @@ Util::findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
     return -1;
 }
 
-Util::WalkParmOperation::WalkParmOperation()
+WalkParmOperation::WalkParmOperation()
 {
 }
 
-Util::WalkParmOperation::~WalkParmOperation()
-{
-}
-
-void
-Util::WalkParmOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
+WalkParmOperation::~WalkParmOperation()
 {
 }
 
 void
-Util::WalkParmOperation::popFolder()
+WalkParmOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 {
 }
 
 void
-Util::WalkParmOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
+WalkParmOperation::popFolder()
 {
 }
 
 void
-Util::WalkParmOperation::nextMultiparm()
+WalkParmOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 {
 }
 
 void
-Util::WalkParmOperation::popMultiparm()
+WalkParmOperation::nextMultiparm()
 {
 }
 
 void
-Util::WalkParmOperation::leaf(const HAPI_ParmInfo &parmInfo)
+WalkParmOperation::popMultiparm()
+{
+}
+
+void
+WalkParmOperation::leaf(const HAPI_ParmInfo &parmInfo)
 {
 }
 
 int
 walkParmOne(
         const HAPI_ParmInfo* parmInfos,
-        Util::WalkParmOperation &operation
+        WalkParmOperation &operation
         );
 
 int
 walkParmMultiple(
         const HAPI_ParmInfo* parmInfos,
-        Util::WalkParmOperation &operation,
+        WalkParmOperation &operation,
         unsigned int count
         );
 
 int
 walkParmOne(
         const HAPI_ParmInfo* parmInfos,
-        Util::WalkParmOperation &operation
+        WalkParmOperation &operation
         )
 {
     int consumed = 0;
@@ -962,7 +960,7 @@ walkParmOne(
 int
 walkParmMultiple(
         const HAPI_ParmInfo* parmInfos,
-        Util::WalkParmOperation &operation,
+        WalkParmOperation &operation,
         unsigned int count
         )
 {
@@ -978,7 +976,7 @@ walkParmMultiple(
 }
 
 void
-Util::walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, Util::WalkParmOperation &operation)
+walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation)
 {
     size_t index = 0;
 
@@ -990,4 +988,5 @@ Util::walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, Util::WalkParmOperat
         walkParmInfos += consumed;
         index += consumed;
     }
+}
 }

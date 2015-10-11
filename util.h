@@ -200,6 +200,18 @@ MStringArray getAttributeStringData(int assetId, int objectId,
 MString getParmAttrPrefix();
 bool hasHAPICallFailed(HAPI_Result stat);
 
+inline MString
+getAttrLayerName(const char *name, int layer)
+{
+    MString layerName = name;
+    if(layer > 0)
+    {
+        layerName += layer + 1;
+    }
+
+    return layerName;
+}
+
 bool startsWith(const MString &str, const MString &begin);
 bool endsWith(const MString &str, const MString &end);
 MString escapeString(const MString &str);

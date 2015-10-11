@@ -89,6 +89,7 @@ MObject AssetNode::outputPartSpecularColor;
 MObject AssetNode::outputPartAlphaColor;
 
 MObject AssetNode::outputPartMesh;
+MObject AssetNode::outputPartMeshCurrentUV;
 MObject AssetNode::outputPartMeshData;
 
 MObject AssetNode::outputPartParticle;
@@ -658,6 +659,14 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::outputPartMaterial);
 
     // mesh
+    AssetNode::outputPartMeshCurrentUV = tAttr.create(
+            "outputPartMeshCurrentUV", "outputPartMeshCurrentUV",
+            MFnData::kString
+            );
+    tAttr.setWritable(false);
+    tAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartMeshCurrentUV);
+
     AssetNode::outputPartMeshData = tAttr.create(
             "outputPartMeshData", "outputPartMeshData",
             MFnData::kMesh
@@ -669,6 +678,7 @@ AssetNode::initialize()
     AssetNode::outputPartMesh = cAttr.create(
             "outputPartMesh", "outputPartMesh"
             );
+    cAttr.addChild(AssetNode::outputPartMeshCurrentUV);
     cAttr.addChild(AssetNode::outputPartMeshData);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
@@ -1343,6 +1353,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
                 // Mesh
                 MPlug outputPartMesh = elemPlug.child(AssetNode::outputPartMesh);
+                affectedPlugs.append(outputPartMesh.child(AssetNode::outputPartMeshCurrentUV));
                 affectedPlugs.append(outputPartMesh.child(AssetNode::outputPartMeshData));
 
                 // Particle

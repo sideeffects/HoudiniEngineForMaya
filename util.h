@@ -111,352 +111,352 @@ class HAPIError: public std::exception
     } \
 }
 
-class Util {
+namespace Util
+{
+void displayInfoForNode(
+        const MString &typeName,
+        const MString &message
+        );
+void displayWarningForNode(
+        const MString &typeName,
+        const MString &message
+        );
+void displayErrorForNode(
+        const MString &typeName,
+        const MString &message
+        );
+
+MString getString(int handle);
+MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
+MString getAttrNameFromParm(
+        const HAPI_ParmInfo &parm,
+        const HAPI_ParmInfo *parentParm
+        );
+MStringArray getAttributeStringData(int assetId, int objectId,
+        int geoId, int partId,
+        HAPI_AttributeOwner owner,
+        const MString & name);
+MString getParmAttrPrefix();
+bool hasHAPICallFailed(HAPI_Result stat);
+
+bool startsWith(const MString &str, const MString &begin);
+bool endsWith(const MString &str, const MString &end);
+MString escapeString(const MString &str);
+
+// Throws an exception if an error occurred
+void checkHAPIStatus(HAPI_Result stat);
+
+class PythonInterpreterLock
+{
     public:
-        static void displayInfoForNode(
-                const MString &typeName,
-                const MString &message
+        PythonInterpreterLock();
+        ~PythonInterpreterLock();
+};
+
+class ProgressBar
+{
+    public:
+        ProgressBar(double waitTimeBeforeShowing = 1.0);
+        virtual ~ProgressBar();
+
+        void beginProgress();
+        void updateProgress(
+                int progress,
+                int maxProgress,
+                const MString &status
                 );
-        static void displayWarningForNode(
-                const MString &typeName,
-                const MString &message
+        void endProgress();
+
+        bool isInterrupted();
+
+    protected:
+        bool isShowing() const;
+
+        double elapsedTime();
+        MString elapsedTimeString();
+
+        virtual void showProgress();
+        virtual void displayProgress(
+                int progress,
+                int maxProgress,
+                const MString &status
                 );
-        static void displayErrorForNode(
-                const MString &typeName,
-                const MString &message
+        virtual void hideProgress();
+        virtual bool checkInterrupted();
+
+    private:
+        double myWaitTimeBeforeShowing;
+        bool myIsShowing;
+        MTimer myTimer;
+};
+
+class MainProgressBar : public ProgressBar
+{
+    public:
+        MainProgressBar(double waitTimeBeforeShowing = 1.0);
+        virtual ~MainProgressBar();
+
+    protected:
+        virtual void showProgress();
+        virtual void displayProgress(
+                int progress,
+                int maxProgress,
+                const MString &status
                 );
+        virtual void hideProgress();
+        virtual bool checkInterrupted();
+};
 
-        static MString getString(int handle);
-        static MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
-        static MString getAttrNameFromParm(
-                const HAPI_ParmInfo &parm,
-                const HAPI_ParmInfo *parentParm
+class LogProgressBar : public ProgressBar
+{
+    public:
+        LogProgressBar(
+                double timeBetweenLog = 2.0,
+                double waitTimeBeforeShowing = 1.0
                 );
-        static MStringArray getAttributeStringData(int assetId, int objectId,
-                                                    int geoId, int partId,
-                                                    HAPI_AttributeOwner owner,
-                                                    const MString & name);
-        static MString getParmAttrPrefix();
-        static bool hasHAPICallFailed(HAPI_Result stat);
+        virtual ~LogProgressBar();
 
-        static bool startsWith(const MString &str, const MString &begin);
-        static bool endsWith(const MString &str, const MString &end);
-        static MString escapeString(const MString &str);
-
-        // Throws an exception if an error occurred
-        static void checkHAPIStatus(HAPI_Result stat);
-
-        class PythonInterpreterLock
-        {
-            public:
-                PythonInterpreterLock();
-                ~PythonInterpreterLock();
-        };
-
-        class ProgressBar
-        {
-            public:
-                ProgressBar(double waitTimeBeforeShowing = 1.0);
-                virtual ~ProgressBar();
-
-                void beginProgress();
-                void updateProgress(
-                        int progress,
-                        int maxProgress,
-                        const MString &status
-                        );
-                void endProgress();
-
-                bool isInterrupted();
-
-            protected:
-                bool isShowing() const;
-
-                double elapsedTime();
-                MString elapsedTimeString();
-
-                virtual void showProgress();
-                virtual void displayProgress(
-                        int progress,
-                        int maxProgress,
-                        const MString &status
-                        );
-                virtual void hideProgress();
-                virtual bool checkInterrupted();
-
-            private:
-                double myWaitTimeBeforeShowing;
-                bool myIsShowing;
-                MTimer myTimer;
-        };
-
-        class MainProgressBar : public ProgressBar
-        {
-            public:
-                MainProgressBar(double waitTimeBeforeShowing = 1.0);
-                virtual ~MainProgressBar();
-
-            protected:
-                virtual void showProgress();
-                virtual void displayProgress(
-                        int progress,
-                        int maxProgress,
-                        const MString &status
-                        );
-                virtual void hideProgress();
-                virtual bool checkInterrupted();
-        };
-
-        class LogProgressBar : public ProgressBar
-        {
-            public:
-                LogProgressBar(
-                        double timeBetweenLog = 2.0,
-                        double waitTimeBeforeShowing = 1.0
-                        );
-                virtual ~LogProgressBar();
-
-            protected:
-                virtual void showProgress();
-                virtual void displayProgress(
-                        int progress,
-                        int maxProgress,
-                        const MString &status
-                        );
-                virtual void hideProgress();
-                virtual bool checkInterrupted();
-
-            private:
-                double myTimeBetweenLog;
-                double myLastPrintedTime;
-
-                MComputation myComputation;
-        };
-
-        static bool statusCheckLoop(bool wantMainProgressBar = true);
-
-        static MObject findNodeByName(const MString &name);
-        static MObject findDagChild(const MFnDagNode &dag, const MString &name);
-        static MStatus createNodeByModifierCommand(
-                MDGModifier &dgModifier,
-                const MString &command,
-                MObject &object,
-                unsigned int index = 0
+    protected:
+        virtual void showProgress();
+        virtual void displayProgress(
+                int progress,
+                int maxProgress,
+                const MString &status
                 );
-        static MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
-        static MString sanitizeStringForNodeName(const MString &str);
+        virtual void hideProgress();
+        virtual bool checkInterrupted();
 
-        // Returns true if the parm was found.
-        static int findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum = -1);
+    private:
+        double myTimeBetweenLog;
+        double myLastPrintedTime;
 
-        class WalkParmOperation
+        MComputation myComputation;
+};
+
+bool statusCheckLoop(bool wantMainProgressBar = true);
+
+MObject findNodeByName(const MString &name);
+MObject findDagChild(const MFnDagNode &dag, const MString &name);
+MStatus createNodeByModifierCommand(
+        MDGModifier &dgModifier,
+        const MString &command,
+        MObject &object,
+        unsigned int index = 0
+        );
+MString replaceString(const MString &str, const MString &searchStr, const MString &newChar);
+MString sanitizeStringForNodeName(const MString &str);
+
+// Returns true if the parm was found.
+int findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum = -1);
+
+class WalkParmOperation
+{
+    public:
+        WalkParmOperation();
+        virtual ~WalkParmOperation();
+
+        virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
+        virtual void popFolder();
+
+        virtual void pushMultiparm(const HAPI_ParmInfo &parmInfo);
+        virtual void nextMultiparm();
+        virtual void popMultiparm();
+
+        virtual void leaf(const HAPI_ParmInfo &parmInfo);
+
+    private:
+        // This class is not copyable so these are not implemented
+        WalkParmOperation(const WalkParmOperation &);
+        WalkParmOperation& operator=(const WalkParmOperation &);
+};
+void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
+
+// STL style containers
+template <typename T, typename Alloc, template <typename, typename> class U>
+unsigned int getArrayLength(const U<T, Alloc> &array)
+{
+    return array.size();
+}
+
+template <typename T, typename Alloc, template <typename, typename> class U>
+void setArrayLength(U<T, Alloc> &array, unsigned int n)
+{
+    array.resize(n);
+}
+
+// Maya containers
+template <typename T>
+unsigned int getArrayLength(const T &array)
+{
+    return array.length();
+}
+
+template <typename T>
+void setArrayLength(T &array, unsigned int n)
+{
+    array.setLength(n);
+}
+
+// Accessing components
+template <unsigned int offset, typename A, typename T>
+struct getComponent
+{
+    A operator()(const T &t, unsigned int i)
+    {
+        return t[offset + i];
+    }
+    A &operator()(T &t, unsigned int i)
+    {
+        return t[offset + i];
+    }
+};
+
+template <unsigned int offset, typename T>
+struct getComponent<offset, T, T>
+{
+    T operator()(const T &t, unsigned int i)
+    {
+        return t;
+    }
+    T &operator()(T &t, unsigned int i)
+    {
+        return t;
+    }
+};
+
+template <unsigned int offset, unsigned int offset2,
+         unsigned int numComponents,
+         typename A,
+typename T, typename U>
+void setComponents(T &a, const U &b)
+{
+    for(unsigned int i = 0; i < numComponents; i++)
+    {
+        getComponent<offset, A, T>()(a, i) = getComponent<offset2, A, U>()(b, i);
+    }
+}
+
+template <typename T, typename U>
+void reverseWindingOrder(T &arrayData, const U &faceCounts)
+{
+    unsigned int current_index = 0;
+    for(unsigned int i = 0; i < getArrayLength(faceCounts); i++)
+    {
+        for(unsigned int a = current_index, b = current_index + faceCounts[i] - 1;
+                a < current_index + faceCounts[i] / 2; a++, b--)
         {
-            public:
-                WalkParmOperation();
-                virtual ~WalkParmOperation();
+            std::swap(arrayData[a], arrayData[b]);
+        }
+        current_index += faceCounts[i];
+    }
+}
 
-                virtual void pushFolder(const HAPI_ParmInfo &parmInfo);
-                virtual void popFolder();
-
-                virtual void pushMultiparm(const HAPI_ParmInfo &parmInfo);
-                virtual void nextMultiparm();
-                virtual void popMultiparm();
-
-                virtual void leaf(const HAPI_ParmInfo &parmInfo);
-
-            private:
-                // This class is not copyable so these are not implemented
-                WalkParmOperation(const WalkParmOperation &);
-                WalkParmOperation& operator=(const WalkParmOperation &);
-        };
-        static void walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operation);
-
-        // STL style containers
-        template <typename T, typename Alloc, template <typename, typename> class U>
-        static unsigned int getArrayLength(const U<T, Alloc> &array)
+template <unsigned int offset, unsigned int offset2, unsigned int numComponents,
+         typename A,
+         typename T, typename U, typename V>
+void
+promoteAttributeData(
+        HAPI_AttributeOwner toOwner,
+        T &toArray,
+        HAPI_AttributeOwner fromOwner,
+        const U &fromArray,
+        unsigned int pointCount,
+        const V* polygonCounts = NULL,
+        const V* polygonConnects = NULL
+        )
+{
+    if(fromOwner == toOwner)
+    {
+        setArrayLength(toArray, getArrayLength(fromArray));
+        for(unsigned int i = 0; i < getArrayLength(fromArray); ++i)
         {
-            return array.size();
+            setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[i]);
         }
 
-        template <typename T, typename Alloc, template <typename, typename> class U>
-        static void setArrayLength(U<T, Alloc> &array, unsigned int n)
-        {
-            array.resize(n);
-        }
+        return;
+    }
 
-        // Maya containers
-        template <typename T>
-        static unsigned int getArrayLength(const T &array)
-        {
-            return array.length();
-        }
-
-        template <typename T>
-        static void setArrayLength(T &array, unsigned int n)
-        {
-            array.setLength(n);
-        }
-
-        // Accessing components
-        template <unsigned int offset, typename A, typename T>
-        struct getComponent
-        {
-            A operator()(const T &t, unsigned int i)
+    switch(fromOwner)
+    {
+        case HAPI_ATTROWNER_POINT:
+            switch(toOwner)
             {
-                return t[offset + i];
-            }
-            A &operator()(T &t, unsigned int i)
-            {
-                return t[offset + i];
-            }
-        };
+                case HAPI_ATTROWNER_VERTEX:
+                    assert(polygonConnects);
+                    assert(polygonConnects);
 
-        template <unsigned int offset, typename T>
-        struct getComponent<offset, T, T>
-        {
-            T operator()(const T &t, unsigned int i)
-            {
-                return t;
-            }
-            T &operator()(T &t, unsigned int i)
-            {
-                return t;
-            }
-        };
-
-        template <unsigned int offset, unsigned int offset2,
-                 unsigned int numComponents,
-                 typename A,
-                 typename T, typename U>
-        static void setComponents(T &a, const U &b)
-        {
-            for(unsigned int i = 0; i < numComponents; i++)
-            {
-                getComponent<offset, A, T>()(a, i) = getComponent<offset2, A, U>()(b, i);
-            }
-        }
-
-        template <typename T, typename U>
-        static void reverseWindingOrder(T &arrayData, const U &faceCounts)
-        {
-            unsigned int current_index = 0;
-            for(unsigned int i = 0; i < getArrayLength(faceCounts); i++)
-            {
-                for(unsigned int a = current_index, b = current_index + faceCounts[i] - 1;
-                        a < current_index + faceCounts[i] / 2; a++, b--)
-                {
-                    std::swap(arrayData[a], arrayData[b]);
-                }
-                current_index += faceCounts[i];
-            }
-        }
-
-        template <unsigned int offset, unsigned int offset2, unsigned int numComponents,
-                 typename A,
-                 typename T, typename U, typename V>
-        static void
-        promoteAttributeData(
-                HAPI_AttributeOwner toOwner,
-                T &toArray,
-                HAPI_AttributeOwner fromOwner,
-                const U &fromArray,
-                unsigned int pointCount,
-                const V* polygonCounts = NULL,
-                const V* polygonConnects = NULL
-                )
-        {
-            if(fromOwner == toOwner)
-            {
-                setArrayLength(toArray, getArrayLength(fromArray));
-                for(unsigned int i = 0; i < getArrayLength(fromArray); ++i)
-                {
-                    setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[i]);
-                }
-
-                return;
-            }
-
-            switch(fromOwner)
-            {
-                case HAPI_ATTROWNER_POINT:
-                    switch(toOwner)
+                    setArrayLength(toArray, getArrayLength(*polygonConnects));
+                    for(unsigned int i = 0; i < getArrayLength(*polygonConnects); ++i)
                     {
-                        case HAPI_ATTROWNER_VERTEX:
-                            assert(polygonConnects);
-                            assert(polygonConnects);
-
-                            setArrayLength(toArray, getArrayLength(*polygonConnects));
-                            for(unsigned int i = 0; i < getArrayLength(*polygonConnects); ++i)
-                            {
-                                unsigned int point = (*polygonConnects)[i];
-                                setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[point]);
-                            }
-                            break;
-                        default:
-                            assert(false);
-                            break;
-                    }
-                    break;
-                case HAPI_ATTROWNER_PRIM:
-                    switch(toOwner)
-                    {
-                        case HAPI_ATTROWNER_VERTEX:
-                            assert(polygonCounts);
-                            assert(polygonConnects);
-
-                            setArrayLength(toArray, getArrayLength(*polygonConnects));
-                            for(unsigned int i = 0, j = 0; i < getArrayLength(*polygonCounts); ++i)
-                            {
-                                for(int k = 0; k < (*polygonCounts)[i]; ++j, ++k)
-                                {
-                                    setComponents<offset, offset2, numComponents, A>(toArray[j], fromArray[i]);
-                                }
-                            }
-                            break;
-                        case HAPI_ATTROWNER_POINT:
-                            // Don't convert the prim attributes to point
-                            // attributes, because that would lose information.
-                            // Convert everything to vertex attributs instead.
-                            assert(false);
-                            break;
-                        default:
-                            assert(false);
-                            break;
-                    }
-                    break;
-                case HAPI_ATTROWNER_DETAIL:
-                    {
-                        unsigned int count = 0;
-                        switch(toOwner)
-                        {
-                            case HAPI_ATTROWNER_VERTEX:
-                                assert(polygonConnects);
-                                count = getArrayLength(*polygonConnects);
-                                break;
-                            case HAPI_ATTROWNER_POINT:
-                                count = pointCount;
-                                break;
-                            case HAPI_ATTROWNER_PRIM:
-                                assert(polygonCounts);
-                                count = getArrayLength(*polygonCounts);
-                                break;
-                            default:
-                                assert(false);
-                                break;
-                        }
-
-                        setArrayLength(toArray, count);
-                        for(unsigned int i = 0; i < count; ++i)
-                        {
-                            setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[0]);
-                        }
+                        unsigned int point = (*polygonConnects)[i];
+                        setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[point]);
                     }
                     break;
                 default:
                     assert(false);
                     break;
             }
-        }
-};
+            break;
+        case HAPI_ATTROWNER_PRIM:
+            switch(toOwner)
+            {
+                case HAPI_ATTROWNER_VERTEX:
+                    assert(polygonCounts);
+                    assert(polygonConnects);
+
+                    setArrayLength(toArray, getArrayLength(*polygonConnects));
+                    for(unsigned int i = 0, j = 0; i < getArrayLength(*polygonCounts); ++i)
+                    {
+                        for(int k = 0; k < (*polygonCounts)[i]; ++j, ++k)
+                        {
+                            setComponents<offset, offset2, numComponents, A>(toArray[j], fromArray[i]);
+                        }
+                    }
+                    break;
+                case HAPI_ATTROWNER_POINT:
+                    // Don't convert the prim attributes to point
+                    // attributes, because that would lose information.
+                    // Convert everything to vertex attributs instead.
+                    assert(false);
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+            break;
+        case HAPI_ATTROWNER_DETAIL:
+            {
+                unsigned int count = 0;
+                switch(toOwner)
+                {
+                    case HAPI_ATTROWNER_VERTEX:
+                        assert(polygonConnects);
+                        count = getArrayLength(*polygonConnects);
+                        break;
+                    case HAPI_ATTROWNER_POINT:
+                        count = pointCount;
+                        break;
+                    case HAPI_ATTROWNER_PRIM:
+                        assert(polygonCounts);
+                        count = getArrayLength(*polygonCounts);
+                        break;
+                    default:
+                        assert(false);
+                        break;
+                }
+
+                setArrayLength(toArray, count);
+                for(unsigned int i = 0; i < count; ++i)
+                {
+                    setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[0]);
+                }
+            }
+            break;
+        default:
+            assert(false);
+            break;
+    }
+}
+}
 
 #endif

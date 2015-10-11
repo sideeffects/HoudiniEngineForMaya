@@ -464,7 +464,6 @@ SyncOutputGeometryPart::createOutputParticle(
     MFnDependencyNode particleShapeFn(particleShapeObj);
 
     // connect nParticleShape attributes
-    status = myDagModifier.connect(srcPlug, dstPlug);
     srcPlug = particlePlug.child(AssetNode::outputPartParticleCurrentTime);
     dstPlug = particleShapeFn.findPlug("currentTime");
     status = myDagModifier.connect(srcPlug, dstPlug);

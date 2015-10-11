@@ -19,6 +19,7 @@
 #include <maya/MFnVectorArrayData.h>
 
 #include <algorithm>
+#include <map>
 #include <vector>
 #include <limits>
 #include <string>
@@ -1444,8 +1445,10 @@ OutputGeometryPart::computeMesh(
         int layerIndex = 0;
         for(;;)
         {
-            MString uvAttributeName
+            const MString uvAttributeName
                 = Util::getAttrLayerName("uv", layerIndex);
+            const MString uvNumberAttributeName
+                = Util::getAttrLayerName("uvNumber", layerIndex);
 
             HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
             if(!HAPI_FAIL(hapiGetVertexAttribute(
@@ -1472,22 +1475,69 @@ OutputGeometryPart::computeMesh(
 
             markAttributeUsed(uvAttributeName.asChar());
 
-            // assume 3 tuple
-            MFloatArray uArray;
-            MFloatArray vArray;
-            uArray.setLength(floatArray.size() / 3);
-            vArray.setLength(floatArray.size() / 3);
-            for(unsigned int i = 0, length = uArray.length();
-                    i < length; ++i)
-            {
-                uArray[i] = floatArray[i * 3 + 0];
-                vArray[i] = floatArray[i * 3 + 1];
-            }
+            std::vector<int> uvNumbers;
+            HAPI_FAIL(hapiGetVertexAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        uvNumberAttributeName.asChar(),
+                        uvNumbers
+                        ));
+            markAttributeUsed(uvNumberAttributeName.asChar());
 
-            MIntArray vertexList;
-            vertexList.setLength(polygonConnects.length());
-            if(owner == HAPI_ATTROWNER_VERTEX)
+            MFloatArray uArray(polygonConnects.length());
+            MFloatArray vArray(polygonConnects.length());
+            MIntArray vertexList(polygonConnects.length());
+            if(owner == HAPI_ATTROWNER_VERTEX && uvNumbers.size())
             {
+                // attempt to restore the shared UVs
+
+                // uvNumber -> uvIndex
+                std::map<int, int> uvNumberMap;
+
+                int uvCount = 0;
+                for(unsigned int i = 0; i < polygonConnects.length(); ++i)
+                {
+                    int uvNumber = uvNumbers[i];
+
+                    std::map<int, int>::iterator iter
+                        = uvNumberMap.find(uvNumber);
+
+                    int mappedUVIndex = -1;
+                    if(iter != uvNumberMap.end())
+                    {
+                        mappedUVIndex = iter->second;
+                    }
+                    else
+                    {
+                        mappedUVIndex = uvCount;
+                        uvCount++;
+
+                        uvNumberMap[uvNumber] = mappedUVIndex;
+                        uArray[mappedUVIndex] = floatArray[i * 3 + 0];
+                        vArray[mappedUVIndex] = floatArray[i * 3 + 1];
+                    }
+
+                    vertexList[i] = mappedUVIndex;
+                }
+
+                uArray.setLength(uvCount);
+                vArray.setLength(uvCount);
+
+                Util::reverseWindingOrder(vertexList, polygonCounts);
+            }
+            else if(owner == HAPI_ATTROWNER_VERTEX)
+            {
+                // assign the UVs without any sharing
+
+                // assume 3 tuple
+                uArray.setLength(floatArray.size() / 3);
+                vArray.setLength(floatArray.size() / 3);
+                for(unsigned int i = 0, length = uArray.length();
+                        i < length; ++i)
+                {
+                    uArray[i] = floatArray[i * 3 + 0];
+                    vArray[i] = floatArray[i * 3 + 1];
+                }
+
                 Util::reverseWindingOrder(uArray, polygonCounts);
                 Util::reverseWindingOrder(vArray, polygonCounts);
 
@@ -1499,6 +1549,21 @@ OutputGeometryPart::computeMesh(
             }
             else if(owner == HAPI_ATTROWNER_POINT)
             {
+                // all the UVs are shared
+
+                // assume 3 tuple
+                uArray.setLength(floatArray.size() / 3);
+                vArray.setLength(floatArray.size() / 3);
+                for(unsigned int i = 0, length = uArray.length();
+                        i < length; ++i)
+                {
+                    uArray[i] = floatArray[i * 3 + 0];
+                    vArray[i] = floatArray[i * 3 + 1];
+                }
+
+                Util::reverseWindingOrder(uArray, polygonCounts);
+                Util::reverseWindingOrder(vArray, polygonCounts);
+
                 for(unsigned int i = 0, length = polygonConnects.length();
                         i < length; ++i)
                 {
@@ -1506,6 +1571,7 @@ OutputGeometryPart::computeMesh(
                 }
             }
 
+            // get the mapped UV name
             MString uvSetName = uvAttributeName;
             if(useMappedUV)
             {
@@ -1525,7 +1591,8 @@ OutputGeometryPart::computeMesh(
                 }
             }
 
-            if(uvSetName != meshFn.currentUVSetName())
+            // map1 already exists by default
+            if(uvSetName != "map1")
             {
                 meshFn.createUVSetDataMesh(uvSetName);
             }

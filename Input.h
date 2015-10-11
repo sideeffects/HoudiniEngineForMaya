@@ -53,15 +53,6 @@ class Input
 
         static Input* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);
 
-        template<typename T>
-        static void setDetailAttribute(
-                int inputAssetId,
-                int inputObjectId,
-                int inputGeoId,
-                const char* attributeName,
-                const T &value
-                );
-
         static void setInputPlugMetaData(
                 const MPlug &plug,
                 int inputAssetId,

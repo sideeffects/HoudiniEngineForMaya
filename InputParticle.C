@@ -10,6 +10,7 @@
 #include <maya/MStringArray.h>
 #include <maya/MVectorArray.h>
 
+#include "hapiutil.h"
 #include "util.h"
 
 InputParticle::InputParticle(int assetId, int inputIdx) :
@@ -197,15 +198,12 @@ InputParticle::setInputGeo(
             // crash if we try to get the IDs from the deformed particle node.
             originalParticleFn.particleIds(ids);
 
-            ids.get(reinterpret_cast<int*>(data));
-
-            setAttributePointData(
-                    "id",
-                    HAPI_STORAGETYPE_INT,
-                    particleFn.count(),
+            CHECK_HAPI(hapiSetPointAttribute(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
                     1,
-                    data
-                    );
+                    "id",
+                    ids
+                    ));
         }
 
         // 0: vector

@@ -26,6 +26,7 @@
 #include "Asset.h"
 #include "AssetNode.h"
 #include "OutputGeometryPart.h"
+#include "hapiutil.h"
 #include "util.h"
 
 void
@@ -244,127 +245,6 @@ OutputGeometryPart::update()
     }
 }
 
-static
-HAPI_Result
-getAttributeDataWrapper(
-        int asset_id,
-        int object_id,
-        int geo_id,
-        int part_id,
-        const char* name,
-        HAPI_AttributeInfo* attr_info,
-        float* data,
-        int start, int length
-        )
-{
-    return HAPI_GetAttributeFloatData(
-            Util::theHAPISession.get(),
-            asset_id, object_id, geo_id, part_id,
-            name,
-            attr_info,
-            data,
-            start, length
-            );
-}
-
-static
-HAPI_Result
-getAttributeDataWrapper(
-        int asset_id,
-        int object_id,
-        int geo_id,
-        int part_id,
-        const char* name,
-        HAPI_AttributeInfo* attr_info,
-        int* data,
-        int start, int length
-        )
-{
-    return HAPI_GetAttributeIntData(
-            Util::theHAPISession.get(),
-            asset_id, object_id, geo_id, part_id,
-            name,
-            attr_info,
-            data,
-            start, length
-            );
-}
-
-static
-HAPI_Result
-getAttributeDataWrapper(
-        int asset_id,
-        int object_id,
-        int geo_id,
-        int part_id,
-        const char* name,
-        HAPI_AttributeInfo* attr_info,
-        std::string* data,
-        int start, int length
-        )
-{
-    std::vector<HAPI_StringHandle> stringHandles(
-            attr_info->count * attr_info->tupleSize
-            );
-
-    HAPI_Result hapiResult = HAPI_GetAttributeStringData(
-            Util::theHAPISession.get(),
-            asset_id, object_id, geo_id, part_id,
-            name,
-            attr_info,
-            &stringHandles.front(),
-            start, length
-            );
-    if(HAPI_FAIL(hapiResult) || !attr_info->exists)
-    {
-        return hapiResult;
-    }
-
-    for(int i = 0; i < (int) stringHandles.size(); i++)
-    {
-        data[i] = Util::HAPIString(stringHandles[i]);
-    }
-
-    return hapiResult;
-}
-
-template<typename T>
-bool
-OutputGeometryPart::getAttributeData(
-        std::vector<T> &array,
-        const char* name,
-        HAPI_AttributeOwner owner
-        )
-{
-    HAPI_AttributeInfo attr_info;
-    attr_info.exists = false;
-    HAPI_GetAttributeInfo(
-            Util::theHAPISession.get(),
-            myAssetId, myObjectId, myGeoId, myPartId,
-            name,
-            owner,
-            &attr_info
-            );
-
-    if(!attr_info.exists)
-    {
-        array.clear();
-        return false;
-    }
-
-    array.resize(attr_info.count * attr_info.tupleSize);
-    getAttributeDataWrapper(
-            myAssetId, myObjectId, myGeoId, myPartId,
-            name,
-            &attr_info,
-            &array.front(),
-            0,
-            attr_info.count
-            );
-
-    return true;
-}
-
 MStatus
 OutputGeometryPart::compute(
         const MTime &time,
@@ -479,8 +359,16 @@ OutputGeometryPart::computeCurves(
     MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
 
     std::vector<float> pArray, pwArray;
-    getAttributeData(pArray,  "P",  HAPI_ATTROWNER_POINT);
-    getAttributeData(pwArray, "Pw", HAPI_ATTROWNER_POINT);
+    hapiGetPointAttribute(
+            myAssetId, myObjectId, myGeoId, myPartId,
+            "P",
+            pArray
+            );
+    hapiGetPointAttribute(
+            myAssetId, myObjectId, myGeoId, myPartId,
+            "Pw",
+            pArray
+            );
     markAttributeUsed("P");
     markAttributeUsed("Pw");
 
@@ -733,7 +621,11 @@ OutputGeometryPart::convertParticleAttribute(
         int particleCount
    )
 {
-    if(getAttributeData(buffer, houdiniName, HAPI_ATTROWNER_POINT))
+    if(!HAPI_FAIL(hapiGetPointAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    houdiniName,
+                    buffer
+                    )))
     {
         T particleArray;
         getParticleArray(particleArray, arrayDataFn, mayaName);
@@ -757,7 +649,12 @@ OutputGeometryPart::convertGenericDataAttribute(
     if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT)
     {
         std::vector<float> floatArray;
-        getAttributeData(floatArray, attributeName, attributeInfo.owner);
+        hapiGetAttribute(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                attributeInfo.owner,
+                attributeName,
+                floatArray
+                );
 
         if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 1)
@@ -843,7 +740,12 @@ OutputGeometryPart::convertGenericDataAttribute(
     else if(attributeInfo.storage == HAPI_STORAGETYPE_INT)
     {
         std::vector<int> intArray;
-        getAttributeData(intArray, attributeName, attributeInfo.owner);
+        hapiGetAttribute(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                attributeInfo.owner,
+                attributeName,
+                intArray
+                );
 
         if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 1)
@@ -900,7 +802,12 @@ OutputGeometryPart::convertGenericDataAttribute(
     else if(attributeInfo.storage == HAPI_STORAGETYPE_STRING)
     {
         std::vector<std::string> stringArray;
-        getAttributeData(stringArray, attributeName, attributeInfo.owner);
+        hapiGetAttribute(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                attributeInfo.owner,
+                attributeName,
+                stringArray
+                );
 
         if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 1)
@@ -960,7 +867,11 @@ OutputGeometryPart::computeParticle(
 
     MVectorArray positions = positionDataFn.array();
     {
-        getAttributeData(floatArray, "P", HAPI_ATTROWNER_POINT);
+        hapiGetPointAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "P",
+                    floatArray
+                    );
         positions.setLength(particleCount);
         convertArray(positions, floatArray);
     }
@@ -981,7 +892,11 @@ OutputGeometryPart::computeParticle(
     {
         MDoubleArray idArray = arrayDataFn.doubleArray("id");
         idArray.setLength(particleCount);
-        if(getAttributeData(intArray, "id", HAPI_ATTROWNER_POINT))
+        if(!HAPI_FAIL(hapiGetPointAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "id",
+                    intArray
+                    )))
         {
             for(unsigned int i = 0; i < idArray.length(); i++)
             {
@@ -1012,7 +927,11 @@ OutputGeometryPart::computeParticle(
     // velocity
     MVectorArray velocityArray;
     getParticleArray(velocityArray, arrayDataFn, "velocity");
-    if(getAttributeData(floatArray, "v", HAPI_ATTROWNER_POINT))
+    if(!HAPI_FAIL(hapiGetPointAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "v",
+                    floatArray
+                    )))
     {
         convertArray(velocityArray, floatArray);
     }
@@ -1306,7 +1225,11 @@ OutputGeometryPart::computeMesh(
     // vertex array
     MFloatPointArray vertexArray;
     {
-        getAttributeData(floatArray, "P", HAPI_ATTROWNER_POINT);
+        hapiGetPointAttribute(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                "P",
+                floatArray
+                );
 
         // assume 3 tuple
         vertexArray.setLength(floatArray.size() / 3);
@@ -1428,11 +1351,19 @@ OutputGeometryPart::computeMesh(
     if(polygonCounts.length())
     {
         HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
-        if(getAttributeData(floatArray, "N", HAPI_ATTROWNER_VERTEX))
+        if(!HAPI_FAIL(hapiGetVertexAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "N",
+                        floatArray
+                        )))
         {
             owner = HAPI_ATTROWNER_VERTEX;
         }
-        else if(getAttributeData(floatArray, "N", HAPI_ATTROWNER_POINT))
+        else if(!HAPI_FAIL(hapiGetPointAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "N",
+                        floatArray
+                        )))
         {
             owner = HAPI_ATTROWNER_POINT;
         }
@@ -1482,11 +1413,19 @@ OutputGeometryPart::computeMesh(
     if(polygonCounts.length())
     {
         HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
-        if(getAttributeData(floatArray, "uv", HAPI_ATTROWNER_VERTEX))
+        if(!HAPI_FAIL(hapiGetVertexAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "uv",
+                        floatArray
+                        )))
         {
             owner = HAPI_ATTROWNER_VERTEX;
         }
-        else if(getAttributeData(floatArray, "uv", HAPI_ATTROWNER_POINT))
+        else if(!HAPI_FAIL(hapiGetPointAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "uv",
+                        floatArray
+                        )))
         {
             owner = HAPI_ATTROWNER_POINT;
         }
@@ -1540,19 +1479,35 @@ OutputGeometryPart::computeMesh(
         // Get color data
         HAPI_AttributeOwner colorOwner = HAPI_ATTROWNER_MAX;
 
-        if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_VERTEX))
+        if(!HAPI_FAIL(hapiGetVertexAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Cd",
+                        floatArray
+                        )))
         {
             colorOwner = HAPI_ATTROWNER_VERTEX;
         }
-        else if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_POINT))
+        else if(!HAPI_FAIL(hapiGetPointAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Cd",
+                        floatArray
+                        )))
         {
             colorOwner = HAPI_ATTROWNER_POINT;
         }
-        else if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_PRIM))
+        else if(!HAPI_FAIL(hapiGetPrimAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Cd",
+                        floatArray
+                        )))
         {
             colorOwner = HAPI_ATTROWNER_PRIM;
         }
-        else if(getAttributeData(floatArray, "Cd", HAPI_ATTROWNER_DETAIL))
+        else if(!HAPI_FAIL(hapiGetDetailAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Cd",
+                        floatArray
+                        )))
         {
             colorOwner = HAPI_ATTROWNER_DETAIL;
         }
@@ -1560,19 +1515,35 @@ OutputGeometryPart::computeMesh(
         HAPI_AttributeOwner alphaOwner = HAPI_ATTROWNER_MAX;
         std::vector<float> alphaArray;
 
-        if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_VERTEX))
+        if(!HAPI_FAIL(hapiGetVertexAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Alpha",
+                        alphaArray
+                        )))
         {
             alphaOwner = HAPI_ATTROWNER_VERTEX;
         }
-        else if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_POINT))
+        else if(!HAPI_FAIL(hapiGetPointAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Alpha",
+                        alphaArray
+                        )))
         {
             alphaOwner = HAPI_ATTROWNER_POINT;
         }
-        else if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_PRIM))
+        else if(!HAPI_FAIL(hapiGetPrimAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Alpha",
+                        alphaArray
+                        )))
         {
             alphaOwner = HAPI_ATTROWNER_PRIM;
         }
-        else if(getAttributeData(alphaArray, "Alpha", HAPI_ATTROWNER_DETAIL))
+        else if(!HAPI_FAIL(hapiGetDetailAttribute(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        "Alpha",
+                        alphaArray
+                        )))
         {
             alphaOwner = HAPI_ATTROWNER_DETAIL;
         }

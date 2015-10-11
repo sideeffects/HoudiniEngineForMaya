@@ -19,6 +19,7 @@
 #include "InputMesh.h"
 #include "InputCurve.h"
 #include "InputParticle.h"
+#include "hapiutil.h"
 #include "util.h"
 
 MObject Inputs::input;
@@ -263,86 +264,6 @@ Input::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType
     return assetInput;
 }
 
-template<
-    typename T,
-    HAPI_StorageType storageType,
-    HAPI_Result (SetAttribute)(const HAPI_Session * session,
-            HAPI_AssetId asset_id,
-            HAPI_ObjectId object_id,
-            HAPI_GeoId geo_id,
-            const char * name,
-            const HAPI_AttributeInfo * attr_info,
-            T * data_array,
-            int start, int length)
->
-void
-setDetailAttribute_internal(
-        int inputAssetId,
-        int inputObjectId,
-        int inputGeoId,
-        const char* attributeName,
-        T* value,
-        int tupleSize
-        )
-{
-    HAPI_AttributeInfo attributeInfo;
-    attributeInfo.exists = true;
-    attributeInfo.owner = HAPI_ATTROWNER_DETAIL;
-    attributeInfo.storage = storageType;
-    attributeInfo.count = 1;
-    attributeInfo.tupleSize = tupleSize;
-
-    HAPI_AddAttribute(
-            Util::theHAPISession.get(),
-            inputAssetId, inputObjectId, inputGeoId,
-            attributeName,
-            &attributeInfo
-            );
-
-    CHECK_HAPI(SetAttribute(
-                Util::theHAPISession.get(),
-                inputAssetId, inputObjectId, inputGeoId,
-                attributeName,
-                &attributeInfo,
-                value,
-                0, 1
-                ));
-}
-
-template<>
-void
-Input::setDetailAttribute(
-        int inputAssetId,
-        int inputObjectId,
-        int inputGeoId,
-        const char* attributeName,
-        const MStringArray &value
-        )
-{
-    if(value.length() == 0)
-        return;
-
-    std::vector<const char*> converted_value;
-    converted_value.resize(value.length());
-    for(unsigned int i = 0; i < value.length(); i++)
-    {
-        converted_value[i] = value[i].asChar();
-    }
-
-    setDetailAttribute_internal<
-        const char*,
-        HAPI_STORAGETYPE_STRING,
-        HAPI_SetAttributeStringData
-            >(
-                    inputAssetId,
-                    inputObjectId,
-                    inputGeoId,
-                    attributeName,
-                    &converted_value[0],
-                    converted_value.size()
-             );
-}
-
 void
 Input::setInputPlugMetaData(
         const MPlug &plug,
@@ -367,13 +288,13 @@ Input::setInputPlugMetaData(
             MStringArray values;
             values.append(shapeName);
 
-            setDetailAttribute(
+            CHECK_HAPI(hapiSetDetailAttribute(
                     inputAssetId,
                     inputObjectId,
                     inputGeoId,
                     "maya_source_node",
                     values
-                    );
+                    ));
         }
     }
 }

@@ -79,19 +79,6 @@ InputMesh::setInputTransform(MDataHandle &dataHandle)
             );
 }
 
-static
-MString
-getLayerName(const char *name, int layer)
-{
-    MString layerName = name;
-    if(layer > 0)
-    {
-        layerName += layer + 1;
-    }
-
-    return layerName;
-}
-
 void
 InputMesh::setInputGeo(
         MDataBlock &dataBlock,
@@ -255,7 +242,8 @@ InputMesh::processUVs(
     {
         const MString uvSetName = uvSetNames[i];
 
-        const MString uvAttributeName = getLayerName("uv", i);
+        const MString uvAttributeName
+            = Util::getAttrLayerName("uv", i);
 
         mappedUVAttributeNames[i] = uvAttributeName;
 
@@ -383,7 +371,8 @@ InputMesh::processColorSets(
 
         if(hasColor)
         {
-            const MString colorAttributeName = getLayerName("Cd", i);
+            const MString colorAttributeName
+                = Util::getAttrLayerName("Cd", i);
 
             mappedCdNames[i] = colorAttributeName;
 
@@ -406,7 +395,8 @@ InputMesh::processColorSets(
 
         if(hasAlpha)
         {
-            const MString alphaAttributeName = getLayerName("Alpha", i);
+            const MString alphaAttributeName
+                = Util::getAttrLayerName("Alpha", i);
 
             mappedAlphaNames[i] = alphaAttributeName;
 

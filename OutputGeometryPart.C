@@ -1959,6 +1959,20 @@ OutputGeometryPart::computeExtraAttributes(
                 continue;
             }
 
+            HAPI_AttributeInfo attributeInfo;
+            HAPI_FAIL(HAPI_GetAttributeInfo(
+                        myAssetId, myObjectId, myGeoId, myPartId,
+                        attributeName.asChar(),
+                        owner,
+                        &attributeInfo
+                        ));
+            if(!attributeInfo.exists)
+            {
+                // HAPI might not be able to handle certain attributes (e.g.
+                // tuple size is 0).
+                continue;
+            }
+
             MDataHandle extraAttributeHandle =
                 extraAttributesBuilder.addElement(elementIndex);
             elementIndex++;
@@ -1978,14 +1992,6 @@ OutputGeometryPart::computeExtraAttributes(
             MDataHandle dataHandle = extraAttributeHandle.child(
                     AssetNode::outputPartExtraAttributeData
                     );
-
-            HAPI_AttributeInfo attributeInfo;
-            CHECK_HAPI(HAPI_GetAttributeInfo(
-                    myAssetId, myObjectId, myGeoId, myPartId,
-                    attributeName.asChar(),
-                    owner,
-                    &attributeInfo
-                    ));
 
             const MString &dataTypeString =
                 dataTypesString[attributeInfo.storage];

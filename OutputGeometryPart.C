@@ -1476,28 +1476,58 @@ OutputGeometryPart::computeMesh(
 
                 // uvNumber -> uvIndex
                 std::map<int, int> uvNumberMap;
+                // uvIndex -> alternate uvIndex
+                std::vector<int> uvAlternateIndexMap(
+                        polygonConnects.length(),
+                        -1
+                        );
 
                 int uvCount = 0;
                 for(unsigned int i = 0; i < polygonConnects.length(); ++i)
                 {
                     int uvNumber = uvNumbers[i];
+                    float u = floatArray[i * 3 + 0];
+                    float v = floatArray[i * 3 + 1];
 
                     std::map<int, int>::iterator iter
                         = uvNumberMap.find(uvNumber);
 
+                    int lastMappedUVIndex = -1;
                     int mappedUVIndex = -1;
                     if(iter != uvNumberMap.end())
                     {
-                        mappedUVIndex = iter->second;
+                        int currMappedUVIndex = iter->second;
+                        while(currMappedUVIndex != -1)
+                        {
+                            // check that the UV coordinates are the same
+                            if(u == uArray[currMappedUVIndex]
+                                    && v == vArray[currMappedUVIndex])
+                            {
+                                mappedUVIndex = currMappedUVIndex;
+                                break;
+                            }
+
+                            lastMappedUVIndex = currMappedUVIndex;
+                            currMappedUVIndex = uvAlternateIndexMap[currMappedUVIndex];
+                        }
                     }
-                    else
+
+                    if(mappedUVIndex == -1)
                     {
                         mappedUVIndex = uvCount;
                         uvCount++;
 
-                        uvNumberMap[uvNumber] = mappedUVIndex;
-                        uArray[mappedUVIndex] = floatArray[i * 3 + 0];
-                        vArray[mappedUVIndex] = floatArray[i * 3 + 1];
+                        uArray[mappedUVIndex] = u;
+                        vArray[mappedUVIndex] = v;
+
+                        if(lastMappedUVIndex != -1)
+                        {
+                            uvAlternateIndexMap[lastMappedUVIndex] = mappedUVIndex;
+                        }
+                        else
+                        {
+                            uvNumberMap[uvNumber] = mappedUVIndex;
+                        }
                     }
 
                     vertexList[i] = mappedUVIndex;

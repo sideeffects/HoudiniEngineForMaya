@@ -142,7 +142,6 @@ class AssetNode: public MPxTransform
         static MObject outputParts;
         static MObject outputPartName;
         static MObject outputPartHasMesh;
-        static MObject outputPartMesh;
         static MObject outputPartHasParticles;
         static MObject outputPartMaterial;
         static MObject outputPartMaterialExists;
@@ -152,6 +151,9 @@ class AssetNode: public MPxTransform
         static MObject outputPartDiffuseColor;
         static MObject outputPartSpecularColor;
         static MObject outputPartAlphaColor;
+
+        static MObject outputPartMesh;
+        static MObject outputPartMeshData;
 
         static MObject outputPartParticle;
         static MObject outputPartParticleCurrentTime;

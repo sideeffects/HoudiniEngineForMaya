@@ -37,7 +37,10 @@ clearMesh(
 {
     hasMeshHandle.setBool(false);
 
-    meshHandle.setMObject(MObject::kNullObj);
+    MDataHandle meshDataHandle
+        = meshHandle.child(AssetNode::outputPartMeshData);
+
+    meshDataHandle.setMObject(MObject::kNullObj);
 }
 
 void
@@ -1191,17 +1194,20 @@ OutputGeometryPart::computeMesh(
 
     hasMeshHandle.setBool(true);
 
+    MDataHandle meshDataHandle
+        = meshHandle.child(AssetNode::outputPartMeshData);
+
     // create mesh
-    MObject meshDataObj = meshHandle.data();
+    MObject meshDataObj = meshDataHandle.data();
     MFnMeshData meshDataFn(meshDataObj);
     if(meshDataObj.isNull())
     {
         // set the MDataHandle
         meshDataObj = meshDataFn.create();
-        meshHandle.setMObject(meshDataObj);
+        meshDataHandle.setMObject(meshDataObj);
 
         // then get the copy from MDataHandle
-        meshDataObj = meshHandle.data();
+        meshDataObj = meshDataHandle.data();
         meshDataFn.setObject(meshDataObj);
     }
 

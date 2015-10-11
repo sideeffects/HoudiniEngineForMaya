@@ -251,7 +251,7 @@ SyncOutputGeometryPart::createOutputMesh(
         MPlug srcPlug;
         MPlug dstPlug;
 
-        srcPlug = myOutputPlug.child(AssetNode::outputPartMesh);
+        srcPlug = meshPlug.child(AssetNode::outputPartMeshData);
         dstPlug = partMeshFn.findPlug("inMesh");
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);

@@ -475,7 +475,10 @@ struct HAPIGetAttribute
                 owner,
                 &attrInfo
                 );
-        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+        if(HAPI_FAIL(hapiResult))
+        {
+            return HAPI_RESULT_FAILURE;
+        }
 
         if(!attrInfo.exists)
         {
@@ -530,7 +533,10 @@ struct HAPIGetAttribute<storageType, T, false>
                 attributeName,
                 convertedDataArray
                 );
-        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+        if(HAPI_FAIL(hapiResult))
+        {
+            return HAPI_RESULT_FAILURE;
+        }
 
         dataArray = Util::convertArray<T>(convertedDataArray);
 

@@ -21,6 +21,8 @@ InputMesh::InputMesh(int assetId, int inputIdx) :
     myInputObjectId(-1),
     myInputGeoId(-1)
 {
+    Util::PythonInterpreterLock pythonInterpreterLock;
+
     CHECK_HAPI(HAPI_CreateInputAsset(
         Util::theHAPISession.get(),
         &myInputAssetId,

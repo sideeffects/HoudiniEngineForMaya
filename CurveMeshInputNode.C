@@ -77,6 +77,8 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     if ( myAssetId < 0 )
     {
+        Util::PythonInterpreterLock pythonInterpreterLock;
+
         CHECK_HAPI(HAPI_CreateInputAsset(
                     &myAssetId,
                     NULL

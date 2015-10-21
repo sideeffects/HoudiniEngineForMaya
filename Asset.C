@@ -1077,7 +1077,12 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         {
             dataHandle = parentDataHandle.child(attrObj);
 
-            if((parmInfo.type == HAPI_PARMTYPE_INT
+            // The HAPI_ParmInfo::choiceCount could change between cooks because
+            // of menu scripts. Explicitly check if the attribute is
+            // MFnEnumAttribute to avoid Maya crashing when calling
+            // MDataHandle::setShort() on a string attribute.
+            if(attrObj.hasFn(MFn::kEnumAttribute)
+                    && (parmInfo.type == HAPI_PARMTYPE_INT
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON
                         || parmInfo.type == HAPI_PARMTYPE_STRING)
                     && parmInfo.choiceCount > 0)

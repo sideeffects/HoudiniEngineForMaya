@@ -421,7 +421,7 @@ InputMesh::processColorSets(
             // add and set Alpha
             CHECK_HAPI(hapiSetVertexAttribute(
                     myInputAssetId, myInputObjectId, myInputGeoId,
-                    3,
+                    1,
                     alphaAttributeName.asChar(),
                     buffer
                     ));

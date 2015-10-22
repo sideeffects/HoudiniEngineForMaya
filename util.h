@@ -485,24 +485,41 @@ promoteAttributeData(
         const V* polygonConnects = NULL
         )
 {
-    if(fromOwner == toOwner)
-    {
-        setArrayLength(toArray, getArrayLength(fromArray));
-        for(unsigned int i = 0; i < getArrayLength(fromArray); ++i)
-        {
-            setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[i]);
-        }
-
-        return;
-    }
-
     switch(fromOwner)
     {
+        case HAPI_ATTROWNER_VERTEX:
+            switch(toOwner)
+            {
+                case HAPI_ATTROWNER_VERTEX:
+                    {
+                        assert(polygonCounts);
+                        assert(polygonConnects);
+
+                        setArrayLength(toArray, getArrayLength(*polygonConnects));
+                        unsigned int current_index = 0;
+                        for(unsigned int i = 0; i < getArrayLength(*polygonCounts); ++i)
+                        {
+                            for(unsigned int a = current_index,
+                                    b = current_index + (*polygonCounts)[i] - 1;
+                                    a < current_index + (*polygonCounts)[i];
+                                    a++, b--)
+                            {
+                                setComponents<offset, offset2, numComponents, A>(toArray[a], fromArray[b]);
+                            }
+
+                            current_index += (*polygonCounts)[i];
+                        }
+                    }
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+            break;
         case HAPI_ATTROWNER_POINT:
             switch(toOwner)
             {
                 case HAPI_ATTROWNER_VERTEX:
-                    assert(polygonConnects);
                     assert(polygonConnects);
 
                     setArrayLength(toArray, getArrayLength(*polygonConnects));
@@ -510,6 +527,13 @@ promoteAttributeData(
                     {
                         unsigned int point = (*polygonConnects)[i];
                         setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[point]);
+                    }
+                    break;
+                case HAPI_ATTROWNER_POINT:
+                    setArrayLength(toArray, pointCount);
+                    for(unsigned int i = 0; i < pointCount; ++i)
+                    {
+                        setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[i]);
                     }
                     break;
                 default:

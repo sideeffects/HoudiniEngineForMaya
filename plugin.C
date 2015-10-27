@@ -201,6 +201,7 @@ initializeHAPI(const OptionVars& optionVars)
             &cook_options,
             use_cooking_thread,
             -1,
+            NULL,
             otl_dir, dso_dir,
             NULL, NULL
             );

@@ -544,18 +544,29 @@ void setComponents(T &a, const U &b)
     }
 }
 
-template <typename T, typename U>
-void reverseWindingOrder(T &arrayData, const U &faceCounts)
+template <typename Type, typename FaceCountsType>
+void
+reverseWindingOrder(Type &arrayData, const FaceCountsType &faceCounts)
 {
+    typedef ARRAYTRAIT(Type) Trait;
+    typedef ARRAYTRAIT(FaceCountsType) FaceCountsTrait;
+
     unsigned int current_index = 0;
-    for(unsigned int i = 0; i < getArrayLength(faceCounts); i++)
+    for(unsigned int i = 0; i < FaceCountsTrait::size(faceCounts); i++)
     {
-        for(unsigned int a = current_index, b = current_index + faceCounts[i] - 1;
-                a < current_index + faceCounts[i] / 2; a++, b--)
+        const unsigned int faceCount
+            = FaceCountsTrait::getElement(faceCounts, i);
+        for(unsigned int a = current_index,
+                    b = current_index + faceCount - 1;
+                a < current_index + faceCount / 2;
+                a++, b--)
         {
-            std::swap(arrayData[a], arrayData[b]);
+            std::swap(
+                    Trait::getElement(arrayData, a),
+                    Trait::getElement(arrayData, b)
+                    );
         }
-        current_index += faceCounts[i];
+        current_index += faceCount;
     }
 }
 

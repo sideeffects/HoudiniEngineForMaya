@@ -245,13 +245,11 @@ template<
     HAPI_StorageType storageType,
     typename T,
     bool canUseData
-        = ArrayTrait<T>::canGetData
+        = ARRAYTRAIT(T)::canGetData
         && SameType<
-            typename ArrayTrait<T>::ElementType,
+            ELEMENTTYPE(T),
             typename HAPIAttributeTrait<
-                HAPITypeTrait<
-                    typename ArrayTrait<T>::ElementType
-                    >::storageType>::SetType
+                HAPITypeTrait<ELEMENTTYPE(T)>::storageType>::SetType
             >::value
     >
 struct HAPISetAttribute
@@ -271,7 +269,7 @@ struct HAPISetAttribute
         if(tupleSize == 0)
             return HAPI_RESULT_SUCCESS;
 
-        size_t dataArraySize = ArrayTrait<T>::size(dataArray);
+        size_t dataArraySize = ARRAYTRAIT(T)::size(dataArray);
 
         size_t count = dataArraySize / tupleSize;
 
@@ -301,7 +299,7 @@ struct HAPISetAttribute
                     assetId, objectId, geoId,
                     attributeName,
                     &attributeInfo,
-                    ArrayTrait<T>::data(dataArray),
+                    ARRAYTRAIT(T)::data(dataArray),
                     0, count
                     );
         CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
@@ -352,7 +350,7 @@ hapiSetAttribute(
         )
 {
     return HAPISetAttribute<
-        HAPITypeTrait<typename ArrayTrait<T>::ElementType>::storageType,
+        HAPITypeTrait<ELEMENTTYPE(T)>::storageType,
         T
         >::impl(
             assetId, objectId, geoId,
@@ -376,7 +374,7 @@ hapiSetDetailAttribute(
     return hapiSetAttribute(
             assetId, objectId, geoId,
             HAPI_ATTROWNER_DETAIL,
-            ArrayTrait<T>::size(dataArray),
+            ARRAYTRAIT(T)::size(dataArray),
             attributeName,
             dataArray
             );
@@ -446,13 +444,11 @@ template<
     HAPI_StorageType storageType,
     typename T,
     bool canUseData
-        = ArrayTrait<T>::canGetData
+        = ARRAYTRAIT(T)::canGetData
         && SameType<
-            typename ArrayTrait<T>::ElementType,
+            ELEMENTTYPE(T),
             typename HAPIAttributeTrait<
-                HAPITypeTrait<
-                    typename ArrayTrait<T>::ElementType
-                    >::storageType>::GetType
+                HAPITypeTrait<ELEMENTTYPE(T)>::storageType>::GetType
             >::value
     >
 struct HAPIGetAttribute
@@ -485,7 +481,7 @@ struct HAPIGetAttribute
 
         if(!attrInfo.exists)
         {
-            ArrayTrait<T>::resize(dataArray, 0);
+            ARRAYTRAIT(T)::resize(dataArray, 0);
             return HAPI_RESULT_FAILURE;
         }
 
@@ -495,13 +491,13 @@ struct HAPIGetAttribute
             return HAPI_RESULT_FAILURE;
         }
 
-        ArrayTrait<T>::resize(dataArray, attrInfo.count * attrInfo.tupleSize);
+        ARRAYTRAIT(T)::resize(dataArray, attrInfo.count * attrInfo.tupleSize);
         hapiResult = HAPIAttributeTrait<storageType>::getAttribute(
                 Util::theHAPISession.get(),
                 assetId, objectId, geoId, partId,
                 attributeName,
                 &attrInfo,
-                ArrayTrait<T>::data(dataArray),
+                ARRAYTRAIT(T)::data(dataArray),
                 0, attrInfo.count
                 );
         CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
@@ -560,7 +556,7 @@ hapiGetAttribute(
         )
 {
     return HAPIGetAttribute<
-        HAPITypeTrait<typename ArrayTrait<T>::ElementType>::storageType,
+        HAPITypeTrait<ELEMENTTYPE(T)>::storageType,
         T
         >::impl(
             assetId, objectId, geoId, partId,

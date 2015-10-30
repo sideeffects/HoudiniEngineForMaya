@@ -1,8 +1,10 @@
 #ifndef __traits_h__
 #define __traits_h__
 
+#include <maya/MColorArray.h>
 #include <maya/MDoubleArray.h>
 #include <maya/MFloatArray.h>
+#include <maya/MFloatPointArray.h>
 #include <maya/MIntArray.h>
 #include <maya/MStringArray.h>
 #include <maya/MString.h>
@@ -65,6 +67,38 @@ struct TypeTrait<MVector>
     static const ComponentType &getComponent(const Type &o, size_t i)
     {
         // const MVector doesn't return a double reference
+        return const_cast<Type&>(o)[i];
+    }
+    static ComponentType &getComponent(Type &o, size_t i)
+    { return o[i]; }
+};
+
+template<>
+struct TypeTrait<MColor>
+{
+    typedef MColor Type;
+    typedef float ComponentType;
+
+    static const int numComponents = 4;
+    static const ComponentType &getComponent(const Type &o, size_t i)
+    {
+        // const MVector doesn't return a double reference
+        return const_cast<Type&>(o)[i];
+    }
+    static ComponentType &getComponent(Type &o, size_t i)
+    { return o[i]; }
+};
+
+template<>
+struct TypeTrait<MFloatPoint>
+{
+    typedef MFloatPoint Type;
+    typedef float ComponentType;
+
+    static const int numComponents = 4;
+    static const ComponentType &getComponent(const Type &o, size_t i)
+    {
+        // const MFloatPoint doesn't return a float reference
         return const_cast<Type&>(o)[i];
     }
     static ComponentType &getComponent(Type &o, size_t i)
@@ -191,6 +225,46 @@ struct ArrayTrait<MVectorArray>
 {
     typedef MVectorArray ArrayType;
     typedef MVector ElementType;
+
+    static const bool canGetData = false;
+
+    static size_t size(const ArrayType &array)
+    { return array.length(); }
+    static void resize(ArrayType &array, size_t size)
+    { array.setLength(size); }
+
+    static const ElementType &getElement(const ArrayType &array, size_t i)
+    { return array[i]; }
+
+    static ElementType &getElement(ArrayType &array, size_t i)
+    { return array[i]; }
+};
+
+template<>
+struct ArrayTrait<MColorArray>
+{
+    typedef MColorArray ArrayType;
+    typedef MColor ElementType;
+
+    static const bool canGetData = false;
+
+    static size_t size(const ArrayType &array)
+    { return array.length(); }
+    static void resize(ArrayType &array, size_t size)
+    { array.setLength(size); }
+
+    static const ElementType &getElement(const ArrayType &array, size_t i)
+    { return array[i]; }
+
+    static ElementType &getElement(ArrayType &array, size_t i)
+    { return array[i]; }
+};
+
+template<>
+struct ArrayTrait<MFloatPointArray>
+{
+    typedef MFloatPointArray ArrayType;
+    typedef MFloatPoint ElementType;
 
     static const bool canGetData = false;
 

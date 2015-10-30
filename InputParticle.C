@@ -186,11 +186,6 @@ InputParticle::setInputGeo(
 
     // set per-particle attributes
     {
-        // shared buffers for passing data
-        MVectorArray vectorArray;
-        MDoubleArray doubleArray;
-        char* data = new char[sizeof(float) * 3 * particleFn.count()];
-
         // id
         {
             MIntArray ids;
@@ -206,45 +201,22 @@ InputParticle::setInputGeo(
                     ));
         }
 
-        // 0: vector
-        // 1: double
-        for(int i = 0; i < 2; i++)
+        // vector attributes
         {
-            int tupleSize = 0;
-            MString getAttributesCommand = "particle -q ";
-            switch(i)
-            {
-                case 0:
-                    tupleSize = 3;
-                    getAttributesCommand += "-perParticleVector ";
-                    break;
-                case 1:
-                    tupleSize = 1;
-                    getAttributesCommand += "-perParticleDouble ";
-                    break;
-            }
+            MVectorArray vectorArray;
 
-            // query the original particle for names of the per-particle attributes
+            // query the original particle for names of the per-particle
+            // attributes
+            MString getAttributesCommand = "particle -q -perParticleVector ";
             getAttributesCommand += originalParticleFn.fullPathName();
 
             // get the per-particle attribute names
             MStringArray attributeNames;
             MGlobal::executeCommand(getAttributesCommand, attributeNames);
 
-            // explicitly include some special per-particle attributes that
-            // aren't returned by the MEL command
-            switch(i)
+            for(unsigned int i = 0; i < attributeNames.length(); i++)
             {
-                case 0:
-                    break;
-                case 1:
-                    attributeNames.append("age");
-                    break;
-            }
-
-            for(unsigned int j = 0; j < attributeNames.length(); j++)
-            {
-                const MString attributeName = attributeNames[j];
+                const MString attributeName = attributeNames[i];
 
                 MObject attributeObj = originalParticleFn.attribute(attributeName);
                 if(attributeObj.isNull())
@@ -262,98 +234,136 @@ InputParticle::setInputGeo(
                 }
 
                 // get the per-particle data
-                switch(i)
+                if(attributeName == "position")
                 {
-                    case 0:
-                        if(attributeName == "position")
-                        {
-                            // Need to use position() so that we get the right
-                            // positions in the case of deformed particles.
-                            particleFn.position(vectorArray);
-                        }
-                        else
-                        {
-                            // Maya will automatically use the original
-                            // particle node in the case of deformed particles.
-                            particleFn.getPerParticleAttribute(
-                                    attributeName,
-                                    vectorArray
-                                    );
-                        }
-
-                        vectorArray.get(reinterpret_cast<float(*)[3]>(data));
-                        break;
-                    case 1:
-                        // Maya will automatically use the original
-                        // particle node in the case of deformed particles.
-                        particleFn.getPerParticleAttribute(
-                                attributeName,
-                                doubleArray
-                                );
-
-                        doubleArray.get(reinterpret_cast<float(*)>(data));
-                        break;
+                    // Need to use position() so that we get the right
+                    // positions in the case of deformed particles.
+                    particleFn.position(vectorArray);
+                }
+                else
+                {
+                    // Maya will automatically use the original
+                    // particle node in the case of deformed particles.
+                    particleFn.getPerParticleAttribute(
+                            attributeName,
+                            vectorArray
+                            );
                 }
 
-                // map the parameter name
-                const char* parameterName = attributeName.asChar();
-                switch(i)
+                // When particle node is initially loaded from a scene file, if
+                // the attribute is driven by expressions, then
+                // MFnParticleSystem doesn't initially seem to have data.
+                if(partInfo.pointCount != (int) vectorArray.length())
                 {
-                    case 0:
-                        if(strcmp(parameterName, "position") == 0)
-                        {
-                            parameterName = "P";
-                        }
-                        else if(strcmp(parameterName, "velocity") == 0)
-                        {
-                            parameterName = "v";
-                        }
-                        else if(strcmp(parameterName, "acceleration") == 0)
-                        {
-                            parameterName = "force";
-                        }
-                        else if(strcmp(parameterName, "rgbPP") == 0)
-                        {
-                            parameterName = "Cd";
-                        }
-                        break;
-                    case 1:
-                        if(strcmp(parameterName, "opacityPP") == 0)
-                        {
-                            parameterName = "Alpha";
-                        }
-                        else if(strcmp(parameterName, "radiusPP") == 0)
-                        {
-                            parameterName = "pscale";
-                        }
-                        else if(strcmp(parameterName, "finalLifespanPP") == 0)
-                        {
-                            parameterName = "life";
-                        }
-                        break;
+                    vectorArray.setLength(partInfo.pointCount);
                 }
 
-                setAttributePointData(
-                        parameterName,
-                        HAPI_STORAGETYPE_FLOAT,
-                        particleFn.count(),
-                        tupleSize,
-                        data
-                        );
-            }
+                // map the attribute name
+                const char* mappedAttributeName = attributeName.asChar();
+                if(strcmp(mappedAttributeName, "position") == 0)
+                {
+                    mappedAttributeName = "P";
+                }
+                else if(strcmp(mappedAttributeName, "velocity") == 0)
+                {
+                    mappedAttributeName = "v";
+                }
+                else if(strcmp(mappedAttributeName, "acceleration") == 0)
+                {
+                    mappedAttributeName = "force";
+                }
+                else if(strcmp(mappedAttributeName, "rgbPP") == 0)
+                {
+                    mappedAttributeName = "Cd";
+                }
 
-            switch(i)
-            {
-                case 0:
-                    vectorArray.clear();
-                    break;
-                case 1:
-                    doubleArray.clear();
-                    break;
+                CHECK_HAPI(hapiSetPointAttribute(
+                            myInputAssetId, myInputObjectId, myInputGeoId,
+                            3,
+                            mappedAttributeName,
+                            Util::reshapeArray<
+                                3,
+                                std::vector<double>
+                                >(vectorArray)
+                            ));
             }
         }
 
-        delete [] data;
+        // double attributes
+        {
+            MDoubleArray doubleArray;
+
+            // query the original particle for names of the per-particle
+            // attributes
+            MString getAttributesCommand = "particle -q -perParticleDouble ";
+            getAttributesCommand += originalParticleFn.fullPathName();
+
+            // get the per-particle attribute names
+            MStringArray attributeNames;
+            MGlobal::executeCommand(getAttributesCommand, attributeNames);
+
+            // explicitly include some special per-particle attributes that
+            // aren't returned by the MEL command
+            attributeNames.append("age");
+
+            for(unsigned int i = 0; i < attributeNames.length(); i++)
+            {
+                const MString attributeName = attributeNames[i];
+
+                MObject attributeObj = originalParticleFn.attribute(attributeName);
+                if(attributeObj.isNull())
+                {
+                    continue;
+                }
+
+                // mimics "listAttr -v -w" from AEokayAttr
+                MFnAttribute attributeFn(attributeObj);
+                if(!(!attributeFn.isHidden() && attributeFn.isWritable())
+                        && (attributeName != "age"
+                            && attributeName != "finalLifespanPP"))
+                {
+                    continue;
+                }
+
+                // get the per-particle data
+                // Maya will automatically use the original
+                // particle node in the case of deformed particles.
+                particleFn.getPerParticleAttribute(
+                        attributeName,
+                        doubleArray
+                        );
+
+                // When particle node is initially loaded from a scene file, if
+                // the attribute is driven by expressions, then
+                // MFnParticleSystem doesn't initially seem to have data.
+                if(partInfo.pointCount != (int) doubleArray.length())
+                {
+                    doubleArray.setLength(partInfo.pointCount);
+                }
+
+                // map the parameter name
+                const char* mappedAttributeName = attributeName.asChar();
+                if(strcmp(mappedAttributeName, "opacityPP") == 0)
+                {
+                    mappedAttributeName = "Alpha";
+                }
+                else if(strcmp(mappedAttributeName, "radiusPP") == 0)
+                {
+                    mappedAttributeName = "pscale";
+                }
+                else if(strcmp(mappedAttributeName, "finalLifespanPP") == 0)
+                {
+                    mappedAttributeName = "life";
+                }
+
+                CHECK_HAPI(hapiSetPointAttribute(
+                            myInputAssetId, myInputObjectId, myInputGeoId,
+                            1,
+                            mappedAttributeName,
+                            doubleArray
+                            ));
+            }
+        }
     }
 
     Input::setInputPlugMetaData(

@@ -6,6 +6,7 @@
 #include <maya/MIntArray.h>
 #include <maya/MStringArray.h>
 #include <maya/MString.h>
+#include <maya/MVectorArray.h>
 
 #include <vector>
 
@@ -130,6 +131,26 @@ struct ArrayTrait<MDoubleArray>
         // const MDoubleArray doesn't return a double reference
         return const_cast<ArrayType&>(array)[i];
     }
+
+    static ElementType &getElement(ArrayType &array, size_t i)
+    { return array[i]; }
+};
+
+template<>
+struct ArrayTrait<MVectorArray>
+{
+    typedef MVectorArray ArrayType;
+    typedef MVector ElementType;
+
+    static const bool canGetData = false;
+
+    static size_t size(const ArrayType &array)
+    { return array.length(); }
+    static void resize(ArrayType &array, size_t size)
+    { array.setLength(size); }
+
+    static const ElementType &getElement(const ArrayType &array, size_t i)
+    { return array[i]; }
 
     static ElementType &getElement(ArrayType &array, size_t i)
     { return array[i]; }

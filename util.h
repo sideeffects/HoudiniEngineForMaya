@@ -386,13 +386,14 @@ T convertArray(const U &srcArray)
 {
     T dstArray;
 
-    ArrayTrait<T>::resize(dstArray, ArrayTrait<U>::size(srcArray));
-    for(size_t i = 0; i < ArrayTrait<T>::size(dstArray); i++)
+    typedef ARRAYTRAIT(T) DstTrait;
+    typedef ELEMENTTYPE(T) DstElementType;
+    typedef ARRAYTRAIT(U) SrcTrait;
+    DstTrait::resize(dstArray, SrcTrait::size(srcArray));
+    for(size_t i = 0; i < DstTrait::size(dstArray); i++)
     {
-        ArrayTrait<T>::getElement(dstArray, i)
-            = convert<
-            typename ArrayTrait<T>::ElementType
-            >(ArrayTrait<U>::getElement(srcArray, i));
+        DstTrait::getElement(dstArray, i)
+            = convert<DstElementType>(SrcTrait::getElement(srcArray, i));
     }
 
     return dstArray;

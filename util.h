@@ -392,6 +392,17 @@ T convertArray(const U &srcArray)
     return dstArray;
 }
 
+template<typename T>
+void zeroArray(T &array)
+{
+    typedef ELEMENTTYPE(T) ElementType;
+    std::fill(
+            arrayBegin<T>(array),
+            arrayEnd<T>(array),
+            ElementType()
+            );
+}
+
 // STL style containers
 template <typename T, typename Alloc, template <typename, typename> class U>
 unsigned int getArrayLength(const U<T, Alloc> &array)

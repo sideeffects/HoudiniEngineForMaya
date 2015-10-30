@@ -1708,7 +1708,7 @@ OutputGeometryPart::computeMesh(
 
             // Promte the attributes
             MColorArray promotedColors;
-            Util::promoteAttributeData<0, 0, 3, float>(
+            Util::promoteAttributeData<3, 0, 0>(
                     owner,
                     promotedColors,
                     colorOwner,
@@ -1718,7 +1718,7 @@ OutputGeometryPart::computeMesh(
                     &polygonConnects
                     );
 
-            Util::promoteAttributeData<3, 0, 1, float>(
+            Util::promoteAttributeData<1, 3, 0>(
                     owner,
                     promotedColors,
                     alphaOwner,

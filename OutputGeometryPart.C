@@ -1662,35 +1662,6 @@ OutputGeometryPart::computeMesh(
                     >(floatArray);
             }
 
-            HAPI_AttributeOwner owner;
-            if((colorOwner == HAPI_ATTROWNER_POINT
-                        && alphaOwner == HAPI_ATTROWNER_PRIM)
-                    || (colorOwner == HAPI_ATTROWNER_PRIM
-                        && alphaOwner == HAPI_ATTROWNER_POINT))
-            {
-                // Don't convert the prim attributes to point attributes,
-                // because that would lose information. Convert everything to
-                // vertex attributs instead.
-                owner = HAPI_ATTROWNER_VERTEX;
-            }
-            else
-            {
-                if(colorOwner < alphaOwner)
-                {
-                    owner = colorOwner;
-                }
-                else
-                {
-                    owner = alphaOwner;
-                }
-            }
-
-            if(owner == HAPI_ATTROWNER_DETAIL)
-            {
-                // Handle detail color and alpha as points
-                owner = HAPI_ATTROWNER_POINT;
-            }
-
             // If there's no color, then use a default color
             if(colorOwner == HAPI_ATTROWNER_MAX)
             {
@@ -1705,6 +1676,34 @@ OutputGeometryPart::computeMesh(
                 alphaOwner = HAPI_ATTROWNER_DETAIL;
                 alphaArray.resize(1);
                 alphaArray[0] = 1.0f;
+            }
+
+            HAPI_AttributeOwner owner;
+            if(colorOwner == HAPI_ATTROWNER_PRIM
+                    || alphaOwner == HAPI_ATTROWNER_PRIM)
+            {
+                // If either color or alpha is prim at tributes, we always want
+                // to convert to vertex attributes. Note that prim attributes
+                // are not promoted to point attributes, because that would lose
+                // information. Convert everything to vertex attributs instead.
+                owner = HAPI_ATTROWNER_VERTEX;
+            }
+            else
+            {
+                if(colorOwner < alphaOwner)
+                {
+                    owner = colorOwner;
+                }
+                else
+                {
+                    owner = alphaOwner;
+                }
+
+                if(owner == HAPI_ATTROWNER_DETAIL)
+                {
+                    // Handle detail color or alpha as points
+                    owner = HAPI_ATTROWNER_POINT;
+                }
             }
 
             // Promte the attributes

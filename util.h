@@ -15,6 +15,7 @@
 #include <HAPI/HAPI.h>
 
 #include "traits.h"
+#include "types.h"
 
 class MDGModifier;
 class MFnDagNode;
@@ -401,6 +402,74 @@ void zeroArray(T &array)
             arrayEnd<T>(array),
             ElementType()
             );
+}
+
+template<
+    size_t NumComponents,
+    size_t DstStartComponent,
+    size_t DstStride,
+    size_t SrcStartComponent,
+    size_t SrcStride,
+    typename DstType,
+    typename SrcType
+    >
+DstType reshapeArray(const SrcType &srcArray)
+{
+    DstType dstArray;
+
+    typedef ARRAYTRAIT(DstType) DstTrait;
+    typedef ELEMENTTRAIT(DstType) DstElementTrait;
+    typedef ARRAYTRAIT(SrcType) SrcTrait;
+    typedef ELEMENTTRAIT(SrcType) SrcElementTrait;
+
+    DstTrait::resize(
+            dstArray,
+            SrcTrait::size(srcArray)
+                * SrcElementTrait::numComponents
+                * DstStride
+                / SrcStride
+                / DstElementTrait::numComponents
+            );
+    std::copy(
+            componentBegin<
+                SrcStartComponent,
+                NumComponents,
+                SrcStride
+                >(srcArray),
+            componentEnd<
+                SrcStartComponent,
+                NumComponents,
+                SrcStride
+                >(srcArray),
+            componentBegin<
+                DstStartComponent,
+                NumComponents,
+                DstStride
+                >(dstArray)
+            );
+
+    return dstArray;
+}
+
+template<size_t NumComponents, typename DstType, typename SrcType>
+DstType reshapeArray(const SrcType &srcArray)
+{
+    return reshapeArray<
+        NumComponents,
+        0,
+        NumComponents,
+        0,
+        NumComponents,
+        DstType
+        >(srcArray);
+}
+
+template<typename DstType, typename SrcType>
+DstType reshapeArray(const SrcType &srcArray)
+{
+    typedef ELEMENTTRAIT(DstType) DstElementTrait;
+
+    return reshapeArray<DstElementTrait::numComponents, DstType>(srcArray);
 }
 
 // STL style containers

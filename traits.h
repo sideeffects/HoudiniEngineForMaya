@@ -39,6 +39,9 @@ struct ArrayTrait
     //static ElementType &getElement(ArrayType &array, size_t i);
 };
 
+#define ARRAYTRAIT(T) ArrayTrait<typename RemoveConst<T>::type>
+#define ELEMENTTYPE(T) typename ARRAYTRAIT(T)::ElementType
+
 template<typename T>
 struct ArrayTrait<std::vector<T> >
 {

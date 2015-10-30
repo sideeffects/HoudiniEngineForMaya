@@ -40,8 +40,8 @@ class ArrayIterator :
     public std::iterator<std::forward_iterator_tag, ArrayType>
 {
     public:
-        typedef ArrayTrait<ArrayType> Trait;
-        typedef typename Trait::ElementType ElementType;
+        typedef ARRAYTRAIT(ArrayType) Trait;
+        typedef ELEMENTTYPE(ArrayType) ElementType;
 
         ArrayIterator(ArrayType& array, size_t index = 0) :
             myArray(array), myIndex(index)
@@ -95,6 +95,6 @@ arrayBegin(ArrayType &array)
 template<typename ArrayType>
 ArrayIterator<ArrayType>
 arrayEnd(ArrayType &array)
-{ return ArrayIterator<ArrayType>(array, ArrayTrait<ArrayType>::size(array)); }
+{ return ArrayIterator<ArrayType>(array, ARRAYTRAIT(ArrayType)::size(array)); }
 
 #endif

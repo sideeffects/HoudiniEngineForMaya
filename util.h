@@ -563,43 +563,71 @@ reverseWindingOrder(Type &arrayData, const FaceCountsType &faceCounts)
     }
 }
 
-template <unsigned int offset, unsigned int offset2, unsigned int numComponents,
-         typename A,
-         typename T, typename U, typename V>
+template <
+    unsigned int NumComponents,
+    unsigned int DstStartComponent,
+    unsigned int SrcStartComponent,
+    typename DstType,
+    typename SrcType,
+    typename FaceCountsType,
+    typename FaceConnectsType
+    >
 void
 promoteAttributeData(
-        HAPI_AttributeOwner toOwner,
-        T &toArray,
-        HAPI_AttributeOwner fromOwner,
-        const U &fromArray,
+        HAPI_AttributeOwner dstOwner,
+        DstType &dstArray,
+        HAPI_AttributeOwner srcOwner,
+        SrcType &srcArray,
         unsigned int pointCount,
-        const V* polygonCounts = NULL,
-        const V* polygonConnects = NULL
+        const FaceCountsType* polygonCounts = NULL,
+        const FaceConnectsType* polygonConnects = NULL
         )
 {
-    switch(fromOwner)
+    typedef ARRAYTRAIT(DstType) DstTrait;
+    //typedef ARRAYTRAIT(SrcType) SrcTrait;
+    typedef ARRAYTRAIT(FaceCountsType) FaceCountsTrait;
+    typedef ARRAYTRAIT(FaceConnectsType) FaceConnectsTrait;
+
+    switch(srcOwner)
     {
         case HAPI_ATTROWNER_VERTEX:
-            switch(toOwner)
+            switch(dstOwner)
             {
                 case HAPI_ATTROWNER_VERTEX:
                     {
                         assert(polygonCounts);
                         assert(polygonConnects);
 
-                        setArrayLength(toArray, getArrayLength(*polygonConnects));
+                        DstTrait::resize(
+                                dstArray,
+                                FaceConnectsTrait::size(*polygonConnects)
+                                );
                         unsigned int current_index = 0;
-                        for(unsigned int i = 0; i < getArrayLength(*polygonCounts); ++i)
+                        for(unsigned int i = 0;
+                                i < FaceCountsTrait::size(*polygonCounts);
+                                ++i)
                         {
+                            const unsigned int polygonCount
+                                = FaceCountsTrait::getElement(
+                                        *polygonCounts,
+                                        i
+                                        );
                             for(unsigned int a = current_index,
-                                    b = current_index + (*polygonCounts)[i] - 1;
-                                    a < current_index + (*polygonCounts)[i];
+                                    b = current_index + polygonCount - 1;
+                                    a < current_index + polygonCount;
                                     a++, b--)
                             {
-                                setComponents<offset, offset2, numComponents, A>(toArray[a], fromArray[b]);
+                                ComponentWrapper<
+                                    DstType,
+                                    DstStartComponent, NumComponents
+                                    > (dstArray, a, DstStartComponent)
+                                    = ComponentWrapper<
+                                    SrcType,
+                                    SrcStartComponent, NumComponents
+                                    > (srcArray, b, SrcStartComponent);
                             }
 
-                            current_index += (*polygonCounts)[i];
+                            current_index += polygonCount;
                         }
                     }
                     break;
@@ -609,23 +637,46 @@ promoteAttributeData(
             }
             break;
         case HAPI_ATTROWNER_POINT:
-            switch(toOwner)
+            switch(dstOwner)
             {
                 case HAPI_ATTROWNER_VERTEX:
                     assert(polygonConnects);
 
-                    setArrayLength(toArray, getArrayLength(*polygonConnects));
-                    for(unsigned int i = 0; i < getArrayLength(*polygonConnects); ++i)
+                    DstTrait::resize(
+                            dstArray,
+                            FaceConnectsTrait::size(*polygonConnects)
+                            );
+                    for(unsigned int i = 0;
+                            i < FaceCountsTrait::size(*polygonConnects);
+                            ++i)
                     {
-                        unsigned int point = (*polygonConnects)[i];
-                        setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[point]);
+                        unsigned int point
+                            = FaceConnectsTrait::getElement(
+                                    *polygonConnects,
+                                    i
+                                    );
+                        ComponentWrapper<
+                            DstType,
+                            DstStartComponent, NumComponents
+                            >(dstArray, i, DstStartComponent)
+                            = ComponentWrapper<
+                            SrcType,
+                            SrcStartComponent, NumComponents
+                            >(srcArray, point, SrcStartComponent);
                     }
                     break;
                 case HAPI_ATTROWNER_POINT:
-                    setArrayLength(toArray, pointCount);
+                    DstTrait::resize(dstArray, pointCount);
                     for(unsigned int i = 0; i < pointCount; ++i)
                     {
-                        setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[i]);
+                        ComponentWrapper<
+                            DstType,
+                            DstStartComponent, NumComponents
+                            >(dstArray, i, DstStartComponent)
+                            = ComponentWrapper<
+                            SrcType,
+                            SrcStartComponent, NumComponents
+                            >(srcArray, i, SrcStartComponent);
                     }
                     break;
                 default:
@@ -634,18 +685,32 @@ promoteAttributeData(
             }
             break;
         case HAPI_ATTROWNER_PRIM:
-            switch(toOwner)
+            switch(dstOwner)
             {
                 case HAPI_ATTROWNER_VERTEX:
                     assert(polygonCounts);
                     assert(polygonConnects);
 
-                    setArrayLength(toArray, getArrayLength(*polygonConnects));
-                    for(unsigned int i = 0, j = 0; i < getArrayLength(*polygonCounts); ++i)
+                    DstTrait::resize(
+                            dstArray,
+                            FaceConnectsTrait::size(*polygonConnects)
+                            );
+                    for(unsigned int i = 0, j = 0;
+                            i < FaceCountsTrait::size(*polygonCounts);
+                            ++i)
                     {
-                        for(int k = 0; k < (*polygonCounts)[i]; ++j, ++k)
+                        const unsigned int polygonCount
+                            = FaceCountsTrait::getElement(*polygonCounts, i);
+                        for(unsigned int k = 0; k < polygonCount; ++j, ++k)
                         {
-                            setComponents<offset, offset2, numComponents, A>(toArray[j], fromArray[i]);
+                            ComponentWrapper<
+                                DstType,
+                                DstStartComponent, NumComponents
+                                >(dstArray, j, DstStartComponent)
+                                = ComponentWrapper<
+                                SrcType,
+                                SrcStartComponent, NumComponents
+                                >(srcArray, i, SrcStartComponent);
                         }
                     }
                     break;
@@ -663,28 +728,35 @@ promoteAttributeData(
         case HAPI_ATTROWNER_DETAIL:
             {
                 unsigned int count = 0;
-                switch(toOwner)
+                switch(dstOwner)
                 {
                     case HAPI_ATTROWNER_VERTEX:
                         assert(polygonConnects);
-                        count = getArrayLength(*polygonConnects);
+                        count = FaceConnectsTrait::size(*polygonConnects);
                         break;
                     case HAPI_ATTROWNER_POINT:
                         count = pointCount;
                         break;
                     case HAPI_ATTROWNER_PRIM:
                         assert(polygonCounts);
-                        count = getArrayLength(*polygonCounts);
+                        count = FaceCountsTrait::size(*polygonCounts);
                         break;
                     default:
                         assert(false);
                         break;
                 }
 
-                setArrayLength(toArray, count);
+                DstTrait::resize(dstArray, count);
                 for(unsigned int i = 0; i < count; ++i)
                 {
-                    setComponents<offset, offset2, numComponents, A>(toArray[i], fromArray[0]);
+                    ComponentWrapper<
+                        DstType,
+                        DstStartComponent, NumComponents
+                        >(dstArray, i, DstStartComponent)
+                        = ComponentWrapper<
+                        SrcType,
+                        SrcStartComponent, NumComponents
+                        >(srcArray, 0, SrcStartComponent);
                 }
             }
             break;

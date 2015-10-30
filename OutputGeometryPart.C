@@ -531,72 +531,6 @@ OutputGeometryPart::computeCurves(
 }
 
 static void
-convertArray(MVectorArray &dstArray, const std::vector<float> &srcArray)
-{
-    dstArray.setLength(srcArray.size() / 3);
-    for(unsigned int i = 0, j = 0; i < dstArray.length(); i++, j += 3)
-    {
-        MVector &vector = dstArray[i];
-        vector.x = srcArray[j + 0];
-        vector.y = srcArray[j + 1];
-        vector.z = srcArray[j + 2];
-    }
-}
-
-static void
-convertArray(MDoubleArray &dstArray, const std::vector<float> &srcArray)
-{
-    dstArray.setLength(srcArray.size());
-    for(unsigned int i = 0; i < dstArray.length(); i++)
-    {
-        dstArray[i] = srcArray[i];
-    }
-}
-
-static void
-convertArray(MIntArray &dstArray, const std::vector<int> &srcArray)
-{
-    dstArray.setLength(srcArray.size());
-    for(unsigned int i = 0; i < dstArray.length(); i++)
-    {
-        dstArray[i] = srcArray[i];
-    }
-}
-
-static void
-convertArray(MStringArray &dstArray, const std::vector<std::string> &srcArray)
-{
-    dstArray.setLength(srcArray.size());
-    for(unsigned int i = 0; i < dstArray.length(); i++)
-    {
-        dstArray[i] = srcArray[i].c_str();
-    }
-}
-
-static void
-zeroArray(MVectorArray &dstArray, int count)
-{
-    dstArray.setLength(count);
-    for(unsigned int i = 0; i < dstArray.length(); i++)
-    {
-        MVector &vector = dstArray[i];
-        vector.x = 0.0;
-        vector.y = 0.0;
-        vector.z = 0.0;
-    }
-}
-
-static void
-zeroArray(MDoubleArray &dstArray, int count)
-{
-    dstArray.setLength(count);
-    for(unsigned int i = 0; i < dstArray.length(); i++)
-    {
-        dstArray[i] = 0.0;
-    }
-}
-
-static void
 getParticleArray(
         MVectorArray &particleArray,
         MFnArrayAttrsData &arrayDataFn,
@@ -626,21 +560,22 @@ OutputGeometryPart::convertParticleAttribute(
         int particleCount
    )
 {
+    typedef ARRAYTRAIT(T) Trait;
+
+    T particleArray;
+    getParticleArray(particleArray, arrayDataFn, mayaName);
     if(!HAPI_FAIL(hapiGetPointAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     houdiniName,
                     buffer
                     )))
     {
-        T particleArray;
-        getParticleArray(particleArray, arrayDataFn, mayaName);
-        convertArray(particleArray, buffer);
+        particleArray = Util::reshapeArray<T>(buffer);
     }
     else
     {
-        T particleArray;
-        getParticleArray(particleArray, arrayDataFn, mayaName);
-        zeroArray(particleArray, particleCount);
+        Trait::resize(particleArray, particleCount);
+        Util::zeroArray(particleArray);
     }
 }
 
@@ -653,18 +588,18 @@ OutputGeometryPart::convertGenericDataAttribute(
 {
     if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT)
     {
-        std::vector<float> floatArray;
+        MDoubleArray doubleArray;
         hapiGetAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
                 attributeInfo.owner,
                 attributeName,
-                floatArray
+                doubleArray
                 );
 
         if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 1)
         {
-            dataHandle.setGenericDouble(floatArray[0], true);
+            dataHandle.setGenericDouble(doubleArray[0], true);
 
             return true;
         }
@@ -676,8 +611,8 @@ OutputGeometryPart::convertGenericDataAttribute(
                     MFnNumericData::k2Double
                     );
             numericData.setData2Double(
-                    floatArray[0],
-                    floatArray[1]
+                    doubleArray[0],
+                    doubleArray[1]
                     );
 
             dataHandle.setMObject(dataObject);
@@ -692,9 +627,9 @@ OutputGeometryPart::convertGenericDataAttribute(
                     MFnNumericData::k3Double
                     );
             numericData.setData3Double(
-                    floatArray[0],
-                    floatArray[1],
-                    floatArray[2]
+                    doubleArray[0],
+                    doubleArray[1],
+                    doubleArray[2]
                     );
 
             dataHandle.setMObject(dataObject);
@@ -709,10 +644,10 @@ OutputGeometryPart::convertGenericDataAttribute(
                     MFnNumericData::k4Double
                     );
             numericData.setData4Double(
-                    floatArray[0],
-                    floatArray[1],
-                    floatArray[2],
-                    floatArray[3]
+                    doubleArray[0],
+                    doubleArray[1],
+                    doubleArray[2],
+                    doubleArray[3]
                     );
 
             dataHandle.setMObject(dataObject);
@@ -724,7 +659,8 @@ OutputGeometryPart::convertGenericDataAttribute(
             MFnVectorArrayData vectorArrayData;
             MObject dataObject = vectorArrayData.create();
             MVectorArray outputVectorArray = vectorArrayData.array();
-            convertArray(outputVectorArray, floatArray);
+            outputVectorArray
+                = Util::reshapeArray<MVectorArray>(doubleArray);
 
             dataHandle.setMObject(dataObject);
 
@@ -735,7 +671,7 @@ OutputGeometryPart::convertGenericDataAttribute(
             MFnDoubleArrayData doubleArrayData;
             MObject dataObject = doubleArrayData.create();
             MDoubleArray outputDoubleArray = doubleArrayData.array();
-            convertArray(outputDoubleArray, floatArray);
+            outputDoubleArray = doubleArray;
 
             dataHandle.setMObject(dataObject);
 
@@ -744,7 +680,7 @@ OutputGeometryPart::convertGenericDataAttribute(
     }
     else if(attributeInfo.storage == HAPI_STORAGETYPE_INT)
     {
-        std::vector<int> intArray;
+        MIntArray intArray;
         hapiGetAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
                 attributeInfo.owner,
@@ -797,7 +733,7 @@ OutputGeometryPart::convertGenericDataAttribute(
             MFnIntArrayData intArrayData;
             MObject dataObject = intArrayData.create();
             MIntArray outputIntArray = intArrayData.array();
-            convertArray(outputIntArray, intArray);
+            outputIntArray = intArray;
 
             dataHandle.setMObject(dataObject);
 
@@ -806,7 +742,7 @@ OutputGeometryPart::convertGenericDataAttribute(
     }
     else if(attributeInfo.storage == HAPI_STORAGETYPE_STRING)
     {
-        std::vector<std::string> stringArray;
+        MStringArray stringArray;
         hapiGetAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
                 attributeInfo.owner,
@@ -817,7 +753,7 @@ OutputGeometryPart::convertGenericDataAttribute(
         if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 1)
         {
-            dataHandle.setString(stringArray[0].c_str());
+            dataHandle.setString(stringArray[0]);
 
             return true;
         }
@@ -826,7 +762,7 @@ OutputGeometryPart::convertGenericDataAttribute(
             MFnStringArrayData stringArrayData;
             MObject dataObject = stringArrayData.create();
             MStringArray outputStringArray = stringArrayData.array();
-            convertArray(outputStringArray, stringArray);
+            outputStringArray = stringArray;
 
             dataHandle.setMObject(dataObject);
 
@@ -860,26 +796,6 @@ OutputGeometryPart::computeParticle(
 
     // currentTime
     currentTimeHandle.setMTime(time);
-
-    // positions
-    MObject positionsObj = positionsHandle.data();
-    MFnVectorArrayData positionDataFn(positionsObj);
-    if(positionsObj.isNull())
-    {
-        positionsObj = positionDataFn.create();
-        positionsHandle.setMObject(positionsObj);
-    }
-
-    MVectorArray positions = positionDataFn.array();
-    {
-        hapiGetPointAttribute(
-                    myAssetId, myObjectId, myGeoId, myPartId,
-                    "P",
-                    floatArray
-                    );
-        positions.setLength(particleCount);
-        convertArray(positions, floatArray);
-    }
 
     // array data
     MObject arrayDataObj = arrayDataHandle.data();
@@ -925,25 +841,34 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("count");
 
     // position
-    arrayDataFn.vectorArray("position").copy(positions);
+    convertParticleAttribute<MVectorArray>(
+            arrayDataFn, "position",
+            floatArray,
+            "P",
+            particleCount
+            );
+    {
+        MObject positionsObj = positionsHandle.data();
+        MFnVectorArrayData positionDataFn(positionsObj);
+        if(positionsObj.isNull())
+        {
+            positionsObj = positionDataFn.create();
+            positionsHandle.setMObject(positionsObj);
+        }
+
+        MVectorArray positions = positionDataFn.array();
+        positions = arrayDataFn.vectorArray("position");
+    }
     markAttributeUsed("P");
     markAttributeUsed("position");
 
     // velocity
-    MVectorArray velocityArray;
-    getParticleArray(velocityArray, arrayDataFn, "velocity");
-    if(!HAPI_FAIL(hapiGetPointAttribute(
-                    myAssetId, myObjectId, myGeoId, myPartId,
-                    "v",
-                    floatArray
-                    )))
-    {
-        convertArray(velocityArray, floatArray);
-    }
-    else
-    {
-        zeroArray(velocityArray, particleCount);
-    }
+    convertParticleAttribute<MVectorArray>(
+            arrayDataFn, "velocity",
+            floatArray,
+            "v",
+            particleCount
+            );
     markAttributeUsed("v");
     markAttributeUsed("velocity");
 
@@ -958,15 +883,21 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("force");
 
     // worldPosition
-    arrayDataFn.vectorArray("worldPosition").copy(positions);
+    arrayDataFn.vectorArray("worldPosition").copy(
+            arrayDataFn.vectorArray("position")
+            );
     markAttributeUsed("worldPosition");
 
     // worldVelocity
-    arrayDataFn.vectorArray("worldVelocity").copy(velocityArray);
+    arrayDataFn.vectorArray("worldVelocity").copy(
+            arrayDataFn.vectorArray("velocity")
+            );
     markAttributeUsed("worldVelocity");
 
     // worldVelocityInObjectSpace
-    arrayDataFn.vectorArray("worldVelocityInObjectSpace").copy(velocityArray);
+    arrayDataFn.vectorArray("worldVelocityInObjectSpace").copy(
+            arrayDataFn.vectorArray("velocity")
+            );
     markAttributeUsed("worldVelocityInObjectSpace");
 
     // mass

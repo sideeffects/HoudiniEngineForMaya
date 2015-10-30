@@ -24,6 +24,12 @@ struct HAPITypeTrait<float>
 };
 
 template <>
+struct HAPITypeTrait<double>
+{
+    static const HAPI_StorageType storageType = HAPI_STORAGETYPE_FLOAT;
+};
+
+template <>
 struct HAPITypeTrait<const char*>
 {
     static const HAPI_StorageType storageType = HAPI_STORAGETYPE_STRING;

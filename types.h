@@ -37,7 +37,7 @@ struct ArrayTrait<RawArray<T> >
 
 template<typename ArrayType>
 class ArrayIterator :
-    public std::iterator<std::input_iterator_tag, ArrayType>
+    public std::iterator<std::forward_iterator_tag, ArrayType>
 {
     public:
         typedef ArrayTrait<ArrayType> Trait;

@@ -275,9 +275,6 @@ struct HAPISetAttribute
 
         size_t count = dataArraySize / tupleSize;
 
-        if(count == 0)
-            return HAPI_RESULT_SUCCESS;
-
         HAPI_AttributeInfo attributeInfo;
         attributeInfo.exists = true;
         attributeInfo.owner = owner;
@@ -292,6 +289,12 @@ struct HAPISetAttribute
                 &attributeInfo
                 );
         CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+
+        // Even when the count is zero, we still need to call
+        // HAPI_AddAttribute(). This is needed to clear out any existing data
+        // that was left over from the previous input geometry.
+        if(count == 0)
+            return HAPI_RESULT_SUCCESS;
 
         hapiResult = HAPIAttributeTrait<storageType>::setAttribute(
                     Util::theHAPISession.get(),

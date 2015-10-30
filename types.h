@@ -122,11 +122,9 @@ class ComponentWrapper
 
         Type &operator =(const Type &o)
         {
-            myArray = o.myArray;
-            myIndex = o.myIndex;
-            myComponent = o.myComponent;
-
-            assert(myComponent == StartComponent);
+            // Assignment should always mean copying components
+            assert(&myArray != &o.myArray);
+            return this->operator=<Type>(o);
         }
 
         template<typename O>

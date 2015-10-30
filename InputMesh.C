@@ -378,13 +378,12 @@ InputMesh::processColorSets(
 
             mappedCdNames[i] = colorAttributeName;
 
-            buffer.resize(3 * vertexList.size());
-            for(unsigned int j = 0; j < vertexList.size(); j++)
-            {
-                buffer[j * 3 + 0] = colors[j].r;
-                buffer[j * 3 + 1] = colors[j].g;
-                buffer[j * 3 + 2] = colors[j].b;
-            }
+            buffer = Util::reshapeArray<
+                3,
+                0, 3,
+                0, 4,
+                std::vector<float>
+                >(colors);
 
             // add and set Cd
             CHECK_HAPI(hapiSetVertexAttribute(
@@ -402,11 +401,12 @@ InputMesh::processColorSets(
 
             mappedAlphaNames[i] = alphaAttributeName;
 
-            buffer.resize(vertexList.size());
-            for(unsigned int j = 0; j < vertexList.size(); j++)
-            {
-                buffer[j] = colors[j].a;
-            }
+            buffer = Util::reshapeArray<
+                1,
+                0, 1,
+                3, 4,
+                std::vector<float>
+                >(colors);
 
             // add and set Alpha
             CHECK_HAPI(hapiSetVertexAttribute(

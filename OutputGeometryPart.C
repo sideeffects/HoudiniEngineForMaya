@@ -1151,25 +1151,18 @@ OutputGeometryPart::computeMesh(
 
     // vertex array
     MFloatPointArray vertexArray;
-    {
-        hapiGetPointAttribute(
-                myAssetId, myObjectId, myGeoId, myPartId,
-                "P",
-                floatArray
-                );
+    hapiGetPointAttribute(
+            myAssetId, myObjectId, myGeoId, myPartId,
+            "P",
+            floatArray
+            );
 
-        // assume 3 tuple
-        vertexArray.setLength(floatArray.size() / 3);
-        for(unsigned int i = 0, length = vertexArray.length();
-                i < length; ++i)
-        {
-            MFloatPoint &floatPoint = vertexArray[i];
-            floatPoint.x = floatArray[i * 3 + 0];
-            floatPoint.y = floatArray[i * 3 + 1];
-            floatPoint.z = floatArray[i * 3 + 2];
-            floatPoint.w = 1.0f;
-        }
-    }
+    vertexArray = Util::reshapeArray<
+        3,
+        0, 4,
+        0, 3,
+        MFloatPointArray
+        >(floatArray);
     markAttributeUsed("P");
 
     // polygon counts
@@ -1645,14 +1638,12 @@ OutputGeometryPart::computeMesh(
             MColorArray colors(floatArray.size() / 3);
             if(colorOwner != HAPI_ATTROWNER_MAX)
             {
-                for(unsigned int i = 0, length = colors.length();
-                        i < length; ++i)
-                {
-                    MColor &color = colors[i];
-                    color.r = floatArray[i * 3 + 0];
-                    color.g = floatArray[i * 3 + 1];
-                    color.b = floatArray[i * 3 + 2];
-                }
+                colors = Util::reshapeArray<
+                    3,
+                    0, 4,
+                    0, 3,
+                    MColorArray
+                    >(floatArray);
             }
 
             HAPI_AttributeOwner owner;

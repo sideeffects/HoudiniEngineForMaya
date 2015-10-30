@@ -100,8 +100,8 @@ struct ArrayTrait<MFloatArray>
 template<>
 struct ArrayTrait<MDoubleArray>
 {
-    typedef MFloatArray ArrayType;
-    typedef float ElementType;
+    typedef MDoubleArray ArrayType;
+    typedef double ElementType;
 
     static const bool canGetData = false;
 

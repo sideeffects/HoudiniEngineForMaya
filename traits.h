@@ -23,6 +23,55 @@ struct RemoveConst<const T>
 };
 
 template<typename T>
+struct TypeTrait
+{
+};
+
+#define TYPETRAIT(T) TypeTrait<typename RemoveConst<T>::type>
+
+template<>
+struct TypeTrait<float>
+{
+    typedef float Type;
+    typedef float ComponentType;
+
+    static const int numComponents = 1;
+    static const ComponentType &getComponent(const Type &o, size_t i)
+    { return o; }
+    static ComponentType &getComponent(Type &o, size_t i)
+    { return o; }
+};
+
+template<>
+struct TypeTrait<double>
+{
+    typedef double Type;
+    typedef double ComponentType;
+
+    static const int numComponents = 1;
+    static const ComponentType &getComponent(const Type &o, size_t i)
+    { return o; }
+    static ComponentType &getComponent(Type &o, size_t i)
+    { return o; }
+};
+
+template<>
+struct TypeTrait<MVector>
+{
+    typedef MVector Type;
+    typedef double ComponentType;
+
+    static const int numComponents = 3;
+    static const ComponentType &getComponent(const Type &o, size_t i)
+    {
+        // const MVector doesn't return a double reference
+        return const_cast<Type&>(o)[i];
+    }
+    static ComponentType &getComponent(Type &o, size_t i)
+    { return o[i]; }
+};
+
+template<typename T>
 struct ArrayTrait
 {
     //typedef void ArrayType;
@@ -42,6 +91,7 @@ struct ArrayTrait
 
 #define ARRAYTRAIT(T) ArrayTrait<typename RemoveConst<T>::type>
 #define ELEMENTTYPE(T) typename ARRAYTRAIT(T)::ElementType
+#define ELEMENTTRAIT(T) TypeTrait<ELEMENTTYPE(T)>
 
 template<typename T>
 struct ArrayTrait<std::vector<T> >

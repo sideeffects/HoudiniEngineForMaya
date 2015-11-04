@@ -172,7 +172,7 @@ InputMesh::processPoints(
             myInputAssetId, myInputObjectId, myInputGeoId,
             3,
             "P",
-            RawArray<float>(
+            rawArray(
                 meshFn.getRawPoints(NULL),
                 meshFn.numVertices() * 3
                 )

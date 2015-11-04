@@ -338,8 +338,7 @@ InputMesh::processColorSets(
         std::vector<int> vertexList
         )
 {
-    MString currentColorSetName;
-    currentColorSetName = meshFn.currentColorSetName();
+    MStringArray currentColorSetName(1, meshFn.currentColorSetName());
 
     MStringArray colorSetNames;
     meshFn.getColorSetNames(colorSetNames);
@@ -432,6 +431,14 @@ InputMesh::processColorSets(
                     ));
         }
     }
+
+    CHECK_HAPI(hapiSetDetailAttribute(
+            myInputAssetId,
+            myInputObjectId,
+            myInputGeoId,
+            "maya_colorset_current",
+            currentColorSetName
+            ));
 
     CHECK_HAPI(hapiSetDetailAttribute(
             myInputAssetId,

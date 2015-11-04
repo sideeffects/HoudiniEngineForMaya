@@ -370,6 +370,53 @@ hapiSetAttribute(
             );
 }
 
+template<
+    typename T,
+    bool isArray = ARRAYTRAIT(T)::isArray
+    >
+struct
+HAPISetDetailAttribute
+{
+    static HAPI_Result impl(
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            const char* attributeName,
+            const T &dataArray
+            )
+    {
+        return hapiSetAttribute(
+                assetId, objectId, geoId,
+                HAPI_ATTROWNER_DETAIL,
+                ARRAYTRAIT(T)::size(dataArray),
+                attributeName,
+                dataArray
+                );
+    }
+};
+
+template<typename T>
+struct
+HAPISetDetailAttribute<T, false>
+{
+    static HAPI_Result impl(
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            const char* attributeName,
+            T &value
+            )
+    {
+        return hapiSetAttribute(
+                assetId, objectId, geoId,
+                HAPI_ATTROWNER_DETAIL,
+                1,
+                attributeName,
+                rawArray(&value, 1)
+                );
+    }
+};
+
 template<typename T>
 HAPI_Result
 hapiSetDetailAttribute(
@@ -377,15 +424,13 @@ hapiSetDetailAttribute(
         HAPI_ObjectId objectId,
         HAPI_GeoId geoId,
         const char* attributeName,
-        const T &dataArray
+        T &value
         )
 {
-    return hapiSetAttribute(
+    return HAPISetDetailAttribute<T>::impl(
             assetId, objectId, geoId,
-            HAPI_ATTROWNER_DETAIL,
-            ARRAYTRAIT(T)::size(dataArray),
             attributeName,
-            dataArray
+            value
             );
 }
 
@@ -575,6 +620,54 @@ hapiGetAttribute(
             );
 }
 
+template<
+    typename T,
+    bool isArray = ARRAYTRAIT(T)::isArray
+    >
+struct
+HAPIGetDetailAttribute
+{
+    static HAPI_Result impl(
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            HAPI_PartId partId,
+            const char* attributeName,
+            T &dataArray
+            )
+    {
+        return hapiGetAttribute(
+                assetId, objectId, geoId, partId,
+                HAPI_ATTROWNER_DETAIL,
+                attributeName,
+                dataArray
+                );
+    }
+};
+
+template<typename T>
+struct
+HAPIGetDetailAttribute<T, false>
+{
+    static HAPI_Result impl(
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            HAPI_PartId partId,
+            const char* attributeName,
+            T &value
+            )
+    {
+        RawArray<T> array(&value, 1);
+        return hapiGetAttribute(
+                assetId, objectId, geoId, partId,
+                HAPI_ATTROWNER_DETAIL,
+                attributeName,
+                array
+                );
+    }
+};
+
 template<typename T>
 HAPI_Result
 hapiGetDetailAttribute(
@@ -583,14 +676,13 @@ hapiGetDetailAttribute(
         HAPI_GeoId geoId,
         HAPI_PartId partId,
         const char* attributeName,
-        T &dataArray
+        T &value
         )
 {
-    return hapiGetAttribute(
+    return HAPIGetDetailAttribute<T>::impl(
             assetId, objectId, geoId, partId,
-            HAPI_ATTROWNER_DETAIL,
             attributeName,
-            dataArray
+            value
             );
 }
 

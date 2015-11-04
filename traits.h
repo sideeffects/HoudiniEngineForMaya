@@ -110,6 +110,8 @@ struct TypeTrait<MFloatPoint>
 template<typename T>
 struct ArrayTrait
 {
+    static const bool isArray = false;
+
     //typedef void ArrayType;
     //typedef void ElementType;
 
@@ -132,6 +134,8 @@ struct ArrayTrait
 template<typename T>
 struct ArrayTrait<std::vector<T> >
 {
+    static const bool isArray = true;
+
     typedef std::vector<T> ArrayType;
     typedef T ElementType;
 
@@ -156,6 +160,8 @@ struct ArrayTrait<std::vector<T> >
 template<>
 struct ArrayTrait<MIntArray>
 {
+    static const bool isArray = true;
+
     typedef MIntArray ArrayType;
     typedef int ElementType;
 
@@ -179,6 +185,8 @@ struct ArrayTrait<MIntArray>
 template<>
 struct ArrayTrait<MFloatArray>
 {
+    static const bool isArray = true;
+
     typedef MFloatArray ArrayType;
     typedef float ElementType;
 
@@ -202,6 +210,8 @@ struct ArrayTrait<MFloatArray>
 template<>
 struct ArrayTrait<MDoubleArray>
 {
+    static const bool isArray = true;
+
     typedef MDoubleArray ArrayType;
     typedef double ElementType;
 
@@ -225,6 +235,8 @@ struct ArrayTrait<MDoubleArray>
 template<>
 struct ArrayTrait<MVectorArray>
 {
+    static const bool isArray = true;
+
     typedef MVectorArray ArrayType;
     typedef MVector ElementType;
 
@@ -245,6 +257,8 @@ struct ArrayTrait<MVectorArray>
 template<>
 struct ArrayTrait<MColorArray>
 {
+    static const bool isArray = true;
+
     typedef MColorArray ArrayType;
     typedef MColor ElementType;
 
@@ -265,6 +279,8 @@ struct ArrayTrait<MColorArray>
 template<>
 struct ArrayTrait<MFloatPointArray>
 {
+    static const bool isArray = true;
+
     typedef MFloatPointArray ArrayType;
     typedef MFloatPoint ElementType;
 
@@ -285,6 +301,8 @@ struct ArrayTrait<MFloatPointArray>
 template<>
 struct ArrayTrait<MStringArray>
 {
+    static const bool isArray = true;
+
     typedef MStringArray ArrayType;
     typedef MString ElementType;
 

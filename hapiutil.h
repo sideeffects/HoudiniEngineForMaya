@@ -743,4 +743,59 @@ hapiGetPointAttribute(
             );
 }
 
+template<typename T>
+HAPI_Result
+hapiGetAnyAttribute(
+        HAPI_AssetId assetId,
+        HAPI_ObjectId objectId,
+        HAPI_GeoId geoId,
+        HAPI_PartId partId,
+        const char* attributeName,
+        HAPI_AttributeOwner &owner,
+        T &dataArray
+        )
+{
+    HAPI_Result hapiResult;
+
+    if(!HAPI_FAIL(hapiResult = hapiGetVertexAttribute(
+                    assetId, objectId, geoId, partId,
+                    attributeName,
+                    dataArray
+                    )))
+    {
+        owner = HAPI_ATTROWNER_VERTEX;
+    }
+    else if(!HAPI_FAIL(hapiResult = hapiGetPointAttribute(
+                    assetId, objectId, geoId, partId,
+                    attributeName,
+                    dataArray
+                    )))
+    {
+        owner = HAPI_ATTROWNER_POINT;
+    }
+    else if(!HAPI_FAIL(hapiResult = hapiGetPrimAttribute(
+                    assetId, objectId, geoId, partId,
+                    attributeName,
+                    dataArray
+                    )))
+    {
+        owner = HAPI_ATTROWNER_PRIM;
+    }
+    else if(!HAPI_FAIL(hapiResult = hapiGetDetailAttribute(
+                    assetId, objectId, geoId, partId,
+                    attributeName,
+                    dataArray
+                    )))
+    {
+        owner = HAPI_ATTROWNER_DETAIL;
+    }
+
+    if(HAPI_FAIL(hapiResult))
+    {
+        return HAPI_RESULT_FAILURE;
+    }
+
+    return HAPI_RESULT_SUCCESS;
+}
+
 #endif

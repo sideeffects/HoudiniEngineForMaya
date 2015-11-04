@@ -9,23 +9,25 @@ template<typename T>
 class RawArray
 {
     public:
-        RawArray(const T* data, size_t size) :
+        RawArray(T* data, size_t size) :
             myData(data), mySize(size)
         { }
 
-        const T* data() const
+        T* data() const
         { return myData; }
         size_t size() const
         { return mySize; }
 
     private:
-        const T* myData;
+        T* myData;
         size_t mySize;
 };
 
 template<typename T>
 struct ArrayTrait<RawArray<T> >
 {
+    static const bool isArray = true;
+
     typedef RawArray<T> ArrayType;
     typedef T ElementType;
 
@@ -35,6 +37,14 @@ struct ArrayTrait<RawArray<T> >
 
     static size_t size(const ArrayType &array)
     { return array.size(); }
+    static void resize(ArrayType &array, size_t size)
+    { assert(array.size() == size); }
+
+    static const ElementType &getElement(const ArrayType &array, size_t i)
+    { return array.data()[i]; }
+
+    static ElementType &getElement(ArrayType &array, size_t i)
+    { return array.data()[i]; }
 };
 
 template<typename T>

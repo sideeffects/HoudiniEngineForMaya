@@ -1537,7 +1537,7 @@ OutputGeometryPart::computeMesh(
                 ArrayIterator<MStringArray> iter = std::find(
                         begin,
                         end,
-                        uvSetName
+                        uvAttributeName
                         );
                 if(iter != end)
                 {

@@ -242,7 +242,7 @@ template<
     bool canUseData
         = ARRAYTRAIT(T)::canGetData
         && SameType<
-            ELEMENTTYPE(T),
+            REMOVECONST(ELEMENTTYPE(T)),
             typename HAPIAttributeTrait<
                 HAPITYPETRAIT(ELEMENTTYPE(T))::storageType>::SetType
             >::value

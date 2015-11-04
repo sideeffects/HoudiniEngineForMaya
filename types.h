@@ -37,6 +37,13 @@ struct ArrayTrait<RawArray<T> >
     { return array.size(); }
 };
 
+template<typename T>
+RawArray<T>
+rawArray(T* data, size_t size)
+{
+    return RawArray<T>(data, size);
+}
+
 template<typename ArrayType>
 class ArrayIterator :
     public std::iterator<std::forward_iterator_tag, ArrayType>

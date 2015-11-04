@@ -24,6 +24,8 @@ struct RemoveConst<const T>
     typedef T type;
 };
 
+#define REMOVECONST(T) typename RemoveConst<T>::type
+
 template<typename T>
 struct TypeTrait
 {

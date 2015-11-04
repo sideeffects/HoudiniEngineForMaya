@@ -4,6 +4,7 @@
 #include <HAPI/HAPI.h>
 
 #include "traits.h"
+#include "types.h"
 #include "util.h"
 
 template <typename T>
@@ -46,6 +47,8 @@ struct HAPITypeTrait<MString>
 {
     static const HAPI_StorageType storageType = HAPI_STORAGETYPE_STRING;
 };
+
+#define HAPITYPETRAIT(T) HAPITypeTrait<REMOVECONST(T)>
 
 template<HAPI_StorageType storageType>
 struct HAPIAttributeTrait
@@ -255,7 +258,7 @@ template<
         && SameType<
             ELEMENTTYPE(T),
             typename HAPIAttributeTrait<
-                HAPITypeTrait<ELEMENTTYPE(T)>::storageType>::SetType
+                HAPITYPETRAIT(ELEMENTTYPE(T))::storageType>::SetType
             >::value
     >
 struct HAPISetAttribute
@@ -356,7 +359,7 @@ hapiSetAttribute(
         )
 {
     return HAPISetAttribute<
-        HAPITypeTrait<ELEMENTTYPE(T)>::storageType,
+        HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
         T
         >::impl(
             assetId, objectId, geoId,
@@ -454,7 +457,7 @@ template<
         && SameType<
             ELEMENTTYPE(T),
             typename HAPIAttributeTrait<
-                HAPITypeTrait<ELEMENTTYPE(T)>::storageType>::GetType
+                HAPITYPETRAIT(ELEMENTTYPE(T))::storageType>::GetType
             >::value
     >
 struct HAPIGetAttribute
@@ -562,7 +565,7 @@ hapiGetAttribute(
         )
 {
     return HAPIGetAttribute<
-        HAPITypeTrait<ELEMENTTYPE(T)>::storageType,
+        HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
         T
         >::impl(
             assetId, objectId, geoId, partId,

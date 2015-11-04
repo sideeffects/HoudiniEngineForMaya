@@ -376,10 +376,8 @@ convert(const int &src)
 }
 
 template<typename T, typename U>
-T convertArray(const U &srcArray)
+void convertArray(T &dstArray, const U &srcArray)
 {
-    T dstArray;
-
     typedef ARRAYTRAIT(T) DstTrait;
     typedef ELEMENTTYPE(T) DstElementType;
     typedef ARRAYTRAIT(U) SrcTrait;
@@ -389,7 +387,13 @@ T convertArray(const U &srcArray)
         DstTrait::getElement(dstArray, i)
             = convert<DstElementType>(SrcTrait::getElement(srcArray, i));
     }
+}
 
+template<typename T, typename U>
+T convertArray(const U &srcArray)
+{
+    T dstArray;
+    convertArray(dstArray, srcArray);
     return dstArray;
 }
 

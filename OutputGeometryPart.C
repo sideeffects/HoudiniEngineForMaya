@@ -1564,75 +1564,27 @@ OutputGeometryPart::computeMesh(
     if(polygonCounts.length())
     {
         // Get color data
-        HAPI_AttributeOwner colorOwner = HAPI_ATTROWNER_MAX;
-
-        if(!HAPI_FAIL(hapiGetVertexAttribute(
+        HAPI_AttributeOwner colorOwner;
+        if(HAPI_FAIL(hapiGetAnyAttribute(
                         myAssetId, myObjectId, myGeoId, myPartId,
                         "Cd",
+                        colorOwner,
                         floatArray
                         )))
         {
-            colorOwner = HAPI_ATTROWNER_VERTEX;
-        }
-        else if(!HAPI_FAIL(hapiGetPointAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Cd",
-                        floatArray
-                        )))
-        {
-            colorOwner = HAPI_ATTROWNER_POINT;
-        }
-        else if(!HAPI_FAIL(hapiGetPrimAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Cd",
-                        floatArray
-                        )))
-        {
-            colorOwner = HAPI_ATTROWNER_PRIM;
-        }
-        else if(!HAPI_FAIL(hapiGetDetailAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Cd",
-                        floatArray
-                        )))
-        {
-            colorOwner = HAPI_ATTROWNER_DETAIL;
+            colorOwner = HAPI_ATTROWNER_MAX;
         }
 
-        HAPI_AttributeOwner alphaOwner = HAPI_ATTROWNER_MAX;
+        HAPI_AttributeOwner alphaOwner;
         std::vector<float> alphaArray;
-
-        if(!HAPI_FAIL(hapiGetVertexAttribute(
+        if(HAPI_FAIL(hapiGetAnyAttribute(
                         myAssetId, myObjectId, myGeoId, myPartId,
                         "Alpha",
+                        alphaOwner,
                         alphaArray
                         )))
         {
-            alphaOwner = HAPI_ATTROWNER_VERTEX;
-        }
-        else if(!HAPI_FAIL(hapiGetPointAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Alpha",
-                        alphaArray
-                        )))
-        {
-            alphaOwner = HAPI_ATTROWNER_POINT;
-        }
-        else if(!HAPI_FAIL(hapiGetPrimAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Alpha",
-                        alphaArray
-                        )))
-        {
-            alphaOwner = HAPI_ATTROWNER_PRIM;
-        }
-        else if(!HAPI_FAIL(hapiGetDetailAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Alpha",
-                        alphaArray
-                        )))
-        {
-            alphaOwner = HAPI_ATTROWNER_DETAIL;
+            alphaOwner = HAPI_ATTROWNER_MAX;
         }
 
         if(colorOwner != HAPI_ATTROWNER_MAX || alphaOwner != HAPI_ATTROWNER_MAX)

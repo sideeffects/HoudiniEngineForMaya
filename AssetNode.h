@@ -153,6 +153,7 @@ class AssetNode: public MPxTransform
         static MObject outputPartAlphaColor;
 
         static MObject outputPartMesh;
+        static MObject outputPartMeshCurrentColorSet;
         static MObject outputPartMeshCurrentUV;
         static MObject outputPartMeshData;
 

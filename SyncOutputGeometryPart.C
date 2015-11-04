@@ -246,6 +246,14 @@ SyncOutputGeometryPart::createOutputMesh(
             true
             );
 
+    // set mesh.currentColorSet
+    // Connecting outputPartMeshCurrentColorSet to currentColorSet doesn't seem
+    // to trigger updates.
+    myDagModifier.newPlugValueString(
+            partMeshFn.findPlug("currentColorSet"),
+            meshPlug.child(AssetNode::outputPartMeshCurrentColorSet).asString()
+            );
+
     // set mesh.currentUVSet
     // Connecting outputPartMeshCurrentUV to currentUVSet doesn't seem to
     // trigger updates.
@@ -258,6 +266,11 @@ SyncOutputGeometryPart::createOutputMesh(
     {
         MPlug srcPlug;
         MPlug dstPlug;
+
+        //srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentColorSet);
+        //dstPlug = partMeshFn.findPlug("currentColorSet");
+        //status = myDagModifier.connect(srcPlug, dstPlug);
+        //CHECK_MSTATUS_AND_RETURN_IT(status);
 
         //srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentUV);
         //dstPlug = partMeshFn.findPlug("currentUVSet");

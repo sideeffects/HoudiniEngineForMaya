@@ -1127,6 +1127,8 @@ OutputGeometryPart::computeMesh(
 
     hasMeshHandle.setBool(true);
 
+    MDataHandle meshCurrentColorSetHandle
+        = meshHandle.child(AssetNode::outputPartMeshCurrentColorSet);
     MDataHandle meshCurrentUVHandle
         = meshHandle.child(AssetNode::outputPartMeshCurrentUV);
     MDataHandle meshDataHandle
@@ -1563,39 +1565,87 @@ OutputGeometryPart::computeMesh(
     // color and alpha
     if(polygonCounts.length())
     {
-        // Get color data
-        HAPI_AttributeOwner colorOwner;
-        if(HAPI_FAIL(hapiGetAnyAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Cd",
-                        colorOwner,
-                        floatArray
-                        )))
-        {
-            colorOwner = HAPI_ATTROWNER_MAX;
-        }
+        MString currentColorSetName;
+        MStringArray colorSetNames;
+        MStringArray mappedCdAttributeNames;
+        MStringArray mappedAlphaAttributeNames;
 
-        HAPI_AttributeOwner alphaOwner;
-        std::vector<float> alphaArray;
-        if(HAPI_FAIL(hapiGetAnyAttribute(
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        "Alpha",
-                        alphaOwner,
-                        alphaArray
-                        )))
-        {
-            alphaOwner = HAPI_ATTROWNER_MAX;
-        }
+        hapiGetDetailAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "maya_colorset_current",
+                    currentColorSetName
+                    );
+        markAttributeUsed("maya_colorset_current");
 
-        if(colorOwner != HAPI_ATTROWNER_MAX || alphaOwner != HAPI_ATTROWNER_MAX)
+        hapiGetDetailAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "maya_colorset_name",
+                    colorSetNames
+                    );
+        markAttributeUsed("maya_colorset_name");
+
+        hapiGetDetailAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "maya_colorset_mapped_Cd",
+                    mappedCdAttributeNames
+                    );
+        markAttributeUsed("maya_colorset_mapped_Cd");
+
+        hapiGetDetailAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "maya_colorset_mapped_Alpha",
+                    mappedAlphaAttributeNames
+                    );
+        markAttributeUsed("maya_colorset_mapped_Alpha");
+
+        bool useMappedColorset = colorSetNames.length()
+            && (colorSetNames.length() == mappedCdAttributeNames.length())
+            && (colorSetNames.length() == mappedAlphaAttributeNames.length());
+
+        int layerIndex = 0;
+        for(;;)
         {
+            const MString cdAttributeName
+                = Util::getAttrLayerName("Cd", layerIndex);
+            const MString alphaAttributeName
+                = Util::getAttrLayerName("Alpha", layerIndex);
+
+            HAPI_AttributeOwner colorOwner;
+            if(HAPI_FAIL(hapiGetAnyAttribute(
+                            myAssetId, myObjectId, myGeoId, myPartId,
+                            cdAttributeName.asChar(),
+                            colorOwner,
+                            floatArray
+                            )))
+            {
+                colorOwner = HAPI_ATTROWNER_MAX;
+            }
+
+            HAPI_AttributeOwner alphaOwner;
+            std::vector<float> alphaArray;
+            if(HAPI_FAIL(hapiGetAnyAttribute(
+                            myAssetId, myObjectId, myGeoId, myPartId,
+                            alphaAttributeName.asChar(),
+                            alphaOwner,
+                            alphaArray
+                            )))
+            {
+                alphaOwner = HAPI_ATTROWNER_MAX;
+            }
+
+            if(colorOwner == HAPI_ATTROWNER_MAX
+                    && alphaOwner == HAPI_ATTROWNER_MAX)
+            {
+                break;
+            }
+
             if(colorOwner != HAPI_ATTROWNER_MAX)
             {
-                markAttributeUsed("Cd");
+                markAttributeUsed(cdAttributeName.asChar());
             }
             if(alphaOwner != HAPI_ATTROWNER_MAX)
             {
-                markAttributeUsed("Alpha");
+                markAttributeUsed(alphaAttributeName.asChar());
             }
 
             // Convert to color array
@@ -1676,49 +1726,82 @@ OutputGeometryPart::computeMesh(
                     &polygonConnects
                     );
 
+            MIntArray vertexList(polygonConnects.length());
             if(owner == HAPI_ATTROWNER_VERTEX)
             {
-                MIntArray faceList;
-                faceList.setLength(polygonConnects.length());
+                for(unsigned int i = 0, length = polygonConnects.length();
+                        i < length; ++i)
+                {
+                    vertexList[i] = i;
+                }
+            }
+            else if(owner == HAPI_ATTROWNER_POINT)
+            {
+                vertexList = polygonConnects;
+            }
+            else if(owner == HAPI_ATTROWNER_PRIM)
+            {
                 for(unsigned int i = 0, j = 0, length = polygonCounts.length();
                         i < length; ++i)
                 {
                     for(int k = 0; k < polygonCounts[i]; ++j, ++k)
                     {
-                        faceList[j] = i;
+                        vertexList[j] = i;
+                    }
+                }
+            }
+
+            // get the mapped colorset name
+            MString colorSetName = cdAttributeName;
+            if(useMappedColorset)
+            {
+                {
+                    ArrayIterator<MStringArray> begin
+                        = arrayBegin(mappedCdAttributeNames);
+                    ArrayIterator<MStringArray> end
+                        = arrayEnd(mappedCdAttributeNames);
+
+                    ArrayIterator<MStringArray> iter
+                        = std::find(begin, end, cdAttributeName);
+                    if(iter != end)
+                    {
+                        colorSetName
+                            = colorSetNames[std::distance(begin, iter)];
                     }
                 }
 
-                meshFn.setFaceVertexColors(
-                        promotedColors,
-                        faceList,
-                        polygonConnects
-                        );
-            }
-            else if(owner == HAPI_ATTROWNER_POINT)
-            {
-                MIntArray vertexList;
-                vertexList.setLength(vertexArray.length());
-                for(unsigned int i = 0, length = vertexList.length();
-                        i < length; ++i)
                 {
-                    vertexList[i] = i;
+                    ArrayIterator<MStringArray> begin
+                        = arrayBegin(mappedAlphaAttributeNames);
+                    ArrayIterator<MStringArray> end
+                        = arrayEnd(mappedAlphaAttributeNames);
+                    ArrayIterator<MStringArray> iter
+                        = std::find(begin, end, alphaAttributeName);
+                    if(iter != end)
+                    {
+                        colorSetName
+                            = colorSetNames[std::distance(begin, iter)];
+                    }
                 }
-
-                meshFn.setVertexColors(promotedColors, vertexList);
             }
-            else if(owner == HAPI_ATTROWNER_PRIM)
+
+            meshFn.createColorSetDataMesh(colorSetName);
+
+            // If currentColorSetName is set, then use it to determine the
+            // current color set. Otherwise, use the first as the current color
+            // set.
+            if((currentColorSetName.length()
+                        && colorSetName == currentColorSetName)
+                    || (!currentColorSetName.length()
+                        && layerIndex == 0))
             {
-                MIntArray faceList;
-                faceList.setLength(polygonCounts.length());
-                for(unsigned int i = 0, length = faceList.length();
-                        i < length; ++i)
-                {
-                    faceList[i] = i;
-                }
-
-                meshFn.setFaceColors(promotedColors, faceList);
+                meshCurrentColorSetHandle.setString(colorSetName);
             }
+
+            meshFn.setColors(promotedColors, &colorSetName);
+            meshFn.assignColors(vertexList, &colorSetName);
+
+            layerIndex++;
         }
     }
 }

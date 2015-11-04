@@ -1363,8 +1363,8 @@ OutputGeometryPart::computeMesh(
                     );
         markAttributeUsed("maya_uv_mapped_uv");
 
-        bool useMappedUV
-            = uvSetNames.length() && mappedUVAttributeNames.length();
+        bool useMappedUV = uvSetNames.length()
+            && (uvSetNames.length() == mappedUVAttributeNames.length());
 
         int layerIndex = 0;
         for(;;)

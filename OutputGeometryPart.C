@@ -1330,8 +1330,16 @@ OutputGeometryPart::computeMesh(
     // uv
     if(polygonCounts.length())
     {
+        MString currentUVSetName;
         MStringArray uvSetNames;
         MStringArray mappedUVAttributeNames;
+
+        hapiGetDetailAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "maya_uv_current",
+                    currentUVSetName
+                    );
+        markAttributeUsed("maya_uv_current");
 
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
@@ -1535,8 +1543,12 @@ OutputGeometryPart::computeMesh(
                 meshFn.createUVSetDataMesh(uvSetName);
             }
 
-            // use the first uv as the current UV set
-            if(layerIndex == 0)
+            // If currentUVSetName is set, then use it to determine the current
+            // UV set. Otherwise, use the first as the current UV set.
+            if((currentUVSetName.length()
+                        && uvSetName == currentUVSetName)
+                    || (!currentUVSetName.length()
+                        && layerIndex == 0))
             {
                 meshCurrentUVHandle.setString(uvSetName);
             }

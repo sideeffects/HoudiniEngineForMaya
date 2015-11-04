@@ -221,8 +221,7 @@ InputMesh::processUVs(
         std::vector<int> vertexList
         )
 {
-    MString currentUVSetName;
-    currentUVSetName = meshFn.currentUVSetName();
+    MString currentUVSetName = meshFn.currentUVSetName();
 
     MStringArray uvSetNames;
     meshFn.getUVSetNames(uvSetNames);
@@ -300,6 +299,12 @@ InputMesh::processUVs(
                 vertexUVNumbers
                 ));
     }
+
+    CHECK_HAPI(hapiSetDetailAttribute(
+            myInputAssetId, myInputObjectId, myInputGeoId,
+            "maya_uv_current",
+            currentUVSetName
+            ));
 
     CHECK_HAPI(hapiSetDetailAttribute(
             myInputAssetId, myInputObjectId, myInputGeoId,

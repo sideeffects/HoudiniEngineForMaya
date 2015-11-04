@@ -333,8 +333,8 @@ struct HAPISetAttribute<storageType, T, false>
         typedef typename HAPIAttributeTrait<storageType>::SetType SetType;
         typedef std::vector<SetType> ConvertedDataArray;
 
-        ConvertedDataArray convertedDataArray
-            = Util::convertArray<ConvertedDataArray>(dataArray);
+        ConvertedDataArray convertedDataArray;
+        Util::convertArray(convertedDataArray, dataArray);
 
         return HAPISetAttribute<storageType, ConvertedDataArray>::impl(
                 assetId, objectId, geoId,
@@ -546,7 +546,7 @@ struct HAPIGetAttribute<storageType, T, false>
             return HAPI_RESULT_FAILURE;
         }
 
-        dataArray = Util::convertArray<T>(convertedDataArray);
+        Util::convertArray<T>(dataArray, convertedDataArray);
 
         return HAPI_RESULT_SUCCESS;
     }

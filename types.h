@@ -1,6 +1,8 @@
 #ifndef __types_h__
 #define __types_h__
 
+#include <cassert>
+
 #include "traits.h"
 
 template<typename T>

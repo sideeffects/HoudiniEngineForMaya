@@ -194,7 +194,7 @@ template<
         size_t Stride
         >
 class ComponentIterator :
-    public std::iterator<std::input_iterator_tag, ArrayType>
+    public std::iterator<std::forward_iterator_tag, ArrayType>
 {
     public:
         typedef ComponentIterator<

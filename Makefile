@@ -47,9 +47,13 @@ ifeq ($(OS), Linux)
     else ifneq ($(findstring $(MAYA_VERSION), 2016),)
 	MAYA_DIR = /usr/autodesk/maya$(MAYA_VERSION)
     endif
+    MAYA_INCLUDE_DIR = $(MAYA_DIR)/include
+    MAYA_LIB_DIR = $(MAYA_DIR)/lib
 else ifeq ($(OS), Cygwin)
     # We have to use cygpath to here because Cygwin's make doesn't handle spaces properly
     MAYA_DIR := $(shell cygpath -m -s C:/Program\ Files/Autodesk/Maya$(MAYA_VERSION) 2> /dev/null)
+    MAYA_INCLUDE_DIR = $(MAYA_DIR)/include
+    MAYA_LIB_DIR = $(MAYA_DIR)/lib
 
     # each versin of Maya requires a different version of Visual C++
     ifeq ($(MAYA_VERSION), 2016)
@@ -146,6 +150,8 @@ else ifeq ($(OS), Cygwin)
     MSVC_SDK_LIB = $(MSVC_SDK)/lib/amd64
 else ifeq ($(OS), Darwin)
     MAYA_DIR = /Applications/Autodesk/maya$(MAYA_VERSION)/Maya.app/Contents
+    MAYA_INCLUDE_DIR = $(MAYA_DIR)/../../devkit/include
+    MAYA_LIB_DIR = $(MAYA_DIR)/MacOS
 endif
 
 # tools
@@ -163,14 +169,14 @@ endif
 # Maya flags
 CPPFLAGS += -D_BOOL -DREQUIRE_IOSTREAM
 ifeq ($(OS), Linux)
-    CPPFLAGS += -I$(MAYA_DIR)/include
-    LDLIBS += -L$(MAYA_DIR)/lib -lOpenMaya -lOpenMayaAnim -lOpenMayaFX -lFoundation
+    CPPFLAGS += -I$(MAYA_INCLUDE_DIR)
+    LDLIBS += -L$(MAYA_LIB_DIR) -lOpenMaya -lOpenMayaAnim -lOpenMayaFX -lFoundation
 else ifeq ($(OS), Cygwin)
-    CPPFLAGS += -I$(MAYA_DIR)/include
-    LDLIBS += -LIBPATH:$(MAYA_DIR)/lib OpenMaya.lib OpenMayaAnim.lib OpenMayaFX.lib Foundation.lib
+    CPPFLAGS += -I$(MAYA_INCLUDE_DIR)
+    LDLIBS += -LIBPATH:$(MAYA_LIB_DIR) OpenMaya.lib OpenMayaAnim.lib OpenMayaFX.lib Foundation.lib
 else ifeq ($(OS), Darwin)
-    CPPFLAGS += -I$(MAYA_DIR)/../../devkit/include
-    LDLIBS += -L$(MAYA_DIR)/MacOS -lOpenMaya -lOpenMayaAnim -lOpenMayaFX -lFoundation
+    CPPFLAGS += -I$(MAYA_INCLUDE_DIR)
+    LDLIBS += -L$(MAYA_LIB_DIR) -lOpenMaya -lOpenMayaAnim -lOpenMayaFX -lFoundation
 endif
 
 # Houdini flags
@@ -318,20 +324,23 @@ DST_SCRIPTS = $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(MELFILES)) \
 # check build requirement
 ifeq ($(OS), Linux)
     CAN_BUILD := $(and \
-	    $(realpath $(MAYA_DIR)/include/maya), \
+	    $(realpath $(MAYA_INCLUDE_DIR)), \
+	    $(realpath $(MAYA_LIB_DIR)), \
 	    1)
 else ifeq ($(OS), Cygwin)
     # On Windows, we don't want to force everyone who has Maya to also build
     # this plugin for now, because building Maya plugin requires a specific
     # Visual C++ version, which may not be installed.
     CAN_BUILD := $(and \
-	    $(realpath $(MAYA_DIR)/include/maya), \
+	    $(realpath $(MAYA_INCLUDE_DIR)), \
+	    $(realpath $(MAYA_LIB_DIR)), \
 	    $(realpath $(WIN32_SDK)), \
 	    $(realpath $(MSVC_SDK)), \
 	    1)
 else ifeq ($(OS), Darwin)
     CAN_BUILD := $(and \
-	    $(realpath $(MAYA_DIR)/../../devkit/include/maya), \
+	    $(realpath $(MAYA_INCLUDE_DIR)), \
+	    $(realpath $(MAYA_LIB_DIR)), \
 	    1)
 endif
 

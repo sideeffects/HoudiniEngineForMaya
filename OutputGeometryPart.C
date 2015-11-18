@@ -2067,7 +2067,7 @@ OutputGeometryPart::computeExtraAttributes(
 
     size_t elementIndex = 0;
 
-    for(size_t i = 0; i < sizeof(attributeOwners); i++)
+    for(size_t i = 0; i < HAPI_ATTROWNER_MAX; i++)
     {
         const HAPI_AttributeOwner &owner = attributeOwners[i];
         const MString &ownerString = attributeOwnersString[i];

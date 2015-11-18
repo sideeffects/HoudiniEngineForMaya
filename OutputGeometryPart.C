@@ -937,15 +937,15 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("life");
 
     // other attributes
-    int* attributeNames = new int[myPartInfo.pointAttributeCount];
+    int* attributeNames = new int[myPartInfo.attributeCounts[HAPI_ATTROWNER_POINT]];
     HAPI_GetAttributeNames(
             Util::theHAPISession.get(),
             myAssetId, myObjectId, myGeoId, myPartId,
             HAPI_ATTROWNER_POINT,
             attributeNames,
-            myPartInfo.pointAttributeCount
+            myPartInfo.attributeCounts[HAPI_ATTROWNER_POINT]
             );
-    for(int i = 0; i < myPartInfo.pointAttributeCount; i++)
+    for(int i = 0; i < myPartInfo.attributeCounts[HAPI_ATTROWNER_POINT]; i++)
     {
         MString attributeName = Util::HAPIString(attributeNames[i]);
 
@@ -2061,10 +2061,10 @@ OutputGeometryPart::computeExtraAttributes(
         "vertex",
     };
     const int HAPI_PartInfo::*attributeCounts[attributeOwnerSize] = {
-        &HAPI_PartInfo::detailAttributeCount,
-        &HAPI_PartInfo::faceAttributeCount,
-        &HAPI_PartInfo::pointAttributeCount,
-        &HAPI_PartInfo::vertexAttributeCount,
+        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_DETAIL],
+        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_PRIM],
+        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_POINT],
+        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_VERTEX],
     };
 
     size_t elementIndex = 0;

@@ -2040,48 +2040,46 @@ OutputGeometryPart::computeExtraAttributes(
     MArrayDataBuilder extraAttributesBuilder =
         extraAttributesArrayHandle.builder();
 
-    const size_t dataTypeSize = HAPI_STORAGETYPE_MAX;
-    const MString dataTypesString[dataTypeSize] = {
+    const MString dataTypesString[HAPI_STORAGETYPE_MAX] = {
         "int",
         "float",
         "string",
     };
 
-    const size_t attributeOwnerSize = HAPI_ATTROWNER_MAX;
-    const HAPI_AttributeOwner attributeOwners[attributeOwnerSize] = {
+    const HAPI_AttributeOwner attributeOwners[] = {
         HAPI_ATTROWNER_DETAIL,
         HAPI_ATTROWNER_PRIM,
         HAPI_ATTROWNER_POINT,
         HAPI_ATTROWNER_VERTEX,
     };
-    const MString attributeOwnersString[attributeOwnerSize] = {
+    const MString attributeOwnersString[] = {
         "detail",
         "primitive",
         "point",
         "vertex",
     };
-    const int HAPI_PartInfo::*attributeCounts[attributeOwnerSize] = {
-        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_DETAIL],
-        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_PRIM],
-        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_POINT],
-        &HAPI_PartInfo::attributeCounts[HAPI_ATTROWNER_VERTEX],
+    const int attributeCounts[] = {
+        myPartInfo.attributeCounts[HAPI_ATTROWNER_DETAIL],
+        myPartInfo.attributeCounts[HAPI_ATTROWNER_PRIM],
+        myPartInfo.attributeCounts[HAPI_ATTROWNER_POINT],
+        myPartInfo.attributeCounts[HAPI_ATTROWNER_VERTEX],
     };
 
     size_t elementIndex = 0;
 
-    for(size_t i = 0; i < attributeOwnerSize; i++)
+    for(size_t i = 0; i < sizeof(attributeOwners); i++)
     {
         const HAPI_AttributeOwner &owner = attributeOwners[i];
         const MString &ownerString = attributeOwnersString[i];
-        const int HAPI_PartInfo::*&attributeCount = attributeCounts[i];
+        const int &attributeCount = attributeCounts[i];
 
-        if(myPartInfo.*attributeCount == 0)
+        if(attributeCount == 0)
         {
             continue;
         }
 
         std::vector<HAPI_StringHandle> attributeNames(
-                myPartInfo.*attributeCount
+                attributeCount
                 );
         HAPI_GetAttributeNames(
                 Util::theHAPISession.get(),

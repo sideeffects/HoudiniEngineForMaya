@@ -1509,9 +1509,6 @@ OutputGeometryPart::computeMesh(
                     vArray[i] = floatArray[i * 3 + 1];
                 }
 
-                Util::reverseWindingOrder(uArray, polygonCounts);
-                Util::reverseWindingOrder(vArray, polygonCounts);
-
                 for(unsigned int i = 0, length = polygonConnects.length();
                         i < length; ++i)
                 {

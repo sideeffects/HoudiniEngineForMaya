@@ -425,10 +425,7 @@ endif
 # build multiple Maya versions
 ALL_MAYA_VERSIONS = 2016 \
 		2015 \
-		2014 \
-		2013.5 \
-		2013 \
-		2012
+		2014
 
 .PHONY: all_maya all_maya_clean
 

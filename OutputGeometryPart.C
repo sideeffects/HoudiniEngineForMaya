@@ -1463,8 +1463,8 @@ OutputGeometryPart::computeMesh(
                 for(unsigned int i = 0; i < polygonConnects.length(); ++i)
                 {
                     int uvNumber = uvNumbers[i];
-                    float u = floatArray[i * 3 + 0];
-                    float v = floatArray[i * 3 + 1];
+                    float u = floatArray[i * uvAttrInfo.tupleSize + 0];
+                    float v = floatArray[i * uvAttrInfo.tupleSize + 1];
 
                     std::map<int, int>::iterator iter
                         = uvNumberMap.find(uvNumber);
@@ -1519,14 +1519,13 @@ OutputGeometryPart::computeMesh(
             {
                 // assign the UVs without any sharing
 
-                // assume 3 tuple
-                uArray.setLength(floatArray.size() / 3);
-                vArray.setLength(floatArray.size() / 3);
+                uArray.setLength(uvAttrInfo.count);
+                vArray.setLength(uvAttrInfo.count);
                 for(unsigned int i = 0, length = uArray.length();
                         i < length; ++i)
                 {
-                    uArray[i] = floatArray[i * 3 + 0];
-                    vArray[i] = floatArray[i * 3 + 1];
+                    uArray[i] = floatArray[i * uvAttrInfo.tupleSize + 0];
+                    vArray[i] = floatArray[i * uvAttrInfo.tupleSize + 1];
                 }
 
                 Util::reverseWindingOrder(uArray, polygonCounts);
@@ -1542,14 +1541,13 @@ OutputGeometryPart::computeMesh(
             {
                 // all the UVs are shared
 
-                // assume 3 tuple
-                uArray.setLength(floatArray.size() / 3);
-                vArray.setLength(floatArray.size() / 3);
+                uArray.setLength(uvAttrInfo.count);
+                vArray.setLength(uvAttrInfo.count);
                 for(unsigned int i = 0, length = uArray.length();
                         i < length; ++i)
                 {
-                    uArray[i] = floatArray[i * 3 + 0];
-                    vArray[i] = floatArray[i * 3 + 1];
+                    uArray[i] = floatArray[i * uvAttrInfo.tupleSize + 0];
+                    vArray[i] = floatArray[i * uvAttrInfo.tupleSize + 1];
                 }
 
                 for(unsigned int i = 0, length = polygonConnects.length();
@@ -1595,8 +1593,8 @@ OutputGeometryPart::computeMesh(
                 meshCurrentUVHandle.setString(uvSetName);
             }
 
-            meshFn.setUVs(uArray, vArray, &uvSetName);
-            meshFn.assignUVs(polygonCounts, vertexList, &uvSetName);
+            CHECK_MSTATUS(meshFn.setUVs(uArray, vArray, &uvSetName));
+            CHECK_MSTATUS(meshFn.assignUVs(polygonCounts, vertexList, &uvSetName));
 
             layerIndex++;
         }

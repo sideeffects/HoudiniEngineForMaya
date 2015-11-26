@@ -363,15 +363,19 @@ OutputGeometryPart::computeCurves(
     MArrayDataHandle curvesArrayHandle(curvesHandle);
     MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
 
+    HAPI_AttributeInfo attrInfo;
+
     std::vector<float> pArray, pwArray;
     hapiGetPointAttribute(
             myAssetId, myObjectId, myGeoId, myPartId,
             "P",
+            attrInfo,
             pArray
             );
     hapiGetPointAttribute(
             myAssetId, myObjectId, myGeoId, myPartId,
             "Pw",
+            attrInfo,
             pArray
             );
     markAttributeUsed("P");
@@ -562,11 +566,14 @@ OutputGeometryPart::convertParticleAttribute(
 {
     typedef ARRAYTRAIT(T) Trait;
 
+    HAPI_AttributeInfo attrInfo;
+
     T particleArray;
     getParticleArray(particleArray, arrayDataFn, mayaName);
     if(!HAPI_FAIL(hapiGetPointAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     houdiniName,
+                    attrInfo,
                     buffer
                     )))
     {
@@ -586,6 +593,8 @@ OutputGeometryPart::convertGenericDataAttribute(
         const HAPI_AttributeInfo &attributeInfo
         )
 {
+    HAPI_AttributeInfo attrInfo;
+
     if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT)
     {
         MDoubleArray doubleArray;
@@ -593,6 +602,7 @@ OutputGeometryPart::convertGenericDataAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
                 attributeInfo.owner,
                 attributeName,
+                attrInfo,
                 doubleArray
                 );
 
@@ -685,6 +695,7 @@ OutputGeometryPart::convertGenericDataAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
                 attributeInfo.owner,
                 attributeName,
+                attrInfo,
                 intArray
                 );
 
@@ -747,6 +758,7 @@ OutputGeometryPart::convertGenericDataAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
                 attributeInfo.owner,
                 attributeName,
+                attrInfo,
                 stringArray
                 );
 
@@ -811,11 +823,14 @@ OutputGeometryPart::computeParticle(
 
     // id
     {
+        HAPI_AttributeInfo attrInfo;
+
         MDoubleArray idArray = arrayDataFn.doubleArray("id");
         idArray.setLength(particleCount);
         if(!HAPI_FAIL(hapiGetPointAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "id",
+                    attrInfo,
                     intArray
                     )))
         {
@@ -1163,6 +1178,7 @@ OutputGeometryPart::computeMesh(
         meshDataFn.setObject(meshDataObj);
     }
 
+    HAPI_AttributeInfo attrInfo;
     std::vector<float> floatArray;
     std::vector<int> intArray;
 
@@ -1171,6 +1187,7 @@ OutputGeometryPart::computeMesh(
     hapiGetPointAttribute(
             myAssetId, myObjectId, myGeoId, myPartId,
             "P",
+            attrInfo,
             floatArray
             );
 
@@ -1291,6 +1308,7 @@ OutputGeometryPart::computeMesh(
         if(!HAPI_FAIL(hapiGetVertexAttribute(
                         myAssetId, myObjectId, myGeoId, myPartId,
                         "N",
+                        attrInfo,
                         floatArray
                         )))
         {
@@ -1299,6 +1317,7 @@ OutputGeometryPart::computeMesh(
         else if(!HAPI_FAIL(hapiGetPointAttribute(
                         myAssetId, myObjectId, myGeoId, myPartId,
                         "N",
+                        attrInfo,
                         floatArray
                         )))
         {
@@ -1356,6 +1375,7 @@ OutputGeometryPart::computeMesh(
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "maya_uv_current",
+                    attrInfo,
                     currentUVSetName
                     );
         markAttributeUsed("maya_uv_current");
@@ -1363,6 +1383,7 @@ OutputGeometryPart::computeMesh(
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "maya_uv_name",
+                    attrInfo,
                     uvSetNames
                     );
         markAttributeUsed("maya_uv_name");
@@ -1370,6 +1391,7 @@ OutputGeometryPart::computeMesh(
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "maya_uv_mapped_uv",
+                    attrInfo,
                     mappedUVAttributeNames
                     );
         markAttributeUsed("maya_uv_mapped_uv");
@@ -1385,25 +1407,28 @@ OutputGeometryPart::computeMesh(
             const MString uvNumberAttributeName
                 = Util::getAttrLayerName("uvNumber", layerIndex);
 
-            HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
+            HAPI_AttributeInfo uvAttrInfo;
+            bool found = false;
             if(!HAPI_FAIL(hapiGetVertexAttribute(
                             myAssetId, myObjectId, myGeoId, myPartId,
                             uvAttributeName.asChar(),
+                            uvAttrInfo,
                             floatArray
                             )))
             {
-                owner = HAPI_ATTROWNER_VERTEX;
+                found = true;
             }
             else if(!HAPI_FAIL(hapiGetPointAttribute(
                             myAssetId, myObjectId, myGeoId, myPartId,
                             uvAttributeName.asChar(),
+                            uvAttrInfo,
                             floatArray
                             )))
             {
-                owner = HAPI_ATTROWNER_POINT;
+                found = true;
             }
 
-            if(owner == HAPI_ATTROWNER_MAX)
+            if(!found)
             {
                 break;
             }
@@ -1414,6 +1439,7 @@ OutputGeometryPart::computeMesh(
             HAPI_FAIL(hapiGetVertexAttribute(
                         myAssetId, myObjectId, myGeoId, myPartId,
                         uvNumberAttributeName.asChar(),
+                        uvAttrInfo,
                         uvNumbers
                         ));
             markAttributeUsed(uvNumberAttributeName.asChar());
@@ -1421,7 +1447,7 @@ OutputGeometryPart::computeMesh(
             MFloatArray uArray(polygonConnects.length());
             MFloatArray vArray(polygonConnects.length());
             MIntArray vertexList(polygonConnects.length());
-            if(owner == HAPI_ATTROWNER_VERTEX && uvNumbers.size())
+            if(uvAttrInfo.owner == HAPI_ATTROWNER_VERTEX && uvNumbers.size())
             {
                 // attempt to restore the shared UVs
 
@@ -1489,7 +1515,7 @@ OutputGeometryPart::computeMesh(
 
                 Util::reverseWindingOrder(vertexList, polygonCounts);
             }
-            else if(owner == HAPI_ATTROWNER_VERTEX)
+            else if(uvAttrInfo.owner == HAPI_ATTROWNER_VERTEX)
             {
                 // assign the UVs without any sharing
 
@@ -1512,7 +1538,7 @@ OutputGeometryPart::computeMesh(
                     vertexList[i] = i;
                 }
             }
-            else if(owner == HAPI_ATTROWNER_POINT)
+            else if(uvAttrInfo.owner == HAPI_ATTROWNER_POINT)
             {
                 // all the UVs are shared
 
@@ -1584,9 +1610,12 @@ OutputGeometryPart::computeMesh(
         MStringArray mappedCdAttributeNames;
         MStringArray mappedAlphaAttributeNames;
 
+        HAPI_AttributeInfo attrInfo;
+
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "maya_colorset_current",
+                    attrInfo,
                     currentColorSetName
                     );
         markAttributeUsed("maya_colorset_current");
@@ -1594,6 +1623,7 @@ OutputGeometryPart::computeMesh(
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "maya_colorset_name",
+                    attrInfo,
                     colorSetNames
                     );
         markAttributeUsed("maya_colorset_name");
@@ -1601,6 +1631,7 @@ OutputGeometryPart::computeMesh(
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "maya_colorset_mapped_Cd",
+                    attrInfo,
                     mappedCdAttributeNames
                     );
         markAttributeUsed("maya_colorset_mapped_Cd");
@@ -1608,6 +1639,7 @@ OutputGeometryPart::computeMesh(
         hapiGetDetailAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "maya_colorset_mapped_Alpha",
+                    attrInfo,
                     mappedAlphaAttributeNames
                     );
         markAttributeUsed("maya_colorset_mapped_Alpha");
@@ -1625,24 +1657,32 @@ OutputGeometryPart::computeMesh(
                 = Util::getAttrLayerName("Alpha", layerIndex);
 
             HAPI_AttributeOwner colorOwner;
-            if(HAPI_FAIL(hapiGetAnyAttribute(
+            if(!HAPI_FAIL(hapiGetAnyAttribute(
                             myAssetId, myObjectId, myGeoId, myPartId,
                             cdAttributeName.asChar(),
-                            colorOwner,
+                            attrInfo,
                             floatArray
                             )))
+            {
+                colorOwner = attrInfo.owner;
+            }
+            else
             {
                 colorOwner = HAPI_ATTROWNER_MAX;
             }
 
             HAPI_AttributeOwner alphaOwner;
             std::vector<float> alphaArray;
-            if(HAPI_FAIL(hapiGetAnyAttribute(
+            if(!HAPI_FAIL(hapiGetAnyAttribute(
                             myAssetId, myObjectId, myGeoId, myPartId,
                             alphaAttributeName.asChar(),
-                            alphaOwner,
+                            attrInfo,
                             alphaArray
                             )))
+            {
+                alphaOwner = attrInfo.owner;
+            }
+            else
             {
                 alphaOwner = HAPI_ATTROWNER_MAX;
             }

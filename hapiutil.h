@@ -514,12 +514,11 @@ struct HAPIGetAttribute
             HAPI_PartId partId,
             HAPI_AttributeOwner owner,
             const char* attributeName,
+            HAPI_AttributeInfo &attrInfo,
             T &dataArray
             )
     {
         HAPI_Result hapiResult;
-
-        HAPI_AttributeInfo attrInfo = HAPI_AttributeInfo_Create();
 
         hapiResult = HAPI_GetAttributeInfo(
                 Util::theHAPISession.get(),
@@ -570,6 +569,7 @@ struct HAPIGetAttribute<storageType, T, false>
             HAPI_PartId partId,
             HAPI_AttributeOwner owner,
             const char* attributeName,
+            HAPI_AttributeInfo &attrInfo,
             T &dataArray
             )
     {
@@ -584,6 +584,7 @@ struct HAPIGetAttribute<storageType, T, false>
                 assetId, objectId, geoId, partId,
                 owner,
                 attributeName,
+                attrInfo,
                 convertedDataArray
                 );
         if(HAPI_FAIL(hapiResult))
@@ -606,6 +607,7 @@ hapiGetAttribute(
         HAPI_PartId partId,
         HAPI_AttributeOwner owner,
         const char* attributeName,
+        HAPI_AttributeInfo &attrInfo,
         T &dataArray
         )
 {
@@ -616,6 +618,7 @@ hapiGetAttribute(
             assetId, objectId, geoId, partId,
             owner,
             attributeName,
+            attrInfo,
             dataArray
             );
 }
@@ -633,6 +636,7 @@ HAPIGetDetailAttribute
             HAPI_GeoId geoId,
             HAPI_PartId partId,
             const char* attributeName,
+            HAPI_AttributeInfo &attrInfo,
             T &dataArray
             )
     {
@@ -640,6 +644,7 @@ HAPIGetDetailAttribute
                 assetId, objectId, geoId, partId,
                 HAPI_ATTROWNER_DETAIL,
                 attributeName,
+                attrInfo,
                 dataArray
                 );
     }
@@ -655,6 +660,7 @@ HAPIGetDetailAttribute<T, false>
             HAPI_GeoId geoId,
             HAPI_PartId partId,
             const char* attributeName,
+            HAPI_AttributeInfo &attrInfo,
             T &value
             )
     {
@@ -663,6 +669,7 @@ HAPIGetDetailAttribute<T, false>
                 assetId, objectId, geoId, partId,
                 HAPI_ATTROWNER_DETAIL,
                 attributeName,
+                attrInfo,
                 array
                 );
     }
@@ -676,12 +683,14 @@ hapiGetDetailAttribute(
         HAPI_GeoId geoId,
         HAPI_PartId partId,
         const char* attributeName,
+        HAPI_AttributeInfo &attrInfo,
         T &value
         )
 {
     return HAPIGetDetailAttribute<T>::impl(
             assetId, objectId, geoId, partId,
             attributeName,
+            attrInfo,
             value
             );
 }
@@ -694,6 +703,7 @@ hapiGetPrimAttribute(
         HAPI_GeoId geoId,
         HAPI_PartId partId,
         const char* attributeName,
+        HAPI_AttributeInfo &attrInfo,
         T &dataArray
         )
 {
@@ -701,6 +711,7 @@ hapiGetPrimAttribute(
             assetId, objectId, geoId, partId,
             HAPI_ATTROWNER_PRIM,
             attributeName,
+            attrInfo,
             dataArray
             );
 }
@@ -713,6 +724,7 @@ hapiGetVertexAttribute(
         HAPI_GeoId geoId,
         HAPI_PartId partId,
         const char* attributeName,
+        HAPI_AttributeInfo &attrInfo,
         T &dataArray
         )
 {
@@ -720,6 +732,7 @@ hapiGetVertexAttribute(
             assetId, objectId, geoId, partId,
             HAPI_ATTROWNER_VERTEX,
             attributeName,
+            attrInfo,
             dataArray
             );
 }
@@ -732,6 +745,7 @@ hapiGetPointAttribute(
         HAPI_GeoId geoId,
         HAPI_PartId partId,
         const char* attributeName,
+        HAPI_AttributeInfo &attrInfo,
         T &dataArray
         )
 {
@@ -739,6 +753,7 @@ hapiGetPointAttribute(
             assetId, objectId, geoId, partId,
             HAPI_ATTROWNER_POINT,
             attributeName,
+            attrInfo,
             dataArray
             );
 }
@@ -751,46 +766,50 @@ hapiGetAnyAttribute(
         HAPI_GeoId geoId,
         HAPI_PartId partId,
         const char* attributeName,
-        HAPI_AttributeOwner &owner,
+        HAPI_AttributeInfo &attrInfo,
         T &dataArray
         )
 {
-    HAPI_Result hapiResult;
+    bool found = false;
 
-    if(!HAPI_FAIL(hapiResult = hapiGetVertexAttribute(
+    if(!HAPI_FAIL(hapiGetVertexAttribute(
                     assetId, objectId, geoId, partId,
                     attributeName,
+                    attrInfo,
                     dataArray
                     )))
     {
-        owner = HAPI_ATTROWNER_VERTEX;
+        found = true;
     }
-    else if(!HAPI_FAIL(hapiResult = hapiGetPointAttribute(
+    else if(!HAPI_FAIL(hapiGetPointAttribute(
                     assetId, objectId, geoId, partId,
                     attributeName,
+                    attrInfo,
                     dataArray
                     )))
     {
-        owner = HAPI_ATTROWNER_POINT;
+        found = true;
     }
-    else if(!HAPI_FAIL(hapiResult = hapiGetPrimAttribute(
+    else if(!HAPI_FAIL(hapiGetPrimAttribute(
                     assetId, objectId, geoId, partId,
                     attributeName,
+                    attrInfo,
                     dataArray
                     )))
     {
-        owner = HAPI_ATTROWNER_PRIM;
+        found = true;
     }
-    else if(!HAPI_FAIL(hapiResult = hapiGetDetailAttribute(
+    else if(!HAPI_FAIL(hapiGetDetailAttribute(
                     assetId, objectId, geoId, partId,
                     attributeName,
+                    attrInfo,
                     dataArray
                     )))
     {
-        owner = HAPI_ATTROWNER_DETAIL;
+        found = true;
     }
 
-    if(HAPI_FAIL(hapiResult))
+    if(!found)
     {
         return HAPI_RESULT_FAILURE;
     }

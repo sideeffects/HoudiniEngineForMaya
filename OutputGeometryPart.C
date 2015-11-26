@@ -937,15 +937,17 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("life");
 
     // other attributes
-    int* attributeNames = new int[myPartInfo.pointAttributeCount];
+    std::vector<HAPI_StringHandle> attributeNames(
+            myPartInfo.pointAttributeCount
+            );
     HAPI_GetAttributeNames(
             Util::theHAPISession.get(),
             myAssetId, myObjectId, myGeoId, myPartId,
             HAPI_ATTROWNER_POINT,
-            attributeNames,
+            attributeNames.empty() ? NULL : &attributeNames[0],
             myPartInfo.pointAttributeCount
             );
-    for(int i = 0; i < myPartInfo.pointAttributeCount; i++)
+    for(unsigned int i = 0; i < attributeNames.size(); i++)
     {
         MString attributeName = Util::HAPIString(attributeNames[i]);
 
@@ -1010,7 +1012,6 @@ OutputGeometryPart::computeParticle(
                     );
         }
     }
-    delete [] attributeNames;
 
     currentTimeHandle.setClean();
     positionsHandle.setClean();

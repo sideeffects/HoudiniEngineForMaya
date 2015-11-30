@@ -212,7 +212,6 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         }
         else if($isCompound && $isMulti && $isRamp)
         {
-            print ("buildAttrTree: ramp: " + $fullAttrName + "." + $child + "\n");
             string $niceName = `attributeQuery -node $nodeName -niceName $child`;
 
             frameLayout

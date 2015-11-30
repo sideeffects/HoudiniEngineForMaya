@@ -153,13 +153,13 @@ class HAPIString
                 return;
             }
 
-            myString.resize(bufLen);
+            myString.resize(bufLen - 1);
 
             HAPI_GetString(
                     theHAPISession.get(),
                     myHandle,
                     &myString[0],
-                    myString.size()
+                    myString.size() + 1
                     );
         }
 

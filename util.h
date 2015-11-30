@@ -147,12 +147,12 @@ class HAPIString
                 return;
             }
 
-            myString.resize(bufLen);
+            myString.resize(bufLen - 1);
 
             HAPI_GetString(
                     myHandle,
                     &myString[0],
-                    myString.size()
+                    myString.size() + 1
                     );
         }
 

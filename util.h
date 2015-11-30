@@ -174,13 +174,13 @@ class HAPIString
         }
 
         template<typename T>
-        bool operator ==(const T &o) const
+        bool operator ==(const T o) const
         {
-            return ((const T &)*this) == o;
+            return static_cast<T>(*this) == o;
         }
 
         template<typename T>
-        bool operator !=(const T &o) const
+        bool operator !=(const T o) const
         {
             return !(*this == o);
         }
@@ -191,9 +191,9 @@ class HAPIString
 };
 
 template<>
-inline bool HAPIString::operator ==(const char* const &o) const
+inline bool HAPIString::operator ==<const char*>(const char * const o) const
 {
-    return ((const std::string &)*this) == o;
+    return static_cast<std::string>(*this) == o;
 }
 
 MString getAttrNameFromParm(const HAPI_ParmInfo &parm);

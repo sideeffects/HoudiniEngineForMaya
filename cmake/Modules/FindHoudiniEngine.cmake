@@ -3,11 +3,13 @@
 #   HoudiniEngine_INCLUDE_DIRS
 #   HoudiniEngine_LIBRARIES
 #   HoudiniEngine_LIBRARY_DIR
+#   HoudiniEngine_BINARY_DIR
 #
 # Hints for finding package:
 #   HoudiniEngine_ROOT
 #   HoudiniEngine_INCLUDEDIR
 #   HoudiniEngine_LIBRARYDIR
+#   HoudiniEngine_BINARYDIR
 
 set( _houdiniengine_lib HAPIL )
 
@@ -26,6 +28,11 @@ endif ()
 # HoudiniEngine_LIBRARYDIR
 if ( DEFINED HoudiniEngine_LIBRARYDIR )
     list( APPEND _houdiniengine_library_search_dirs "${HoudiniEngine_LIBRARYDIR}" )
+endif ()
+
+# HoudiniEngine_BINARYDIR
+if ( DEFINED HoudiniEngine_BINARYDIR )
+    list( APPEND _houdiniengine_binary_search_dirs "${HoudiniEngine_BINARYDIR}" )
 endif ()
 
 # HoudiniEngine_ROOT
@@ -47,6 +54,7 @@ if ( _houdiniengine_root )
     elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
         list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include" )
         list( APPEND _houdiniengine_library_search_dirs "${_houdiniengine_root}/custom/houdini/dsolib" )
+        list( APPEND _houdiniengine_binary_search_dirs "${_houdiniengine_root}/bin" )
     elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include" )
         list( APPEND _houdiniengine_library_search_dirs "${_houdiniengine_root}/../Libraries" )
@@ -81,6 +89,15 @@ get_filename_component(
     DIRECTORY
     )
 list( APPEND _houdiniengine_required_vars HoudiniEngine_LIBRARY_DIR )
+
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    find_path(
+        HoudiniEngine_BINARY_DIR
+        libHAPI.dll
+        HINTS ${_houdiniengine_binary_search_dirs}
+        )
+    list( APPEND _houdiniengine_required_vars HoudiniEngine_BINARY_DIR )
+endif ()
 
 ########################################
 # Create library target

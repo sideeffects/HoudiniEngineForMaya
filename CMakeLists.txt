@@ -34,6 +34,12 @@ set(
     )
 
 ########################################
+# Module structure
+########################################
+set( install_module_dir "maya${MAYA_VERSION}" )
+set( install_plug_ins_dir "${install_module_dir}/plug-ins" )
+
+########################################
 # Find packages
 ########################################
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules" )
@@ -123,3 +129,16 @@ target_link_libraries( plugin ${maya_libraries} )
 
 # Houdini Engine libraries
 target_link_libraries( plugin HoudiniEngine )
+
+########################################
+# Install
+########################################
+install(
+    TARGETS plugin
+    DESTINATION "${install_plug_ins_dir}"
+    )
+
+install(
+    DIRECTORY scripts
+    DESTINATION "${install_module_dir}"
+    )

@@ -38,6 +38,7 @@ set(
 ########################################
 set( install_module_dir "maya${MAYA_VERSION}" )
 set( install_plug_ins_dir "${install_module_dir}/plug-ins" )
+set( install_module_absolute_dir "${CMAKE_INSTALL_PREFIX}/${install_module_dir}" )
 
 ########################################
 # Find packages
@@ -63,6 +64,15 @@ file(
     "${CMAKE_INSTALL_PREFIX}/${install_plug_ins_dir}"
     "${HoudiniEngine_LIBRARY_DIR}"
     )
+
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    file(
+        RELATIVE_PATH
+        install_module_dir_to_houdiniengine_bin_dir
+        "${install_module_absolute_dir}"
+        "${HoudiniEngine_BINARY_DIR}"
+        )
+endif ()
 
 ########################################
 # plugin
@@ -157,6 +167,40 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
 endif ()
 
 ########################################
+# Module files
+########################################
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    # Set the PATH variable for dynamic library.
+    set(
+        MODULE_DESCRIPTION_ENVIRONMENTS
+        "${MODULE_DESCRIPTION_ENVIRONMENTS}PATH +:= ${install_module_dir_to_houdiniengine_bin_dir}\n"
+        )
+    set(
+        MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS
+        "${MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS}PATH += ${install_module_absolute_dir}/${install_module_dir_to_houdiniengine_bin_dir}\n"
+        )
+endif ()
+
+# HOUDINI_DSO_EXCLUDE_PATTERN
+# Block out Houdini plugins that would load Houdini's UI libraries.
+set(
+    houdini_dso_exclude_pattern
+    "HOUDINI_DSO_EXCLUDE_PATTERN={ROP_OpenGL,COP2_GPULighting,COP2_GPUFog,COP2_GPUEnvironment,COP2_GPUZComposite,COP2_EnableGPU,SHOP_OGL,OBJ_ReLight,VEX_OpRender}*"
+    )
+set(
+    MODULE_DESCRIPTION_ENVIRONMENTS
+    "${MODULE_DESCRIPTION_ENVIRONMENTS}${houdini_dso_exclude_pattern}\n"
+    )
+set(
+    MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS
+    "${MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS}${houdini_dso_exclude_pattern}\n"
+    )
+
+# Generate module files
+configure_file( module_description.in "houdiniEngine-maya${MAYA_VERSION}" )
+configure_file( module_description_absolute.in "${install_module_dir}/houdiniEngine-maya${MAYA_VERSION}" )
+
+########################################
 # Install
 ########################################
 install(
@@ -166,5 +210,15 @@ install(
 
 install(
     DIRECTORY scripts
+    DESTINATION "${install_module_dir}"
+    )
+
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/houdiniEngine-maya${MAYA_VERSION}"
+    DESTINATION "."
+    )
+
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/${install_module_dir}/houdiniEngine-maya${MAYA_VERSION}"
     DESTINATION "${install_module_dir}"
     )

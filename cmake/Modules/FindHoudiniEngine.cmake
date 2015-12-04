@@ -2,6 +2,7 @@
 #   HoudiniEngine_FOUND
 #   HoudiniEngine_INCLUDE_DIRS
 #   HoudiniEngine_LIBRARIES
+#   HoudiniEngine_LIBRARY_DIR
 #
 # Hints for finding package:
 #   HoudiniEngine_ROOT
@@ -74,6 +75,12 @@ find_library(
     )
 list( APPEND _houdiniengine_required_vars HoudiniEngine_${_houdiniengine_lib} )
 list( APPEND HoudiniEngine_LIBRARIES ${HoudiniEngine_${_houdiniengine_lib}} )
+get_filename_component(
+    HoudiniEngine_LIBRARY_DIR 
+    ${HoudiniEngine_${_houdiniengine_lib}}
+    DIRECTORY
+    )
+list( APPEND _houdiniengine_required_vars HoudiniEngine_LIBRARY_DIR )
 
 ########################################
 # Create library target

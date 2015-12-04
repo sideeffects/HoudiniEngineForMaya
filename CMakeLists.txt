@@ -82,6 +82,42 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
 endif ()
 target_compile_definitions( plugin PRIVATE ${compile_definitions} )
 
+# Compile options
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+    set(
+        compile_options
+        -Wall
+        )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    set(
+        compile_options
+        -W4
+        # Enabled warnings
+        -w14101 # unreferenced local variable
+        -w14996 # Deprecation usage
+        # Warnings treated as errors
+        -we4265 # 'class' has virtual functions but destructor is not virtual
+        -we4700 # uninitialized local variable used
+        -we4715 # not all control paths return a value
+        -we4717 # recursive on all control paths, function will cause runtime stack overflow
+        -we4263 # member func does not override any base class virt member func
+        -we4266 # no override for virt member func from base 'type'; func is hidden
+        -we4390 # empty controlled statement found; is this the intent?
+        -we4407 # cast between different pointer to member representations, compiler may generate incorrect code
+        # Disabled warnings
+        -wd4100 # unreferenced formal parameter
+        -wd4244 # conversion of floating point type possible loss of data
+        -wd4267 # conversion of integer type possible loss of data
+        -wd4389 # signed/unsigned mismatch
+        )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
+    set(
+        compile_options
+        -Wall
+        )
+endif ()
+target_compile_options( plugin PRIVATE ${compile_options} )
+
 # Maya libraries
 target_link_libraries( plugin ${maya_libraries} )
 

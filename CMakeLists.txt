@@ -69,6 +69,19 @@ set_target_properties(
     SUFFIX "${plugin_suffix}"
     )
 
+# Compile definitions
+set( compile_definitions )
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    list(
+        APPEND compile_definitions
+        _CRT_SECURE_NO_WARNINGS
+        _SCL_SECURE_NO_WARNINGS
+        )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
+endif ()
+target_compile_definitions( plugin PRIVATE ${compile_definitions} )
+
 # Maya libraries
 target_link_libraries( plugin ${maya_libraries} )
 

@@ -289,16 +289,16 @@ CXXFILES = \
 	   plugin.C \
 	   CurveMeshInputNode.C
 
-MELFILES = AEhoudiniAssetTemplate.mel \
-	   houdiniEngineCreateUI.mel \
-	   houdiniEngineDeleteUI.mel \
-	   houdiniEngineAssetLibraryManager.mel \
-	   houdiniEnginePreferences.mel \
-	   houdiniEngineUtils.mel \
-	   houdiniEngineAssetSync.mel
+MELFILES = scripts/AEhoudiniAssetTemplate.mel \
+	   scripts/houdiniEngineCreateUI.mel \
+	   scripts/houdiniEngineDeleteUI.mel \
+	   scripts/houdiniEngineAssetLibraryManager.mel \
+	   scripts/houdiniEnginePreferences.mel \
+	   scripts/houdiniEngineUtils.mel \
+	   scripts/houdiniEngineAssetSync.mel
 
-PYFILES = houdini_engine_for_maya/__init__.py \
-	  houdini_engine_for_maya/asset_store.py
+PYFILES = scripts/houdini_engine_for_maya/__init__.py \
+	  scripts/houdini_engine_for_maya/asset_store.py
 
 OBJ_DIR = .obj/maya$(MAYA_VERSION)
 
@@ -318,8 +318,8 @@ endif
 # version, the file can also be used to set environment variables.
 DST_MODULE_ABSOLUTE = $(DST_DIR)/houdiniEngine-maya$(MAYA_VERSION)
 DST_PLUG_IN = $(DST_PLUG_INS_DIR)/$(SONAME)
-DST_SCRIPTS = $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(MELFILES)) \
-	      $(patsubst %, $(DST_SCRIPTS_DIR)/%, $(PYFILES))
+DST_SCRIPTS = $(patsubst scripts/%, $(DST_SCRIPTS_DIR)/%, $(MELFILES)) \
+	      $(patsubst scripts/%, $(DST_SCRIPTS_DIR)/%, $(PYFILES))
 
 # check build requirement
 ifeq ($(OS), Linux)
@@ -402,11 +402,11 @@ else ifeq ($(OS), Darwin)
 	$(CXX) -c -MD -MP -MT $(@) $(CPPFLAGS) $(CXXFLAGS) -o $(@) $(<)
 endif
 
-$(DST_SCRIPTS_DIR)/%.mel: %.mel
+$(DST_SCRIPTS_DIR)/%.mel: scripts/%.mel
 	@mkdir -p $(dir $(@))
 	cp $(<) $(@)
 
-$(DST_SCRIPTS_DIR)/%.py: %.py
+$(DST_SCRIPTS_DIR)/%.py: scripts/%.py
 	@mkdir -p $(dir $(@))
 	cp $(<) $(@)
 

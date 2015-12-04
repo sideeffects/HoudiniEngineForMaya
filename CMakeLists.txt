@@ -53,10 +53,20 @@ find_package( HoudiniEngine REQUIRED )
 ########################################
 add_library( plugin SHARED ${SRCS} )
 
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+    set( plugin_suffix ".so" )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    set( plugin_suffix ".mll" )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
+    set( plugin_suffix ".bundle" )
+endif ()
+
 set_target_properties(
     plugin
     PROPERTIES
     OUTPUT_NAME houdiniEngine
+    PREFIX ""
+    SUFFIX "${plugin_suffix}"
     )
 
 # Maya libraries

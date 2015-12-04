@@ -55,6 +55,16 @@ find_package( Maya ${MAYA_VERSION} EXACT REQUIRED ${maya_libraries} )
 find_package( HoudiniEngine REQUIRED )
 
 ########################################
+# Relative paths
+########################################
+file(
+    RELATIVE_PATH
+    install_plug_ins_dir_to_houdiniengine_lib_dir
+    "${CMAKE_INSTALL_PREFIX}/${install_plug_ins_dir}"
+    "${HoudiniEngine_LIBRARY_DIR}"
+    )
+
+########################################
 # plugin
 ########################################
 add_library( plugin SHARED ${SRCS} )
@@ -129,6 +139,22 @@ target_link_libraries( plugin ${maya_libraries} )
 
 # Houdini Engine libraries
 target_link_libraries( plugin HoudiniEngine )
+
+# Setup rpath
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+    set_target_properties(
+        plugin
+        PROPERTIES
+        INSTALL_RPATH "$ORIGIN/${install_plug_ins_dir_to_houdiniengine_lib_dir}"
+        )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
+    set_target_properties(
+        plugin
+        PROPERTIES
+        MACOSX_RPATH TRUE
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+        )
+endif ()
 
 ########################################
 # Install

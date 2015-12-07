@@ -83,11 +83,19 @@ find_library(
     )
 list( APPEND _houdiniengine_required_vars HoudiniEngine_${_houdiniengine_lib} )
 list( APPEND HoudiniEngine_LIBRARIES ${HoudiniEngine_${_houdiniengine_lib}} )
-get_filename_component(
-    HoudiniEngine_LIBRARY_DIR 
-    ${HoudiniEngine_${_houdiniengine_lib}}
-    DIRECTORY
-    )
+if ( ${CMAKE_VERSION} VERSION_GREATER "2.8.11" )
+    get_filename_component(
+        HoudiniEngine_LIBRARY_DIR
+        ${HoudiniEngine_${_houdiniengine_lib}}
+        DIRECTORY
+        )
+else ()
+    get_filename_component(
+        HoudiniEngine_LIBRARY_DIR
+        ${HoudiniEngine_${_houdiniengine_lib}}
+        PATH
+        )
+endif ()
 list( APPEND _houdiniengine_required_vars HoudiniEngine_LIBRARY_DIR )
 
 if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )

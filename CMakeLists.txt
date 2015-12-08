@@ -142,11 +142,7 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         -Wall
         )
 endif ()
-if ( ${CMAKE_VERSION} VERSION_LESS "2.8.12" )
-    set_property( TARGET plugin APPEND PROPERTY COMPILE_FLAGS ${compile_options} )
-else ()
-    target_compile_options( plugin PRIVATE ${compile_options} )
-endif ()
+target_compile_options( plugin PRIVATE ${compile_options} )
 
 # Maya libraries
 target_link_libraries( plugin ${maya_libraries} )

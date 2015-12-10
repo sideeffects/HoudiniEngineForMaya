@@ -359,7 +359,10 @@ initializePlugin(MObject obj)
 
                 result = HAPI_CreateThriftSocketSession(
                     Util::theHAPISession.get(),
-                    hostName.asChar(), port );
+                    hostName.asChar(),
+                    port,
+                    HAPI_THRIFT_TRANSPORT_BUFFERED
+                );
             }
             break;
 
@@ -372,7 +375,9 @@ initializePlugin(MObject obj)
 
                 result = HAPI_CreateThriftNamedPipeSession(
                     Util::theHAPISession.get(),
-                    pipeName.asChar() );
+                    pipeName.asChar(),
+                    HAPI_THRIFT_TRANSPORT_BUFFERED
+                );
             }
             break;
         }

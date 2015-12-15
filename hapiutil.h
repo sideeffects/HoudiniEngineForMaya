@@ -128,6 +128,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
                 assetId, objectId, geoId, partId,
                 name,
                 attrInfo,
+                -1,
                 dataArray,
                 start, length
                 );
@@ -180,6 +181,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
                 assetId, objectId, geoId, partId,
                 name,
                 attrInfo,
+                -1,
                 dataArray,
                 start, length
                 );

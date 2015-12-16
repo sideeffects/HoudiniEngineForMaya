@@ -506,10 +506,24 @@ InputMesh::processSets(
         MFnDependencyNode setFn(setObj, &status);
         CHECK_MSTATUS(status);
 
-        if(setFn.hasAttribute("surfaceShader"))
+        // Filter out unwanted sets. This mimics setFilterScript().
+        MString setType = setFn.typeName();
+        if(!(setType == "objectSet" ||
+                    setType == "textureBakeSet" ||
+                    setType == "vertexBakeSet" ||
+                    setType == "creaseSet" ||
+                    setType == "character"))
         {
-            sgNames.append(setFn.name());
-            sgCompObjs.append(compObj);
+            continue;
+        }
+
+        if(setFn.findPlug("verticesOnlySet").asBool()
+                || setFn.findPlug("edgesOnlySet").asBool()
+                || setFn.findPlug("facetsOnlySet").asBool()
+                || setFn.findPlug("editPointsOnlySet").asBool()
+                || setFn.findPlug("renderableOnlySet").asBool()
+          )
+        {
             continue;
         }
 

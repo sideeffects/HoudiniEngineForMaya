@@ -2273,6 +2273,7 @@ OutputGeometryPart::computeGroups(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     groupType,
                     groupName.asChar(),
+                    NULL,
                     &groupMembership[0],
                     0, groupMembership.size()
                     );

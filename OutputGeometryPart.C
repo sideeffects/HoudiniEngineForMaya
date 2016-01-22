@@ -1419,11 +1419,12 @@ OutputGeometryPart::computeMesh(
 
             markAttributeUsed(uvAttributeName.asChar());
 
+            HAPI_AttributeInfo uvNumberAttrInfo;
             std::vector<int> uvNumbers;
             HAPI_FAIL(hapiGetVertexAttribute(
                         myAssetId, myObjectId, myGeoId, myPartId,
                         uvNumberAttributeName.asChar(),
-                        uvAttrInfo,
+                        uvNumberAttrInfo,
                         uvNumbers
                         ));
             markAttributeUsed(uvNumberAttributeName.asChar());

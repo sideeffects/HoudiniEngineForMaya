@@ -281,6 +281,7 @@ InputMesh::processUVs(
                     vertexUVs.push_back(0);
                     vertexUVs.push_back(0);
                     vertexUVs.push_back(0);
+                    vertexUVNumbers.push_back(0);
                 }
             }
         }

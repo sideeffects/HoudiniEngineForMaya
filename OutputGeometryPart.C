@@ -935,6 +935,14 @@ OutputGeometryPart::computeParticle(
             );
     markAttributeUsed("age");
 
+    // lifespanPP
+    convertParticleAttribute<MDoubleArray>(
+            arrayDataFn, "lifespanPP",
+            floatArray,
+            "life",
+            particleCount
+            );
+
     // finalLifespanPP
     convertParticleAttribute<MDoubleArray>(
             arrayDataFn, "finalLifespanPP",

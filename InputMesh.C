@@ -509,6 +509,13 @@ InputMesh::processSets(
 
         // Filter out unwanted sets. This mimics setFilterScript().
         MString setType = setFn.typeName();
+        if(setType == "shadingEngine")
+        {
+            sgNames.append(setFn.name());
+            sgCompObjs.append(compObj);
+            continue;
+        }
+
         if(!(setType == "objectSet" ||
                     setType == "textureBakeSet" ||
                     setType == "vertexBakeSet" ||

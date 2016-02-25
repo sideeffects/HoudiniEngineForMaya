@@ -210,6 +210,13 @@ initializeHAPI(const OptionVars& optionVars)
         return false;
     }
 
+    // Set the client name.
+    HAPI_SetServerEnvString(
+        Util::theHAPISession.get(),
+        HAPI_ENV_CLIENT_NAME,
+        "maya"
+    );
+
     return true;
 }
 

@@ -1,0 +1,26 @@
+/*!
+
+@mainpage Houdini Engine for Maya
+
+@section Maya Overview
+  - @subpage Maya_GettingStarted "Getting Started"
+  - @subpage Maya_Session "Session"
+  - @subpage Maya_Assets "Assets"
+  - @subpage Maya_Nodes "Nodes"
+  - @subpage Maya_Parameters "Parameters"
+
+  - @subpage Maya_Inputs "Inputs"
+  - @subpage Maya_Mesh "Mesh"
+  - @subpage Maya_Particle "Particle"
+  - @subpage Maya_Curve "Curve"
+  - @subpage Maya_Hair "Hair"
+  - @subpage Maya_Volume "Volume"
+
+  - @subpage Maya_Instancing "Instancing"
+
+  - @subpage Maya_Group "Group"
+  - @subpage Maya_Materials "Materials"
+  - @subpage Maya_Time "Time"
+  - @subpage Maya_Handles "Handles"
+
+*/

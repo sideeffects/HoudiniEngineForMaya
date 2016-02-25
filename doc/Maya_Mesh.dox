@@ -1,0 +1,139 @@
+/*!
+
+@page Maya_Mesh Mesh
+
+@tableofcontents
+
+The plug-in supports both inputting and outputting Maya mesh.
+
+@section Maya_Mesh_Input Input
+
+Maya mesh is inputted into a Houdini asset as polygons. When inputting Maya mesh, the plug-in also includes various other information of the mesh as additional Houdini geometry attributes.
+
+@subsection Maya_Mesh_Input_Normals Normals
+
+- `N` - vertex float3
+
+Stores the normals of all the vertices.
+
+@subsection Maya_Mesh_Input_UVs UVs
+
+- `uv`, `uv2`, `uv3`, ... - vertex float3
+
+Stores the UVs of the vertices. Each UV set is stored as a different attribute.
+
+- `maya_uv_name` - detail string array
+- `maya_uv_mapped_uv` - detail string array
+
+This can be used by the asset to lookup the name of the original UV set from Maya. The "maya_uv_name" stores the original name of the UV sets in Maya, and the "maya_uv_mapped_uv" stores the name of corresponding vertex attribute in Houdini. The two string arrays have the same length.
+
+For example, the asset expects a Maya UV set named "dirt". First, the asset would search the "maya_uv_name" array for "dirt", which might be the second element. Then, the asset would access the second element of the "maya_uv_mapped_uv" array for the corresponding name of the Houdini attribute, which might be "uv2".
+
+- `maya_uv_current` - detail string
+
+Stores the name of the current UV set.
+
+@subsection Maya_Mesh_Input_ColorSets Color sets
+
+- `Cd`, `Cd2`, `Cd3`, ... - vertex float3
+- `Alpha`, `Alpha2`, `Alpha3`, ... - vertex float
+
+Stores the vertex color and alpha of each color set. The colors and alphas of each color set are stored as separate attributes. The Alpha attribute is only present if the Maya color set contains alpha.
+
+- `maya_colorset_name` - detail string array
+- `maya_colorset_mapped_Cd` - detail string array
+- `maya_colorset_mapped_Alpha` - detail string array
+
+This set of attributes can be used by the asset to lookup the name of the original color set from Maya. The "maya_colorset_name" stores the original name of the color sets in Maya, and the "maya_colorset_mapped_Cd" and "maya_colorset_mapped_Alpha" stores the name of corresponding vertex attribute in Houdini.
+
+For example, the asset expects a Maya color set named "diffuse". First, the asset would search the "maya_colorset_name" array for "diffuse", which might be the second element. Then, the asset would access the second element of the "maya_colorset_mapped_Cd" array for the corresponding name of the Houdini attribute, which might be "Cd2".
+
+- `maya_colorset_current` - detail string
+
+Stores the name of the current color set.
+
+@subsection Maya_Mesh_Input_ShadingGroup Shading Groups
+
+- `maya_shading_group` - primitive string
+
+Stores the name of the shading group that is assigned to each polygon.
+
+@subsection Maya_Mesh_Input_Sets Sets
+
+All Maya sets that the mesh belongs to are converted into Houdini primitive groups.
+
+@section Maya_Mesh_Output Output
+
+Polygons outputted from a Houdini asset are outputted as a Maya mesh. When the polygons are outputted, the plug-in recognizes various Houdini geometry attributes. The recognized attributes are then converted into Maya equivalent.
+
+@subsection Maya_Mesh_Output_Normals Normals
+
+- `N` - vertex float3
+
+Used to set the normals of all the vertices.
+
+@subsection Maya_Mesh_Output_UVs UVs
+
+- `uv`, `uv2`, `uv3`, ... - point|vertex float2|float3
+
+Used to assign UVs of the vertices. Each UV attribute is used for assigning a different UV set.
+
+- `maya_uv_name` - detail string array
+- `maya_uv_mapped_uv` - detail string array
+
+This set of attributes is used to map the names of the Houdini UV attributes into the names of the UV set in Maya. The "maya_uv_name" is used to set the name of the UV set in Maya, and the "maya_uv_mapped_uv" is the name of the corresponding UV attribute in Houdini. The two string arrays must have the same length.
+
+- `maya_uv_current` - detail string
+
+Used to set the current UV set.
+
+@subsection Maya_Mesh_Output_ColorSets Color sets
+
+- `Cd`, `Cd2`, `Cd3`, ... - detail|primitive|point|vertex float3
+- `Alpha`, `Alpha2`, `Alpha3`, ... - detail|primitive|point|vertex float
+
+Used to set the vertex color and alpha of each color set. The Alpha attribute is optional.
+
+- `maya_colorset_name` - detail string array
+- `maya_colorset_mapped_Cd` - detail string array
+- `maya_colorset_mapped_Alpha` - detail string array
+
+This set of attributes is used to map the names of the Houdini Color and Alpha attributes into color sets in Maya. The "maya_colorset_name" sets the name of the color sets in Maya, and the "maya_colorset_mapped_Cd" and "maya_colorset_mapped_Alpha" are used to map the color and alpha attributes in Houdini to the corresponding color set in Maya.
+
+- `maya_colorset_current` - detail string
+
+Used to set the current color set.
+
+@subsection Maya_Mesh_Output_ShadingGroup Shading Groups
+
+- `maya_shading_group` - primitive string
+
+Used to assign the named shading group in Maya to the polygon. The shading group must already exist in the scene.
+
+@subsection Maya_Mesh_Output_Sets Sets
+
+All the Houdini primitive groups are converted into Maya sets. If a Maya set doesn't already exist, it will be created.
+
+Note that Houdini groups can easily change from one cook to the next. Since Maya sets are created and modified at the Dependency Graph level, it is more rigid than Houdini groups. So outputting Houdini groups this way suffers from the sync issue. If a Houdini group changes, this change will not be reflected in Maya until a sync happens.
+
+@subsection Maya_Mesh_Output_UnsupportedPolygons Unsupported Polygons
+
+Geometries that are outputted by an asset may occasionally contain polygons that are not supported in Maya. These polygons have multiple vertices referring to the same point, which are used in Houdini for bridges and holes. A common source of these polygons is fractured geometry.
+
+Maya will internally convert these polygons. However, this leads to the topology being changed, and as a result, other Houdini attributes (like UVs and colors) can no longer be applied to the converted polygons. When the plug-in detects such polygons, it will print out a warning message.
+
+@section Maya_Mesh_MultiplePieces Multiple Pieces
+
+@subsection Maya_Mesh_MultiplePieces_Input Input
+
+At the moment, only one Maya object can be connected to each asset's input. In some situations, it could be desirable to connect multiple Maya mesh objects into one input. There is no support for this at the moment. However, one workaround may be to use "Mesh -> Combine" menu to combine multiple Maya mesh objects into one. Since this maintains a construction history, any upstream changes from each mesh object will be passed into the asset's input.
+
+@subsection Maya_Mesh_MultiplePieces_Output Output
+
+When outputting a geometry from Houdini, it is common to want to split up the geometry such that they are become Maya mesh objects. A typical scenario is fracturing a geometry. Unfortunately, there is no ideal solution at the moment, but there are some ways that may could workaround the issue.
+
+One way is to make use of Houdini groups. The asset would put the separate pieces into separate Houdini groups, which would then be converted into Maya sets. Then inside Maya, the Maya sets can be used to identify and manipulate the individual pieces.
+
+Another way is to use Maya's "Edit Mesh -> Separate" to separate the mesh into different objects. This is only possible if the pieces are connected.
+
+*/

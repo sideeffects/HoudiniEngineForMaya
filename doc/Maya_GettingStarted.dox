@@ -1,0 +1,52 @@
+/*!
+
+@page Maya_GettingStarted Getting Started
+
+@tableofcontents
+
+@section Maya_GettingStarted_Install Install
+
+Houdini Engine for Maya is bundled together with the Houdini installer. Once the Houdini installer is started, simply select the Houdini Engine for Maya component, and the installer will handle the rest. When the installation finished, the plug-in will be available inside Maya.
+
+@subsection Maya_GettingStarted_Installing_More More on installing
+The installer performs the following steps:
+
+-# Extract the Maya plug-in for all supported Maya versions. This includes the plug-in binary, and various scripts. Regardless of which Maya versions are actually installed on the system, files for all the supported Maya versions are extracted. The extracted files can be found under the $HFS/engine/maya directory.
+
+-# Register the newly installed Maya plug-in with Maya. This step is only done for Maya versions that the installer is able to detect.
+
+This means that if another Maya version is later installed, the plug-in will not be registered with that Maya version. Although this can be done by running the installer again, it could be a bit time consuming. Since the files were already extracted by the installer, the missing step is to register the plug-in with Maya. It is actually quite easy to manually register the Maya plug-in. Simply copy the file:
+
+    $HFS/engine/maya/maya<version>/houdiniEngine-maya<version>
+
+to the directory:
+
+    $MAYA_LOCATION/modules
+
+For example, copy the file:
+
+    C:\Program Files\Side Effects Software\Houdini 15.0.244\engine\maya\maya2016\houdiniEngine-maya2016
+
+into:
+
+    C:\Program Files\Autodesk\Maya2016\modules
+
+@section Maya_GettingStarted_Load Load the plug-in
+
+Once the Maya plug-in has been installed, the `houdiniEngine` plugin can be loaded through Maya's plug-in manager. Once the plug-in has been loaded, the `Houdini Engine` menu appears at the main menu.
+
+@image html Maya_Menu.png
+
+@section Maya_GettingStarted_Instantiate Instantiate an asset
+
+A Houdini Digital Asset (HDA) can be instantiated through the menu `Houdini Engine->Load Asset...`. This will prompt a dialog to browse for the HDA file.
+
+@image html Maya_BrowseHDA.png
+
+After selecting the HDA file, the asset that is contained in the HDA file is instantiated. If the HDA file contains more than one asset, then a dialog would prompt for the asset to instantiate.
+
+@image html Maya_ChooseAsset.png
+
+Once the asset is instantiated in the Maya scene, a `houdiniAsset` node is created. Everything about the asset is exposed and controlled through this node, such as the asset's parameters, input geometries, and output geometries.
+
+*/

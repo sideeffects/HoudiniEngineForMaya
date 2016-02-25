@@ -1,0 +1,89 @@
+/*!
+
+@page Maya_Particle Particle
+
+@tableofcontents
+
+The plug-in supports both inputting and outputting particle.
+
+@section Maya_Particle_Input Input
+
+Maya particles are inputted into a Houdini asset as points. Both Maya particle and nParticle node can be used for inputting. When inputting Maya particles, all the custom Maya per-particle attributes are inputted as well. Since Maya only supports double and vector per-particle attributes, the inputted point attributes can only be float and float3 point attributes.
+
+@section Maya_Particle_Output Output
+
+Points from a Houdini asset are outputted as a nParticle node. When points are outputted, the plug-in will output all Houdini point attributes as Maya per-particle attributes. Since Maya only support float and vector per-particle attributes, only float and float3 point attributes are outputted into Maya particles. Any other attributes are ignored.
+
+@section Maya_Particle_MappedAttributes Mapped Attributes
+
+Some standard per-particle attributes in Maya have different names in Houdini. These attributes are automatically mapped to the equivalent point attributes in Houdini.
+
+<table>
+<tr>
+    <th>Maya</th>
+    <th>Houdini</th>
+</tr>
+<tr>
+    <td>position (vector)</td>
+    <td>P (float3)</td>
+</tr>
+<tr>
+    <td>velocity (vector)</td>
+    <td>v (float3)</td>
+</tr>
+<tr>
+    <td>acceleration (vector)</td>
+    <td>force (float3)</td>
+</tr>
+<tr>
+    <td>rgbPP (vector)</td>
+    <td>Cd (float3)</td>
+</tr>
+<tr>
+    <td>opacityPP (double)</td>
+    <td>Alpha (float)</td>
+</tr>
+<tr>
+    <td>radiusPP (double)</td>
+    <td>pscale (float)</td>
+</tr>
+<tr>
+    <td>finalLifespanPP (double)</td>
+    <td>life (float)</td>
+</tr>
+<tr>
+    <td>particleId (double)</td>
+    <td>id (float)</td>
+</tr>
+</table>
+
+@section Maya_Particle_NucleusSolver Nucleus Solver
+
+When the asset creates a nParticle node for outputting points/particles, the nParticle node is assigned to the active Nucleus solver. This means that the outputted particles would then participate in any simulations that is assigned to the same Nucleus solver. This may or may not be the desired result.
+
+One simple example is a Houdini asset that takes some input points, remove some points, and output the resulting points. If a simulated nParticle is used as the input, the outputted nParticle will be assigned to the same Nucleus Solver as the input nParticle. Since the outputted particles have the exact same positions as the input particles, this input particle would collide with the output particle, which affects the motion of the input particles. In this case, to prevent the collisions, one of the nParticle nodes should be assigned to a different Nucleus solver.
+
+\dot
+digraph {
+    node [ shape = box ];
+
+    rankdir = LR;
+
+    subgraph cluster_houdini {
+        label = "Houdini Engine";
+        b [ label = "asset" ];
+    }
+
+    subgraph cluster_maya {
+        label = "Maya";
+        a [ label = "simulated nParticle" ];
+        c [ label = "outputted nParticle" ];
+        d [ style=invis ];
+        a -> d -> c [ style=invis ];
+    }
+
+    a -> b -> c;
+}
+\enddot
+
+*/

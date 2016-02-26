@@ -159,11 +159,12 @@ Inputs::setInput(
         isValidInput = plugArray.length() == 1;
     }
 
-    MDataHandle geoDataHandle;
+    MObject geoData;
     if(isValidInput)
     {
         // has valid data
-        geoDataHandle = dataBlock.inputValue(inputGeoPlug, &status);
+        MDataHandle geoDataHandle = dataBlock.inputValue(inputGeoPlug, &status);
+        geoData = geoDataHandle.data();
 
         isValidInput = status;
     }
@@ -185,19 +186,19 @@ Inputs::setInput(
 
     // determine the new input type
     Input::AssetInputType newAssetInputType = Input::AssetInputType_Invalid;
-    if(geoDataHandle.type() == MFnData::kIntArray)
+    if(geoData.hasFn(MFn::kIntArrayData))
     {
         newAssetInputType = Input::AssetInputType_Asset;
     }
-    else if(geoDataHandle.type() == MFnData::kMesh)
+    else if(geoData.hasFn(MFn::kMeshData))
     {
         newAssetInputType = Input::AssetInputType_Mesh;
     }
-    else if(geoDataHandle.type() == MFnData::kNurbsCurve)
+    else if(geoData.hasFn(MFn::kNurbsCurveData))
     {
         newAssetInputType = Input::AssetInputType_Curve;
     }
-    else if(geoDataHandle.type() == MFnData::kVectorArray)
+    else if(geoData.hasFn(MFn::kVectorArrayData))
     {
         newAssetInputType = Input::AssetInputType_Particle;
     }

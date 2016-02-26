@@ -96,8 +96,8 @@ InputCurve::setInputGeo(
 
     MDataHandle dataHandle = dataBlock.inputValue(plug);
 
-    MObject inputMesh = dataHandle.asNurbsCurve();
-    if(inputMesh.isNull())
+    MObject curveObj = dataHandle.asNurbsCurve();
+    if(curveObj.isNull())
     {
         return;
     }
@@ -127,10 +127,16 @@ InputCurve::setInputGeo(
     const HAPI_ParmInfo &orderParm = parms[orderParmIndex];
     const HAPI_ParmInfo &closeParm = parms[closeParmIndex];
 
-    MFnNurbsCurve fnCurve(inputMesh);
+    MFnNurbsCurve curveFn(curveObj);
 
     // type
     {
+        const char *type = "nurbs";
+        if(curveObj.apiType() == MFn::kBezierCurveData)
+        {
+            type = "bezier";
+        }
+
         HAPI_ParmChoiceInfo* choices = new HAPI_ParmChoiceInfo[typeParm.choiceCount];
         HAPI_GetParmChoiceLists(
                 Util::theHAPISession.get(),
@@ -142,7 +148,7 @@ InputCurve::setInputGeo(
         int nurbsIdx = -1;
         for(int i = 0; i < typeParm.choiceCount; i++)
         {
-            if(Util::HAPIString(choices[i].valueSH) == "nurbs")
+            if(Util::HAPIString(choices[i].valueSH) == type)
             {
                 nurbsIdx = i;
                 break;
@@ -168,15 +174,15 @@ InputCurve::setInputGeo(
     // coords
     {
         MPointArray cvs;
-        fnCurve.getCVs(cvs);
+        curveFn.getCVs(cvs);
 
-        // Maya has fnCurve.degree() more cvs in it's data definition
+        // Maya has curveFn.degree() more cvs in it's data definition
         // than houdini for periodic curves--but they are conincident
         // with the first ones. Houdini ignores them, so we don't
         // output them.
         int num_houdini_cvs = cvs.length();
-        if(fnCurve.form() == MFnNurbsCurve::kPeriodic)
-            num_houdini_cvs -= fnCurve.degree();
+        if(curveFn.form() == MFnNurbsCurve::kPeriodic)
+            num_houdini_cvs -= curveFn.degree();
 
         std::ostringstream coords;
         for(unsigned int i = 0; i < (unsigned int) num_houdini_cvs; i++)
@@ -196,7 +202,7 @@ InputCurve::setInputGeo(
 
     // order
     {
-        int order = fnCurve.degree() + 1;
+        int order = curveFn.degree() + 1;
 
         HAPI_SetParmIntValues(
                 Util::theHAPISession.get(),
@@ -208,7 +214,7 @@ InputCurve::setInputGeo(
 
     // periodicity
     {
-        int close = fnCurve.form() == MFnNurbsCurve::kPeriodic;
+        int close = curveFn.form() == MFnNurbsCurve::kPeriodic;
         HAPI_SetParmIntValues(
                 Util::theHAPISession.get(),
                 myCurveNodeInfo.id,

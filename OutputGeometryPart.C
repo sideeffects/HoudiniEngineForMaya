@@ -376,7 +376,7 @@ OutputGeometryPart::computeCurves(
             myAssetId, myObjectId, myGeoId, myPartId,
             "Pw",
             attrInfo,
-            pArray
+            pwArray
             );
     markAttributeUsed("P");
     markAttributeUsed("Pw");

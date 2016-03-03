@@ -6,17 +6,17 @@
 
 @section Maya_Assets_AssetDefinition Asset Definition
 
-The houdiniAsset node stores the asset name and the path of the HDA file. The asset name and the HDA path together act as a reference to the asset definition. Since the definition is not saved within the node or the Maya scene, the HDA file needs to be accessible whenever the Maya scene is opened.
+The `houdiniAsset` node stores the asset name and the path of the HDA file. The asset name and the HDA path together act as a reference to the asset definition. Since the definition is not saved within the node or the Maya scene, the HDA file needs to be accessible whenever the Maya scene is opened.
 
-Instead of explicitly specifying the HDA path, it's also possible to rely on Houdini's path search mechanism for HDA files. This means Houdini Engine can also search for HDA files according to environment variables like `HOUDINI_PATH` and `HOUDINI_OTLSCAN_PATH`. This makes the HDA path optional, as long as the asset name can be found via the path search mechanism.
+Instead of explicitly specifying the HDA path, you can use Houdini's path search mechanism for HDA files. This means Houdini Engine can also search for HDA files according to environment variables like `HOUDINI_PATH` and `HOUDINI_OTLSCAN_PATH`. This makes the HDA path optional, as long as the asset name can be found via the path search mechanism.
 
 @section Maya_Assets_SyncAsset Sync Asset
 
 In Houdini, a SOP can output any combination of geometry types, and the output geometry can change dynamically depending on many factors, such as parameters, input geometries, and asset logic. On the other hand, Maya requires a specific shape node for each specific kind of geometry. For example, creating a mesh requires a mesh node, and creating particles require a particle node.
 
-This means that depending on what an asset outputs, the corresponding shape nodes on the Maya side have to change. Otherwise, some of the asset outputs would not be available on the Maya side. A good example is a switch SOP that switches between a box and some points. When the asset is outputting the box, the Maya scene would require a mesh shape node to represent the mesh inside Maya. However, simply by changing a parameter on the switch SOP, the asset now outputs points. And now, the Maya scene would require a particle shape node to represent the points inside Maya. So it's important to keep the Maya shape nodes in sync with what the asset is outputting.
+This means that depending on what an asset outputs, the corresponding shape nodes on the Maya side have to change. Otherwise, some of the asset outputs would not be available on the Maya side. One way to handle this is by using a Switch SOP, which switches between a box and some points. For example, if an asset is outputting a box, the Maya scene would require a mesh shape node to represent the mesh inside Maya. By changing a parameter on the Switch SOP, the asset could output points. The Maya scene would now require a particle shape node to represent the points inside Maya. So it's important to keep the Maya shape nodes in sync with what the asset is outputting.
 
-Another common scenario is an asset that emits particles. In the initial frame, the asset might not be emitting any particles yet. And the asset only begins to emit particles in some later frames. This means if the asset is instantiated in the initial frame, the asset will be outputting no geometry at all, and no shape node will be created on the Maya side. And when the asset begins to emit particles, they will not be visible in Maya because no shape node was created. The asset representation in Maya will then need to be synced to match what the asset is actually outputting.
+Another common scenario is an asset that emits particles. In the initial frame, the asset might not be emitting any particles yet. This means if the asset is instantiated in the initial frame, the asset won't be outputting any geometry at all, and no shape node will be created on the Maya side. So when the asset does begin to emit particles, they will not be visible in Maya because no shape node was created. You will need to sync the asset representation in Maya to match what the asset is actually outputting.
 
 @section Maya_Assets_Options Asset Options
 
@@ -28,44 +28,44 @@ Shows the cook messages from all the nodes within the asset.
 
 @subsection Maya_Assets_Options_ResetSimulation Reset Simulation
 
-Reset the simulation cache of all the DOP networks within the asset.
+Resets the simulation cache of all the DOP networks within the asset.
 
 @subsection Maya_Assets_Options_ReloadAsset Reload Asset
 
-Reload the asset definition of this asset. This is useful for when making changes to the asset from another Houdini session while the Maya session is running.
+Reloads the asset definition of this asset. This is useful when making changes to the asset from another Houdini session while the Maya session is running.
 
 @subsection Maya_Assets_Options_SyncWhenInputConnects Sync When Input Connects
 
-Perform a sync when a Maya geometry is connected to the asset's input. This is usually desirable because connecting a Maya geometry usually means the asset's output will change somehow.
+Perform a sync when Maya geometry is connected to the asset's input. This is useful because connecting a Maya geometry often means the asset's output will change somehow.
 
 @subsection Maya_Assets_Options_AutoSyncOutputs Auto Sync Outputs
 
 This is an experimental option.
 
-Automatically perform a sync when necessary. However, this could lead to modifying the scene while Maya does not expect the scene to change, which could lead Maya becoming unstable and crashes.
+Automatically performs a sync when necessary. However, this could lead to the scene being modified unexpectedly, which could lead to instability and crashes in Maya.
 
 @subsection Maya_Assets_Options_SyncAsset Sync Asset
 
-Delete all the Maya shape nodes, and re-create all the Maya shape nodes that are needed to represent what the asset is outputting at that moment.
+Deletes all the Maya shape nodes, and re-creates all the Maya shape nodes that are needed to represent what the asset is outputting at that moment.
 
 @subsection Maya_Assets_Options_SplitGeosByGroup Split Geos By Group
 
-This option may soon become obsolete and removed. So it is recommended to avoid relying on this option.
+This option may soon become obsolete and removed, so relying on this option is not recommended.
 
 Normally, all the primitives of the same type are outputted together, and appear as one shape node in Maya. This option makes it possible to split the primitives of the same primitive type by Houdini groups. So primitives that belong to different groups will appear as separate shape nodes in Maya.
 
-For example, if half of a grid is in one group, and the other half is in another group, without enabling this option, the entire grid will be outputted into one mesh node. However, if this option is enabled, then one half of the grid will be one mesh node, and the other half will be another mesh node.
+For example, if half of a grid is in one group, and the other half is in another group, the entire grid will be outputted into one mesh node by default. However, if this option is enabled, one half of the grid will be one mesh node, and the other half will be another mesh node.
 
 @subsection Maya_Assets_Options_UseInstancerNode Use Instancer Node
 
-When outputting geometry instances, the default behavior is to use Maya's particle instancer to efficiently instance the geometries. Instead of using particle instancer, Maya also support instancing nodes by parent hierarchy. If this option is off, then the geometry instances will be outputted as parent hierarchy. For outputting large number of instances, it is much more efficient to use particle instancer.
+When outputting geometry instances, the default behavior is to use Maya's particle instancer to efficiently instance the geometries. However,  Maya also supports instancing nodes by parent hierarchy. If this option is off, the geometry instances will be outputted as parent hierarchy. For outputting large number of instances, it's much more efficient to use particle instancer.
 
 @subsection Maya_Assets_Options_OutputHiddenObjects Output Hidden Objects
 
-Output hidden objects from the asset.
+Outputs hidden objects from the asset.
 
 @subsection Maya_Assets_Options_OutputTemplatedGeometries Output Templated Geometries
 
-Output templated geometries from the asset.
+Outputs templated geometries from the asset.
 
 */

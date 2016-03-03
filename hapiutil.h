@@ -536,7 +536,6 @@ struct HAPIGetAttribute
 
         if(!attrInfo.exists)
         {
-            ARRAYTRAIT(T)::resize(dataArray, 0);
             return HAPI_RESULT_FAILURE;
         }
 

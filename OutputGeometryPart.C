@@ -1407,6 +1407,31 @@ OutputGeometryPart::computeMesh(
         bool useMappedUV = uvSetNames.length()
             && (uvSetNames.length() == mappedUVAttributeNames.length());
 
+        // If no maya_uv_current, choose one to use as the current UV.
+        if(!currentUVSetName.length())
+        {
+            // Default to the first uv
+            currentUVSetName = Util::getAttrLayerName("uv", 0);
+
+            if(useMappedUV)
+            {
+                ArrayIterator<MStringArray> begin
+                    = arrayBegin(mappedUVAttributeNames);
+                ArrayIterator<MStringArray> end
+                    = arrayEnd(mappedUVAttributeNames);
+
+                ArrayIterator<MStringArray> iter = std::find(
+                        begin,
+                        end,
+                        currentUVSetName
+                        );
+                if(iter != end)
+                {
+                    currentUVSetName = uvSetNames[std::distance(begin, iter)];
+                }
+            }
+        }
+
         int layerIndex = 0;
         for(;;)
         {
@@ -1594,16 +1619,22 @@ OutputGeometryPart::computeMesh(
 
             // If currentUVSetName is set, then use it to determine the current
             // UV set. Otherwise, use the first as the current UV set.
-            if((currentUVSetName.length()
-                        && uvSetName == currentUVSetName)
-                    || (!currentUVSetName.length()
-                        && layerIndex == 0))
+            if((uvSetName == currentUVSetName))
             {
                 meshCurrentUVHandle.setString(uvSetName);
             }
 
             CHECK_MSTATUS(meshFn.setUVs(uArray, vArray, &uvSetName));
             CHECK_MSTATUS(meshFn.assignUVs(polygonCounts, vertexList, &uvSetName));
+
+            // Copy the current UVs to "map1", so that the viewport uses the
+            // correct UVs for textures
+            if(uvSetName != "map1" && uvSetName == currentUVSetName)
+            {
+                MString defaultUVSet = "map1";
+                CHECK_MSTATUS(meshFn.setUVs(uArray, vArray, &defaultUVSet));
+                CHECK_MSTATUS(meshFn.assignUVs(polygonCounts, vertexList, &defaultUVSet));
+            }
 
             layerIndex++;
         }

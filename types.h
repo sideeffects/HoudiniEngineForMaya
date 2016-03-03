@@ -34,6 +34,8 @@ struct ArrayTrait<RawArray<T> >
     static const bool canGetData = true;
     static const T* data(const ArrayType &array)
     { return array.data(); }
+    static T* data(ArrayType &array)
+    { return array.data(); }
 
     static size_t size(const ArrayType &array)
     { return array.size(); }

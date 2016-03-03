@@ -504,16 +504,16 @@ houdiniEngineCreateUI()
         -subMenu true`;
     setParent -menu ..;
 
-    menuItem -label "Asset Library Manager..."
+    menuItem -label "Asset Library Manager"
         -command "houdiniEngineAssetLibraryManager";
 
     menuItem -divider true;
 
-    menuItem -label "Orbolt Asset Browser..."
+    menuItem -label "Orbolt Asset Browser"
         -sourceType "python"
         -command "import houdini_engine_for_maya.asset_store\nhoudini_engine_for_maya.asset_store.show_asset_store_window()";
 
-    menuItem -label "Get Assets from Orbolt..."
+    menuItem -label "Get Assets from Orbolt"
         -command "houdiniEngine_launchOrboltPageClick";
 
     menuItem -divider true;
@@ -530,7 +530,7 @@ houdiniEngineCreateUI()
         -subMenu true
         -tearOff true;
 
-        menuItem -label "View Assets in Houdini..."
+        menuItem -label "View Assets in Houdini"
             -command "houdiniEngine_viewInHoudini";
 
         menuItem -label "Save Assets to Houdini Scene..."
@@ -549,21 +549,21 @@ houdiniEngineCreateUI()
         -label "Help and Support"
         -subMenu true;
 
-        menuItem -label "Visit Houdini Engine for Maya forum..."
+        menuItem -label "Visit Houdini Engine for Maya forum"
             -command "houdiniEngine_launchForum";
 
-        menuItem -label "Submit Bugs and RFEs..."
+        menuItem -label "Submit Bugs and RFEs"
             -command "houdiniEngine_launchSubmitBugs";
 
-        menuItem -label "View Change Log..."
+        menuItem -label "View Change Log"
             -command "houdiniEngine_launchChangeLog";
 
-        menuItem -label "Contribute on GitHub..."
+        menuItem -label "Contribute on GitHub"
             -command "houdiniEngine_launchGitHub";
 
         menuItem -divider true;
 
-        menuItem -label "Houdini License Administrator..."
+        menuItem -label "Houdini License Administrator"
             -command "houdiniEngine_runHKey";
 
     setParent -menu ..;

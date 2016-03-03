@@ -1190,6 +1190,17 @@ OutputGeometryPart::computeMesh(
     std::vector<float> floatArray;
     std::vector<int> intArray;
 
+    int currentlayer = -1;
+    if(!HAPI_FAIL(hapiGetDetailAttribute(
+            myAssetId, myObjectId, myGeoId, myPartId,
+            "currentlayer",
+            attrInfo,
+            currentlayer
+            )))
+    {
+        currentlayer -= 1;
+    }
+
     // vertex array
     MFloatPointArray vertexArray;
     hapiGetPointAttribute(
@@ -1410,8 +1421,16 @@ OutputGeometryPart::computeMesh(
         // If no maya_uv_current, choose one to use as the current UV.
         if(!currentUVSetName.length())
         {
-            // Default to the first uv
-            currentUVSetName = Util::getAttrLayerName("uv", 0);
+            if(currentlayer != -1)
+            {
+                // Default to currentlayer
+                currentUVSetName = Util::getAttrLayerName("uv", currentlayer);
+            }
+            else
+            {
+                // Default to the first uv
+                currentUVSetName = Util::getAttrLayerName("uv", 0);
+            }
 
             if(useMappedUV)
             {

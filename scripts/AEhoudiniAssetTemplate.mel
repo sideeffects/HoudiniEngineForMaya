@@ -567,9 +567,15 @@ AEhoudiniAssetOperationNew(string $attr)
 {
     setUITemplate -pushTemplate NONE;
 
-    rowLayout
-        -adjustableColumn 1
-        -numberOfColumns 1;
+    columnLayout
+        -adjustableColumn 1;
+
+        if(`houdiniEngine -license` == "Houdini-Indie"
+                || `houdiniEngine -license` == "Houdini-Engine-Indie")
+            text
+                -label "Houdini Engine Indie - For Limited Commercial Use Only"
+                -font "boldLabelFont"
+                -backgroundColor 1 1 0;
 
         button -label "Sync Asset"
             -annotation "Recreates all the parameters and output nodes."

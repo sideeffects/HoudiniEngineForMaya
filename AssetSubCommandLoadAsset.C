@@ -100,12 +100,6 @@ AssetSubCommandLoadAsset::doIt()
 
     MFnDependencyNode assetNodeFn(assetNode);
 
-    // select the node
-    MGlobal::select(assetNode);
-
-    // set result
-    MPxCommand::setResult(assetNodeFn.name());
-
     // The asset should have been instantiated by now. If we couldn't
     // instantiate the asset, then don't operate on the asset any further. This
     // avoids generating repeated errors.
@@ -115,12 +109,22 @@ AssetSubCommandLoadAsset::doIt()
         {
             // If we couldn't instantiate the asset, then an error message
             // should have displayed already. No need to display error here.
-            return MStatus::kFailure;
+            status = MStatus::kFailure;
         }
     }
 
-    myAssetSubCommandSync = new AssetSubCommandSync(assetNode);
-    myAssetSubCommandSync->doIt();
+    // Only attempt to sync if the node is valid
+    if(!MFAIL(status))
+    {
+        myAssetSubCommandSync = new AssetSubCommandSync(assetNode);
+        myAssetSubCommandSync->doIt();
+    }
+
+    // select the node
+    MGlobal::select(assetNode);
+
+    // set result
+    MPxCommand::setResult(assetNodeFn.name());
 
     return MStatus::kSuccess;
 }

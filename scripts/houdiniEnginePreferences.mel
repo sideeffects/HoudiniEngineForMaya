@@ -84,7 +84,7 @@ houdiniEnginePreferences_save()
         
     optionVar
         -intValue "houdiniEngineThriftTransport"
-        `optionMenu -query -select sessionTransportType`;
+        (`optionMenu -query -select sessionTransportType` - 1);
 
     houdiniEnginePreferences_close;
 }

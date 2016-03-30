@@ -159,10 +159,17 @@ namespace
     {
         OptionVars()
             : asyncMode("AsynchronousMode", 1)
-            , sessionType("SessionType", 0)
+            , sessionType(
+                "SessionType",
+                static_cast<int>(HAPI_SESSION_INPROCESS)
+            )
             , thriftServer("ThriftServer", "localhost")
             , thriftPort("ThriftPort", 9090)
             , thriftPipe("ThriftPipe", "hapi")
+            , thriftTransport(
+                "ThriftTransport",
+                static_cast<int>(HAPI_THRIFT_TRANSPORT_BUFFERED)
+            )
         {}
 
         IntOptionVar     asyncMode;
@@ -170,6 +177,7 @@ namespace
         StringOptionVar  thriftServer;
         IntOptionVar     thriftPort;
         StringOptionVar  thriftPipe;
+        IntOptionVar     thriftTransport;
 
     private:
         OptionVars& operator=(const OptionVars&);
@@ -370,7 +378,9 @@ initializePlugin(MObject obj)
                     Util::theHAPISession.get(),
                     hostName.asChar(),
                     port,
-                    HAPI_THRIFT_TRANSPORT_BUFFERED
+                    static_cast<HAPI_ThriftTransportType>(
+                        optionVars.thriftTransport.get()
+                    )
                 );
             }
             break;
@@ -386,7 +396,9 @@ initializePlugin(MObject obj)
                 sessionResult = HAPI_CreateThriftNamedPipeSession(
                     Util::theHAPISession.get(),
                     pipeName.asChar(),
-                    HAPI_THRIFT_TRANSPORT_BUFFERED
+                    static_cast<HAPI_ThriftTransportType>(
+                        optionVars.thriftTransport.get()
+                    )
                 );
             }
             break;

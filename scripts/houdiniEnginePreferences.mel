@@ -41,6 +41,11 @@ houdiniEnginePreferences_refresh()
         -enable ($sessionType == 2)
         -text `optionVar -query "houdiniEngineThriftPipe"`
         sessionPipeName;
+        
+    optionMenu -edit
+        -enable ($sessionType != 0)
+        -select (1 + `optionVar -query "houdiniEngineThriftTransport"`)
+        sessionTransportType;
 }
 
 global proc
@@ -76,6 +81,10 @@ houdiniEnginePreferences_save()
     optionVar
         -stringValue "houdiniEngineThriftPipe"
         `textField -query -text sessionPipeName`;
+        
+    optionVar
+        -intValue "houdiniEngineThriftTransport"
+        `optionMenu -query -select sessionTransportType`;
 
     houdiniEnginePreferences_close;
 }
@@ -92,6 +101,12 @@ houdiniEnginePreferences_toggleAsynchronousMode(int $state)
     global int $houdiniEngineAsynchronousMode;
 
     $houdiniEngineAsynchronousMode = $state;
+}
+
+global proc
+houdiniEnginePreferences_toggleSessionTypeInProcess(int $state)
+{    
+    optionMenu -edit -enable (!$state) sessionTransportType;
 }
 
 global proc
@@ -174,6 +189,7 @@ houdiniEnginePreferences()
         formLayout sessionLayout;
             radioButton
                 -label "Within Maya Process"
+                -changeCommand "houdiniEnginePreferences_toggleSessionTypeInProcess #1"
                 sessionTypeInProcess;
 
             radioButton
@@ -193,6 +209,12 @@ houdiniEnginePreferences()
                 sessionTypePipe;
 
             textField sessionPipeName;
+            
+            optionMenu
+                -label "Thrift Transport Type:"
+                sessionTransportType;
+                menuItem -label "Buffered";
+                menuItem -label "Framed";
         setParent ..;
         
         formLayout -e
@@ -223,6 +245,7 @@ houdiniEnginePreferences()
             
             -attachControl sessionTypePipe "top" 5 sessionTypeSocket
             -attachControl sessionPipeName "top" 5 sessionTypeSocket
+            -attachControl sessionTransportType "top" 5 sessionTypePipe
             sessionLayout;
     setParent ..;
 

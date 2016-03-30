@@ -176,16 +176,16 @@ namespace
     };
 }
 
-bool
+HAPI_Result
 initializeHAPI(const OptionVars& optionVars)
 {
     if(HAPI_IsInitialized( Util::theHAPISession.get() ) == HAPI_RESULT_SUCCESS)
     {
-        MGlobal::displayInfo("Houdini Engine is already initialized. Skipping initialization.");
-        return true;
+        MGlobal::displayInfo(
+            "Houdini Engine is already initialized. Skipping initialization."
+        );
+        return HAPI_RESULT_SUCCESS;
     }
-
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
     const char* otl_dir = getenv("HAPI_OTL_PATH");
     const char* dso_dir = getenv("HAPI_DSO_PATH");
@@ -196,7 +196,7 @@ initializeHAPI(const OptionVars& optionVars)
 
     bool use_cooking_thread = optionVars.asyncMode.get() == 1;
 
-    hstat = HAPI_Initialize(
+    HAPI_Result hstat = HAPI_Initialize(
             Util::theHAPISession.get(),
             &cook_options,
             use_cooking_thread,
@@ -207,8 +207,7 @@ initializeHAPI(const OptionVars& optionVars)
             );
     if(hstat != HAPI_RESULT_SUCCESS)
     {
-        CHECK_HAPI(hstat);
-        return false;
+        return hstat;
     }
 
     // Set the client name.
@@ -218,7 +217,7 @@ initializeHAPI(const OptionVars& optionVars)
         "maya"
     );
 
-    return true;
+    return HAPI_RESULT_SUCCESS;
 }
 
 bool
@@ -339,15 +338,18 @@ initializePlugin(MObject obj)
             static_cast<SessionType::Enum>( optionVars.sessionType.get() );
 
         Util::theHAPISession.reset( new HAPI_Session );
-        HAPI_Result result = HAPI_RESULT_FAILURE;
+        HAPI_Result sessionResult = HAPI_RESULT_FAILURE;
 
         switch (sessionType)
         {
         case SessionType::ST_INPROCESS:
             MGlobal::displayInfo(
-                "Creating an in-process Houdini Engine session.");
+                "Creating an in-process Houdini Engine session."
+            );
 
-            result = HAPI_CreateInProcessSession( Util::theHAPISession.get() );
+            sessionResult = HAPI_CreateInProcessSession(
+                Util::theHAPISession.get()
+            );
             break;
 
         case SessionType::ST_THRIFT_SOCKET:
@@ -364,7 +366,7 @@ initializePlugin(MObject obj)
 
                 MGlobal::displayInfo(msg);
 
-                result = HAPI_CreateThriftSocketSession(
+                sessionResult = HAPI_CreateThriftSocketSession(
                     Util::theHAPISession.get(),
                     hostName.asChar(),
                     port,
@@ -378,9 +380,10 @@ initializePlugin(MObject obj)
                 const MString pipeName = optionVars.thriftPipe.get();
                 MGlobal::displayInfo(
                     "Establishing a remote Houdini Engine session "
-                    "using named pipe \"" + pipeName + "\"");
+                    "using named pipe \"" + pipeName + "\""
+                );
 
-                result = HAPI_CreateThriftNamedPipeSession(
+                sessionResult = HAPI_CreateThriftNamedPipeSession(
                     Util::theHAPISession.get(),
                     pipeName.asChar(),
                     HAPI_THRIFT_TRANSPORT_BUFFERED
@@ -389,22 +392,31 @@ initializePlugin(MObject obj)
             break;
         }
 
-        if ( result != HAPI_RESULT_SUCCESS )
+        if ( sessionResult != HAPI_RESULT_SUCCESS )
         {
             Util::theHAPISession.reset(NULL);
-            MGlobal::displayError(
-                "Could not create a Houdini Engine session. "
-                "Please edit the Back End preferences and reload the plug-in.");
         }
     }
 
-    if ( Util::theHAPISession.get() && initializeHAPI(optionVars) )
+    const HAPI_Result initResult = Util::theHAPISession.get() ?
+        initializeHAPI(optionVars) : HAPI_RESULT_INVALID_SESSION;
+
+    switch (initResult)
     {
+    case HAPI_RESULT_SUCCESS:
         MGlobal::displayInfo("Houdini Engine initialized successfully.");
         printHAPIVersion();
-    }
-    else
-    {
+        break;
+
+    case HAPI_RESULT_INVALID_SESSION:
+        Util::theHAPISession.reset(NULL);
+        MGlobal::displayError(
+            "Could not create a Houdini Engine session. "
+            "Please edit the Back End preferences and reload the plug-in."
+        );
+        // fall through
+
+    default:
         MGlobal::displayInfo("Houdini Engine failed to initialize.");
     }
 
@@ -421,7 +433,9 @@ initializePlugin(MObject obj)
             "Any"
             );
 
-    status = plugin.registerUI("houdiniEngineCreateUI", "houdiniEngineDeleteUI");
+    status = plugin.registerUI(
+        "houdiniEngineCreateUI", "houdiniEngineDeleteUI"
+    );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerTransform(

@@ -234,6 +234,7 @@ houdiniEnginePreferences()
             -attachControl sessionHostLabel "right" 5 sessionHost
             
             -attachForm sessionPipeName "right" 5
+            -attachForm sessionTransportType "left" 15
             
             -attachForm sessionTypeInProcess "top" 5
             

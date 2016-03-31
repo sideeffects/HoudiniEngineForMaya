@@ -187,12 +187,18 @@ namespace
 HAPI_Result
 initializeHAPI(const OptionVars& optionVars)
 {
-    if(HAPI_IsInitialized( Util::theHAPISession.get() ) == HAPI_RESULT_SUCCESS)
+    switch ( HAPI_IsInitialized( Util::theHAPISession.get() ) )
     {
+    case HAPI_RESULT_SUCCESS:
         MGlobal::displayInfo(
             "Houdini Engine is already initialized. Skipping initialization."
         );
         return HAPI_RESULT_SUCCESS;
+
+    case HAPI_RESULT_INVALID_SESSION:
+        return HAPI_RESULT_INVALID_SESSION;
+
+    default:;
     }
 
     const char* otl_dir = getenv("HAPI_OTL_PATH");
@@ -345,7 +351,7 @@ initializePlugin(MObject obj)
         const SessionType::Enum sessionType =
             static_cast<SessionType::Enum>( optionVars.sessionType.get() );
 
-        Util::theHAPISession.reset( new HAPI_Session );
+        Util::theHAPISession.reset( new Util::HAPISession );
         HAPI_Result sessionResult = HAPI_RESULT_FAILURE;
 
         switch (sessionType)

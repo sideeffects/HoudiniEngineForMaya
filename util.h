@@ -120,7 +120,28 @@ class HAPIError: public std::exception
 
 namespace Util
 {
-extern std::auto_ptr<HAPI_Session> theHAPISession;
+class HAPISession : public HAPI_Session
+{
+public:
+    HAPISession()
+    {
+        std::cout << "[Pavlo] HAPISession::HAPISession()\n";
+
+        type = HAPI_SESSION_MAX;
+        id = 0;
+    }
+
+    ~HAPISession()
+    {
+        std::cout << "[Pavlo] HAPISession::~HAPISession()\n";
+        if ( type != HAPI_SESSION_MAX )
+        {
+            HAPI_CloseSession( this );
+        }
+    }
+};
+
+extern std::unique_ptr<HAPISession> theHAPISession;
 
 void displayInfoForNode(
         const MString &typeName,

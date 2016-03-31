@@ -45,7 +45,7 @@ HAPIError::what() const throw()
 
 namespace Util
 {
-std::unique_ptr<HAPISession> theHAPISession;
+std::auto_ptr<HAPISession> theHAPISession;
 
 void
 displayInfoForNode(

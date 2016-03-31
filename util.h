@@ -141,7 +141,7 @@ public:
     }
 };
 
-extern std::unique_ptr<HAPISession> theHAPISession;
+extern std::auto_ptr<HAPISession> theHAPISession;
 
 void displayInfoForNode(
         const MString &typeName,

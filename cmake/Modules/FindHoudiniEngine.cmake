@@ -12,6 +12,13 @@
 #   HoudiniEngine_BINARYDIR
 
 set( _houdiniengine_lib HAPIL )
+if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+    set( _houdiniengine_hars_executable HARS )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    set( _houdiniengine_hars_executable HARS.exe )
+elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
+    set( _houdiniengine_hars_executable HARS )
+endif ()
 
 #if ( NOT HoudiniEngine_FIND_VERSION )
 #    message( FATAL_ERROR "Houdini Engine version is not specified." )
@@ -90,14 +97,12 @@ get_filename_component(
     )
 list( APPEND _houdiniengine_required_vars HoudiniEngine_LIBRARY_DIR )
 
-if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-    find_path(
-        HoudiniEngine_BINARY_DIR
-        libHAPI.dll
-        HINTS ${_houdiniengine_binary_search_dirs}
-        )
-    list( APPEND _houdiniengine_required_vars HoudiniEngine_BINARY_DIR )
-endif ()
+find_path(
+    HoudiniEngine_BINARY_DIR
+    ${_houdiniengine_hars_executable}
+    HINTS ${_houdiniengine_binary_search_dirs}
+    )
+list( APPEND _houdiniengine_required_vars HoudiniEngine_BINARY_DIR )
 
 ########################################
 # Create library target

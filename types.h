@@ -40,7 +40,12 @@ struct ArrayTrait<RawArray<T> >
     static size_t size(const ArrayType &array)
     { return array.size(); }
     static void resize(ArrayType &array, size_t size)
-    { assert(array.size() == size); }
+    {
+        // Don't assert. This worksaround the issue where the plugin assumes a
+        // Maya-specific detail attribute has tuple size == 1, but the detail
+        // attribute actually has tuple size > 1.
+        //assert(array.size() == size );
+    }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
     { return array.data()[i]; }

@@ -65,14 +65,12 @@ file(
     "${HoudiniEngine_LIBRARY_DIR}"
     )
 
-if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-    file(
-        RELATIVE_PATH
-        install_module_dir_to_houdiniengine_bin_dir
-        "${install_module_absolute_dir}"
-        "${HoudiniEngine_BINARY_DIR}"
-        )
-endif ()
+file(
+    RELATIVE_PATH
+    install_module_dir_to_houdiniengine_bin_dir
+    "${install_module_absolute_dir}"
+    "${HoudiniEngine_BINARY_DIR}"
+    )
 
 ########################################
 # plugin
@@ -169,17 +167,15 @@ endif ()
 ########################################
 # Module files
 ########################################
-if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-    # Set the PATH variable for dynamic library.
-    set(
-        MODULE_DESCRIPTION_ENVIRONMENTS
-        "${MODULE_DESCRIPTION_ENVIRONMENTS}PATH +:= ${install_module_dir_to_houdiniengine_bin_dir}\n"
-        )
-    set(
-        MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS
-        "${MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS}PATH += ${install_module_absolute_dir}/${install_module_dir_to_houdiniengine_bin_dir}\n"
-        )
-endif ()
+# Set the PATH variable for executables and dynamic library.
+set(
+    MODULE_DESCRIPTION_ENVIRONMENTS
+    "${MODULE_DESCRIPTION_ENVIRONMENTS}PATH +:= ${install_module_dir_to_houdiniengine_bin_dir}\n"
+    )
+set(
+    MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS
+    "${MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS}PATH += ${install_module_absolute_dir}/${install_module_dir_to_houdiniengine_bin_dir}\n"
+    )
 
 # HOUDINI_DSO_EXCLUDE_PATTERN
 # Block out Houdini plugins that would load Houdini's UI libraries.

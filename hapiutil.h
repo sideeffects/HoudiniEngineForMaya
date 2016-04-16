@@ -593,7 +593,7 @@ struct HAPIGetAttribute<storageType, T, false>
             return HAPI_RESULT_FAILURE;
         }
 
-        Util::convertArray<T>(dataArray, convertedDataArray);
+        Util::convertArray(dataArray, convertedDataArray);
 
         return HAPI_RESULT_SUCCESS;
     }

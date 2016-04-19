@@ -321,6 +321,7 @@ namespace SessionType
     };
 }
 
+PLUGIN_EXPORT
 MStatus
 initializePlugin(MObject obj)
 {
@@ -464,6 +465,7 @@ initializePlugin(MObject obj)
     return status;
 }
 
+PLUGIN_EXPORT
 MStatus
 uninitializePlugin(MObject obj)
 {

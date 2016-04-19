@@ -15,7 +15,11 @@
 #include <HAPI/HAPI_Version.h>
 
 #include <cstdlib>
+#ifndef WIN32
 #include <unistd.h>
+#else
+#include <process.h>
+#endif
 
 void
 printHAPIVersion()

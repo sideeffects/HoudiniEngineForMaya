@@ -355,9 +355,13 @@ $(DST_MODULE):
 	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.5 maya$(MAYA_VERSION)" > $(@)
 ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016),)
     # The module file for Maya 2013 and newer can be used to set environment variables
-    ifeq ($(OS), Cygwin)
+    ifeq ($(OS), Linux)
+	echo "PATH +:= ../../../bin" >> $(@)
+    else ifeq ($(OS), Cygwin)
         # Set the PATH variable for dynamic library.
 	echo "PATH +:= ..\\..\\..\\bin" >> $(@)
+    else ifeq ($(OS), Darwin)
+	echo "PATH +:= /Library/Frameworks/Houdini.framework/Versions/$(HOUDINI_VERSION)/Resources/bin" >> $(@)
     endif
 	echo "HOUDINI_DSO_EXCLUDE_PATTERN={ROP_OpenGL,COP2_GPULighting,COP2_GPUFog,COP2_GPUEnvironment,COP2_GPUZComposite,COP2_EnableGPU,SHOP_OGL,OBJ_ReLight,VEX_OpRender}*" >> $(@)
 endif
@@ -371,9 +375,13 @@ else
 endif
 ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016),)
     # The module file for Maya 2013 and newer can be used to set environment variables
-    ifeq ($(OS), Cygwin)
+    ifeq ($(OS), Linux)
+	echo "PATH += $(HFS)/../../../bin" >> $(@)
+    else ifeq ($(OS), Cygwin)
         # Set the PATH variable for dynamic library.
 	echo "PATH += $(shell cygpath -w $(DST_DIR))\\..\\..\\..\\bin" >> $(@)
+    else ifeq ($(OS), Darwin)
+	echo "PATH +:= /Library/Frameworks/Houdini.framework/Versions/$(HOUDINI_VERSION)/Resources/bin" >> $(@)
     endif
 	echo "HOUDINI_DSO_EXCLUDE_PATTERN={ROP_OpenGL,COP2_GPULighting,COP2_GPUFog,COP2_GPUEnvironment,COP2_GPUZComposite,COP2_EnableGPU,SHOP_OGL,OBJ_ReLight,VEX_OpRender}*" >> $(@)
 endif

@@ -15,6 +15,7 @@
 #include <HAPI/HAPI_Version.h>
 
 #include <cstdlib>
+#include <unistd.h>
 
 void
 printHAPIVersion()
@@ -165,6 +166,7 @@ namespace
             )
             , thriftServer("ThriftServer", "localhost")
             , thriftPort("ThriftPort", 9090)
+            , sessionPipeCustom("SessionPipeCustom", 0)
             , thriftPipe("ThriftPipe", "hapi")
             , thriftTransport(
                 "ThriftTransport",
@@ -176,6 +178,7 @@ namespace
         IntOptionVar     sessionType;
         StringOptionVar  thriftServer;
         IntOptionVar     thriftPort;
+        IntOptionVar     sessionPipeCustom;
         StringOptionVar  thriftPipe;
         IntOptionVar     thriftTransport;
 
@@ -225,17 +228,15 @@ initializeSession(const OptionVars& optionVars)
 
     case SessionType::ST_THRIFT_SOCKET:
         {
-            const MString hostName = optionVars.thriftServer.get();
-            const int port = optionVars.thriftPort.get();
+            MString hostName = "localhost";
+            int port = -1;
 
-            MString msg =
-                "Establishing a remote Houdini Engine session "
-                "using TCP socket at ";
-            msg += hostName;
-            msg += ":";
-            msg += port;
+            MString msgHostPort;
 
-            MGlobal::displayInfo(msg);
+            hostName = optionVars.thriftServer.get();
+            port = optionVars.thriftPort.get();
+
+            msgHostPort = hostName + ":" + port;
 
             sessionResult = HAPI_CreateThriftSocketSession(
                 Util::theHAPISession.get(),
@@ -245,16 +246,73 @@ initializeSession(const OptionVars& optionVars)
                     optionVars.thriftTransport.get()
                 )
             );
+
+            if( !HAPI_FAIL(sessionResult) )
+            {
+                MGlobal::displayInfo(
+                        "Connected to Houdini Engine server using TCP socket "
+                        "at " + msgHostPort + "."
+                        );
+            }
+            else
+            {
+                MGlobal::displayInfo(
+                        "Failed to connected to Houdini Engine server using "
+                        "TCP socket at " + msgHostPort + "."
+                        );
+            }
         }
         break;
 
     case SessionType::ST_THRIFT_PIPE:
         {
-            const MString pipeName = optionVars.thriftPipe.get();
-            MGlobal::displayInfo(
-                "Establishing a remote Houdini Engine session "
-                "using named pipe \"" + pipeName + "\""
-            );
+            MString pipeName;
+
+            MString msgPipe;
+
+            if( !optionVars.sessionPipeCustom.get() )
+            {
+                HAPI_ThriftServerOptions serverOptions;
+                serverOptions.autoClose = true;
+                serverOptions.serverType = HAPI_THRIFT_SERVER_SIMPLE;
+                serverOptions.transportType = HAPI_THRIFT_TRANSPORT_BUFFERED;
+                serverOptions.timeoutMs = 10 * 1000;
+
+                pipeName = "hapi";
+                pipeName += getpid();
+
+                MGlobal::displayInfo(
+                        "Automatically starting Houdini Engine server "
+                        "using named pipe."
+                        );
+
+                HAPI_ProcessId processId;
+                sessionResult = HAPI_StartThriftNamedPipeServer(
+                        &serverOptions,
+                        pipeName.asChar(),
+                        &processId);
+                if( HAPI_FAIL(sessionResult) )
+                {
+                    MGlobal::displayError(
+                            "Failed to automatically start Houdini Engine "
+                            "server using named pipe."
+                            );
+                    return HAPI_RESULT_FAILURE;
+                }
+
+                msgPipe = pipeName;
+
+                MGlobal::displayInfo(
+                        "Automatically started Houdini Engine server "
+                        "using named pipe at \"" + msgPipe + "\"."
+                        );
+            }
+            else
+            {
+                pipeName = optionVars.thriftPipe.get();
+
+                msgPipe = pipeName;
+            }
 
             sessionResult = HAPI_CreateThriftNamedPipeSession(
                 Util::theHAPISession.get(),
@@ -263,6 +321,21 @@ initializeSession(const OptionVars& optionVars)
                     optionVars.thriftTransport.get()
                 )
             );
+
+            if( !HAPI_FAIL(sessionResult) )
+            {
+                MGlobal::displayInfo(
+                        "Connected to Houdini Engine server using named pipe "
+                        "at \"" + msgPipe + "\"."
+                        );
+            }
+            else
+            {
+                MGlobal::displayInfo(
+                        "Failed to connected to Houdini Engine server using "
+                        "named pipe at \"" + msgPipe + "\"."
+                        );
+            }
         }
         break;
     }

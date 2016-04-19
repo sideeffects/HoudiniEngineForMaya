@@ -28,17 +28,23 @@ houdiniEnginePreferences_refresh()
     }
     
     textField -edit
-        -enable ($sessionType == 1)
         -text `optionVar -query "houdiniEngineThriftServer"`
-        sessionHost;
+        sessionSocketHost;
 
     textField -edit
-        -enable ($sessionType == 1)
         -text `optionVar -query "houdiniEngineThriftPort"`
-        sessionPort;
+        sessionSocketPort;
+
+    if(`optionVar -query "houdiniEngineSessionPipeCustom"` == 0)
+        radioButton -edit
+            -select
+            sessionPipeAuto;
+    else
+        radioButton -edit
+            -select
+            sessionPipeCustom;
 
     textField -edit
-        -enable ($sessionType == 2)
         -text `optionVar -query "houdiniEngineThriftPipe"`
         sessionPipeName;
         
@@ -46,6 +52,9 @@ houdiniEnginePreferences_refresh()
         -enable ($sessionType != 0)
         -select (1 + `optionVar -query "houdiniEngineThriftTransport"`)
         sessionTransportType;
+
+    houdiniEnginePreferences_toggleSessionTypeSocket($sessionType == 1);
+    houdiniEnginePreferences_toggleSessionTypePipe($sessionType == 2);
 }
 
 global proc
@@ -72,12 +81,16 @@ houdiniEnginePreferences_save()
         
     optionVar
         -stringValue "houdiniEngineThriftServer"
-        `textField -query -text sessionHost`;
+        `textField -query -text sessionSocketHost`;
         
     optionVar
         -stringValue "houdiniEngineThriftPort"
-        `textField -query -text sessionPort`;
+        `textField -query -text sessionSocketPort`;
         
+    optionVar
+        -intValue "houdiniEngineSessionPipeCustom"
+        `radioButton -query -select sessionPipeCustom`;
+
     optionVar
         -stringValue "houdiniEngineThriftPipe"
         `textField -query -text sessionPipeName`;
@@ -112,13 +125,38 @@ houdiniEnginePreferences_toggleSessionTypeInProcess(int $state)
 global proc
 houdiniEnginePreferences_toggleSessionTypeSocket(int $state)
 {
-    textField -edit -enable $state sessionHost;
-    textField -edit -enable $state sessionPort;
+    setParent houdiniEnginePreferences;
+
+    houdiniEnginePreferences_toggleSessionTypeSocketCustom($state);
+}
+
+global proc
+houdiniEnginePreferences_toggleSessionTypeSocketCustom(int $state)
+{
+    setParent houdiniEnginePreferences;
+
+    textField -edit -enable $state sessionSocketHost;
+    textField -edit -enable $state sessionSocketPort;
 }
 
 global proc
 houdiniEnginePreferences_toggleSessionTypePipe(int $state)
 {
+    setParent houdiniEnginePreferences;
+
+    radioButton -edit -enable $state sessionPipeAuto;
+    radioButton -edit -enable $state sessionPipeCustom;
+
+    int $custom = `radioButton -query -select sessionPipeCustom`;
+
+    houdiniEnginePreferences_toggleSessionTypePipeCustom($state && $custom);
+}
+
+global proc
+houdiniEnginePreferences_toggleSessionTypePipeCustom(int $state)
+{
+    setParent houdiniEnginePreferences;
+
     textField -edit -enable $state sessionPipeName;
 }
 
@@ -183,32 +221,51 @@ houdiniEnginePreferences()
     
     // Sessions
     string $sessionLayout = `frameLayout -label "Back End (requires restart)"`;
-        radioCollection
-            sessionTypeList;
+        radioCollection sessionTypeList;
             
         formLayout sessionLayout;
             radioButton
+                -collection sessionTypeList
                 -label "Within Maya Process"
                 -changeCommand "houdiniEnginePreferences_toggleSessionTypeInProcess #1"
                 sessionTypeInProcess;
 
             radioButton
+                -collection sessionTypeList
                 -label "TCP Socket"
                 -changeCommand "houdiniEnginePreferences_toggleSessionTypeSocket #1"
                 sessionTypeSocket;
-                
-            text -label "Host:" sessionHostLabel;
-            textField sessionHost;
+
+            radioCollection sessionTypeSocketList;
+
+            text -label "Host:" sessionSocketHostLabel;
+            textField -width 200 sessionSocketHost;
             
-            text -label "Port:" sessionPortLabel;
-            textField sessionPort;
+            text -label "Port:" sessionSocketPortLabel;
+            textField -width 50 sessionSocketPort;
             
             radioButton
-                -label "Named Pipe:"
+                -collection sessionTypeList
+                -label "Named Pipe"
                 -changeCommand "houdiniEnginePreferences_toggleSessionTypePipe #1"
                 sessionTypePipe;
 
-            textField sessionPipeName;
+            radioCollection sessionTypePipeList;
+
+            radioButton
+                -collection sessionTypePipeList
+                -label "Auto-start server"
+                -changeCommand "houdiniEnginePreferences_toggleSessionTypePipeCustom 0"
+                sessionPipeAuto;
+
+            radioButton
+                -collection sessionTypePipeList
+                -label "Manual server"
+                -changeCommand "houdiniEnginePreferences_toggleSessionTypePipeCustom 1"
+                sessionPipeCustom;
+
+
+            textField -width 200 sessionPipeName;
             
             optionMenu
                 -label "Transport Type:"
@@ -218,35 +275,39 @@ houdiniEnginePreferences()
         setParent ..;
         
         formLayout -e
-            -attachForm sessionTypeInProcess "left" 5
-            -attachForm sessionTypeSocket "left" 5
-            -attachForm sessionTypePipe "left" 5            
-            
-            -attachOppositeControl sessionHost "left" 120 sessionTypeInProcess            
-                        
-            -attachOppositeForm sessionPort "left" -60
-            
-            -attachOppositeControl sessionPipeName "left" 120 sessionTypeInProcess            
-            
-            -attachForm sessionPort "right" 5
-            -attachControl sessionPortLabel "right" 5 sessionPort
-            -attachControl sessionHost "right" 5 sessionPortLabel
-            -attachControl sessionHostLabel "right" 5 sessionHost
-            
-            -attachForm sessionPipeName "right" 5
-            -attachForm sessionTransportType "left" 15
-            
             -attachForm sessionTypeInProcess "top" 5
-            
+            -attachForm sessionTypeInProcess "left" 5
+
             -attachControl sessionTypeSocket "top" 5 sessionTypeInProcess
-            -attachOppositeControl sessionHostLabel "top" 2 sessionTypeSocket
-            -attachOppositeControl sessionHost "top" 0 sessionTypeSocket            
-            -attachOppositeControl sessionPortLabel "top" 2 sessionTypeSocket
-            -attachOppositeControl sessionPort "top" 0 sessionTypeSocket
+            -attachForm sessionTypeSocket "left" 5
+
+            -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
+            -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
+
+            -attachControl sessionSocketHost "top" 5 sessionTypeSocket
+            -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
+
+            -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
+            -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
+
+            -attachControl sessionSocketPort "top" 5 sessionTypeSocket
+            -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
+
+            -attachControl sessionTypePipe "top" 5 sessionSocketPort
+            -attachForm sessionTypePipe "left" 5
             
-            -attachControl sessionTypePipe "top" 5 sessionTypeSocket
-            -attachControl sessionPipeName "top" 5 sessionTypeSocket
-            -attachControl sessionTransportType "top" 5 sessionTypePipe
+            -attachControl sessionPipeAuto "top" 5 sessionTypePipe
+            -attachForm sessionPipeAuto "left" 20
+
+            -attachControl sessionPipeCustom "top" 5 sessionPipeAuto
+            -attachForm sessionPipeCustom "left" 20
+
+            -attachControl sessionPipeName "top" 5 sessionPipeAuto
+            -attachControl sessionPipeName "left" 5 sessionPipeCustom
+
+            -attachControl sessionTransportType "top" 5 sessionPipeName
+            -attachForm sessionTransportType  "left" 5
+
             sessionLayout;
     setParent ..;
 

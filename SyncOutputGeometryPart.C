@@ -638,7 +638,8 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
             }
         }
 
-        if(owner == "primitive" && dstAttributeName == "maya_shading_group")
+        if((owner == "primitive" || owner == "detail")
+                && dstAttributeName == "maya_shading_group")
         {
             mayaSGAttributePlug = extraAttributePlug;
             continue;
@@ -743,53 +744,66 @@ SyncOutputGeometryPart::createOutputGroups(
     status = myDagModifier.doIt();
     CHECK_MSTATUS(status);
 
-    // Do material assignment according to primitive attribute.
+    // Do material assignment according to "maya_shading_group"
     if(!hasMaterial && !mayaSGAttributePlug.isNull())
     {
+        MPlug mayaSGOwnerPlug = mayaSGAttributePlug.child(
+                AssetNode::outputPartExtraAttributeOwner
+                );
         MPlug mayaSGDataPlug = mayaSGAttributePlug.child(
                 AssetNode::outputPartExtraAttributeData
                 );
 
+        MString owner = mayaSGOwnerPlug.asString();
         MFnStringArrayData mayaSGData(mayaSGDataPlug.asMObject());
         MStringArray mayaSG = mayaSGData.array();
 
-        // Separate the list of primitive attributes by shading group.
         std::vector<std::string> sgNames;
         std::vector<MFnSingleIndexedComponent*> sgComponents;
-        for(size_t i = 0; i < mayaSG.length(); i++)
+
+        if(owner == "detail")
         {
-            const char* sgName = mayaSG[i].asChar();
-            MFnSingleIndexedComponent *sgComponent = NULL;
-
-            std::vector<std::string>::iterator iter
-                = std::lower_bound(
-                        sgNames.begin(), sgNames.end(),
-                        sgName
-                        );
-            if(iter == sgNames.end()
-                    || *iter != sgName)
+            sgNames.push_back(mayaSG[0].asChar());
+            sgComponents.push_back(NULL);
+        }
+        else if(owner == "primitive")
+        {
+            // Separate the list of primitive attributes by shading group.
+            for(size_t i = 0; i < mayaSG.length(); i++)
             {
-                sgComponent = new MFnSingleIndexedComponent();
-                sgComponent->create(MFn::kMeshPolygonComponent);
+                const char* sgName = mayaSG[i].asChar();
+                MFnSingleIndexedComponent *sgComponent = NULL;
 
-                std::vector<MFnSingleIndexedComponent*>::iterator iter2
-                    = sgComponents.end();
-                if(iter != sgNames.end())
+                std::vector<std::string>::iterator iter
+                    = std::lower_bound(
+                            sgNames.begin(), sgNames.end(),
+                            sgName
+                            );
+                if(iter == sgNames.end()
+                        || *iter != sgName)
                 {
-                    iter2 = sgComponents.begin()
-                        + (iter - sgNames.begin());
+                    sgComponent = new MFnSingleIndexedComponent();
+                    sgComponent->create(MFn::kMeshPolygonComponent);
+
+                    std::vector<MFnSingleIndexedComponent*>::iterator iter2
+                        = sgComponents.end();
+                    if(iter != sgNames.end())
+                    {
+                        iter2 = sgComponents.begin()
+                            + (iter - sgNames.begin());
+                    }
+
+                    sgNames.insert(iter, sgName);
+                    sgComponents.insert(iter2, sgComponent);
+                }
+                else
+                {
+                    sgComponent = *(sgComponents.begin()
+                            + (iter - sgNames.begin()));
                 }
 
-                sgNames.insert(iter, sgName);
-                sgComponents.insert(iter2, sgComponent);
+                sgComponent->addElement(i);
             }
-            else
-            {
-                sgComponent = *(sgComponents.begin()
-                        + (iter - sgNames.begin()));
-            }
-
-            sgComponent->addElement(i);
         }
 
         // Assign each primitive list to its own set.
@@ -830,9 +844,16 @@ SyncOutputGeometryPart::createOutputGroups(
                 CHECK_MSTATUS(setFn.setObject(setObj));
             }
 
-            setFn.addMember(dagPath, sgComponent->object());
+            if(!sgComponent)
+            {
+                setFn.addMember(dagPath);
+            }
+            else
+            {
+                setFn.addMember(dagPath, sgComponent->object());
 
-            delete sgComponent;
+                delete sgComponent;
+            }
         }
     }
 

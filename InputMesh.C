@@ -606,25 +606,28 @@ InputMesh::processShadingGroups(
 {
     MStatus status;
 
-    MString defaultShader;
-
-    std::vector<const char*> sgNamePerComp;
-    sgNamePerComp.resize(meshFn.numPolygons(), defaultShader.asChar());
-
-    for(int i = 0; i < (int) sgNames.length(); i++)
+    if(sgCompObjs.length() == 1 && sgCompObjs[0].isNull())
     {
-        const char* sgName = sgNames[i].asChar();
-        const MObject &sgCompObj = sgCompObjs[i];
+        CHECK_HAPI(hapiSetDetailAttribute(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    "maya_shading_group",
+                    const_cast<MStringArray&>(sgNames)[0]
+                    ));
+    }
+    else
+    {
+        MString defaultShader;
 
-        if(sgCompObj.isNull())
+        std::vector<const char*> sgNamePerComp;
+        sgNamePerComp.resize(meshFn.numPolygons(), defaultShader.asChar());
+
+        for(int i = 0; i < (int) sgNames.length(); i++)
         {
-            std::fill(
-                    sgNamePerComp.begin(), sgNamePerComp.end(),
-                    sgName
-                    );
-        }
-        else
-        {
+            const char* sgName = sgNames[i].asChar();
+            const MObject &sgCompObj = sgCompObjs[i];
+
+            assert(!sgCompObj.isNull());
+
             MFnSingleIndexedComponent componentFn(sgCompObj, &status);
             CHECK_MSTATUS(status);
 
@@ -636,14 +639,14 @@ InputMesh::processShadingGroups(
                 sgNamePerComp[componentFn.element(j)] = sgName;
             }
         }
-    }
 
-    CHECK_HAPI(hapiSetPrimAttribute(
-            myInputAssetId, myInputObjectId, myInputGeoId,
-            1,
-            "maya_shading_group",
-            sgNamePerComp
-            ));
+        CHECK_HAPI(hapiSetPrimAttribute(
+                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    1,
+                    "maya_shading_group",
+                    sgNamePerComp
+                    ));
+    }
 
     return true;
 }

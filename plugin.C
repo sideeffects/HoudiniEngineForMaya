@@ -172,10 +172,6 @@ namespace
             , thriftPort("ThriftPort", 9090)
             , sessionPipeCustom("SessionPipeCustom", 0)
             , thriftPipe("ThriftPipe", "hapi")
-            , thriftTransport(
-                "ThriftTransport",
-                static_cast<int>(HAPI_THRIFT_TRANSPORT_BUFFERED)
-            )
         {}
 
         IntOptionVar     asyncMode;
@@ -184,7 +180,6 @@ namespace
         IntOptionVar     thriftPort;
         IntOptionVar     sessionPipeCustom;
         StringOptionVar  thriftPipe;
-        IntOptionVar     thriftTransport;
 
     private:
         OptionVars& operator=(const OptionVars&);
@@ -245,10 +240,7 @@ initializeSession(const OptionVars& optionVars)
             sessionResult = HAPI_CreateThriftSocketSession(
                 Util::theHAPISession.get(),
                 hostName.asChar(),
-                port,
-                static_cast<HAPI_ThriftTransportType>(
-                    optionVars.thriftTransport.get()
-                )
+                port
             );
 
             if( !HAPI_FAIL(sessionResult) )
@@ -278,8 +270,6 @@ initializeSession(const OptionVars& optionVars)
             {
                 HAPI_ThriftServerOptions serverOptions;
                 serverOptions.autoClose = true;
-                serverOptions.serverType = HAPI_THRIFT_SERVER_SIMPLE;
-                serverOptions.transportType = HAPI_THRIFT_TRANSPORT_BUFFERED;
                 serverOptions.timeoutMs = 10 * 1000;
 
                 pipeName = "hapi";
@@ -320,10 +310,7 @@ initializeSession(const OptionVars& optionVars)
 
             sessionResult = HAPI_CreateThriftNamedPipeSession(
                 Util::theHAPISession.get(),
-                pipeName.asChar(),
-                static_cast<HAPI_ThriftTransportType>(
-                    optionVars.thriftTransport.get()
-                )
+                pipeName.asChar()
             );
 
             if( !HAPI_FAIL(sessionResult) )

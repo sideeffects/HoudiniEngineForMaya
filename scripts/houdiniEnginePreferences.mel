@@ -47,11 +47,6 @@ houdiniEnginePreferences_refresh()
     textField -edit
         -text `optionVar -query "houdiniEngineThriftPipe"`
         sessionPipeName;
-        
-    optionMenu -edit
-        -enable ($sessionType != 0)
-        -select (1 + `optionVar -query "houdiniEngineThriftTransport"`)
-        sessionTransportType;
 
     houdiniEnginePreferences_toggleSessionTypeSocket($sessionType == 1);
     houdiniEnginePreferences_toggleSessionTypePipe($sessionType == 2);
@@ -94,10 +89,6 @@ houdiniEnginePreferences_save()
     optionVar
         -stringValue "houdiniEngineThriftPipe"
         `textField -query -text sessionPipeName`;
-        
-    optionVar
-        -intValue "houdiniEngineThriftTransport"
-        (`optionMenu -query -select sessionTransportType` - 1);
 
     houdiniEnginePreferences_close;
 }
@@ -114,12 +105,6 @@ houdiniEnginePreferences_toggleAsynchronousMode(int $state)
     global int $houdiniEngineAsynchronousMode;
 
     $houdiniEngineAsynchronousMode = $state;
-}
-
-global proc
-houdiniEnginePreferences_toggleSessionTypeInProcess(int $state)
-{    
-    optionMenu -edit -enable (!$state) sessionTransportType;
 }
 
 global proc
@@ -266,12 +251,7 @@ houdiniEnginePreferences()
 
 
             textField -width 200 sessionPipeName;
-            
-            optionMenu
-                -label "Transport Type:"
-                sessionTransportType;
-                menuItem -label "Buffered";
-                menuItem -label "Framed";
+
         setParent ..;
         
         formLayout -e
@@ -304,9 +284,6 @@ houdiniEnginePreferences()
 
             -attachControl sessionPipeName "top" 5 sessionPipeAuto
             -attachControl sessionPipeName "left" 5 sessionPipeCustom
-
-            -attachControl sessionTransportType "top" 5 sessionPipeName
-            -attachForm sessionTransportType  "left" 5
 
             sessionLayout;
     setParent ..;

@@ -212,7 +212,6 @@ houdiniEnginePreferences()
             radioButton
                 -collection sessionTypeList
                 -label "Within Maya Process"
-                -changeCommand "houdiniEnginePreferences_toggleSessionTypeInProcess #1"
                 sessionTypeInProcess;
 
             radioButton

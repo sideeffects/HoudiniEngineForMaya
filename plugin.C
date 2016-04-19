@@ -15,7 +15,7 @@
 #include <HAPI/HAPI_Version.h>
 
 #include <cstdlib>
-#ifndef WIN32
+#ifndef _WIN32
 #include <unistd.h>
 #else
 #include <process.h>

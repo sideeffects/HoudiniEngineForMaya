@@ -176,6 +176,87 @@ namespace
     };
 }
 
+namespace SessionType
+{
+    enum Enum
+    {
+        ST_INPROCESS,
+        ST_THRIFT_SOCKET,
+        ST_THRIFT_PIPE
+    };
+}
+
+HAPI_Result
+initializeSession(const OptionVars& optionVars)
+{
+    if ( Util::theHAPISession.get() )
+    {
+        MGlobal::displayInfo(
+            "Houdini Engine session is already created. Skipping.");
+
+        return HAPI_RESULT_SUCCESS;
+    }
+
+    const SessionType::Enum sessionType =
+        static_cast<SessionType::Enum>( optionVars.sessionType.get() );
+
+    Util::theHAPISession.reset( new HAPI_Session );
+    HAPI_Result result = HAPI_RESULT_FAILURE;
+
+    switch (sessionType)
+    {
+    case SessionType::ST_INPROCESS:
+        MGlobal::displayInfo(
+            "Creating an in-process Houdini Engine session.");
+
+        result = HAPI_CreateInProcessSession( Util::theHAPISession.get() );
+        break;
+
+    case SessionType::ST_THRIFT_SOCKET:
+        {
+            const MString hostName = optionVars.thriftServer.get();
+            const int port = optionVars.thriftPort.get();
+
+            MString msg =
+                "Establishing a remote Houdini Engine session "
+                "using TCP socket at ";
+            msg += hostName;
+            msg += ":";
+            msg += port;
+
+            MGlobal::displayInfo(msg);
+
+            result = HAPI_CreateThriftSocketSession(
+                Util::theHAPISession.get(),
+                hostName.asChar(), port );
+        }
+        break;
+
+    case SessionType::ST_THRIFT_PIPE:
+        {
+            const MString pipeName = optionVars.thriftPipe.get();
+            MGlobal::displayInfo(
+                "Establishing a remote Houdini Engine session "
+                "using named pipe \"" + pipeName + "\"");
+
+            result = HAPI_CreateThriftNamedPipeSession(
+                Util::theHAPISession.get(),
+                pipeName.asChar() );
+        }
+        break;
+    }
+
+    if ( result != HAPI_RESULT_SUCCESS )
+    {
+        Util::theHAPISession.reset(NULL);
+        MGlobal::displayError(
+            "Could not create a Houdini Engine session. "
+            "Please edit the Back End preferences and reload the plug-in.");
+    }
+
+    return result;
+}
+
 bool
 initializeHAPI(const OptionVars& optionVars)
 {
@@ -204,9 +285,10 @@ initializeHAPI(const OptionVars& optionVars)
             otl_dir, dso_dir,
             NULL, NULL
             );
-    if(hstat != HAPI_RESULT_SUCCESS)
+    if(HAPI_FAIL(hstat))
     {
-        CHECK_HAPI(hstat);
+        MGlobal::displayInfo("Houdini Engine failed to initialize.");
+
         return false;
     }
 
@@ -216,6 +298,8 @@ initializeHAPI(const OptionVars& optionVars)
         HAPI_ENV_CLIENT_NAME,
         "maya"
     );
+
+    MGlobal::displayInfo("Houdini Engine initialized successfully.");
 
     return true;
 }
@@ -311,95 +395,17 @@ cleanupMessageCallbacks()
     CHECK_MSTATUS(status);
 }
 
-namespace SessionType
-{
-    enum Enum
-    {
-        ST_INPROCESS,
-        ST_THRIFT_SOCKET,
-        ST_THRIFT_PIPE
-    };
-}
-
 PLUGIN_EXPORT
 MStatus
 initializePlugin(MObject obj)
 {
     OptionVars optionVars;
 
-    if ( Util::theHAPISession.get() )
+    initializeSession(optionVars);
+
+    if(!initializeHAPI(optionVars))
     {
-        MGlobal::displayInfo(
-            "Houdini Engine session is already created. Skipping.");
-    }
-    else
-    {
-        const SessionType::Enum sessionType =
-            static_cast<SessionType::Enum>( optionVars.sessionType.get() );
-
-        Util::theHAPISession.reset( new HAPI_Session );
-        HAPI_Result result = HAPI_RESULT_FAILURE;
-
-        switch (sessionType)
-        {
-        case SessionType::ST_INPROCESS:
-            MGlobal::displayInfo(
-                "Creating an in-process Houdini Engine session.");
-
-            result = HAPI_CreateInProcessSession( Util::theHAPISession.get() );
-            break;
-
-        case SessionType::ST_THRIFT_SOCKET:
-            {
-                const MString hostName = optionVars.thriftServer.get();
-                const int port = optionVars.thriftPort.get();
-
-                MString msg =
-                    "Establishing a remote Houdini Engine session "
-                    "using TCP socket at ";
-                msg += hostName;
-                msg += ":";
-                msg += port;
-
-                MGlobal::displayInfo(msg);
-
-                result = HAPI_CreateThriftSocketSession(
-                    Util::theHAPISession.get(),
-                    hostName.asChar(), port );
-            }
-            break;
-
-        case SessionType::ST_THRIFT_PIPE:
-            {
-                const MString pipeName = optionVars.thriftPipe.get();
-                MGlobal::displayInfo(
-                    "Establishing a remote Houdini Engine session "
-                    "using named pipe \"" + pipeName + "\"");
-
-                result = HAPI_CreateThriftNamedPipeSession(
-                    Util::theHAPISession.get(),
-                    pipeName.asChar() );
-            }
-            break;
-        }
-
-        if ( result != HAPI_RESULT_SUCCESS )
-        {
-            Util::theHAPISession.reset(NULL);
-            MGlobal::displayError(
-                "Could not create a Houdini Engine session. "
-                "Please edit the Back End preferences and reload the plug-in.");
-        }
-    }
-
-    if ( Util::theHAPISession.get() && initializeHAPI(optionVars) )
-    {
-        MGlobal::displayInfo("Houdini Engine initialized successfully.");
         printHAPIVersion();
-    }
-    else
-    {
-        MGlobal::displayInfo("Houdini Engine failed to initialize.");
     }
 
     char engine_version[32];

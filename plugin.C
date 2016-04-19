@@ -338,6 +338,13 @@ cleanupHAPI()
         return true;
     }
 
+    // If HAPI is not initialized, then don't try to do cleanup. This could be
+    // because HAPI failed to initialize, or HARS disconnected.
+    if( HAPI_FAIL( HAPI_IsInitialized( Util::theHAPISession.get() ) ) )
+    {
+        return true;
+    }
+
     HAPI_Result hstat = HAPI_RESULT_SUCCESS;
 
     hstat = HAPI_Cleanup( Util::theHAPISession.get() );

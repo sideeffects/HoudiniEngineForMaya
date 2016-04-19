@@ -211,7 +211,7 @@ houdiniEnginePreferences()
             textField sessionPipeName;
             
             optionMenu
-                -label "Thrift Transport Type:"
+                -label "Transport Type:"
                 sessionTransportType;
                 menuItem -label "Buffered";
                 menuItem -label "Framed";

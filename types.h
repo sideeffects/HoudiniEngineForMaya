@@ -70,19 +70,12 @@ class ArrayIterator :
         typedef ELEMENTTYPE(ArrayType) ElementType;
 
         ArrayIterator(ArrayType& array, size_t index = 0) :
-            myArray(array), myIndex(index)
+            myArray(&array), myIndex(index)
         { }
 
         ArrayIterator(const ArrayIterator<ArrayType> &o) :
             myArray(o.myArray), myIndex(o.myIndex)
         { }
-
-        ArrayIterator<ArrayType> &operator =(const ArrayIterator<ArrayType> &o)
-        {
-            myArray = o.myArray;
-            myIndex = o.myIndex;
-            return *this;
-        }
 
         size_t operator -(const ArrayIterator<ArrayType> &o) const
         { return myIndex - o.myIndex; }
@@ -97,19 +90,19 @@ class ArrayIterator :
         { return !(*this == o); }
 
         const ElementType &operator *() const
-        { return Trait::getElement(myArray, myIndex); }
+        { return Trait::getElement(*myArray, myIndex); }
 
         ElementType &operator *()
-        { return Trait::getElement(myArray, myIndex); }
+        { return Trait::getElement(*myArray, myIndex); }
 
         const ElementType *operator ->() const
-        { return &Trait::getElement(myArray, myIndex); }
+        { return &Trait::getElement(*myArray, myIndex); }
 
         ElementType *operator ->()
-        { return &Trait::getElement(myArray, myIndex); }
+        { return &Trait::getElement(*myArray, myIndex); }
 
     private:
-        ArrayType &myArray;
+        ArrayType *myArray;
         size_t myIndex;
 };
 
@@ -139,7 +132,7 @@ class ComponentWrapper
 
     public:
         ComponentWrapper(ArrayType &array, size_t index, size_t component) :
-            myArray(array),
+            myArray(&array),
             myIndex(index),
             myComponent(component)
         {
@@ -149,7 +142,7 @@ class ComponentWrapper
         Type &operator =(const Type &o)
         {
             // Assignment should always mean copying components
-            assert(&myArray != &o.myArray);
+            assert(myArray != o.myArray);
             return this->operator=<Type>(o);
         }
 
@@ -171,7 +164,7 @@ class ComponentWrapper
             size_t component = (StartComponent + i)
                 % ElementTrait::numComponents;
             return ElementTrait::getComponent(
-                    Trait::getElement(myArray, index),
+                    Trait::getElement(*myArray, index),
                     component
                     );
         }
@@ -183,13 +176,13 @@ class ComponentWrapper
             size_t component = (StartComponent + i)
                 % ElementTrait::numComponents;
             return ElementTrait::getComponent(
-                    Trait::getElement(myArray, index),
+                    Trait::getElement(*myArray, index),
                     component
                     );
         }
 
     private:
-        ArrayType &myArray;
+        ArrayType *myArray;
         size_t myIndex;
         size_t myComponent;
 };
@@ -217,21 +210,13 @@ class ComponentIterator :
 
     public:
         ComponentIterator(ArrayType &array, size_t index) :
-            myArray(array)
+            myArray(&array)
         {
             myIndex = (StartComponent + (Stride * index))
                 / ElementTrait::numComponents;
             myComponent = (StartComponent + (Stride * index))
                 % ElementTrait::numComponents;
             assert(Stride % ElementTrait::numComponents == 0);
-        }
-
-        Type &operator =(const Type &o)
-        {
-            myArray = o.myArray;
-            myIndex = o.myIndex;
-            myComponent = o.myComponent;
-            return *this;
         }
 
         Type &operator ++()
@@ -250,19 +235,19 @@ class ComponentIterator :
         { return !(*this == o); }
 
         const ComponentWrapperType operator *() const
-        { return ComponentWrapperType( myArray, myIndex, myComponent); }
+        { return ComponentWrapperType( *myArray, myIndex, myComponent); }
 
         ComponentWrapperType operator *()
-        { return ComponentWrapperType( myArray, myIndex, myComponent); }
+        { return ComponentWrapperType( *myArray, myIndex, myComponent); }
 
         const ComponentWrapperType *operator ->() const
-        { return &ComponentWrapperType( myArray, myIndex, myComponent); }
+        { return &ComponentWrapperType( *myArray, myIndex, myComponent); }
 
         ComponentWrapperType *operator ->()
-        { return &ComponentWrapperType( myArray, myIndex, myComponent); }
+        { return &ComponentWrapperType( *myArray, myIndex, myComponent); }
 
     private:
-        ArrayType &myArray;
+        ArrayType *myArray;
         size_t myIndex;
         size_t myComponent;
 };

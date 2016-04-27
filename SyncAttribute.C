@@ -147,6 +147,17 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
             attrFn = new MFnCompoundAttribute(attrObj);
 
+            // Workaround a bug when saving/loading scene files. When the first
+            // point of the ramp is at default values (i.e. all zeroes), Maya
+            // would skip writing the values out to file. Then, when the file is
+            // loaded back, the first point would disappear. Workaround this bug
+            // by changing the default position to an impossible value, so that
+            // Maya will always write out the values.
+            {
+                MFnNumericAttribute posAttrFn(attrFn->child(0));
+                CHECK_MSTATUS(posAttrFn.setDefault(-1.0f));
+            }
+
             MString niceName = Util::HAPIString(parmInfo.labelSH);
             attrFn->setNiceNameOverride(niceName);
 

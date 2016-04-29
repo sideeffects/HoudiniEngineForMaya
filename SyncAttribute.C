@@ -369,6 +369,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
             && parm.size == 3)
     {
         result = nAttr.createColor(attrName, attrName);
+        nAttr.setNiceNameOverride(niceName);
         return result;
     }
 

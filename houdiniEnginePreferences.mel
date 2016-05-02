@@ -248,7 +248,7 @@ houdiniEnginePreferences()
                 -changeCommand "houdiniEnginePreferences_toggleSessionTypePipeCustom 1"
                 sessionPipeCustom;
 
-            textField sessionPipeName;
+            textField -width 200 sessionPipeName;
         setParent ..;
         
         formLayout -e

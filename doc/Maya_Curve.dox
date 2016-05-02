@@ -1,0 +1,17 @@
+/*!
+
+@page Maya_Curve Curve
+
+@tableofcontents
+
+@section Maya_Curve_Input Input
+
+Both Maya's NURBS curve and Bezier curve can be inputted into a Houdini asset. The curve will be inputted as either NURBS Curve or Bezier Curve, depending on the Maya type.
+
+@section Maya_Curve_Output Output
+
+NURBS Curve and Bezier Curve from a Houdini asset are outputted as `nurbsCurve` node or `bezierCurve` node respectively.
+
+If the asset output multiple curve primitives, each curve will be outputted into a separate curve node.
+
+*/

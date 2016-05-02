@@ -1,0 +1,92 @@
+/*!
+
+@page Maya_Parameters Parameters
+
+@tableofcontents
+
+The asset parameters that are exposed on a Houdini asset are represented as Maya node attributes on the `houdiniAsset` node. The parameters can be manipulated through Maya's Attribute Editor. Also, since asset parameters are regular node attributes, built-in Maya tools can be used with the asset parameters. For example, they can be driven by Maya's animation curve, or accessed via MEL's `getAttr` and `setAttr`.
+
+Note that parameters that are marked as invisible are not represented on the `houdiniAsset` node. So they are not accessible from inside Maya.
+
+Houdini assets support a wide range of parameter types and configurations. However, not all of those parameter types and configurations are supported by the plug-in.
+
+Dynamic options such as `Disable When` and `Hide When` are not supported.
+
+@section Maya_Parameters_Basic Basic
+
+@image html Maya_Parameters_Basic.png
+
+Float, integer, and string type parameters are supported. Tuples are also supported. For float and integer type parameters, range and locked range are also supported.
+
+@image html Maya_Parameters_Basic_MultiLineString.png
+
+For string parameters, clicking the `Edit` button will pop up a separate dialog for editing the string. This can be used to multi-line strings.
+
+Note that for logarithmic float and integer parameters, they are treated as regular float and integer parameters. So the UI sliders for the parameters are linear, and not logarithmic.
+
+Color parameters are supported, and the standard Maya color widget is shown in the Attribute Editor. However, Color and Alpha parameters does not have a color widget, and are displayed as a 4-tuple float.
+
+Toggle parameters are supported.
+
+@section Maya_Parameters_Ramp Ramp
+
+@image html Maya_Parameters_Ramp.png
+
+Float and color ramp parameters are supported.
+
+@section Maya_Parameters_Button Button
+
+@image html Maya_Parameters_Button.png
+
+Button parameters are supported, and Callback Script can be configured. Button parameters are represented as integer node attributes. It's possible to "click" a button parameter by setting to the attribute to `1`. See @ref Maya_Parameters_CallbackScript for more information.
+
+@section Maya_Parameters_FolderAndMultiparm Folder and Multiparm
+
+@image html Maya_Parameters_Folder.png
+
+Folder parameters are supported. They are represented as compound attributes, and any child parameters inside the folder parameter are represented as child attributes of the compound attribute.
+
+In the Attribute Editor, folder parameters are displayed as collapsible frames. `Collapsible`, `Simple`, and `Tabs` type folders are all displayed in the same way. `Radio Buttons` type folders are not supported.
+
+Collapsible frames are expanded by default. Although the frames can be collapsed inside the Attribute Editor, the collapsed states are not remembered, so refreshing the Attribute Editor would cause all the frames to be expanded again.
+
+@subsection Maya_Parameters_FolderAndMultiparm_Multiparm Multiparm
+
+@image html Maya_Parameters_Multiparm.png
+
+`Multiparm` type folders are supported. They are represented as compound multi attributes. In the Attribute Editor, they are displayed with a custom UI that allow adding and removing multiparm instances.
+
+Multiparm nested inside another multiparm is not supported at the moment.
+
+There is one important thing to note when using multiparm. If the multiparm is defaulted to 0 size, when the asset node is first loaded, the child parameters are not known in the Maya side yet. This means when the first multiparm instance is added, the child parameters are not immediately visible until the node's attributes are sync'd. Similarly, if the multiparm size reaches zero, and the node's attributes are sync'd, then the child parameters of the multiparm are no longer known in the Maya side.
+
+@section Maya_Parameters_Menu Menu
+
+@image html Maya_Parameters_Menu.png
+
+Single Selection Menu can also be used with the parameters. However, Mini Menu, Field, and Multi Selection Menu are not supported. Also, Menu Scripts cannot be used to generate menu items dynamically.
+
+Menu can be used with button parameters. They will be display as option menus in Maya's Attribute Editor. However, there is a minor UI issue with button menus. In Houdini's UI, after selecting an item from a button menu, the button menu stays at the default selection, and not at the selected item. However, inside Maya's Attribute Editor, the option menu would behave like a regular option menu, and stay at the selected item. This is purely a UI update issue in the Attribute Editor, and does not affect scripting.
+
+@section Maya_Parameters_CallbackScript Callback Script
+Callback Scripts can be configured on parameters.
+
+However, it is important to note that the callback script is not triggered until Maya evaluates the asset node. So if the button is clicked via script, it's generally a good idea to force the asset node to evaluate. This can be done via `dgeval`. For example, the following MEL commands will click a button parameter, and ensure the callback script is triggered:
+@code
+setAttr foo1.houdiniAssetParm_parm__button 1;
+dgeval foo1.output;
+@endcode
+
+@section Maya_Parameters_AnimationAndExpression Animation and Expression
+
+@image html Maya_Parameters_AnimationAndExpression.png
+
+Houdini asset's parameters can be controlled by Maya's animation curves and expressions. In most cases, the asset will cook correctly according to the animations and expressions. However, in more advanced usages, there may be situations where the result may be incorrect due to the following reasoning.
+
+Houdini Engine uses a push mechanism when cooking assets. Before the asset is cooked, parameter values for the current time are pushed to the asset. In another words, when the asset cooks, only the parameter values for the current time are available to the asset. In fact, from the asset's point of view, the parameters are not animated at all. The asset simply gets a snapshot of all the parameter values and then cooked. So if the asset requires parameter values from multiple time samples to correctly cook for a single time sample, then the asset will not cook properly through Houdini Engine at the moment.
+
+@subsection Maya_Parameters_AnimationsAndExpressions_HoudiniExpressions Houdini Expression
+
+For string parameters, the string values are actually evaluated as Houdini Expressions. This makes it possible to enter Houdini Expressions directly inside Maya's Attribute Editor. For numeric parameters, since Maya's Attribute Editor will display a numeric widget, it is not possible to directly enter Houdini Expressions. If a numeric Houdini Expression is needed, one method is to create a string parameter on the asset level, then reference the string parameter in a numeric context inside the asset. This will cause the result of the expression be converted into a numeric value. However, the caveat is that the string parameter will not get a numeric widget inside Maya's Attribute Editor.
+
+*/

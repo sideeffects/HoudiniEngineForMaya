@@ -1,0 +1,21 @@
+/*!
+
+@page Maya_Hair Hair
+
+@tableofcontents
+
+The plug-in has limited support for inputting hair.
+
+@section Maya_Hair_Input Input
+
+Maya's `hairSystem` can be inputted into Houdini assets. The guide curves are inputted. However, the attributes of the hair shape and follicles are not inputted into the Houdini assets.
+
+@section Maya_Hair_OutputtingGuideCurves Outputting Guide Curves
+
+There is no built-in support for outputting hair into Maya's `hairSystem`. Since Houdini's fur outputs curve primitives, each curve primitive will be outputted as a separate Maya curve node. For full density of fur and hair, the resulting Maya scene would become very heavy.
+
+Instead of outputting the full density of fur, an alternative approach is for the asset to output only the guide curves. Then, inside Maya, use the Maya `hairSystem`, or other tools, to generate the full fur.
+
+Guide curves can be created using Houdini's `fur` Object node. Since guide curves are regular curve primitives, they can also be created using any other Houdini tools that generate curves. Once the Houdini guide curves are outputted into the Maya scene, `nHair -> Make Selected Curves Dynamic` can be used to create a Maya `hairSystem` from the guide curves.
+
+*/

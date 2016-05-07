@@ -68,6 +68,11 @@ houdiniEngine_loadAssetLibrary(string $assetLibraryFilePath)
             -uiScript ("houdiniEngine_assetPicker"
                 + " \"" + $assetLibraryFilePath + "\""
                 + " \"The Asset Library contains multiple assets. Please choose one to instantiate.\"")`;
+
+        if($asset == "dismiss")
+        {
+            $asse = "";
+        }
     }
 
     if(size($asset))

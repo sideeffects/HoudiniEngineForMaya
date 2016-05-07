@@ -64,16 +64,9 @@ MObject AssetNode::outputObjectFluidFromAsset;
 MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputGeos;
-MObject AssetNode::outputGeoType;
 MObject AssetNode::outputGeoName;
 MObject AssetNode::outputGeoIsTemplated;
 MObject AssetNode::outputGeoIsDisplayGeo;
-MObject AssetNode::outputGeoCurveType;
-MObject AssetNode::outputGeoCurveOrder;
-MObject AssetNode::outputGeoCurveCVX;
-MObject AssetNode::outputGeoCurveCVY;
-MObject AssetNode::outputGeoCurveCVZ;
-MObject AssetNode::outputGeoCurveCVs;
 
 MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
@@ -1016,14 +1009,6 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::outputParts);
 
     // output geos
-    AssetNode::outputGeoType = tAttr.create(
-            "outputGeoType", "outputGeoType",
-            MFnData::kString
-            );
-    tAttr.setWritable(false);
-    tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputGeoType);
-
     AssetNode::outputGeoName = tAttr.create(
             "outputGeoName", "outputGeoName",
             MFnData::kString
@@ -1050,73 +1035,12 @@ AssetNode::initialize()
     nAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputGeoIsDisplayGeo);
 
-    AssetNode::outputGeoCurveType = tAttr.create(
-            "outputGeoCurveType", "outputGeoCurveType",
-            MFnData::kString
-            );
-    tAttr.setWritable(false);
-    tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputGeoCurveType);
-
-    AssetNode::outputGeoCurveOrder = nAttr.create(
-            "outputGeoCurveOrder", "outputGeoCurveOrder",
-            MFnNumericData::kInt,
-            0
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoCurveOrder);
-
-    AssetNode::outputGeoCurveCVX = nAttr.create(
-            "outputGeoCurveCVX", "outputGeoCurveCVX",
-            MFnNumericData::kDouble,
-            0.0
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoCurveCVX);
-
-    AssetNode::outputGeoCurveCVY = nAttr.create(
-            "outputGeoCurveCVY", "outputGeoCurveCVY",
-            MFnNumericData::kDouble,
-            0.0
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoCurveCVY);
-
-    AssetNode::outputGeoCurveCVZ = nAttr.create(
-            "outputGeoCurveCVZ", "outputGeoCurveCVZ",
-            MFnNumericData::kDouble,
-            0.0
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoCurveCVZ);
-
-    AssetNode::outputGeoCurveCVs = nAttr.create(
-            "outputGeoCurveCVs", "outputGeoCurveCVs",
-            AssetNode::outputGeoCurveCVX,
-            AssetNode::outputGeoCurveCVY,
-            AssetNode::outputGeoCurveCVZ
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    nAttr.setArray(true);
-    nAttr.setIndexMatters(true);
-    nAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputGeoCurveCVs);
-
     AssetNode::outputGeos = cAttr.create(
             "outputGeos", "outputGeos"
             );
-    cAttr.addChild(AssetNode::outputGeoType);
     cAttr.addChild(AssetNode::outputGeoName);
     cAttr.addChild(AssetNode::outputGeoIsTemplated);
     cAttr.addChild(AssetNode::outputGeoIsDisplayGeo);
-    cAttr.addChild(AssetNode::outputGeoCurveType);
-    cAttr.addChild(AssetNode::outputGeoCurveOrder);
-    cAttr.addChild(AssetNode::outputGeoCurveCVs);
     cAttr.addChild(AssetNode::outputParts);
     cAttr.setWritable(false);
     cAttr.setStorable(false);

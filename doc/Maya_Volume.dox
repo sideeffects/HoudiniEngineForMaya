@@ -6,7 +6,7 @@
 
 @section Maya_Volume_Input Input
 
-At the moment, the plug-in does not supports inputting volumes into a Houdini asset.
+At the moment, the plug-in does not support inputting volumes into a Houdini asset.
 
 @section Maya_Volume_Output Output
 
@@ -18,7 +18,7 @@ The Maya `fluidShape` node is designed to have a fixed set of volume grids, and 
 
 Note that for `vel.[xyz]` volumes, both face-sampled and center-sampled are supported. However, since Maya's `fluidShape` node requires face-sampled velocity grids, center-sampled velocity volumes will be extrapolated into face-sampled volumes.
 
-@section Maya_Volume_OpenVDB OpenVDB
+@subsection Maya_Volume_Output_OpenVDB OpenVDB
 
 Houdini supports VDB volumes, which are efficient for storing sparse volumes. However, Maya doesn't natively support sparse volumes. So while an asset can output VDB volumes into Maya, they would be converted into dense volumes. The effect of this can make the converted volumes much larger amount of memory and be difficult to work with.
 

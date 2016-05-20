@@ -239,7 +239,11 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
         if((parmInfo.type == HAPI_PARMTYPE_INT
                     || parmInfo.type == HAPI_PARMTYPE_BUTTON
-                    || parmInfo.type == HAPI_PARMTYPE_STRING)
+                    || parmInfo.type == HAPI_PARMTYPE_STRING
+                    || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                    || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
+                    || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
+                    || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
                 && parmInfo.choiceCount > 0)
         {
             attrObj = createEnumAttr(parmInfo);

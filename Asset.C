@@ -1084,7 +1084,11 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
             if(attrObj.hasFn(MFn::kEnumAttribute)
                     && (parmInfo.type == HAPI_PARMTYPE_INT
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON
-                        || parmInfo.type == HAPI_PARMTYPE_STRING)
+                        || parmInfo.type == HAPI_PARMTYPE_STRING
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
                     && parmInfo.choiceCount > 0)
             {
                 int enumIndex = 0;
@@ -1096,7 +1100,11 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     // what the actual value is.
                     enumIndex = 0;
                 }
-                else if(parmInfo.type == HAPI_PARMTYPE_STRING)
+                else if(parmInfo.type == HAPI_PARMTYPE_STRING
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
                 {
                     int value;
                     HAPI_GetParmStringValues(
@@ -1520,7 +1528,11 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
             if((parmInfo.type == HAPI_PARMTYPE_INT
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON
-                        || parmInfo.type == HAPI_PARMTYPE_STRING)
+                        || parmInfo.type == HAPI_PARMTYPE_STRING
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
                     && parmInfo.choiceCount > 0)
             {
                 int enumIndex = static_cast<int>(dataHandle.asShort());
@@ -1539,7 +1551,11 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 );
                     }
                 }
-                else if(parmInfo.type == HAPI_PARMTYPE_STRING)
+                else if(parmInfo.type == HAPI_PARMTYPE_STRING
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
                 {
                     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
                     HAPI_GetParmChoiceLists(

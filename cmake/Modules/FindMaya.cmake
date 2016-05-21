@@ -32,6 +32,7 @@ endif ()
 if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
     list( APPEND _maya_msvc_versions 1700 )
     list( APPEND _maya_msvc_versions 1700 )
+    list( APPEND _maya_msvc_versions 1700 )
     list( APPEND _maya_msvc_versions 1600 )
     list( GET _maya_msvc_versions ${_maya_version_index} _maya_msvc_version )
 

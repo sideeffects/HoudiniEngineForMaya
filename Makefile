@@ -395,7 +395,7 @@ endif
 ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016 2016.5),)
     # The module file for Maya 2013 and newer can be used to set environment variables
     ifeq ($(OS), Linux)
-	echo "PATH += $(HFS)/../../../bin" >> $(@)
+	echo "PATH += $(DST_DIR)/../../../bin" >> $(@)
     else ifeq ($(OS), Cygwin)
         # Set the PATH variable for dynamic library.
 	echo "PATH += $(shell cygpath -w $(DST_DIR))\\..\\..\\..\\bin" >> $(@)

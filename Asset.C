@@ -1087,8 +1087,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         || parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                     && parmInfo.choiceCount > 0)
             {
                 int enumIndex = 0;
@@ -1103,8 +1102,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 else if(parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                 {
                     int value;
                     HAPI_GetParmStringValues(
@@ -1270,7 +1268,6 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     case HAPI_PARMTYPE_PATH_FILE:
                     case HAPI_PARMTYPE_PATH_FILE_GEO:
                     case HAPI_PARMTYPE_PATH_FILE_IMAGE:
-                    case HAPI_PARMTYPE_PATH_NODE:
                         {
                             int* values = new int[parmInfo.size];
                             HAPI_GetParmStringValues(
@@ -1531,8 +1528,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         || parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                     && parmInfo.choiceCount > 0)
             {
                 int enumIndex = static_cast<int>(dataHandle.asShort());
@@ -1554,8 +1550,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 else if(parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE
-                        || parmInfo.type == HAPI_PARMTYPE_PATH_NODE)
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                 {
                     HAPI_ParmChoiceInfo * choiceInfos = new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
                     HAPI_GetParmChoiceLists(
@@ -1750,7 +1745,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             }
                         }
                         break;
-                    case HAPI_PARMTYPE_PATH_NODE:
+                    case HAPI_PARMTYPE_NODE:
                         // Avoid setting path parameters. Path parameters
                         // should all be HAPI inputs. So technically, the user
                         // wouldn't know what values to set these parameters

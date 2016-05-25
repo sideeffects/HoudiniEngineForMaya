@@ -1,6 +1,7 @@
 #include "Input.h"
 
 #include <maya/MFnCompoundAttribute.h>
+#include <maya/MFnDagNode.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
@@ -273,15 +274,24 @@ Input::setInputPlugMetaData(
         int inputGeoId
         )
 {
+    MStatus status;
+
     // maya_source_node
     {
         MString shapeName;
+        MString fullPathName;
 
         MPlugArray plugs;
         if(plug.connectedTo(plugs, true, false))
         {
             assert(plugs.length() == 1);
             shapeName = MFnDependencyNode(plugs[0].node()).name();
+
+            MFnDagNode dagFn(plugs[0].node(), &status);
+            if(status)
+            {
+                fullPathName = dagFn.fullPathName();
+            }
         }
 
         if(shapeName.length())
@@ -294,6 +304,20 @@ Input::setInputPlugMetaData(
                     inputObjectId,
                     inputGeoId,
                     "maya_source_node",
+                    values
+                    ));
+        }
+
+        if(fullPathName.length())
+        {
+            MStringArray values;
+            values.append(fullPathName);
+
+            CHECK_HAPI(hapiSetDetailAttribute(
+                    inputAssetId,
+                    inputObjectId,
+                    inputGeoId,
+                    "maya_source_dag",
                     values
                     ));
         }

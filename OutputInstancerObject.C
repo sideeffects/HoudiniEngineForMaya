@@ -166,8 +166,6 @@ OutputInstancerObject::compute(
         MDataHandle useInstancerHandle = data.inputValue(AssetNode::useInstancerNode);
 
         bool useInstancer = useInstancerHandle.asBool();
-        if(!useInstancer)
-            needToSyncOutputs = true;
 
         MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);
@@ -203,6 +201,11 @@ OutputInstancerObject::compute(
         MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
         MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
         MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
+
+        if(positions.length() != size && !useInstancer)
+        {
+            needToSyncOutputs = true;
+        }
 
         positions.setLength(size);
         rotations.setLength(size);

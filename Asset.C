@@ -707,6 +707,7 @@ Asset::computeInstancerObjects(
             MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
             stat = obj->compute(
                     myTime,
+                    data,
                     instancerElemHandle,
                     needToSyncOutputs
                     );
@@ -780,6 +781,7 @@ Asset::computeGeometryObjects(
         {
             obj->compute(
                     myTime,
+                    data,
                     objectHandle,
                     needToSyncOutputs
                     );

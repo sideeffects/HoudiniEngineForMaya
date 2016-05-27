@@ -36,6 +36,7 @@ OutputGeometryObject::type()
 MStatus
 OutputGeometryObject::compute(
         const MTime &time,
+        MDataBlock& data,
         MDataHandle& objectHandle,
         bool &needToSyncOutputs
         )

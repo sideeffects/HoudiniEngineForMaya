@@ -176,12 +176,19 @@ OutputInstancerObject::compute(
         MArrayDataHandle instanceTransformHandle = handle.child(AssetNode::outputInstanceTransform);
 
         //MDataHandle instHandle = data.outputValue(instancerDataPlug);
-        MFnArrayAttrsData fnAAD;
-        MObject instOutput = fnAAD.create();
-        MVectorArray positions = fnAAD.vectorArray("position");
-        MVectorArray rotations = fnAAD.vectorArray("rotation");
-        MVectorArray scales = fnAAD.vectorArray("scale");
-        MIntArray objectIndices = fnAAD.intArray("objectIndex");
+        MObject arrayDataObj = instancerDataHandle.data();
+        MFnArrayAttrsData arrayDataFn(arrayDataObj);
+        if(arrayDataObj.isNull())
+        {
+            arrayDataObj = arrayDataFn.create();
+            instancerDataHandle.set(arrayDataObj);
+            arrayDataFn.setObject(arrayDataObj);
+        }
+
+        MVectorArray positions = arrayDataFn.vectorArray("position");
+        MVectorArray rotations = arrayDataFn.vectorArray("rotation");
+        MVectorArray scales = arrayDataFn.vectorArray("scale");
+        MIntArray objectIndices = arrayDataFn.intArray("objectIndex");
 
         unsigned int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
@@ -197,6 +204,11 @@ OutputInstancerObject::compute(
         MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
         MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
 
+        positions.setLength(size);
+        rotations.setLength(size);
+        scales.setLength(size);
+        objectIndices.setLength(size);
+
         for(unsigned int j=0; j<size; j++)
         {
             HAPI_Transform it = instTransforms[j];
@@ -208,10 +220,10 @@ OutputInstancerObject::compute(
 
             int objIndex = myInstancedObjectIndices[j];
 
-            positions.append(p);
-            rotations.append(r);
-            scales.append(s);
-            objectIndices.append(objIndex);
+            positions[j] = p;
+            rotations[j] = r;
+            scales[j] = s;
+            objectIndices[j] = objIndex;
 
             if(myHoudiniInstanceAttribute.length() == size)
             {
@@ -283,8 +295,6 @@ OutputInstancerObject::compute(
         instanceTransformHandle.setAllClean();
 
         delete[] instTransforms;
-
-        instancerDataHandle.set(instOutput);
 
         MArrayDataBuilder builder = instancedObjectNamesHandle.builder();
         if(myObjectInfo.objectToInstanceId >= 0)

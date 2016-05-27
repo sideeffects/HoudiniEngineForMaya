@@ -163,6 +163,12 @@ OutputInstancerObject::compute(
 
     if(myNeverBuilt || myGeoInfo.hasGeoChanged)
     {
+        MDataHandle useInstancerHandle = data.inputValue(AssetNode::useInstancerNode);
+
+        bool useInstancer = useInstancerHandle.asBool();
+        if(!useInstancer)
+            needToSyncOutputs = true;
+
         MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);
         MArrayDataHandle houdiniInstanceAttributeHandle = handle.child(AssetNode::outputHoudiniInstanceAttribute);

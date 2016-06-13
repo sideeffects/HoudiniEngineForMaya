@@ -145,7 +145,7 @@ SyncOutputObject::doIt()
             CHECK_MSTATUS_AND_RETURN_IT(status);
             for(int jj=0; jj<partCount; jj++)
             {
-                SubCommand* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent);
+                SyncOutputGeometryPart* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent);
                 sync->doIt();
                 myAssetSyncs.push_back(sync);
             }

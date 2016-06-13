@@ -141,6 +141,26 @@ SyncOutputGeometryPart::doIt()
 }
 
 MStatus
+SyncOutputGeometryPart::doItPost(
+        SyncOutputGeometryPart *const *syncParts
+        )
+{
+    // A second pass for setting up the nodes. This second pass has access to
+    // all the nodes that were created in the first pass.
+
+    MPlug hasInstancerPlug = myOutputPlug.child(AssetNode::outputPartHasInstancer);
+    if(hasInstancerPlug.asBool())
+    {
+        createOutputInstancerPost(
+                myOutputPlug.child(AssetNode::outputPartInstancer),
+                syncParts
+                );
+    }
+
+    return redoIt();
+}
+
+MStatus
 SyncOutputGeometryPart::undoIt()
 {
     MStatus status;
@@ -204,6 +224,16 @@ SyncOutputGeometryPart::createOutputPart(
     createOutputCurves(myOutputPlug.child(AssetNode::outputPartCurves),
                        partName,
                        curveIsBezier.asBool());
+
+    // create instancer
+    MPlug hasInstancerPlug = myOutputPlug.child(AssetNode::outputPartHasInstancer);
+    if(hasInstancerPlug.asBool())
+    {
+        createOutputInstancer(
+                partName,
+                myOutputPlug.child(AssetNode::outputPartInstancer)
+                );
+    }
 
     // doIt
     // Need to do it here right away because otherwise the top level
@@ -510,6 +540,87 @@ SyncOutputGeometryPart::createOutputParticle(
 
     MPlug mayaSGAttributePlug;
     createOutputExtraAttributes(particleShapeObj, mayaSGAttributePlug);
+
+    return MStatus::kSuccess;
+}
+
+MStatus
+SyncOutputGeometryPart::createOutputInstancer(
+        const MString &partName,
+        const MPlug &instancerPlug
+        )
+{
+    MStatus status;
+
+    MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
+    MFnIntArrayData partsData(partsPlug.asMObject());
+    MIntArray parts = partsData.array();
+
+    // Particle instancer
+    {
+        myPartShapes.setLength(parts.length());
+
+        for(unsigned int i = 0; i < parts.length(); i++)
+        {
+            // create the instancer node
+            myPartShapes[i] = myDagModifier.createNode("instancer", myPartTransform, &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            MFnDependencyNode instancerFn(myPartShapes[i], &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            // set the rotation units to radians
+            status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits"), 1);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            // inputPoints
+            status = myDagModifier.connect(
+                    instancerPlug.child(AssetNode::outputPartInstancerArrayData),
+                    instancerFn.findPlug("inputPoints"));
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
+    }
+
+    return MStatus::kSuccess;
+}
+
+MStatus
+SyncOutputGeometryPart::createOutputInstancerPost(
+        const MPlug &instancerPlug,
+        SyncOutputGeometryPart *const *syncParts
+        )
+{
+    MStatus status;
+
+    MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
+    MFnIntArrayData partsData(partsPlug.asMObject());
+    MIntArray parts = partsData.array();
+
+    // Particle instancer
+    {
+        for(unsigned int i = 0; i < parts.length(); i++)
+        {
+            MFnDependencyNode instancerFn(myPartShapes[i], &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy");
+
+            const MObject &instancedPartTransform = syncParts[parts[i]]->partTransform();
+            MFnDependencyNode instancedPartTransformFn(instancedPartTransform);
+
+            // set objectTransform hidden
+            status = myDagModifier.newPlugValueInt(
+                    instancedPartTransformFn.findPlug("visibility"),
+                    0);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            // connect inputHierarchy
+            status = myDagModifier.connect(
+                    instancedPartTransformFn.findPlug("matrix"),
+                    inputHierarchyPlug.elementByLogicalIndex(0));
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
+    }
 
     return MStatus::kSuccess;
 }

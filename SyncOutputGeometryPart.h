@@ -3,6 +3,7 @@
 
 #include <maya/MDagModifier.h>
 #include <maya/MPlug.h>
+#include <maya/MObjectArray.h>
 
 #include "SubCommand.h"
 
@@ -16,6 +17,7 @@ class SyncOutputGeometryPart : public SubCommand
         virtual ~SyncOutputGeometryPart();
 
         virtual MStatus doIt();
+        MStatus doItPost(SyncOutputGeometryPart *const *syncParts);
         virtual MStatus undoIt();
         virtual MStatus redoIt();
 
@@ -49,6 +51,14 @@ class SyncOutputGeometryPart : public SubCommand
                 const MString &partName,
                 bool isBezier
                 );
+        MStatus createOutputInstancer(
+                const MString &partName,
+                const MPlug &instancerPlug
+                );
+        MStatus createOutputInstancerPost(
+                const MPlug &instancerPlug,
+                SyncOutputGeometryPart *const *syncParts
+                );
         MStatus createOutputExtraAttributes(
                 const MObject &dstNode,
                 MPlug &mayaSGAttributePlug
@@ -70,6 +80,7 @@ class SyncOutputGeometryPart : public SubCommand
         MDagModifier myDagModifier;
 
         MObject myPartTransform;
+        MObjectArray myPartShapes;
 };
 
 #endif

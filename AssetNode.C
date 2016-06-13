@@ -121,6 +121,20 @@ MObject AssetNode::outputPartInstancer;
 MObject AssetNode::outputPartInstancerArrayData;
 MObject AssetNode::outputPartInstancerParts;
 
+MObject AssetNode::outputPartInstancerTransform;
+MObject AssetNode::outputPartInstancerTranslate;
+MObject AssetNode::outputPartInstancerTranslateX;
+MObject AssetNode::outputPartInstancerTranslateY;
+MObject AssetNode::outputPartInstancerTranslateZ;
+MObject AssetNode::outputPartInstancerRotate;
+MObject AssetNode::outputPartInstancerRotateX;
+MObject AssetNode::outputPartInstancerRotateY;
+MObject AssetNode::outputPartInstancerRotateZ;
+MObject AssetNode::outputPartInstancerScale;
+MObject AssetNode::outputPartInstancerScaleX;
+MObject AssetNode::outputPartInstancerScaleY;
+MObject AssetNode::outputPartInstancerScaleZ;
+
 MObject AssetNode::outputPartExtraAttributes;
 MObject AssetNode::outputPartExtraAttributeName;
 MObject AssetNode::outputPartExtraAttributeOwner;
@@ -951,11 +965,123 @@ AssetNode::initialize()
     tAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputPartInstancerParts);
 
+    AssetNode::outputPartInstancerTranslateX = uAttr.create(
+            "outputPartInstancerTranslateX", "outputPartInstancerTranslateX",
+            MFnUnitAttribute::kDistance
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerTranslateX);
+    AssetNode::outputPartInstancerTranslateY = uAttr.create(
+            "outputPartInstancerTranslateY", "outputPartInstancerTranslateY",
+            MFnUnitAttribute::kDistance
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerTranslateY);
+    AssetNode::outputPartInstancerTranslateZ = uAttr.create(
+            "outputPartInstancerTranslateZ", "outputPartInstancerTranslateZ",
+            MFnUnitAttribute::kDistance
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerTranslateZ);
+    AssetNode::outputPartInstancerTranslate = nAttr.create(
+            "outputPartInstancerTranslate", "outputPartInstancerTranslate",
+            AssetNode::outputPartInstancerTranslateX,
+            AssetNode::outputPartInstancerTranslateY,
+            AssetNode::outputPartInstancerTranslateZ
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerTranslate);
+
+    // rotate
+    AssetNode::outputPartInstancerRotateX = uAttr.create(
+            "outputPartInstancerRotateX", "outputPartInstancerRotateX",
+            MFnUnitAttribute::kAngle
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerRotateX);
+    AssetNode::outputPartInstancerRotateY = uAttr.create(
+            "outputPartInstancerRotateY", "outputPartInstancerRotateY",
+            MFnUnitAttribute::kAngle
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerRotateY);
+    AssetNode::outputPartInstancerRotateZ = uAttr.create(
+            "outputPartInstancerRotateZ", "outputPartInstancerRotateZ",
+            MFnUnitAttribute::kAngle
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerRotateZ);
+    AssetNode::outputPartInstancerRotate = nAttr.create(
+            "outputPartInstancerRotate", "outputPartInstancerRotate",
+            AssetNode::outputPartInstancerRotateX,
+            AssetNode::outputPartInstancerRotateY,
+            AssetNode::outputPartInstancerRotateZ
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerRotate);
+
+    // scale
+    AssetNode::outputPartInstancerScaleX = nAttr.create(
+            "outputPartInstancerScaleX", "outputPartInstancerScaleX",
+            MFnNumericData::kDouble,
+            1.0
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerScaleX);
+    AssetNode::outputPartInstancerScaleY = nAttr.create(
+            "outputPartInstancerScaleY", "outputPartInstancerScaleY",
+            MFnNumericData::kDouble,
+            1.0
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerScaleY);
+    AssetNode::outputPartInstancerScaleZ = nAttr.create(
+            "outputPartInstancerScaleZ", "outputPartInstancerScaleZ",
+            MFnNumericData::kDouble,
+            1.0
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerScaleZ);
+    AssetNode::outputPartInstancerScale = nAttr.create(
+            "outputPartInstancerScale", "outputPartInstancerScale",
+            AssetNode::outputPartInstancerScaleX,
+            AssetNode::outputPartInstancerScaleY,
+            AssetNode::outputPartInstancerScaleZ
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerScale);
+
+    // transform
+    AssetNode::outputPartInstancerTransform = cAttr.create(
+            "outputPartInstancerTransform", "outputPartInstancerTransform"
+            );
+    cAttr.addChild(AssetNode::outputPartInstancerTranslate);
+    cAttr.addChild(AssetNode::outputPartInstancerRotate);
+    cAttr.addChild(AssetNode::outputPartInstancerScale);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    cAttr.setArray(true);
+    cAttr.setUsesArrayDataBuilder(true);
+    computeAttributes.push_back(AssetNode::outputPartInstancerTransform);
+
     AssetNode::outputPartInstancer = cAttr.create(
             "outputPartInstancer", "outputPartInstancer"
             );
     cAttr.addChild(AssetNode::outputPartInstancerArrayData);
     cAttr.addChild(AssetNode::outputPartInstancerParts);
+    cAttr.addChild(AssetNode::outputPartInstancerTransform);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     computeAttributes.push_back(AssetNode::outputPartVolume);

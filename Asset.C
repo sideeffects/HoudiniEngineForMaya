@@ -867,6 +867,7 @@ Asset::compute(
         HAPI_CookOptions_Init(&cookOptions);
         cookOptions.splitGeosByGroup = splitGeosByGroup;
         cookOptions.cookTemplatedGeos = cookTemplatedGeos;
+        cookOptions.packedPrimInstancingMode = HAPI_PACKEDPRIM_INSTANCING_MODE_FLAT;
 
         HAPI_CookAsset(
                 Util::theHAPISession.get(),

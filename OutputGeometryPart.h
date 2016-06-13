@@ -62,6 +62,11 @@ class OutputGeometryPart
                 const MTime &time,
                 MDataHandle &volumeTransformHandle
                 );
+        void computeInstancer(
+                const MTime &time,
+                MDataHandle &hasInstancerHandle,
+                MDataHandle &instanceHandle
+                );
         void computeExtraAttributes(
                 const MTime &time,
                 MDataHandle &extraAttributesHandle

@@ -100,24 +100,31 @@ SyncOutputGeometryPart::doIt()
 
     MFnDagNode objectTransformFn(myObjectTransform);
 
-    // create part
+    myPartTransform = Util::findDagChild(objectTransformFn, partName);
+    assert(myPartTransform.isNull()); // TODO: does the transform ever exist?
+
+    // create myPartTransform
+    myPartTransform = myDagModifier.createNode("transform", myObjectTransform, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    // rename myPartTransform
+    status = myDagModifier.renameNode(myPartTransform, partName);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     bool hasMaterial = materialExists;
-    MObject partTransform = Util::findDagChild(objectTransformFn, partName);
-    if(partTransform.isNull())
-    {
-        status = createOutputPart(
-                myObjectTransform,
-                partName,
-                partTransform,
-                hasMaterial
-                );
-    }
+
+    // create part
+    status = createOutputPart(
+            myObjectTransform,
+            partName,
+            hasMaterial
+            );
 
     // create material
     if(materialExists)
     {
         //TODO: check if material already exists
-        status = createOutputMaterial(materialPlug, partTransform);
+        status = createOutputMaterial(materialPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         hasMaterial = true;
@@ -125,7 +132,7 @@ SyncOutputGeometryPart::doIt()
 
     if(!hasMaterial)
     {
-        MFnDagNode partTransformFn(partTransform);
+        MFnDagNode partTransformFn(myPartTransform);
         status = myDagModifier.commandToExecute("assignSG \"lambert1\" \"" + partTransformFn.fullPathName() + "\";");
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
@@ -165,26 +172,16 @@ MStatus
 SyncOutputGeometryPart::createOutputPart(
         const MObject &objectTransform,
         const MString &partName,
-        MObject &partTransform,
         bool &hasMaterial
         )
 {
     MStatus status;
-
-    // create partTransform
-    partTransform = myDagModifier.createNode("transform", objectTransform, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // rename partTransform
-    status = myDagModifier.renameNode(partTransform, partName);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // create mesh
     MPlug hasMeshPlug = myOutputPlug.child(AssetNode::outputPartHasMesh);
     if(hasMeshPlug.asBool())
     {
         status = createOutputMesh(
-                partTransform,
                 partName,
                 myOutputPlug.child(AssetNode::outputPartMesh),
                 hasMaterial
@@ -196,7 +193,6 @@ SyncOutputGeometryPart::createOutputPart(
     if(particleExistsPlug.asBool())
     {
         status = createOutputParticle(
-                partTransform,
                 partName,
                 myOutputPlug.child(AssetNode::outputPartParticle)
                 );
@@ -206,7 +202,6 @@ SyncOutputGeometryPart::createOutputPart(
     // create curves
     MPlug curveIsBezier = myOutputPlug.child(AssetNode::outputPartCurvesIsBezier);
     createOutputCurves(myOutputPlug.child(AssetNode::outputPartCurves),
-                       partTransform,
                        partName,
                        curveIsBezier.asBool());
 
@@ -221,7 +216,6 @@ SyncOutputGeometryPart::createOutputPart(
 
 MStatus
 SyncOutputGeometryPart::createOutputMesh(
-        const MObject &partTransform,
         const MString &partName,
         const MPlug &meshPlug,
         bool &hasMaterial
@@ -230,7 +224,7 @@ SyncOutputGeometryPart::createOutputMesh(
     MStatus status;
 
     // create mesh
-    MObject meshShape = myDagModifier.createNode("mesh", partTransform, &status);
+    MObject meshShape = myDagModifier.createNode("mesh", myPartTransform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename mesh
@@ -300,7 +294,6 @@ SyncOutputGeometryPart::createOutputMesh(
 MStatus
 SyncOutputGeometryPart::createOutputCurves(
         MPlug curvesPlug,
-        const MObject &partTransform,
         const MString &partName,
         bool isBezier
         )
@@ -320,7 +313,7 @@ SyncOutputGeometryPart::createOutputCurves(
         // create curve transform
         MObject curveTransform = myDagModifier.createNode(
                 "transform",
-                partTransform,
+                myPartTransform,
                 &status
                 );
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -353,13 +346,12 @@ SyncOutputGeometryPart::createOutputCurves(
 
 MStatus
 SyncOutputGeometryPart::createOutputMaterial(
-        const MPlug &materialPlug,
-        const MObject &partTransform
+        const MPlug &materialPlug
         )
 {
     MStatus status;
 
-    MFnDagNode partTransformFn(partTransform, &status);
+    MFnDagNode partTransformFn(myPartTransform, &status);
 
     // create shader
     MFnDependencyNode shaderFn;
@@ -458,7 +450,6 @@ SyncOutputGeometryPart::createOutputMaterial(
 
 MStatus
 SyncOutputGeometryPart::createOutputParticle(
-        const MObject &partTransform,
         const MString &partName,
         const MPlug &particlePlug
         )
@@ -468,7 +459,7 @@ SyncOutputGeometryPart::createOutputParticle(
     // create nParticle
     MObject particleShapeObj = myDagModifier.createNode(
             "nParticle",
-            partTransform,
+            myPartTransform,
             &status
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -481,7 +472,7 @@ SyncOutputGeometryPart::createOutputParticle(
 
     myDagModifier.commandToExecute(
             "setupNParticleConnections " +
-            MFnDagNode(partTransform).fullPathName()
+            MFnDagNode(myPartTransform).fullPathName()
             );
 
     MPlug srcPlug;

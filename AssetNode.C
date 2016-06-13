@@ -1569,6 +1569,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             .inputValue(AssetNode::splitGeosByGroup).asBool();
         bool outputTemplatedGeometries = data
             .inputValue(AssetNode::outputTemplatedGeometries).asBool();
+        bool useInstancerNode = data
+            .inputValue(AssetNode::useInstancerNode).asBool();
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
@@ -1577,6 +1579,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
                 data,
                 splitGeosByGroup,
                 outputTemplatedGeometries,
+                useInstancerNode,
                 needToSyncOutputs
                 );
         // No need to print error messages from Asset::compute(). It should

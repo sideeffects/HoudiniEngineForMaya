@@ -5,6 +5,17 @@ AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
 {
     string $categories[] = `addAttr -q -category ($plug)`;
 
+    string $fileFilter = "*.*(*.*)";
+    for($category in $categories)
+    {
+        string $prefix = "hapiParmFile_filter";
+        if(startsWith($category, $prefix))
+        {
+            $fileFilter = stringRemovePrefix($category, $prefix);
+            break;
+        }
+    }
+
     int $fileMode = 4;
     if(stringArrayFind("hapiParmFile_read", 0, $categories) != -1)
         $fileMode = 4;
@@ -13,6 +24,7 @@ AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
 
     string $fileDialogResults[] = `fileDialog2
         -caption $plug
+        -fileFilter $fileFilter
         -fileMode $fileMode
         -okCaption "Select"`;
     if(size($fileDialogResults))

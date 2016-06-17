@@ -299,6 +299,13 @@ configureStringAttribute(
     {
         tAttr.setUsedAsFilename(true);
 
+        MString filterString = Util::HAPIString(parm.typeInfoSH);
+        if(filterString.length())
+        {
+            filterString = filterString + "(" + filterString + ")";
+            tAttr.addToCategory("hapiParmFile_filter" + filterString);
+        }
+
         switch(parm.permissions)
         {
             case HAPI_PERMISSIONS_READ_WRITE:

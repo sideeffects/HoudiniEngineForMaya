@@ -288,6 +288,15 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     }
 }
 
+static void
+configureStringAttribute(
+        MFnTypedAttribute &tAttr,
+        const HAPI_ParmInfo &parm)
+{
+    if(HAPI_ParmInfo_IsPath(&parm))
+        tAttr.setUsedAsFilename(true);
+}
+
 MObject
 CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
 {
@@ -310,6 +319,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
         {
             MString childAttrName = attrName + "__tuple" + i;
             MString childNiceName = niceName + " " + i;
+
             MObject child = tAttr.create(
                     childAttrName,
                     childAttrName,
@@ -317,18 +327,17 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
                     );
             tAttr.setNiceNameOverride(childNiceName);
             tAttr.setStorable(true);
-            if(HAPI_ParmInfo_IsPath(&parm))
-                tAttr.setUsedAsFilename(true);
+            configureStringAttribute(tAttr, parm);
+
             cAttr.addChild(child);
         }
         return result;
     }
 
     result = tAttr.create(attrName, attrName, MFnData::kString);
-    tAttr.setStorable(true);
     tAttr.setNiceNameOverride(niceName);
-    if(HAPI_ParmInfo_IsPath(&parm))
-        tAttr.setUsedAsFilename(true);
+    tAttr.setStorable(true);
+    configureStringAttribute(tAttr, parm);
 
     return result;
 }

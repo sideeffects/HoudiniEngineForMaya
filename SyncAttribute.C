@@ -296,7 +296,22 @@ configureStringAttribute(
         const HAPI_ParmInfo &parm)
 {
     if(HAPI_ParmInfo_IsFilePath(&parm))
+    {
         tAttr.setUsedAsFilename(true);
+
+        switch(parm.permissions)
+        {
+            case HAPI_PERMISSIONS_READ_WRITE:
+            case HAPI_PERMISSIONS_WRITE_ONLY:
+                tAttr.addToCategory("hapiParmFile_write");
+                break;
+            case HAPI_PERMISSIONS_READ_ONLY:
+                tAttr.addToCategory("hapiParmFile_read");
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 MObject

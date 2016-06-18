@@ -137,6 +137,7 @@ class AssetNode: public MPxTransform
         static MObject outputPartName;
         static MObject outputPartHasMesh;
         static MObject outputPartHasParticles;
+        static MObject outputPartHasInstancer;
         static MObject outputPartMaterial;
         static MObject outputPartMaterialExists;
         static MObject outputPartMaterialName;
@@ -178,6 +179,10 @@ class AssetNode: public MPxTransform
         static MObject outputPartVolumeScaleY;
         static MObject outputPartVolumeScaleZ;
 #endif
+
+        static MObject outputPartInstancer;
+        static MObject outputPartInstancerArrayData;
+        static MObject outputPartInstancerParts;
 
         static MObject outputPartExtraAttributes;
         static MObject outputPartExtraAttributeName;

@@ -72,6 +72,7 @@ MObject AssetNode::outputParts;
 MObject AssetNode::outputPartName;
 MObject AssetNode::outputPartHasMesh;
 MObject AssetNode::outputPartHasParticles;
+MObject AssetNode::outputPartHasInstancer;
 MObject AssetNode::outputPartMaterial;
 MObject AssetNode::outputPartMaterialExists;
 MObject AssetNode::outputPartMaterialName;
@@ -115,6 +116,10 @@ MObject AssetNode::outputPartVolumeScaleY;
 MObject AssetNode::outputPartVolumeScaleZ;
 
 #endif
+
+MObject AssetNode::outputPartInstancer;
+MObject AssetNode::outputPartInstancerArrayData;
+MObject AssetNode::outputPartInstancerParts;
 
 MObject AssetNode::outputPartExtraAttributes;
 MObject AssetNode::outputPartExtraAttributeName;
@@ -611,6 +616,13 @@ AssetNode::initialize()
             );
     computeAttributes.push_back(AssetNode::outputPartHasParticles);
 
+    AssetNode::outputPartHasInstancer = nAttr.create(
+            "outputPartHasInstancer", "outputPartHasInstancer",
+            MFnNumericData::kBoolean,
+            false
+            );
+    computeAttributes.push_back(AssetNode::outputPartHasInstancer);
+
     // material exists
     AssetNode::outputPartMaterialExists = nAttr.create(
             "outputPartMaterialExists", "outputPartMaterialExists",
@@ -922,6 +934,32 @@ AssetNode::initialize()
     computeAttributes.push_back(AssetNode::outputPartVolume);
 #endif
 
+    // instancer
+    AssetNode::outputPartInstancerArrayData = tAttr.create(
+            "outputPartInstancerArrayData", "outputPartInstancerArrayData",
+            MFnData::kDynArrayAttrs
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerArrayData);
+
+    AssetNode::outputPartInstancerParts = tAttr.create(
+            "outputPartInstancerParts", "outputPartInstancerParts",
+            MFnData::kIntArray
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputPartInstancerParts);
+
+    AssetNode::outputPartInstancer = cAttr.create(
+            "outputPartInstancer", "outputPartInstancer"
+            );
+    cAttr.addChild(AssetNode::outputPartInstancerArrayData);
+    cAttr.addChild(AssetNode::outputPartInstancerParts);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputPartVolume);
+
     // extra attributes
     AssetNode::outputPartExtraAttributeName = tAttr.create(
             "outputPartExtraAttributeName", "outputPartExtraAttributeName",
@@ -1020,11 +1058,13 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartName);
     cAttr.addChild(AssetNode::outputPartHasMesh);
     cAttr.addChild(AssetNode::outputPartHasParticles);
+    cAttr.addChild(AssetNode::outputPartHasInstancer);
     cAttr.addChild(AssetNode::outputPartMaterial);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartParticle);
     cAttr.addChild(AssetNode::outputPartCurves);
     cAttr.addChild(AssetNode::outputPartCurvesIsBezier);
+    cAttr.addChild(AssetNode::outputPartInstancer);
     cAttr.addChild(AssetNode::outputPartExtraAttributes);
     cAttr.addChild(AssetNode::outputPartGroups);
 

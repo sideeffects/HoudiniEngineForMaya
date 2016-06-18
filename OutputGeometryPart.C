@@ -2150,6 +2150,9 @@ OutputGeometryPart::computeInstancer(
             AssetNode::outputPartInstancerArrayData);
     MDataHandle instancerPartsHandle = instanceHandle.child(
             AssetNode::outputPartInstancerParts);
+    MArrayDataHandle instancerTransformHandle = instanceHandle.child(
+            AssetNode::outputPartInstancerTransform);
+    MArrayDataBuilder instancerTransformBuilder = instancerTransformHandle.builder();
 
     // outputPartInstancerArrayData
     {
@@ -2206,7 +2209,28 @@ OutputGeometryPart::computeInstancer(
             rotations[i] = r;
             scales[i] = s;
             objectIndices[i] = 0;
+
+            // Transform Instancing
+            MDataHandle transformHandle =
+                instancerTransformBuilder.addElement(i);
+            MDataHandle translateHandle =
+                transformHandle.child(AssetNode::outputPartInstancerTranslate);
+            translateHandle.set(p);
+            MDataHandle rotateHandle =
+                transformHandle.child(AssetNode::outputPartInstancerRotate);
+            rotateHandle.set(r);
+            MDataHandle scaleHandle =
+                transformHandle.child(AssetNode::outputPartInstancerScale);
+            scaleHandle.set(s);
         }
+
+        for(int i = instancerTransformBuilder.elementCount();
+                i-- > instanceCount;)
+        {
+            instancerTransformBuilder.removeElement(i);
+        }
+
+        instancerTransformHandle.set(instancerTransformBuilder);
     }
 
     // outputPartInstancerParts

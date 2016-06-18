@@ -326,6 +326,11 @@ OutputGeometryPart::compute(
             clearCurves(curvesHandle, curvesIsBezierHandle);
         }
 
+        // Instancer
+        MDataHandle hasInstancerHandle = handle.child(AssetNode::outputPartHasInstancer);
+        MDataHandle instanceHandle = handle.child(AssetNode::outputPartInstancer);
+        computeInstancer(time, hasInstancerHandle, instanceHandle);
+
         // Extra attributes
         MDataHandle extraAttributesHandle = handle.child(
                 AssetNode::outputPartExtraAttributes
@@ -2123,6 +2128,111 @@ OutputGeometryPart::computeMaterial(
     specularHandle.setClean();
     alphaHandle.setClean();
     texturePathHandle.setClean();
+}
+
+void
+OutputGeometryPart::computeInstancer(
+        const MTime &time,
+        MDataHandle &hasInstancerHandle,
+        MDataHandle &instanceHandle
+        )
+{
+    bool hasInstancer = myPartInfo.type == HAPI_PARTTYPE_INSTANCER;
+
+    if(!hasInstancerHandle.asBool() && !hasInstancer)
+    {
+        return;
+    }
+
+    hasInstancerHandle.setBool(hasInstancer);
+
+    MDataHandle instancerArrayDataHandle = instanceHandle.child(
+            AssetNode::outputPartInstancerArrayData);
+    MDataHandle instancerPartsHandle = instanceHandle.child(
+            AssetNode::outputPartInstancerParts);
+
+    // outputPartInstancerArrayData
+    {
+        MObject instancerArrayDataObj = instancerArrayDataHandle.data();
+        MFnArrayAttrsData instancerArrayDataFn(instancerArrayDataObj);
+        if(instancerArrayDataObj.isNull())
+        {
+            instancerArrayDataObj = instancerArrayDataFn.create();
+            instancerArrayDataHandle.setMObject(instancerArrayDataObj);
+
+            instancerArrayDataObj = instancerArrayDataHandle.data();
+            instancerArrayDataFn.setObject(instancerArrayDataObj);
+        }
+
+        const int &instanceCount = myPartInfo.instanceCount;
+
+        std::vector<HAPI_Transform> transforms(instanceCount);
+        CHECK_HAPI(HAPI_GetInstancerPartTransforms(
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    HAPI_SRT,
+                    instanceCount ? &transforms.front() : NULL,
+                    0, instanceCount
+                    ));
+
+        MVectorArray positions = instancerArrayDataFn.vectorArray("position");
+        MVectorArray rotations = instancerArrayDataFn.vectorArray("rotation");
+        MVectorArray scales = instancerArrayDataFn.vectorArray("scale");
+        MIntArray objectIndices = instancerArrayDataFn.intArray("objectIndex");
+
+        positions.setLength(instanceCount);
+        rotations.setLength(instanceCount);
+        scales.setLength(instanceCount);
+        objectIndices.setLength(instanceCount);
+
+        for(int i = 0; i < instanceCount; i++)
+        {
+            const HAPI_Transform &transform = transforms[i];
+
+            MVector p(transform.position[0],
+                    transform.position[1],
+                    transform.position[2]);
+            MVector r = MQuaternion(
+                    transform.rotationQuaternion[0],
+                    transform.rotationQuaternion[1],
+                    transform.rotationQuaternion[2],
+                    transform.rotationQuaternion[3]).asEulerRotation().asVector();
+            MVector s(transform.scale[0],
+                    transform.scale[1],
+                    transform.scale[2]);
+
+            // Particle instancer
+            positions[i] = p;
+            rotations[i] = r;
+            scales[i] = s;
+            objectIndices[i] = 0;
+        }
+    }
+
+    // outputPartInstancerParts
+    {
+        MObject instancedPartsObj = instancerPartsHandle.data();
+        MFnIntArrayData instancerPartsFn(instancedPartsObj);
+        if(instancedPartsObj.isNull())
+        {
+            instancedPartsObj = instancerPartsFn.create();
+            instancerPartsHandle.set(instancedPartsObj);
+            instancerPartsFn.setObject(instancedPartsObj);
+        }
+
+        const int &instancedPartCount = myPartInfo.instancedPartCount;
+
+        std::vector<HAPI_PartId> partIds(instancedPartCount);
+        CHECK_HAPI(HAPI_GetInstancedPartIds(
+                    Util::theHAPISession.get(),
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    instancedPartCount ? &partIds.front() : NULL,
+                    0, instancedPartCount
+                    ));
+
+        MIntArray instancerParts = instancerPartsFn.array();
+        Util::convertArray(instancerParts, partIds);
+    }
 }
 
 void

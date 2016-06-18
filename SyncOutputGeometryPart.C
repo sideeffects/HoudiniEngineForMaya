@@ -585,6 +585,12 @@ SyncOutputGeometryPart::createOutputInstancer(
                     instancerPlug.child(AssetNode::outputPartInstancerArrayData),
                     instancerFn.findPlug("inputPoints"));
             CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            MPlug mayaSGAttributePlug;
+            createOutputExtraAttributes(
+                    myPartShapes[i],
+                    mayaSGAttributePlug
+                    );
         }
     }
     else

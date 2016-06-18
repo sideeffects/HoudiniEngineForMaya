@@ -501,8 +501,8 @@ OutputGeometryPart::computeCurves(
             for(; j < order - 1; j++)
                 knotSequences[j] = 0.0;
 
-            for(; j < numVertices - 1; j++)
-                knotSequences[j] = (double) j / (numVertices - order + 1);
+            for(int k = 1; j < numVertices - 1; k++, j++)
+                knotSequences[j] = (double) k / (numVertices - order + 1);
 
             for(; j < numVertices + order - 2; j++)
                 knotSequences[j] = 1.0;

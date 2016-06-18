@@ -1084,7 +1084,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartInstancerTransform);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolume);
+    computeAttributes.push_back(AssetNode::outputPartInstancer);
 
     // extra attributes
     AssetNode::outputPartExtraAttributeName = tAttr.create(

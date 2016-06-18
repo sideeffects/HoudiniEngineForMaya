@@ -8,6 +8,8 @@
 
 #include "SubCommand.h"
 
+class SyncOutputGeometryPart;
+
 class SyncOutputObject : public SubCommand
 {
     public:
@@ -37,8 +39,7 @@ class SyncOutputObject : public SubCommand
 
         MDagModifier myDagModifier;
 
-        // TODO: change this into an SyncOutputGeometryPart
-        typedef std::vector<SubCommand*> AssetSyncs;
+        typedef std::vector<SyncOutputGeometryPart*> AssetSyncs;
         AssetSyncs myAssetSyncs;
 };
 

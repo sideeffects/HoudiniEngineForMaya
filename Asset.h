@@ -53,6 +53,7 @@ class Asset {
                 MDataBlock& data,
                 bool splitGeosByGroup,
                 bool cookTemplatedGeos,
+                bool useInstancerNode,
                 bool &needToSyncOutputs
                 );
 

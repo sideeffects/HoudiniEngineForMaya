@@ -853,6 +853,7 @@ Asset::compute(
         MDataBlock& data,
         bool splitGeosByGroup,
         bool cookTemplatedGeos,
+        bool useInstancerNode,
         bool &needToSyncOutputs
         )
 {
@@ -867,7 +868,17 @@ Asset::compute(
         HAPI_CookOptions_Init(&cookOptions);
         cookOptions.splitGeosByGroup = splitGeosByGroup;
         cookOptions.cookTemplatedGeos = cookTemplatedGeos;
-        cookOptions.packedPrimInstancingMode = HAPI_PACKEDPRIM_INSTANCING_MODE_FLAT;
+
+        if(useInstancerNode)
+        {
+            // Particle instancer cannot instance other particle instancer. So
+            // we can only do flatten.
+            cookOptions.packedPrimInstancingMode = HAPI_PACKEDPRIM_INSTANCING_MODE_FLAT;
+        }
+        else
+        {
+            cookOptions.packedPrimInstancingMode = HAPI_PACKEDPRIM_INSTANCING_MODE_HIERARCHY;
+        }
 
         HAPI_CookAsset(
                 Util::theHAPISession.get(),

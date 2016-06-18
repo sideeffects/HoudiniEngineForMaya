@@ -149,6 +149,11 @@ SyncOutputObject::doIt()
                 sync->doIt();
                 myAssetSyncs.push_back(sync);
             }
+
+            for(int j = 0; j < partCount; j++)
+            {
+                myAssetSyncs[j]->doItPost(&myAssetSyncs.front());
+            }
         }
     }
 

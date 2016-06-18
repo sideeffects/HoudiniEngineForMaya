@@ -21,31 +21,31 @@ class SyncOutputGeometryPart : public SubCommand
 
         virtual bool isUndoable() const;
 
+        const MObject &partTransform() const
+        {
+            return myPartTransform;
+        }
+
     protected:
         MStatus createOutputPart(
                 const MObject &objectTransform,
                 const MString &partName,
-                MObject &partTransform,
                 bool &hasMaterial
                 );
         MStatus createOutputMesh(
-                const MObject &partTransform,
                 const MString &partName,
                 const MPlug &meshPlug,
                 bool &hasMaterial
                 );
         MStatus createOutputMaterial(
-                const MPlug &materialPlug,
-                const MObject &partTransform
+                const MPlug &materialPlug
                 );
         MStatus createOutputParticle(
-                const MObject &partTransform,
                 const MString &partName,
                 const MPlug &particlePlug
                 );
         MStatus createOutputCurves(
                 MPlug curvesPlug,
-                const MObject &partTransform,
                 const MString &partName,
                 bool isBezier
                 );
@@ -68,6 +68,8 @@ class SyncOutputGeometryPart : public SubCommand
         const MObject myObjectTransform;
 
         MDagModifier myDagModifier;
+
+        MObject myPartTransform;
 };
 
 #endif

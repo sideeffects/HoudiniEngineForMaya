@@ -28,6 +28,16 @@ class SyncOutputGeometryPart : public SubCommand
             return myPartTransform;
         }
 
+        bool isInstanced()
+        {
+            return myIsInstanced;
+        }
+
+        void setIsInstanced(bool isInstanced)
+        {
+            myIsInstanced = isInstanced;
+        }
+
     protected:
         MStatus createOutputPart(
                 const MObject &objectTransform,
@@ -81,6 +91,8 @@ class SyncOutputGeometryPart : public SubCommand
 
         MObject myPartTransform;
         MObjectArray myPartShapes;
+
+        bool myIsInstanced;
 };
 
 #endif

@@ -71,7 +71,8 @@ SyncOutputGeometryPart::SyncOutputGeometryPart(
         const MObject &objectTransform
         ) :
     myOutputPlug(outputPlug),
-    myObjectTransform(objectTransform)
+    myObjectTransform(objectTransform),
+    myIsInstanced(false)
 {
 }
 
@@ -552,11 +553,17 @@ SyncOutputGeometryPart::createOutputInstancer(
 {
     MStatus status;
 
+    MFnDependencyNode assetNodeFn(instancerPlug.node());
+
+    MPlug useInstancerNodePlug = assetNodeFn.findPlug(AssetNode::useInstancerNode);
+    bool useInstancerNode = useInstancerNodePlug.asBool();
+
     MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
     MFnIntArrayData partsData(partsPlug.asMObject());
     MIntArray parts = partsData.array();
 
     // Particle instancer
+    if(useInstancerNode)
     {
         myPartShapes.setLength(parts.length());
 
@@ -580,6 +587,52 @@ SyncOutputGeometryPart::createOutputInstancer(
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
     }
+    else
+    {
+        MPlug transformPlug = instancerPlug.child(AssetNode::outputPartInstancerTransform);
+
+        unsigned int numTransforms = transformPlug.numElements();
+
+        myPartShapes.setLength(numTransforms);
+
+        for(unsigned int i = 0; i < numTransforms; i++)
+        {
+            MPlug transformElemPlug = transformPlug[i];
+            MPlug translatePlug = transformElemPlug.child(AssetNode::outputPartInstancerTranslate);
+            MPlug rotatePlug = transformElemPlug.child(AssetNode::outputPartInstancerRotate);
+            MPlug scalePlug = transformElemPlug.child(AssetNode::outputPartInstancerScale);
+
+            translatePlug.selectAncestorLogicalIndex(i, AssetNode::outputPartInstancerTransform);
+            rotatePlug.selectAncestorLogicalIndex(i, AssetNode::outputPartInstancerTransform);
+            scalePlug.selectAncestorLogicalIndex(i, AssetNode::outputPartInstancerTransform);
+
+            myPartShapes[i] = myDagModifier.createNode("transform", myPartTransform, &status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            status = myDagModifier.renameNode(myPartShapes[i], partName + "_" + i);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            MFnDependencyNode instanceTransform(myPartShapes[i]);
+
+            // connect translate
+            status = myDagModifier.connect(
+                    translatePlug,
+                    instanceTransform.findPlug("translate"));
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            // connect rotate
+            status = myDagModifier.connect(
+                    rotatePlug,
+                    instanceTransform.findPlug("rotate"));
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            // connect scale
+            status = myDagModifier.connect(
+                    scalePlug,
+                    instanceTransform.findPlug("scale"));
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
+    }
 
     return MStatus::kSuccess;
 }
@@ -592,11 +645,17 @@ SyncOutputGeometryPart::createOutputInstancerPost(
 {
     MStatus status;
 
+    MFnDependencyNode assetNodeFn(instancerPlug.node());
+
+    MPlug useInstancerNodePlug = assetNodeFn.findPlug(AssetNode::useInstancerNode);
+    bool useInstancerNode = useInstancerNodePlug.asBool();
+
     MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
     MFnIntArrayData partsData(partsPlug.asMObject());
     MIntArray parts = partsData.array();
 
     // Particle instancer
+    if(useInstancerNode)
     {
         for(unsigned int i = 0; i < parts.length(); i++)
         {
@@ -619,6 +678,51 @@ SyncOutputGeometryPart::createOutputInstancerPost(
                     instancedPartTransformFn.findPlug("matrix"),
                     inputHierarchyPlug.elementByLogicalIndex(0));
             CHECK_MSTATUS_AND_RETURN_IT(status);
+        }
+    }
+    else
+    {
+        MPlug transformPlug = instancerPlug.child(AssetNode::outputPartInstancerTransform);
+
+        unsigned int numTransforms = transformPlug.numElements();
+
+        for(unsigned int i = 0; i < parts.length(); i++)
+        {
+            SyncOutputGeometryPart* const &syncPart = syncParts[parts[i]];
+
+            const MObject &instancedPartTransform = syncPart->partTransform();
+            MFnDagNode instancedPartTransformFn(instancedPartTransform);
+
+            for(unsigned int j = 0; j < numTransforms; j++)
+            {
+                MFnDagNode instanceTransformFn(myPartShapes[j]);
+
+                MString command;
+
+                // When we ever see the part for the very first time, we want to
+                // reparent it from the default location. After that, we can
+                // simply instance it.
+                if(!syncPart->isInstanced())
+                {
+                    syncPart->setIsInstanced(true);
+
+                    command.format("parent -relative ^1s ^2s;",
+                            instancedPartTransformFn.fullPathName(),
+                            instanceTransformFn.fullPathName());
+                }
+                else
+                {
+                    command.format("parent -relative -addObject ^1s ^2s;",
+                            instancedPartTransformFn.fullPathName(),
+                            instanceTransformFn.fullPathName());
+                }
+
+                status = myDagModifier.commandToExecute(command);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+
+                status = myDagModifier.doIt();
+                CHECK_MSTATUS_AND_RETURN_IT(status);
+            }
         }
     }
 

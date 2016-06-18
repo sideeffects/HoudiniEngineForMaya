@@ -2177,6 +2177,7 @@ OutputGeometryPart::computeInstancer(
                     instanceCount ? &transforms.front() : NULL,
                     0, instanceCount
                     ));
+        markAttributeUsed("P");
 
         MVectorArray positions = instancerArrayDataFn.vectorArray("position");
         MVectorArray rotations = instancerArrayDataFn.vectorArray("rotation");

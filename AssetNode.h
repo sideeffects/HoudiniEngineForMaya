@@ -184,6 +184,20 @@ class AssetNode: public MPxTransform
         static MObject outputPartInstancerArrayData;
         static MObject outputPartInstancerParts;
 
+        static MObject outputPartInstancerTransform;
+        static MObject outputPartInstancerTranslate;
+        static MObject outputPartInstancerTranslateX;
+        static MObject outputPartInstancerTranslateY;
+        static MObject outputPartInstancerTranslateZ;
+        static MObject outputPartInstancerRotate;
+        static MObject outputPartInstancerRotateX;
+        static MObject outputPartInstancerRotateY;
+        static MObject outputPartInstancerRotateZ;
+        static MObject outputPartInstancerScale;
+        static MObject outputPartInstancerScaleX;
+        static MObject outputPartInstancerScaleY;
+        static MObject outputPartInstancerScaleZ;
+
         static MObject outputPartExtraAttributes;
         static MObject outputPartExtraAttributeName;
         static MObject outputPartExtraAttributeOwner;

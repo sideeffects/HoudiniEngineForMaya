@@ -873,21 +873,14 @@ OutputGeometryPart::computeParticle(
         HAPI_AttributeInfo attrInfo;
 
         MDoubleArray idArray = arrayDataFn.doubleArray("id");
-        idArray.setLength(particleCount);
-        if(!HAPI_FAIL(hapiGetPointAttribute(
+        if(HAPI_FAIL(hapiGetPointAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     "id",
                     attrInfo,
-                    intArray
+                    idArray
                     )))
         {
-            for(unsigned int i = 0; i < idArray.length(); i++)
-            {
-                idArray[i] = intArray[i];
-            }
-        }
-        else
-        {
+            idArray.setLength(particleCount);
             for(unsigned int i = 0; i < idArray.length(); i++)
             {
                 idArray[i] = i;

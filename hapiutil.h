@@ -642,7 +642,84 @@ struct HAPIGetAttribute
 
         if(attrInfo.storage != storageType)
         {
-            return HAPI_RESULT_FAILURE;
+            switch(attrInfo.storage)
+            {
+                case HAPI_STORAGETYPE_INT:
+                    {
+                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_INT>::GetType ComponentType;
+                        typedef std::vector<ComponentType> BufferType;
+                        BufferType buffer;
+                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_INT, BufferType>::impl(
+                                assetId, objectId, geoId, partId,
+                                owner,
+                                attributeName,
+                                attrInfo,
+                                buffer
+                                );
+                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                        Util::convertArray(dataArray, buffer);
+
+                        return HAPI_RESULT_SUCCESS;
+                    }
+                    break;
+                case HAPI_STORAGETYPE_INT64:
+                    {
+                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>::GetType ComponentType;
+                        typedef std::vector<ComponentType> BufferType;
+                        BufferType buffer;
+                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_INT64, BufferType>::impl(
+                                assetId, objectId, geoId, partId,
+                                owner,
+                                attributeName,
+                                attrInfo,
+                                buffer
+                                );
+                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                        Util::convertArray(dataArray, buffer);
+
+                        return HAPI_RESULT_SUCCESS;
+                    }
+                    break;
+                case HAPI_STORAGETYPE_FLOAT:
+                    {
+                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>::GetType ComponentType;
+                        typedef std::vector<ComponentType> BufferType;
+                        BufferType buffer;
+                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT, BufferType>::impl(
+                                assetId, objectId, geoId, partId,
+                                owner,
+                                attributeName,
+                                attrInfo,
+                                buffer
+                                );
+                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                        Util::convertArray(dataArray, buffer);
+
+                        return HAPI_RESULT_SUCCESS;
+                    }
+                    break;
+                case HAPI_STORAGETYPE_FLOAT64:
+                    {
+                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>::GetType ComponentType;
+                        typedef std::vector<ComponentType> BufferType;
+                        BufferType buffer;
+                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT64, BufferType>::impl(
+                                assetId, objectId, geoId, partId,
+                                owner,
+                                attributeName,
+                                attrInfo,
+                                buffer
+                                );
+                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                        Util::convertArray(dataArray, buffer);
+
+                        return HAPI_RESULT_SUCCESS;
+                    }
+                    break;
+                default:
+                    return HAPI_RESULT_FAILURE;
+                    break;
+            }
         }
 
         ARRAYTRAIT(T)::resize(dataArray, attrInfo.count * attrInfo.tupleSize);

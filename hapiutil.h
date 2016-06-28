@@ -56,8 +56,6 @@ struct HAPIAttributeTrait
     typedef void SetType;
     typedef void GetType;
 
-    //static const HAPI_StorageType storageType = HAPI_STORAGETYPE_INVALID;
-
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
             HAPI_AssetId assetId,
@@ -87,8 +85,6 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
 {
     typedef int SetType;
     typedef int GetType;
-
-    //static const HAPI_StorageType storageType = HAPI_STORAGETYPE_INT;
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
@@ -141,8 +137,6 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
     typedef float SetType;
     typedef float GetType;
 
-    //static const HAPI_StorageType storageType = HAPI_STORAGETYPE_FLOAT;
-
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
             HAPI_AssetId assetId,
@@ -193,8 +187,6 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
 {
     typedef const char* SetType;
     typedef int GetType;
-
-    //static const HAPI_StorageType storageType = HAPI_STORAGETYPE_STRING;
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,

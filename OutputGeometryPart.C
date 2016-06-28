@@ -501,33 +501,72 @@ OutputGeometryPart::convertParticleAttribute(
 }
 
 bool
-OutputGeometryPart::convertGenericDataAttribute(
-        MDataHandle &dataHandle,
-        const char* attributeName,
-        const HAPI_AttributeInfo &attributeInfo
+OutputGeometryPart::computeExtraAttribute(
+        MDataHandle &extraAttributeHandle,
+        HAPI_AttributeOwner attributeOwner,
+        const char* attributeName
         )
 {
-    HAPI_AttributeInfo attrInfo;
+    static const MString attributeOwnersString[] = {
+        "vertex",
+        "point",
+        "primitive",
+        "detail",
+    };
+    static const MString dataTypesString[] = {
+        "int",
+        "float",
+        "string",
+    };
+
+    MDataHandle nameHandle = extraAttributeHandle.child(
+            AssetNode::outputPartExtraAttributeName
+            );
+    MDataHandle ownerHandle = extraAttributeHandle.child(
+            AssetNode::outputPartExtraAttributeOwner
+            );
+    MDataHandle dataTypeHandle = extraAttributeHandle.child(
+            AssetNode::outputPartExtraAttributeDataType
+            );
+    MDataHandle tupleHandle = extraAttributeHandle.child(
+            AssetNode::outputPartExtraAttributeTuple
+            );
+    MDataHandle dataHandle = extraAttributeHandle.child(
+            AssetNode::outputPartExtraAttributeData
+            );
+
+    HAPI_AttributeInfo attributeInfo;
+    HAPI_FAIL(HAPI_GetAttributeInfo(
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId, myPartId,
+                attributeName,
+                attributeOwner,
+                &attributeInfo
+                ));
+    if(!attributeInfo.exists)
+    {
+        // HAPI might not be able to handle certain attributes (e.g.
+        // tuple size is 0).
+        return false;
+    }
 
     if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT)
     {
         MDoubleArray doubleArray;
         hapiGetAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
-                attributeInfo.owner,
+                attributeOwner,
                 attributeName,
-                attrInfo,
+                attributeInfo,
                 doubleArray
                 );
 
-        if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+        if(attributeOwner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 1)
         {
             dataHandle.setGenericDouble(doubleArray[0], true);
-
-            return true;
         }
-        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+        else if(attributeOwner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 2)
         {
             MFnNumericData numericData;
@@ -540,10 +579,8 @@ OutputGeometryPart::convertGenericDataAttribute(
                     );
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
-        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+        else if(attributeOwner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 3)
         {
             MFnNumericData numericData;
@@ -557,10 +594,8 @@ OutputGeometryPart::convertGenericDataAttribute(
                     );
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
-        else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
+        else if(attributeOwner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 4)
         {
             MFnNumericData numericData;
@@ -575,8 +610,6 @@ OutputGeometryPart::convertGenericDataAttribute(
                     );
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
         else if(attributeInfo.tupleSize == 3)
         {
@@ -587,8 +620,6 @@ OutputGeometryPart::convertGenericDataAttribute(
                 = Util::reshapeArray<MVectorArray>(doubleArray);
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
         else
         {
@@ -598,8 +629,6 @@ OutputGeometryPart::convertGenericDataAttribute(
             outputDoubleArray = doubleArray;
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
     }
     else if(attributeInfo.storage == HAPI_STORAGETYPE_INT)
@@ -607,9 +636,9 @@ OutputGeometryPart::convertGenericDataAttribute(
         MIntArray intArray;
         hapiGetAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
-                attributeInfo.owner,
+                attributeOwner,
                 attributeName,
-                attrInfo,
+                attributeInfo,
                 intArray
                 );
 
@@ -617,8 +646,6 @@ OutputGeometryPart::convertGenericDataAttribute(
                 && attributeInfo.tupleSize == 1)
         {
             dataHandle.setGenericInt(intArray[0], true);
-
-            return true;
         }
         else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 2)
@@ -633,8 +660,6 @@ OutputGeometryPart::convertGenericDataAttribute(
                     );
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
         else if(attributeInfo.owner == HAPI_ATTROWNER_DETAIL
                 && attributeInfo.tupleSize == 3)
@@ -650,8 +675,6 @@ OutputGeometryPart::convertGenericDataAttribute(
                     );
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
         else
         {
@@ -661,8 +684,6 @@ OutputGeometryPart::convertGenericDataAttribute(
             outputIntArray = intArray;
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
     }
     else if(attributeInfo.storage == HAPI_STORAGETYPE_STRING)
@@ -670,9 +691,9 @@ OutputGeometryPart::convertGenericDataAttribute(
         MStringArray stringArray;
         hapiGetAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
-                attributeInfo.owner,
+                attributeOwner,
                 attributeName,
-                attrInfo,
+                attributeInfo,
                 stringArray
                 );
 
@@ -680,8 +701,6 @@ OutputGeometryPart::convertGenericDataAttribute(
                 && attributeInfo.tupleSize == 1)
         {
             dataHandle.setString(stringArray[0]);
-
-            return true;
         }
         else
         {
@@ -691,12 +710,22 @@ OutputGeometryPart::convertGenericDataAttribute(
             outputStringArray = stringArray;
 
             dataHandle.setMObject(dataObject);
-
-            return true;
         }
     }
+    else
+    {
+        return false;
+    }
 
-    return false;
+    const MString &ownerString = attributeOwnersString[attributeOwner];
+    const MString &dataTypeString = dataTypesString[attributeInfo.storage];
+
+    nameHandle.setString(attributeName);
+    ownerHandle.setString(ownerString);
+    dataTypeHandle.setString(dataTypeString);
+    tupleHandle.setInt(attributeInfo.tupleSize);
+
+    return true;
 }
 
 void
@@ -2179,23 +2208,11 @@ OutputGeometryPart::computeExtraAttributes(
     MArrayDataBuilder extraAttributesBuilder =
         extraAttributesArrayHandle.builder();
 
-    const MString dataTypesString[HAPI_STORAGETYPE_MAX] = {
-        "int",
-        "float",
-        "string",
-    };
-
     const HAPI_AttributeOwner attributeOwners[] = {
         HAPI_ATTROWNER_DETAIL,
         HAPI_ATTROWNER_PRIM,
         HAPI_ATTROWNER_POINT,
         HAPI_ATTROWNER_VERTEX,
-    };
-    const MString attributeOwnersString[] = {
-        "detail",
-        "primitive",
-        "point",
-        "vertex",
     };
     const int attributeCounts[] = {
         myPartInfo.attributeCounts[HAPI_ATTROWNER_DETAIL],
@@ -2209,7 +2226,6 @@ OutputGeometryPart::computeExtraAttributes(
     for(size_t i = 0; i < HAPI_ATTROWNER_MAX; i++)
     {
         const HAPI_AttributeOwner &owner = attributeOwners[i];
-        const MString &ownerString = attributeOwnersString[i];
         const int &attributeCount = attributeCounts[i];
 
         if(attributeCount == 0)
@@ -2238,53 +2254,14 @@ OutputGeometryPart::computeExtraAttributes(
                 continue;
             }
 
-            HAPI_AttributeInfo attributeInfo;
-            HAPI_FAIL(HAPI_GetAttributeInfo(
-                        Util::theHAPISession.get(),
-                        myAssetId, myObjectId, myGeoId, myPartId,
-                        attributeName.asChar(),
-                        owner,
-                        &attributeInfo
-                        ));
-            if(!attributeInfo.exists)
-            {
-                // HAPI might not be able to handle certain attributes (e.g.
-                // tuple size is 0).
-                continue;
-            }
-
             MDataHandle extraAttributeHandle =
                 extraAttributesBuilder.addElement(elementIndex);
             elementIndex++;
 
-            MDataHandle nameHandle = extraAttributeHandle.child(
-                    AssetNode::outputPartExtraAttributeName
-                    );
-            MDataHandle ownerHandle = extraAttributeHandle.child(
-                    AssetNode::outputPartExtraAttributeOwner
-                    );
-            MDataHandle dataTypeHandle = extraAttributeHandle.child(
-                    AssetNode::outputPartExtraAttributeDataType
-                    );
-            MDataHandle tupleHandle = extraAttributeHandle.child(
-                    AssetNode::outputPartExtraAttributeTuple
-                    );
-            MDataHandle dataHandle = extraAttributeHandle.child(
-                    AssetNode::outputPartExtraAttributeData
-                    );
-
-            const MString &dataTypeString =
-                dataTypesString[attributeInfo.storage];
-
-            nameHandle.setString(attributeName);
-            ownerHandle.setString(ownerString);
-            dataTypeHandle.setString(dataTypeString);
-            tupleHandle.setInt(attributeInfo.tupleSize);
-
-            if(!convertGenericDataAttribute(
-                    dataHandle,
-                    attributeName.asChar(),
-                    attributeInfo
+            if(!computeExtraAttribute(
+                    extraAttributeHandle,
+                    owner,
+                    attributeName.asChar()
                     ))
             {
                 DISPLAY_WARNING(

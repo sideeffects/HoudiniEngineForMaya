@@ -89,10 +89,10 @@ class OutputGeometryPart
                 const char* houdiniName
                 );
 
-        bool convertGenericDataAttribute(
+        bool computeExtraAttribute(
                 MDataHandle &dataHandle,
-                const char* attributeName,
-                const HAPI_AttributeInfo &attributeInfo
+                HAPI_AttributeOwner attributeOwner,
+                const char* attributeName
                 );
 
         void markAttributeUsed(const std::string &attributeName);

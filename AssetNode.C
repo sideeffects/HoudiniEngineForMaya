@@ -1115,6 +1115,11 @@ AssetNode::initialize()
     AssetNode::outputPartExtraAttributeData = gAttr.create(
             "outputPartExtraAttributeData", "outputPartExtraAttributeData"
             );
+    // float
+    gAttr.addNumericDataAccept(MFnNumericData::kFloat);
+    gAttr.addNumericDataAccept(MFnNumericData::k2Float);
+    gAttr.addNumericDataAccept(MFnNumericData::k3Float);
+    gAttr.addDataAccept(MFnData::kFloatArray);
     // double
     gAttr.addNumericDataAccept(MFnNumericData::kDouble);
     gAttr.addNumericDataAccept(MFnNumericData::k2Double);

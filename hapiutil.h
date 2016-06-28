@@ -19,6 +19,12 @@ struct HAPITypeTrait<int>
 };
 
 template <>
+struct HAPITypeTrait<long long>
+{
+    static const HAPI_StorageType storageType = HAPI_STORAGETYPE_INT64;
+};
+
+template <>
 struct HAPITypeTrait<float>
 {
     static const HAPI_StorageType storageType = HAPI_STORAGETYPE_FLOAT;
@@ -27,7 +33,7 @@ struct HAPITypeTrait<float>
 template <>
 struct HAPITypeTrait<double>
 {
-    static const HAPI_StorageType storageType = HAPI_STORAGETYPE_FLOAT;
+    static const HAPI_StorageType storageType = HAPI_STORAGETYPE_FLOAT64;
 };
 
 template <>
@@ -132,6 +138,57 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
 };
 
 template<>
+struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
+{
+    typedef long long SetType;
+    typedef long long GetType;
+
+    static HAPI_Result setAttribute(
+            const HAPI_Session* session,
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            const char* name,
+            const HAPI_AttributeInfo* attrInfo,
+            const SetType* dataArray,
+            int start, int length
+            )
+    {
+        return HAPI_SetAttributeInt64Data(
+                session,
+                assetId, objectId, geoId,
+                name,
+                attrInfo,
+                dataArray,
+                start, length
+                );
+    }
+
+    static HAPI_Result getAttribute(
+            const HAPI_Session* session,
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            HAPI_PartId partId,
+            const char* name,
+            HAPI_AttributeInfo* attrInfo,
+            GetType* dataArray,
+            int start, int length
+            )
+    {
+        return HAPI_GetAttributeInt64Data(
+                session,
+                assetId, objectId, geoId, partId,
+                name,
+                attrInfo,
+                -1,
+                dataArray,
+                start, length
+                );
+    }
+};
+
+template<>
 struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
 {
     typedef float SetType;
@@ -171,6 +228,57 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
             )
     {
         return HAPI_GetAttributeFloatData(
+                session,
+                assetId, objectId, geoId, partId,
+                name,
+                attrInfo,
+                -1,
+                dataArray,
+                start, length
+                );
+    }
+};
+
+template<>
+struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
+{
+    typedef double SetType;
+    typedef double GetType;
+
+    static HAPI_Result setAttribute(
+            const HAPI_Session* session,
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            const char* name,
+            const HAPI_AttributeInfo* attrInfo,
+            const SetType* dataArray,
+            int start, int length
+            )
+    {
+        return HAPI_SetAttributeFloat64Data(
+                session,
+                assetId, objectId, geoId,
+                name,
+                attrInfo,
+                dataArray,
+                start, length
+                );
+    }
+
+    static HAPI_Result getAttribute(
+            const HAPI_Session* session,
+            HAPI_AssetId assetId,
+            HAPI_ObjectId objectId,
+            HAPI_GeoId geoId,
+            HAPI_PartId partId,
+            const char* name,
+            HAPI_AttributeInfo* attrInfo,
+            GetType* dataArray,
+            int start, int length
+            )
+    {
+        return HAPI_GetAttributeFloat64Data(
                 session,
                 assetId, objectId, geoId, partId,
                 name,

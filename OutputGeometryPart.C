@@ -31,42 +31,6 @@
 #include "types.h"
 #include "util.h"
 
-void
-clearParticle(
-        MDataHandle &hasParticlesHandle,
-        MDataHandle &particleHandle
-        )
-{
-    hasParticlesHandle.setBool(false);
-
-    MDataHandle currentTimeHandle
-        = particleHandle.child(AssetNode::outputPartParticleCurrentTime);
-    MDataHandle positionsHandle
-        = particleHandle.child(AssetNode::outputPartParticlePositions);
-    MDataHandle arrayDataHandle
-        = particleHandle.child(AssetNode::outputPartParticleArrayData);
-
-    currentTimeHandle.setMObject(MObject::kNullObj);
-    positionsHandle.setMObject(MObject::kNullObj);
-
-    // array data
-    MObject arrayDataObj = arrayDataHandle.data();
-    MFnArrayAttrsData arrayDataFn(arrayDataObj);
-    if(arrayDataObj.isNull())
-    {
-        arrayDataObj = arrayDataFn.create();
-        arrayDataHandle.setMObject(arrayDataObj);
-
-        arrayDataObj = arrayDataHandle.data();
-        arrayDataFn.setObject(arrayDataObj);
-    }
-
-    // count
-    MDoubleArray countArray = arrayDataFn.doubleArray("count");
-    countArray.setLength(1);
-    countArray[0] = 0;
-}
-
 static void
 clearCurvesBuilder(
         MArrayDataBuilder &curvesBuilder,
@@ -270,16 +234,7 @@ OutputGeometryPart::compute(
             handle.child(AssetNode::outputPartHasParticles);
         MDataHandle particleHandle =
             handle.child(AssetNode::outputPartParticle);
-        if(myPartInfo.pointCount != 0
-                && myPartInfo.vertexCount == 0
-                && myPartInfo.faceCount == 0)
-        {
-            computeParticle(time, hasParticlesHandle, particleHandle);
-        }
-        else if(hasParticlesHandle.asBool())
-        {
-            clearParticle(hasParticlesHandle, particleHandle);
-        }
+        computeParticle(time, hasParticlesHandle, particleHandle);
 
 #if MAYA_API_VERSION >= 201400
         // Volume
@@ -774,7 +729,14 @@ OutputGeometryPart::computeParticle(
         MDataHandle &particleHandle
         )
 {
-    hasParticlesHandle.setBool(true);
+    bool hasParticles = myPartInfo.pointCount != 0
+        && myPartInfo.vertexCount == 0
+        && myPartInfo.faceCount == 0;
+
+    if(!hasParticlesHandle.asBool() && !hasParticles)
+        return;
+
+    hasParticlesHandle.setBool(hasParticles);
 
     MDataHandle currentTimeHandle
         = particleHandle.child(AssetNode::outputPartParticleCurrentTime);
@@ -803,34 +765,6 @@ OutputGeometryPart::computeParticle(
         arrayDataFn.setObject(arrayDataObj);
     }
 
-    // id
-    {
-        HAPI_AttributeInfo attrInfo;
-
-        MDoubleArray idArray = arrayDataFn.doubleArray("id");
-        idArray.setLength(particleCount);
-        if(!HAPI_FAIL(hapiGetPointAttribute(
-                    myAssetId, myObjectId, myGeoId, myPartId,
-                    "id",
-                    attrInfo,
-                    intArray
-                    )))
-        {
-            for(unsigned int i = 0; i < idArray.length(); i++)
-            {
-                idArray[i] = intArray[i];
-            }
-        }
-        else
-        {
-            for(unsigned int i = 0; i < idArray.length(); i++)
-            {
-                idArray[i] = i;
-            }
-        }
-    }
-    markAttributeUsed("id");
-
     // count
     MDoubleArray countArray = arrayDataFn.doubleArray("count");
     countArray.setLength(1);
@@ -858,6 +792,37 @@ OutputGeometryPart::computeParticle(
     }
     markAttributeUsed("P");
     markAttributeUsed("position");
+
+    if(!hasParticles)
+        return;
+
+    // id
+    {
+        HAPI_AttributeInfo attrInfo;
+
+        MDoubleArray idArray = arrayDataFn.doubleArray("id");
+        idArray.setLength(particleCount);
+        if(!HAPI_FAIL(hapiGetPointAttribute(
+                    myAssetId, myObjectId, myGeoId, myPartId,
+                    "id",
+                    attrInfo,
+                    intArray
+                    )))
+        {
+            for(unsigned int i = 0; i < idArray.length(); i++)
+            {
+                idArray[i] = intArray[i];
+            }
+        }
+        else
+        {
+            for(unsigned int i = 0; i < idArray.length(); i++)
+            {
+                idArray[i] = i;
+            }
+        }
+    }
+    markAttributeUsed("id");
 
     // velocity
     convertParticleAttribute<MVectorArray>(

@@ -787,7 +787,9 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
             {
                 // Make sure the data is not array type.
                 if((dataType == "float"
-                            || dataType == "int")
+                            || dataType == "double"
+                            || dataType == "int"
+                            || dataType == "long")
                         && tuple <= 3)
                 {
                     canSupportAttribute = true;
@@ -806,8 +808,8 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
             {
                 // Particles don't support int and string attributes. Also,
                 // make sure the one particle maps to one element of the array.
-                if((dataType == "float" && tuple == 1)
-                        || (dataType == "float" && tuple == 3))
+                if((dataType == "double" && tuple == 1)
+                        || (dataType == "double" && tuple == 3))
                 {
                     isPerParticleAttribute = true;
                     canSupportAttribute = true;

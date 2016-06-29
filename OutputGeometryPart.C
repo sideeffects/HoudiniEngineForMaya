@@ -515,7 +515,9 @@ OutputGeometryPart::computeExtraAttribute(
     };
     static const MString dataTypesString[] = {
         "int",
+        "long",
         "float",
+        "double",
         "string",
     };
 
@@ -550,7 +552,30 @@ OutputGeometryPart::computeExtraAttribute(
         return false;
     }
 
-    if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT)
+    HAPI_StorageType storage = attributeInfo.storage;
+
+    // Particle requires special treatment
+    bool hasParticles = myPartInfo.pointCount != 0
+        && myPartInfo.vertexCount == 0
+        && myPartInfo.faceCount == 0;
+    if(hasParticles)
+    {
+        if(attributeOwner == HAPI_ATTROWNER_POINT)
+        {
+            // Maya Particle only supports double or double vector per-particle
+            // attributes. For int and float attributes, always use the double
+            // code path to cast to double.
+            if(storage == HAPI_STORAGETYPE_INT
+                    || storage == HAPI_STORAGETYPE_INT64
+                    || storage == HAPI_STORAGETYPE_FLOAT
+                    || storage == HAPI_STORAGETYPE_FLOAT64)
+            {
+                storage = HAPI_STORAGETYPE_FLOAT64;
+            }
+        }
+    }
+
+    if(storage == HAPI_STORAGETYPE_FLOAT)
     {
         MFloatArray floatArray;
         hapiGetAttribute(
@@ -617,7 +642,7 @@ OutputGeometryPart::computeExtraAttribute(
             dataHandle.setMObject(dataObject);
         }
     }
-    else if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT64)
+    else if(storage == HAPI_STORAGETYPE_FLOAT64)
     {
         MDoubleArray doubleArray;
         hapiGetAttribute(
@@ -698,8 +723,8 @@ OutputGeometryPart::computeExtraAttribute(
             dataHandle.setMObject(dataObject);
         }
     }
-    else if(attributeInfo.storage == HAPI_STORAGETYPE_INT
-            || attributeInfo.storage == HAPI_STORAGETYPE_INT64)
+    else if(storage == HAPI_STORAGETYPE_INT
+            || storage == HAPI_STORAGETYPE_INT64)
     {
         MIntArray intArray;
         hapiGetAttribute(
@@ -754,7 +779,7 @@ OutputGeometryPart::computeExtraAttribute(
             dataHandle.setMObject(dataObject);
         }
     }
-    else if(attributeInfo.storage == HAPI_STORAGETYPE_STRING)
+    else if(storage == HAPI_STORAGETYPE_STRING)
     {
         MStringArray stringArray;
         hapiGetAttribute(
@@ -786,7 +811,7 @@ OutputGeometryPart::computeExtraAttribute(
     }
 
     const MString &ownerString = attributeOwnersString[attributeOwner];
-    const MString &dataTypeString = dataTypesString[attributeInfo.storage];
+    const MString &dataTypeString = dataTypesString[storage];
 
     nameHandle.setString(attributeName);
     ownerHandle.setString(ownerString);
@@ -1011,8 +1036,17 @@ OutputGeometryPart::computeParticle(
                 &attributeInfo
                 );
 
+        HAPI_StorageType storage = attributeInfo.storage;
+        if(storage == HAPI_STORAGETYPE_INT
+                || storage == HAPI_STORAGETYPE_INT64
+                || storage == HAPI_STORAGETYPE_FLOAT
+                || storage == HAPI_STORAGETYPE_FLOAT64)
+        {
+            storage = HAPI_STORAGETYPE_FLOAT64;
+        }
+
         // put the data into MFnArrayAttrsData
-        if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT
+        if(storage == HAPI_STORAGETYPE_FLOAT64
                 && attributeInfo.tupleSize == 3)
         {
             convertParticleAttribute(
@@ -1020,7 +1054,7 @@ OutputGeometryPart::computeParticle(
                     attributeName.asChar()
                     );
         }
-        else if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT
+        else if(storage == HAPI_STORAGETYPE_FLOAT64
                 && attributeInfo.tupleSize == 1)
         {
             convertParticleAttribute(

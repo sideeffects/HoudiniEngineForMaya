@@ -32,20 +32,6 @@
 #include "util.h"
 
 void
-clearMesh(
-        MDataHandle &hasMeshHandle,
-        MDataHandle &meshHandle
-        )
-{
-    hasMeshHandle.setBool(false);
-
-    MDataHandle meshDataHandle
-        = meshHandle.child(AssetNode::outputPartMeshData);
-
-    meshDataHandle.setMObject(MObject::kNullObj);
-}
-
-void
 clearParticle(
         MDataHandle &hasParticlesHandle,
         MDataHandle &particleHandle
@@ -277,16 +263,7 @@ OutputGeometryPart::compute(
         // Mesh
         MDataHandle hasMeshHandle = handle.child(AssetNode::outputPartHasMesh);
         MDataHandle meshHandle = handle.child(AssetNode::outputPartMesh);
-        if(myPartInfo.pointCount != 0
-                && myPartInfo.vertexCount != 0
-                && myPartInfo.faceCount != 0)
-        {
-            computeMesh(time, hasMeshHandle, meshHandle);
-        }
-        else
-        {
-            clearMesh(hasMeshHandle, meshHandle);
-        }
+        computeMesh(time, hasMeshHandle, meshHandle);
 
         // Particle
         MDataHandle hasParticlesHandle =
@@ -1168,7 +1145,16 @@ OutputGeometryPart::computeMesh(
 {
     MStatus status;
 
-    hasMeshHandle.setBool(true);
+    bool hasMesh = myPartInfo.type == HAPI_PARTTYPE_MESH
+        && myPartInfo.faceCount != 0;
+
+    // if we didn't output anything in the previous compute, and still doesn't
+    // have to output anything, then we don't need to bother with clearing the
+    // output and can return early
+    if(!hasMeshHandle.asBool() && !hasMesh)
+    {
+        return;
+    }
 
     MDataHandle meshCurrentColorSetHandle
         = meshHandle.child(AssetNode::outputPartMeshCurrentColorSet);
@@ -1208,53 +1194,52 @@ OutputGeometryPart::computeMesh(
 
     // vertex array
     MFloatPointArray vertexArray;
-    hapiGetPointAttribute(
-            myAssetId, myObjectId, myGeoId, myPartId,
-            "P",
-            attrInfo,
-            floatArray
-            );
+    if(hasMesh)
+    {
+        hapiGetPointAttribute(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                "P",
+                attrInfo,
+                floatArray
+                );
 
-    vertexArray = Util::reshapeArray<
-        3,
-        0, 4,
-        0, 3,
-        MFloatPointArray
-        >(floatArray);
-    markAttributeUsed("P");
+        vertexArray = Util::reshapeArray<
+            3,
+            0, 4,
+            0, 3,
+            MFloatPointArray
+                >(floatArray);
+        markAttributeUsed("P");
+    }
 
     // polygon counts
     MIntArray polygonCounts;
+    if(hasMesh)
     {
         intArray.resize(myPartInfo.faceCount);
 
-        if(myPartInfo.faceCount)
-        {
-            HAPI_GetFaceCounts(
-                    Util::theHAPISession.get(),
-                    myAssetId, myObjectId, myGeoId, myPartId,
-                    &intArray.front(),
-                    0, myPartInfo.faceCount
-                    );
-        }
+        HAPI_GetFaceCounts(
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId, myPartId,
+                &intArray.front(),
+                0, myPartInfo.faceCount
+                );
 
         polygonCounts = MIntArray(&intArray.front(), intArray.size());
     }
 
     // polygon connects
     MIntArray polygonConnects;
+    if(hasMesh)
     {
         intArray.resize(myPartInfo.vertexCount);
 
-        if(myPartInfo.vertexCount)
-        {
-            HAPI_GetVertexList(
-                    Util::theHAPISession.get(),
-                    myAssetId, myObjectId, myGeoId, myPartId,
-                    &intArray.front(),
-                    0, myPartInfo.vertexCount
-                    );
-        }
+        HAPI_GetVertexList(
+                Util::theHAPISession.get(),
+                myAssetId, myObjectId, myGeoId, myPartId,
+                &intArray.front(),
+                0, myPartInfo.vertexCount
+                );
 
         polygonConnects = MIntArray(&intArray.front(), intArray.size());
 
@@ -1272,6 +1257,8 @@ OutputGeometryPart::computeMesh(
             &status
             );
     CHECK_MSTATUS(status);
+
+    hasMeshHandle.setBool(hasMesh);
 
     // Check that the mesh created is what we tried to create. Assets could
     // output mesh with bad faces that Maya cannot handle. When this happens,
@@ -1326,7 +1313,7 @@ OutputGeometryPart::computeMesh(
     }
 
     // normal array
-    if(polygonCounts.length())
+    if(hasMesh)
     {
         HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
         if(!HAPI_FAIL(hapiGetVertexAttribute(
@@ -1390,7 +1377,7 @@ OutputGeometryPart::computeMesh(
     }
 
     // uv
-    if(polygonCounts.length())
+    if(hasMesh)
     {
         MString currentUVSetName;
         MStringArray uvSetNames;
@@ -1665,7 +1652,7 @@ OutputGeometryPart::computeMesh(
     }
 
     // color and alpha
-    if(polygonCounts.length())
+    if(hasMesh)
     {
         MString currentColorSetName;
         MStringArray colorSetNames;

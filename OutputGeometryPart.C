@@ -471,54 +471,31 @@ OutputGeometryPart::computeCurves(
             );
 }
 
-static void
-getParticleArray(
-        MVectorArray &particleArray,
-        MFnArrayAttrsData &arrayDataFn,
-        const MString &attrName
-        )
-{
-    particleArray = arrayDataFn.vectorArray(attrName);
-}
-
-static void
-getParticleArray(
-        MDoubleArray &particleArray,
-        MFnArrayAttrsData &arrayDataFn,
-        const MString &attrName
-        )
-{
-    particleArray = arrayDataFn.doubleArray(attrName);
-}
-
-template<typename T, typename U>
+template<typename T>
 void
 OutputGeometryPart::convertParticleAttribute(
-        MFnArrayAttrsData &arrayDataFn,
-        const MString &mayaName,
-        U &buffer,
-        const char* houdiniName,
-        int particleCount
+        T particleArray,
+        const char* houdiniName
    )
 {
     typedef ARRAYTRAIT(T) Trait;
+    typedef ELEMENTTRAIT(T) ElementTrait;
 
     HAPI_AttributeInfo attrInfo;
 
-    T particleArray;
-    getParticleArray(particleArray, arrayDataFn, mayaName);
+    std::vector<typename ElementTrait::ComponentType> dataArray;
     if(!HAPI_FAIL(hapiGetPointAttribute(
                     myAssetId, myObjectId, myGeoId, myPartId,
                     houdiniName,
                     attrInfo,
-                    buffer
+                    dataArray
                     )))
     {
-        particleArray = Util::reshapeArray<T>(buffer);
+        particleArray = Util::reshapeArray<T>(dataArray);
     }
     else
     {
-        Trait::resize(particleArray, particleCount);
+        Trait::resize(particleArray, myPartInfo.pointCount);
         Util::zeroArray(particleArray);
     }
 }
@@ -772,11 +749,9 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("count");
 
     // position
-    convertParticleAttribute<MVectorArray>(
-            arrayDataFn, "position",
-            floatArray,
-            "P",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.vectorArray("position"),
+            "P"
             );
     {
         MObject positionsObj = positionsHandle.data();
@@ -825,21 +800,17 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("id");
 
     // velocity
-    convertParticleAttribute<MVectorArray>(
-            arrayDataFn, "velocity",
-            floatArray,
-            "v",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.vectorArray("velocity"),
+            "v"
             );
     markAttributeUsed("v");
     markAttributeUsed("velocity");
 
     // acceleration
-    convertParticleAttribute<MVectorArray>(
-            arrayDataFn, "acceleration",
-            floatArray,
-            "force",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.vectorArray("acceleration"),
+            "force"
             );
     markAttributeUsed("acceleration");
     markAttributeUsed("force");
@@ -863,46 +834,36 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("worldVelocityInObjectSpace");
 
     // mass
-    convertParticleAttribute<MDoubleArray>(
-            arrayDataFn, "mass",
-            floatArray,
-            "mass",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.doubleArray("mass"),
+            "mass"
             );
     markAttributeUsed("mass");
 
     // birthTime
-    convertParticleAttribute<MDoubleArray>(
-            arrayDataFn, "birthTime",
-            floatArray,
-            "birthTime",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.doubleArray("birthTime"),
+            "birthTime"
             );
     markAttributeUsed("birthTime");
 
     // age
-    convertParticleAttribute<MDoubleArray>(
-            arrayDataFn, "age",
-            floatArray,
-            "age",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.doubleArray("age"),
+            "age"
             );
     markAttributeUsed("age");
 
     // lifespanPP
-    convertParticleAttribute<MDoubleArray>(
-            arrayDataFn, "lifespanPP",
-            floatArray,
-            "life",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.doubleArray("lifespanPP"),
+            "life"
             );
 
     // finalLifespanPP
-    convertParticleAttribute<MDoubleArray>(
-            arrayDataFn, "finalLifespanPP",
-            floatArray,
-            "life",
-            particleCount
+    convertParticleAttribute(
+            arrayDataFn.doubleArray("finalLifespanPP"),
+            "life"
             );
     markAttributeUsed("life");
 
@@ -964,21 +925,17 @@ OutputGeometryPart::computeParticle(
         if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT
                 && attributeInfo.tupleSize == 3)
         {
-            convertParticleAttribute<MVectorArray>(
-                    arrayDataFn, translatedAttributeName,
-                    floatArray,
-                    attributeName.asChar(),
-                    particleCount
+            convertParticleAttribute(
+                    arrayDataFn.vectorArray(translatedAttributeName),
+                    attributeName.asChar()
                     );
         }
         else if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT
                 && attributeInfo.tupleSize == 1)
         {
-            convertParticleAttribute<MDoubleArray>(
-                    arrayDataFn, translatedAttributeName,
-                    floatArray,
-                    attributeName.asChar(),
-                    particleCount
+            convertParticleAttribute(
+                    arrayDataFn.doubleArray(translatedAttributeName),
+                    attributeName.asChar()
                     );
         }
     }

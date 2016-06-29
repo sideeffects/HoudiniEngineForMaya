@@ -83,13 +83,10 @@ class OutputGeometryPart
                 HAPI_AttributeOwner owner
                 );
 
-        template<typename T, typename U>
+        template<typename T>
         void convertParticleAttribute(
-                MFnArrayAttrsData &arrayDataFn,
-                const MString &mayaName,
-                U &buffer,
-                const char* houdiniName,
-                int particleCount
+                T arrayDataFn,
+                const char* houdiniName
                 );
 
         bool convertGenericDataAttribute(

@@ -552,6 +552,73 @@ OutputGeometryPart::computeExtraAttribute(
 
     if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT)
     {
+        MFloatArray floatArray;
+        hapiGetAttribute(
+                myAssetId, myObjectId, myGeoId, myPartId,
+                attributeOwner,
+                attributeName,
+                attributeInfo,
+                floatArray
+                );
+
+        if(attributeOwner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 1)
+        {
+            dataHandle.setGenericFloat(floatArray[0], true);
+        }
+        else if(attributeOwner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 2)
+        {
+            MFnNumericData numericData;
+            MObject dataObject = numericData.create(
+                    MFnNumericData::k2Float
+                    );
+            numericData.setData2Float(
+                    floatArray[0],
+                    floatArray[1]
+                    );
+
+            dataHandle.setMObject(dataObject);
+        }
+        else if(attributeOwner == HAPI_ATTROWNER_DETAIL
+                && attributeInfo.tupleSize == 3)
+        {
+            MFnNumericData numericData;
+            MObject dataObject = numericData.create(
+                    MFnNumericData::k3Float
+                    );
+            numericData.setData3Float(
+                    floatArray[0],
+                    floatArray[1],
+                    floatArray[2]
+                    );
+
+            dataHandle.setMObject(dataObject);
+        }
+        else if(attributeInfo.tupleSize == 3)
+        {
+            // Since MFnFloatVectorArrayData doesn't exist, use
+            // MFnVectorArrayData instead.
+            MFnVectorArrayData vectorArrayData;
+            MObject dataObject = vectorArrayData.create();
+            MVectorArray outputVectorArray = vectorArrayData.array();
+            outputVectorArray
+                = Util::reshapeArray<MVectorArray>(floatArray);
+
+            dataHandle.setMObject(dataObject);
+        }
+        else
+        {
+            MFnFloatArrayData floatArrayData;
+            MObject dataObject = floatArrayData.create();
+            MFloatArray outputFloatArray = floatArrayData.array();
+            outputFloatArray = floatArray;
+
+            dataHandle.setMObject(dataObject);
+        }
+    }
+    else if(attributeInfo.storage == HAPI_STORAGETYPE_FLOAT64)
+    {
         MDoubleArray doubleArray;
         hapiGetAttribute(
                 myAssetId, myObjectId, myGeoId, myPartId,
@@ -631,7 +698,8 @@ OutputGeometryPart::computeExtraAttribute(
             dataHandle.setMObject(dataObject);
         }
     }
-    else if(attributeInfo.storage == HAPI_STORAGETYPE_INT)
+    else if(attributeInfo.storage == HAPI_STORAGETYPE_INT
+            || attributeInfo.storage == HAPI_STORAGETYPE_INT64)
     {
         MIntArray intArray;
         hapiGetAttribute(

@@ -1119,7 +1119,9 @@ AssetNode::initialize()
     gAttr.addNumericDataAccept(MFnNumericData::kFloat);
     gAttr.addNumericDataAccept(MFnNumericData::k2Float);
     gAttr.addNumericDataAccept(MFnNumericData::k3Float);
+#if MAYA_API_VERSION >= 201400
     gAttr.addDataAccept(MFnData::kFloatArray);
+#endif
     // double
     gAttr.addNumericDataAccept(MFnNumericData::kDouble);
     gAttr.addNumericDataAccept(MFnNumericData::k2Double);

@@ -634,10 +634,17 @@ OutputGeometryPart::computeExtraAttribute(
         }
         else
         {
+#if MAYA_API_VERSION >= 201400
             MFnFloatArrayData floatArrayData;
             MObject dataObject = floatArrayData.create();
             MFloatArray outputFloatArray = floatArrayData.array();
             outputFloatArray = floatArray;
+#else
+            MFnDoubleArrayData doubleArrayData;
+            MObject dataObject = doubleArrayData.create();
+            MDoubleArray outputDoubleArray = doubleArrayData.array();
+            Util::convertArray(outputDoubleArray, floatArray);
+#endif
 
             dataHandle.setMObject(dataObject);
         }

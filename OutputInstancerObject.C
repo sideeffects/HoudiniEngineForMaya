@@ -180,6 +180,8 @@ OutputInstancerObject::compute(
         {
             arrayDataObj = arrayDataFn.create();
             instancerDataHandle.set(arrayDataObj);
+
+            arrayDataObj = instancerDataHandle.data();
             arrayDataFn.setObject(arrayDataObj);
         }
 

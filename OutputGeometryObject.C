@@ -7,6 +7,8 @@
 #include "util.h"
 #include "OutputGeometry.h"
 
+#include <math.h>
+
 OutputGeometryObject::OutputGeometryObject(
         HAPI_NodeId nodeId
         ) :

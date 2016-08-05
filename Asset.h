@@ -33,9 +33,6 @@ class Asset {
         OutputObject* findObjectById(int id);
         HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
 
-        // Getters for infos
-        HAPI_ObjectInfo getObjectInfo(int id);
-
         void resetSimulation();
 
         MString getCookMessages();

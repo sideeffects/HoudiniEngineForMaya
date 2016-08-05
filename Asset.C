@@ -606,10 +606,6 @@ Asset::findObjectById(int id)
     return myObjects[id];
 }
 
-// Getters for infos
-HAPI_ObjectInfo
-Asset::getObjectInfo(int id) { return myObjectInfos[id]; }
-
 void
 Asset::resetSimulation()
 {

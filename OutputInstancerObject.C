@@ -8,6 +8,7 @@
 #include "Asset.h"
 #include "AssetNode.h"
 #include "OutputInstancerObject.h"
+#include "hapiutil.h"
 #include "util.h"
 
 OutputInstancerObject::OutputInstancerObject(
@@ -29,12 +30,6 @@ OutputObject::ObjectType
 OutputInstancerObject::type()
 {
     return OutputObject::OBJECT_TYPE_INSTANCER;
-}
-
-MStringArray
-OutputInstancerObject::getAttributeStringData(HAPI_AttributeOwner owner, MString name)
-{
-    return Util::getAttributeStringData(myAssetId, myObjectId, 0, 0, owner, name);
 }
 
 void
@@ -90,7 +85,9 @@ OutputInstancerObject::update()
         }
 
         // fill array of size pointCount of instanced names
-        MStringArray instanceAttrs = getAttributeStringData(HAPI_ATTROWNER_POINT, "instance");
+        HAPI_AttributeInfo attrInfo;
+        MStringArray instanceAttrs;
+        hapiGetPointAttribute(myAssetId, myObjectId, 0, 0, "instance", attrInfo, instanceAttrs);
         for(unsigned int i=0; i<instanceAttrs.length(); i++)
         {
             MStringArray splitObjName;
@@ -99,7 +96,8 @@ OutputInstancerObject::update()
             myHoudiniInstanceAttribute.append(instanceAttrs[i]);
         }
 
-        MStringArray nameAttrs = getAttributeStringData(HAPI_ATTROWNER_POINT, "name");
+        MStringArray nameAttrs;
+        hapiGetPointAttribute(myAssetId, myObjectId, 0, 0, "name", attrInfo, nameAttrs);
         for(unsigned int ii = 0; ii < nameAttrs.length(); ii++)
         {
             myHoudiniNameAttribute.append(nameAttrs[ii]);

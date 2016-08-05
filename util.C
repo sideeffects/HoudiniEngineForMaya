@@ -752,52 +752,6 @@ sanitizeStringForNodeName(const MString &str)
     return result;
 }
 
-MStringArray
-getAttributeStringData(int assetId,
-                            int objectId,
-                            int geoId,
-                            int partId,
-                            HAPI_AttributeOwner owner,
-                            const MString & name)
-{
-    HAPI_AttributeInfo attr_info;
-    attr_info.exists = false;
-    HAPI_GetAttributeInfo(
-            theHAPISession.get(),
-            assetId, objectId, geoId, partId,
-            name.asChar(),
-            owner,
-            &attr_info
-            );
-
-    MStringArray ret;
-    if(!attr_info.exists)
-        return ret;
-
-    int size = attr_info.count * attr_info.tupleSize;
-    int * data = new int[size];
-    // zero the array
-    for(int j=0; j<size; j++){
-        data[j] = 0;
-    }
-    HAPI_GetAttributeStringData(
-            theHAPISession.get(),
-            assetId, objectId, geoId, partId,
-            name.asChar(),
-            &attr_info,
-            data,
-            0, attr_info.count
-            );
-
-    for(int j=0; j<size; j++){
-        ret.append(HAPIString(data[j]));
-    }
-
-    delete[] data;
-
-    return ret;
-}
-
 int
 findParm(std::vector<HAPI_ParmInfo>& parms, MString name, int instanceNum)
 {

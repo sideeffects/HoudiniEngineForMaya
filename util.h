@@ -219,10 +219,6 @@ MString getAttrNameFromParm(
         const HAPI_ParmInfo &parm,
         const HAPI_ParmInfo *parentParm
         );
-MStringArray getAttributeStringData(int assetId, int objectId,
-        int geoId, int partId,
-        HAPI_AttributeOwner owner,
-        const MString & name);
 MString getParmAttrPrefix();
 bool hasHAPICallFailed(HAPI_Result stat);
 

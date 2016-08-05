@@ -180,7 +180,9 @@ void OutputGeometryObject::updateTransform(MDataHandle& handle)
             trans.rotationQuaternion[2],
             trans.rotationQuaternion[3]
             ).asEulerRotation();
-
+#ifndef M_PI
+#define M_PI 3.14
+#endif
     translateHandle.set3Double(
             trans.position[0],
             trans.position[1],

@@ -24,7 +24,7 @@ class CurveMeshInputNode: public MPxNode
         static MTypeId typeId;
 
     private:
-        HAPI_AssetId myAssetId;
+        HAPI_NodeId myNodeId;
 
         static MObject theInputCurves;
         static MObject theOutputObjectMetaData;

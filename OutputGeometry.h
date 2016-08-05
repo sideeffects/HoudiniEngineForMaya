@@ -13,7 +13,7 @@ class OutputGeometryPart;
 
 class OutputGeometry {
     public:
-        OutputGeometry(int assetId, int objectId, int geoId);
+        OutputGeometry(HAPI_NodeId nodeId);
         ~OutputGeometry();
 
         MStatus compute(
@@ -25,10 +25,11 @@ class OutputGeometry {
         void update();
 
     protected:
+        HAPI_NodeId myNodeId;
+        HAPI_NodeInfo myNodeInfo;
         HAPI_GeoInfo myGeoInfo;
-        int myAssetId;
-        int myObjectId;
-        int myGeoId;
+
+        int myLastCookCount;
 
         std::vector<OutputGeometryPart*> myParts;
 };

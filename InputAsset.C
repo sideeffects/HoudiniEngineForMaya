@@ -7,8 +7,8 @@
 #include <HAPI/HAPI.h>
 #include "util.h"
 
-InputAsset::InputAsset(int assetId, int inputIdx) :
-    Input(assetId, inputIdx)
+InputAsset::InputAsset(HAPI_NodeId nodeId, int inputIdx) :
+    Input(nodeId, inputIdx)
 {
 }
 
@@ -34,10 +34,10 @@ InputAsset::setInputGeo(
         )
 {
     MDataHandle dataHandle = dataBlock.inputValue(plug);
-    MFnIntArrayData fnIAD(dataHandle.data());
-    MIntArray metaData = fnIAD.array();
-    HAPI_ConnectAssetGeometry(
-            Util::theHAPISession.get(), metaData[0], metaData[1],
-            myAssetId, myInputIdx
+
+    HAPI_ConnectNodeInput(
+            Util::theHAPISession.get(),
+            dataHandle.asInt(),
+            myNodeId, myInputIdx
             );
 }

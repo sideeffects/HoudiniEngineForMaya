@@ -64,9 +64,8 @@ struct HAPIAttributeTrait
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* name,
             const HAPI_AttributeInfo* attrInfo,
             const SetType* dataArray,
@@ -75,9 +74,7 @@ struct HAPIAttributeTrait
 
     static HAPI_Result getAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* name,
             HAPI_AttributeInfo* attrInfo,
@@ -94,9 +91,8 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* name,
             const HAPI_AttributeInfo* attrInfo,
             const SetType* dataArray,
@@ -105,7 +101,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
     {
         return HAPI_SetAttributeIntData(
                 session,
-                assetId, objectId, geoId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 dataArray,
@@ -115,9 +111,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
 
     static HAPI_Result getAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* name,
             HAPI_AttributeInfo* attrInfo,
@@ -127,7 +121,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
     {
         return HAPI_GetAttributeIntData(
                 session,
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 -1,
@@ -145,9 +139,8 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* name,
             const HAPI_AttributeInfo* attrInfo,
             const SetType* dataArray,
@@ -156,7 +149,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
     {
         return HAPI_SetAttributeInt64Data(
                 session,
-                assetId, objectId, geoId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 dataArray,
@@ -166,9 +159,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
 
     static HAPI_Result getAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* name,
             HAPI_AttributeInfo* attrInfo,
@@ -178,7 +169,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
     {
         return HAPI_GetAttributeInt64Data(
                 session,
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 -1,
@@ -196,9 +187,8 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* name,
             const HAPI_AttributeInfo* attrInfo,
             const SetType* dataArray,
@@ -207,7 +197,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
     {
         return HAPI_SetAttributeFloatData(
                 session,
-                assetId, objectId, geoId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 dataArray,
@@ -217,9 +207,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
 
     static HAPI_Result getAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* name,
             HAPI_AttributeInfo* attrInfo,
@@ -229,7 +217,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
     {
         return HAPI_GetAttributeFloatData(
                 session,
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 -1,
@@ -247,9 +235,8 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* name,
             const HAPI_AttributeInfo* attrInfo,
             const SetType* dataArray,
@@ -258,7 +245,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
     {
         return HAPI_SetAttributeFloat64Data(
                 session,
-                assetId, objectId, geoId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 dataArray,
@@ -268,9 +255,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
 
     static HAPI_Result getAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* name,
             HAPI_AttributeInfo* attrInfo,
@@ -280,7 +265,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
     {
         return HAPI_GetAttributeFloat64Data(
                 session,
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 -1,
@@ -298,9 +283,8 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
 
     static HAPI_Result setAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* name,
             const HAPI_AttributeInfo* attrInfo,
             const SetType* dataArray,
@@ -309,7 +293,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
     {
         return HAPI_SetAttributeStringData(
                 session,
-                assetId, objectId, geoId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 (const char**) dataArray,
@@ -319,9 +303,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
 
     static HAPI_Result getAttribute(
             const HAPI_Session* session,
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* name,
             HAPI_AttributeInfo* attrInfo,
@@ -331,7 +313,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
     {
         return HAPI_GetAttributeStringData(
                 session,
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 name,
                 attrInfo,
                 dataArray,
@@ -366,9 +348,8 @@ template<
 struct HAPISetAttribute
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             HAPI_AttributeOwner owner,
             size_t tupleSize,
             const char* attributeName,
@@ -393,7 +374,7 @@ struct HAPISetAttribute
 
         hapiResult = HAPI_AddAttribute(
                 Util::theHAPISession.get(),
-                assetId, objectId, geoId,
+                nodeId, partId,
                 attributeName,
                 &attributeInfo
                 );
@@ -407,7 +388,7 @@ struct HAPISetAttribute
 
         hapiResult = HAPIAttributeTrait<storageType>::setAttribute(
                     Util::theHAPISession.get(),
-                    assetId, objectId, geoId,
+                    nodeId, partId,
                     attributeName,
                     &attributeInfo,
                     ARRAYTRAIT(T)::data(dataArray),
@@ -423,9 +404,8 @@ template<HAPI_StorageType storageType, typename T>
 struct HAPISetAttribute<storageType, T, false>
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             HAPI_AttributeOwner owner,
             size_t tupleSize,
             const char* attributeName,
@@ -439,7 +419,7 @@ struct HAPISetAttribute<storageType, T, false>
         Util::convertArray(convertedDataArray, dataArray);
 
         return HAPISetAttribute<storageType, ConvertedDataArray>::impl(
-                assetId, objectId, geoId,
+                nodeId, partId,
                 owner,
                 tupleSize,
                 attributeName,
@@ -451,9 +431,8 @@ struct HAPISetAttribute<storageType, T, false>
 template<typename T>
 HAPI_Result
 hapiSetAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
+        HAPI_PartId partId,
         HAPI_AttributeOwner owner,
         size_t tupleSize,
         const char* attributeName,
@@ -464,7 +443,7 @@ hapiSetAttribute(
         HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
         T
         >::impl(
-            assetId, objectId, geoId,
+            nodeId, partId,
             owner,
             tupleSize,
             attributeName,
@@ -480,15 +459,14 @@ struct
 HAPISetDetailAttribute
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* attributeName,
             const T &dataArray
             )
     {
         return hapiSetAttribute(
-                assetId, objectId, geoId,
+                nodeId, partId,
                 HAPI_ATTROWNER_DETAIL,
                 ARRAYTRAIT(T)::size(dataArray),
                 attributeName,
@@ -502,15 +480,14 @@ struct
 HAPISetDetailAttribute<T, false>
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
+            HAPI_PartId partId,
             const char* attributeName,
             T &value
             )
     {
         return hapiSetAttribute(
-                assetId, objectId, geoId,
+                nodeId, partId,
                 HAPI_ATTROWNER_DETAIL,
                 1,
                 attributeName,
@@ -522,15 +499,14 @@ HAPISetDetailAttribute<T, false>
 template<typename T>
 HAPI_Result
 hapiSetDetailAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
+        HAPI_PartId partId,
         const char* attributeName,
         T &value
         )
 {
     return HAPISetDetailAttribute<T>::impl(
-            assetId, objectId, geoId,
+            nodeId, partId,
             attributeName,
             value
             );
@@ -539,16 +515,15 @@ hapiSetDetailAttribute(
 template<typename T>
 HAPI_Result
 hapiSetPrimAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
+        HAPI_PartId partId,
         size_t tupleSize,
         const char* attributeName,
         const T &dataArray
         )
 {
     return hapiSetAttribute(
-            assetId, objectId, geoId,
+            nodeId, partId,
             HAPI_ATTROWNER_PRIM,
             tupleSize,
             attributeName,
@@ -559,16 +534,15 @@ hapiSetPrimAttribute(
 template<typename T>
 HAPI_Result
 hapiSetVertexAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
+        HAPI_PartId partId,
         size_t tupleSize,
         const char* attributeName,
         const T &dataArray
         )
 {
     return hapiSetAttribute(
-            assetId, objectId, geoId,
+            nodeId, partId,
             HAPI_ATTROWNER_VERTEX,
             tupleSize,
             attributeName,
@@ -579,16 +553,15 @@ hapiSetVertexAttribute(
 template<typename T>
 HAPI_Result
 hapiSetPointAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
+        HAPI_PartId partId,
         size_t tupleSize,
         const char* attributeName,
         const T &dataArray
         )
 {
     return hapiSetAttribute(
-            assetId, objectId, geoId,
+            nodeId, partId,
             HAPI_ATTROWNER_POINT,
             tupleSize,
             attributeName,
@@ -610,9 +583,7 @@ template<
 struct HAPIGetAttribute
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             HAPI_AttributeOwner owner,
             const char* attributeName,
@@ -624,7 +595,7 @@ struct HAPIGetAttribute
 
         hapiResult = HAPI_GetAttributeInfo(
                 Util::theHAPISession.get(),
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 attributeName,
                 owner,
                 &attrInfo
@@ -650,7 +621,7 @@ struct HAPIGetAttribute
                         typedef std::vector<ComponentType> BufferType;
                         BufferType buffer;
                         hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_INT, BufferType>::impl(
-                                assetId, objectId, geoId, partId,
+                                nodeId, partId,
                                 owner,
                                 attributeName,
                                 attrInfo,
@@ -668,7 +639,7 @@ struct HAPIGetAttribute
                         typedef std::vector<ComponentType> BufferType;
                         BufferType buffer;
                         hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_INT64, BufferType>::impl(
-                                assetId, objectId, geoId, partId,
+                                nodeId, partId,
                                 owner,
                                 attributeName,
                                 attrInfo,
@@ -686,7 +657,7 @@ struct HAPIGetAttribute
                         typedef std::vector<ComponentType> BufferType;
                         BufferType buffer;
                         hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT, BufferType>::impl(
-                                assetId, objectId, geoId, partId,
+                                nodeId, partId,
                                 owner,
                                 attributeName,
                                 attrInfo,
@@ -704,7 +675,7 @@ struct HAPIGetAttribute
                         typedef std::vector<ComponentType> BufferType;
                         BufferType buffer;
                         hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT64, BufferType>::impl(
-                                assetId, objectId, geoId, partId,
+                                nodeId, partId,
                                 owner,
                                 attributeName,
                                 attrInfo,
@@ -725,7 +696,7 @@ struct HAPIGetAttribute
         ARRAYTRAIT(T)::resize(dataArray, attrInfo.count * attrInfo.tupleSize);
         hapiResult = HAPIAttributeTrait<storageType>::getAttribute(
                 Util::theHAPISession.get(),
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 attributeName,
                 &attrInfo,
                 ARRAYTRAIT(T)::data(dataArray),
@@ -741,9 +712,7 @@ template<HAPI_StorageType storageType, typename T>
 struct HAPIGetAttribute<storageType, T, false>
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             HAPI_AttributeOwner owner,
             const char* attributeName,
@@ -759,7 +728,7 @@ struct HAPIGetAttribute<storageType, T, false>
         ConvertedDataArray convertedDataArray;
 
         hapiResult = HAPIGetAttribute<storageType, ConvertedDataArray>::impl(
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 owner,
                 attributeName,
                 attrInfo,
@@ -779,9 +748,7 @@ struct HAPIGetAttribute<storageType, T, false>
 template<typename T>
 HAPI_Result
 hapiGetAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
         HAPI_PartId partId,
         HAPI_AttributeOwner owner,
         const char* attributeName,
@@ -793,7 +760,7 @@ hapiGetAttribute(
         HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
         T
         >::impl(
-            assetId, objectId, geoId, partId,
+            nodeId, partId,
             owner,
             attributeName,
             attrInfo,
@@ -809,9 +776,7 @@ struct
 HAPIGetDetailAttribute
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* attributeName,
             HAPI_AttributeInfo &attrInfo,
@@ -819,7 +784,7 @@ HAPIGetDetailAttribute
             )
     {
         return hapiGetAttribute(
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 HAPI_ATTROWNER_DETAIL,
                 attributeName,
                 attrInfo,
@@ -833,9 +798,7 @@ struct
 HAPIGetDetailAttribute<T, false>
 {
     static HAPI_Result impl(
-            HAPI_AssetId assetId,
-            HAPI_ObjectId objectId,
-            HAPI_GeoId geoId,
+            HAPI_NodeId nodeId,
             HAPI_PartId partId,
             const char* attributeName,
             HAPI_AttributeInfo &attrInfo,
@@ -844,7 +807,7 @@ HAPIGetDetailAttribute<T, false>
     {
         RawArray<T> array(&value, 1);
         return hapiGetAttribute(
-                assetId, objectId, geoId, partId,
+                nodeId, partId,
                 HAPI_ATTROWNER_DETAIL,
                 attributeName,
                 attrInfo,
@@ -856,9 +819,7 @@ HAPIGetDetailAttribute<T, false>
 template<typename T>
 HAPI_Result
 hapiGetDetailAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
         HAPI_PartId partId,
         const char* attributeName,
         HAPI_AttributeInfo &attrInfo,
@@ -866,7 +827,7 @@ hapiGetDetailAttribute(
         )
 {
     return HAPIGetDetailAttribute<T>::impl(
-            assetId, objectId, geoId, partId,
+            nodeId, partId,
             attributeName,
             attrInfo,
             value
@@ -876,9 +837,7 @@ hapiGetDetailAttribute(
 template<typename T>
 HAPI_Result
 hapiGetPrimAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
         HAPI_PartId partId,
         const char* attributeName,
         HAPI_AttributeInfo &attrInfo,
@@ -886,7 +845,7 @@ hapiGetPrimAttribute(
         )
 {
     return hapiGetAttribute(
-            assetId, objectId, geoId, partId,
+            nodeId, partId,
             HAPI_ATTROWNER_PRIM,
             attributeName,
             attrInfo,
@@ -897,9 +856,7 @@ hapiGetPrimAttribute(
 template<typename T>
 HAPI_Result
 hapiGetVertexAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
         HAPI_PartId partId,
         const char* attributeName,
         HAPI_AttributeInfo &attrInfo,
@@ -907,7 +864,7 @@ hapiGetVertexAttribute(
         )
 {
     return hapiGetAttribute(
-            assetId, objectId, geoId, partId,
+            nodeId, partId,
             HAPI_ATTROWNER_VERTEX,
             attributeName,
             attrInfo,
@@ -918,9 +875,7 @@ hapiGetVertexAttribute(
 template<typename T>
 HAPI_Result
 hapiGetPointAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
         HAPI_PartId partId,
         const char* attributeName,
         HAPI_AttributeInfo &attrInfo,
@@ -928,7 +883,7 @@ hapiGetPointAttribute(
         )
 {
     return hapiGetAttribute(
-            assetId, objectId, geoId, partId,
+            nodeId, partId,
             HAPI_ATTROWNER_POINT,
             attributeName,
             attrInfo,
@@ -939,9 +894,7 @@ hapiGetPointAttribute(
 template<typename T>
 HAPI_Result
 hapiGetAnyAttribute(
-        HAPI_AssetId assetId,
-        HAPI_ObjectId objectId,
-        HAPI_GeoId geoId,
+        HAPI_NodeId nodeId,
         HAPI_PartId partId,
         const char* attributeName,
         HAPI_AttributeInfo &attrInfo,
@@ -951,7 +904,7 @@ hapiGetAnyAttribute(
     bool found = false;
 
     if(!HAPI_FAIL(hapiGetVertexAttribute(
-                    assetId, objectId, geoId, partId,
+                    nodeId, partId,
                     attributeName,
                     attrInfo,
                     dataArray
@@ -960,7 +913,7 @@ hapiGetAnyAttribute(
         found = true;
     }
     else if(!HAPI_FAIL(hapiGetPointAttribute(
-                    assetId, objectId, geoId, partId,
+                    nodeId, partId,
                     attributeName,
                     attrInfo,
                     dataArray
@@ -969,7 +922,7 @@ hapiGetAnyAttribute(
         found = true;
     }
     else if(!HAPI_FAIL(hapiGetPrimAttribute(
-                    assetId, objectId, geoId, partId,
+                    nodeId, partId,
                     attributeName,
                     attrInfo,
                     dataArray
@@ -978,7 +931,7 @@ hapiGetAnyAttribute(
         found = true;
     }
     else if(!HAPI_FAIL(hapiGetDetailAttribute(
-                    assetId, objectId, geoId, partId,
+                    nodeId, partId,
                     attributeName,
                     attrInfo,
                     dataArray

@@ -5,6 +5,8 @@
 
 #include <maya/MDataHandle.h>
 
+#include <HAPI/HAPI_Common.h>
+
 class Input;
 class MDataBlock;
 
@@ -14,7 +16,7 @@ class Inputs
         static MObject createInputAttribute();
 
     public:
-        Inputs(int assetId);
+        Inputs(HAPI_NodeId nodeId);
         ~Inputs();
 
         MStatus compute(MDataBlock &dataBlock);
@@ -27,7 +29,7 @@ class Inputs
                 );
 
     private:
-        int myAssetId;
+        HAPI_NodeId myNodeId;
 
         typedef std::vector<Input*> AssetInputVector;
         AssetInputVector myAssetInputs;
@@ -51,17 +53,16 @@ class Input
             AssetInputType_Particle,
         };
 
-        static Input* createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType);
+        static Input* createAssetInput(HAPI_NodeId nodeId, int inputIdx, AssetInputType assetInputType);
 
         static void setInputPlugMetaData(
                 const MPlug &plug,
-                int inputAssetId,
-                int inputObjectId,
-                int inputGeoId
+                HAPI_NodeId inputNodeId,
+                HAPI_PartId inputPartId
                 );
 
     public:
-        Input(int assetId, int inputIdx);
+        Input(HAPI_NodeId nodeId, int inputIdx);
         virtual ~Input();
 
         virtual AssetInputType assetInputType() const = 0;
@@ -73,7 +74,7 @@ class Input
                 ) = 0;
 
     protected:
-        int myAssetId;
+        HAPI_NodeId myNodeId;
         int myInputIdx;
 };
 

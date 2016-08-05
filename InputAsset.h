@@ -6,7 +6,7 @@
 class InputAsset : public Input
 {
     public:
-        InputAsset(int assetId, int inputIdx);
+        InputAsset(HAPI_NodeId nodeId, int inputIdx);
         virtual ~InputAsset();
 
         virtual AssetInputType assetInputType() const;

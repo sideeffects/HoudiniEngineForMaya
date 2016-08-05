@@ -25,15 +25,10 @@ class OutputObject {
 
         // static creator
         static OutputObject* createObject(
-                int assetId,
-                int objectId,
-                const HAPI_ObjectInfo &objectInfo
+                HAPI_NodeId nodeId
                 );
 
-        OutputObject(
-                int assetId,
-                int objectId
-              );
+        OutputObject(HAPI_NodeId nodeId);
         virtual ~OutputObject();
 
         int getId();
@@ -58,11 +53,12 @@ class OutputObject {
         bool myIsInstanced;
 
     protected:
-        HAPI_ObjectInfo myObjectInfo;
-        int myAssetId;
-        int myObjectId;
+        HAPI_NodeId myNodeId;
 
-        bool myNeverBuilt;
+        HAPI_NodeInfo myNodeInfo;
+        HAPI_ObjectInfo myObjectInfo;
+
+        int myLastCookCount;
 };
 
 #endif

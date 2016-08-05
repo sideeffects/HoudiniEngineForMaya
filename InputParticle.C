@@ -13,15 +13,14 @@
 #include "hapiutil.h"
 #include "util.h"
 
-InputParticle::InputParticle(int assetId, int inputIdx) :
-    Input(assetId, inputIdx),
-    myInputAssetId(0)
+InputParticle::InputParticle(int nodeId, int inputIdx) :
+    Input(nodeId, inputIdx)
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
 
-    CHECK_HAPI(HAPI_CreateInputAsset(
+    CHECK_HAPI(HAPI_CreateInputNode(
                 Util::theHAPISession.get(),
-                &myInputAssetId,
+                &myInputNodeId,
                 NULL
                 ));
 
@@ -30,21 +29,18 @@ InputParticle::InputParticle(int assetId, int inputIdx) :
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
     }
 
-    myInputObjectId = 0;
-    myInputGeoId = 0;
-
-    CHECK_HAPI(HAPI_ConnectAssetGeometry(
+    CHECK_HAPI(HAPI_ConnectNodeInput(
                 Util::theHAPISession.get(),
-                myInputAssetId, myInputObjectId,
-                myAssetId, myInputIdx
+                myNodeId, myInputIdx,
+                myInputNodeId
                 ));
 }
 
 InputParticle::~InputParticle()
 {
-    CHECK_HAPI(HAPI_DestroyAsset(
+    CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
-                myInputAssetId
+                myInputNodeId
                 ));
 }
 
@@ -72,8 +68,7 @@ InputParticle::setInputTransform(MDataHandle &dataHandle)
             );
     HAPI_SetObjectTransform(
             Util::theHAPISession.get(),
-            myInputAssetId,
-            myInputObjectId,
+            myInputNodeId,
             &transformEuler
             );
 }
@@ -96,7 +91,7 @@ InputParticle::setAttributePointData(
 
     HAPI_AddAttribute(
             Util::theHAPISession.get(),
-            myInputAssetId, myInputObjectId, myInputGeoId,
+            myInputNodeId, 0,
             attributeName,
             &attributeInfo
             );
@@ -106,7 +101,7 @@ InputParticle::setAttributePointData(
         case HAPI_STORAGETYPE_FLOAT:
             HAPI_SetAttributeFloatData(
                     Util::theHAPISession.get(),
-                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    myInputNodeId, 0,
                     attributeName,
                     &attributeInfo,
                     static_cast<float*>(data),
@@ -116,7 +111,7 @@ InputParticle::setAttributePointData(
         case HAPI_STORAGETYPE_INT:
             HAPI_SetAttributeIntData(
                     Util::theHAPISession.get(),
-                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    myInputNodeId, 0,
                     attributeName,
                     &attributeInfo,
                     static_cast<int*>(data),
@@ -180,7 +175,7 @@ InputParticle::setInputGeo(
 
     HAPI_SetPartInfo(
             Util::theHAPISession.get(),
-            myInputAssetId, myInputObjectId, myInputGeoId,
+            myInputNodeId, 0,
             &partInfo
             );
 
@@ -194,7 +189,7 @@ InputParticle::setInputGeo(
             originalParticleFn.particleIds(ids);
 
             CHECK_HAPI(hapiSetPointAttribute(
-                    myInputAssetId, myInputObjectId, myInputGeoId,
+                    myInputNodeId, 0,
                     1,
                     "id",
                     ids
@@ -278,7 +273,7 @@ InputParticle::setInputGeo(
                 }
 
                 CHECK_HAPI(hapiSetPointAttribute(
-                            myInputAssetId, myInputObjectId, myInputGeoId,
+                            myInputNodeId, 0,
                             3,
                             mappedAttributeName,
                             Util::reshapeArray<
@@ -357,7 +352,7 @@ InputParticle::setInputGeo(
                 }
 
                 CHECK_HAPI(hapiSetPointAttribute(
-                            myInputAssetId, myInputObjectId, myInputGeoId,
+                            myInputNodeId, 0,
                             1,
                             mappedAttributeName,
                             doubleArray
@@ -368,12 +363,12 @@ InputParticle::setInputGeo(
 
     Input::setInputPlugMetaData(
             plug,
-            myInputAssetId, myInputObjectId, myInputGeoId
+            myInputNodeId, 0
             );
 
     // Commit it
     HAPI_CommitGeo(
             Util::theHAPISession.get(),
-            myInputAssetId, myInputObjectId, myInputGeoId
+            myInputNodeId
             );
 }

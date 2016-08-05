@@ -15,17 +15,14 @@ class OutputGeometryPart
 {
     public:
         OutputGeometryPart(
-                int assetId,
-                int objectId,
-                int geoId,
-                int partId
+                HAPI_NodeId nodeId,
+                HAPI_PartId partId
                 );
         ~OutputGeometryPart();
 
         MStatus compute(
                 const MTime &time,
                 MDataHandle& handle,
-                bool hasGeoChanged,
                 bool hasMaterialChanged,
                 bool &needToSyncOutputs
                 );
@@ -100,10 +97,8 @@ class OutputGeometryPart
         void clearAttributesUsed();
 
     private:
-        int myAssetId;
-        int myObjectId;
-        int myGeoId;
-        int myPartId;
+        HAPI_NodeId myNodeId;
+        HAPI_PartId myPartId;
 
         std::vector<std::string> myAttributesUsed;
 
@@ -112,8 +107,6 @@ class OutputGeometryPart
         HAPI_VolumeInfo myVolumeInfo;
         HAPI_CurveInfo myCurveInfo;
         HAPI_MaterialInfo myMaterialInfo;
-
-        bool myNeverBuilt;
 };
 
 #endif

@@ -9,8 +9,7 @@ class OutputInstancerObject: public OutputObject
 {
     public:
         OutputInstancerObject(
-                int assetId,
-                int objectId
+                HAPI_NodeId nodeId
                 );
         virtual ~OutputInstancerObject();
 
@@ -32,8 +31,12 @@ class OutputInstancerObject: public OutputObject
         MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
 
     private:
+        HAPI_NodeInfo mySopNodeInfo;
+
         HAPI_GeoInfo myGeoInfo;
         HAPI_PartInfo myPartInfo;
+
+        int myLastSopCookCount;
 
         MStringArray myInstancedObjectNames;
         MStringArray myUniqueInstObjNames;

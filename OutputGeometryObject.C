@@ -8,13 +8,9 @@
 #include "OutputGeometry.h"
 
 OutputGeometryObject::OutputGeometryObject(
-        int assetId,
-        int objectId
+        HAPI_NodeId nodeId
         ) :
-    OutputObject(
-            assetId,
-            objectId
-          )
+    OutputObject(nodeId)
 {
 }
 
@@ -41,25 +37,13 @@ OutputGeometryObject::compute(
         bool &needToSyncOutputs
         )
 {
+    MStatus stat = MS::kSuccess;
+
     update();
 
-    MDataHandle metaDataHandle = objectHandle.child(AssetNode::outputObjectMetaData);
-
     // Meta data
-    MFnIntArrayData ffIAD;
-    MIntArray metaDataArray;
-    metaDataArray.append(myAssetId);
-    metaDataArray.append(myObjectId);
-    MObject newMetaData = ffIAD.create(metaDataArray);
-    metaDataHandle.set(newMetaData);
-
-    if(myObjectInfo.haveGeosChanged)
-    {
-        for(int ii = 0; ii < myObjectInfo.geoCount; ii++)
-        {
-            myGeos[ii]->update();
-        }
-    }
+    MDataHandle metaDataHandle = objectHandle.child(AssetNode::outputObjectMetaData);
+    metaDataHandle.setInt(myNodeId);
 
     // outputVisibility
     MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
@@ -78,8 +62,7 @@ OutputGeometryObject::compute(
     }
     objectNameHandle.setString(objectName);
 
-    MStatus stat = MS::kSuccess;
-    if(myNeverBuilt || myObjectInfo.haveGeosChanged)
+    // compute geometry
     {
         MDataHandle geosHandle = objectHandle.child(AssetNode::outputGeos);
         MArrayDataHandle geoArrayHandle(geosHandle);
@@ -89,10 +72,10 @@ OutputGeometryObject::compute(
             needToSyncOutputs = true;
         }
 
-        for(int ii = 0; ii < myObjectInfo.geoCount; ii++)
+        for(size_t i = 0; i < myGeos.size(); i++)
         {
-            MDataHandle geoHandle = geosBuilder.addElement(ii);
-            stat = myGeos[ii]->compute(
+            MDataHandle geoHandle = geosBuilder.addElement(i);
+            stat = myGeos[i]->compute(
                     time,
                     geoHandle,
                     needToSyncOutputs
@@ -101,14 +84,15 @@ OutputGeometryObject::compute(
         }
 
         geoArrayHandle.set(geosBuilder);
-
-        myNeverBuilt = false;
     }
 
-    if(myObjectInfo.hasTransformChanged)
+    // compute transform
+    if(myNodeInfo.totalCookCount > myLastCookCount)
     {
         MDataHandle transformHandle = objectHandle.child(AssetNode::outputObjectTransform);
         updateTransform(transformHandle);
+
+        myLastCookCount = myNodeInfo.totalCookCount;
     }
 
     return stat;
@@ -116,7 +100,43 @@ OutputGeometryObject::compute(
 
 void OutputGeometryObject::update()
 {
-    const int geoCount = myObjectInfo.geoCount;
+    HAPI_Result hapiResult;
+
+    hapiResult = HAPI_GetNodeInfo(
+            Util::theHAPISession.get(),
+            myNodeId, &myNodeInfo
+            );
+    CHECK_HAPI(hapiResult);
+
+    hapiResult = HAPI_GetObjectInfo(
+            Util::theHAPISession.get(),
+            myNodeId, &myObjectInfo
+            );
+    CHECK_HAPI(hapiResult);
+
+    // Get the SOP nodes
+    int geoCount;
+    hapiResult = HAPI_ComposeChildNodeList(
+            Util::theHAPISession.get(),
+            myNodeId,
+            HAPI_NODETYPE_SOP,
+            HAPI_NODEFLAGS_DISPLAY,
+            false,
+            &geoCount
+            );
+    CHECK_HAPI(hapiResult);
+
+    std::vector<HAPI_NodeId> geoNodeIds(geoCount);
+    if(geoCount > 0)
+    {
+        hapiResult = HAPI_GetComposedChildNodeList(
+                Util::theHAPISession.get(),
+                myNodeId,
+                &geoNodeIds.front(),
+                geoCount
+                );
+        CHECK_HAPI(hapiResult);
+    }
 
     // Delete old OutputGeometry
     for(int i = myGeos.size(); i-- > geoCount;)
@@ -129,35 +149,47 @@ void OutputGeometryObject::update()
     myGeos.reserve(geoCount);
     for(int i = myGeos.size(); i < geoCount; i++)
     {
-        OutputGeometry * geo = new OutputGeometry(myAssetId, myObjectId, i);
+        OutputGeometry * geo = new OutputGeometry(geoNodeIds[i]);
         myGeos.push_back(geo);
     }
 }
 
 void OutputGeometryObject::updateTransform(MDataHandle& handle)
 {
+    HAPI_Result hapiResult;
+
     MDataHandle translateHandle = handle.child(AssetNode::outputObjectTranslate);
     MDataHandle rotateHandle = handle.child(AssetNode::outputObjectRotate);
     MDataHandle scaleHandle = handle.child(AssetNode::outputObjectScale);
 
-    HAPI_GetObjectTransforms(
+    HAPI_Transform trans;
+    hapiResult = HAPI_GetObjectTransform(
             Util::theHAPISession.get(),
-            myAssetId,
+            myNodeId,
+            -1,
             HAPI_SRT,
-            &myTransformInfo,
-            myObjectId,
-            1
+            &trans
             );
-    //transformInfo = objectControl->getTransformInfo(objectId);
+    CHECK_HAPI(hapiResult);
 
-    // convert to euler angle
-    MEulerRotation r = MQuaternion(myTransformInfo.rotationQuaternion[0],
-            myTransformInfo.rotationQuaternion[1], myTransformInfo.rotationQuaternion[2],
-            myTransformInfo.rotationQuaternion[3]).asEulerRotation();
+    MEulerRotation eulerRotation = MQuaternion(
+            trans.rotationQuaternion[0],
+            trans.rotationQuaternion[1],
+            trans.rotationQuaternion[2],
+            trans.rotationQuaternion[3]
+            ).asEulerRotation();
 
-    translateHandle.set3Double((double)(myTransformInfo.position[0]), (double) myTransformInfo.position[1], (double) myTransformInfo.position[2]);
-    rotateHandle.set3Double((double)r[0], (double)r[1], (double)r[2]);
-    scaleHandle.set3Double((double) myTransformInfo.scale[0], (double) myTransformInfo.scale[1], (double) myTransformInfo.scale[2]);
+    translateHandle.set3Double(
+            trans.position[0],
+            trans.position[1],
+            trans.position[2]);
+    rotateHandle.set3Double(eulerRotation.x * 2.0 * M_PI / 360.0,
+            eulerRotation.y * 2.0 * M_PI / 360.0,
+            eulerRotation.z * 2.0 * M_PI / 360.0);
+    scaleHandle.set3Double(
+            trans.scale[0],
+            trans.scale[1],
+            trans.scale[2]);
 
     translateHandle.setClean();
     rotateHandle.setClean();

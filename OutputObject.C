@@ -12,18 +12,25 @@
 
 OutputObject*
 OutputObject::createObject(
-        int assetId,
-        int objectId,
-        const HAPI_ObjectInfo &objectInfo
+        HAPI_NodeId nodeId
         )
 {
+    HAPI_Result hapiResult;
+
+    HAPI_ObjectInfo objectInfo;
+    hapiResult = HAPI_GetObjectInfo(
+            Util::theHAPISession.get(),
+            nodeId, &objectInfo
+            );
+    CHECK_HAPI(hapiResult);
+
     OutputObject* obj;
 
     if(objectInfo.isInstancer)
-        obj = new OutputInstancerObject(assetId, objectId);
+        obj = new OutputInstancerObject(nodeId);
     else
     {
-        obj = new OutputGeometryObject(assetId, objectId);
+        obj = new OutputGeometryObject(nodeId);
     }
 
     return obj;
@@ -32,19 +39,17 @@ OutputObject::createObject(
 OutputObject::~OutputObject() {}
 
 OutputObject::OutputObject(
-        int assetId,
-        int objectId
+        HAPI_NodeId nodeId
         ) :
     myIsInstanced(false),
-    myAssetId(assetId),
-    myObjectId(objectId),
-    myNeverBuilt(true)
+    myNodeId(nodeId),
+    myLastCookCount(0)
 {
 }
 
 // Getters ----------------------------------------------------
 
-int OutputObject::getId() { return myObjectId; }
+int OutputObject::getId() { return myNodeInfo.id; }
 MString OutputObject::getName() { return Util::HAPIString(myObjectInfo.nameSH); }
 
 void

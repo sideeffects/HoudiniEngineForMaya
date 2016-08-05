@@ -469,14 +469,17 @@ Asset::Asset(
     }
 
     // instantiate the asset
-    int assetId = -1;
+    HAPI_NodeId nodeId = -1;
     {
         Util::PythonInterpreterLock pythonInterpreterLock;
 
-        hapiResult = HAPI_InstantiateAsset(
-                Util::theHAPISession.get(), assetName.asChar(),
+        hapiResult = HAPI_CreateNode(
+                Util::theHAPISession.get(),
+                -1,
+                assetName.asChar(),
+                NULL,
                 false,
-                &assetId
+                &nodeId
                 );
         if(HAPI_FAIL(hapiResult))
         {
@@ -508,13 +511,14 @@ Asset::Asset(
 
     hapiResult = HAPI_GetAssetInfo(
             Util::theHAPISession.get(),
-            assetId,
+            nodeId,
             &myAssetInfo
             );
     CHECK_HAPI(hapiResult);
+
     hapiResult = HAPI_GetNodeInfo(
             Util::theHAPISession.get(),
-            myAssetInfo.nodeId,
+            nodeId,
             &myNodeInfo
             );
     CHECK_HAPI(hapiResult);
@@ -531,8 +535,8 @@ Asset::Asset(
                 );
     }
 
-    myAssetInputs = new Inputs(myAssetInfo.id);
-    myAssetInputs->setNumInputs(myAssetInfo.geoInputCount);
+    myAssetInputs = new Inputs(myNodeInfo.id);
+    myAssetInputs->setNumInputs(myNodeInfo.inputCount);
 }
 
 Asset::~Asset()
@@ -548,11 +552,11 @@ Asset::~Asset()
     myObjectInfos.clear();
     delete myAssetInputs;
 
-    if(myAssetInfo.id >= 0)
+    if(myNodeInfo.id >= 0)
     {
-        hstat = HAPI_DestroyAsset(
+        hstat = HAPI_DeleteNode(
                 Util::theHAPISession.get(),
-                myAssetInfo.id
+                myNodeInfo.id
                 );
         Util::checkHAPIStatus(hstat);
     }
@@ -589,9 +593,9 @@ Asset::getAssetName() const
 OutputObject*
 Asset::findObjectByName(MString name)
 {
-    assert(myAssetInfo.id >= 0);
+    assert(myNodeInfo.id >= 0);
 
-    for(int i=0; i< myAssetInfo.objectCount; i++)
+    for(size_t i = 0; i < myObjects.size(); i++)
     {
         if(myObjects[i]->getName() == name)
             return myObjects[i];
@@ -609,12 +613,13 @@ Asset::findObjectById(int id)
 void
 Asset::resetSimulation()
 {
-    assert(myAssetInfo.id >= 0);
+    assert(myNodeInfo.id >= 0);
 
-    HAPI_ResetSimulation(
-            Util::theHAPISession.get(),
-            myAssetInfo.id
-            );
+    //TODO: HAPI 3
+    //HAPI_ResetSimulation(
+    //        Util::theHAPISession.get(),
+    //        myAssetInfo.id
+    //        );
 }
 
 MString
@@ -625,9 +630,9 @@ Asset::getCookMessages()
     // Trigger a cook so that the asset will become the "last cooked asset",
     // because HAPI_STATUS_COOK_RESULT only consider the "last cooked asset".
     // In most cases, this shouldn't do any actual cooking.
-    HAPI_CookAsset(
+    HAPI_CookNode(
             Util::theHAPISession.get(),
-            myAssetInfo.id,
+            myNodeInfo.id,
             NULL
             );
 
@@ -639,19 +644,36 @@ Asset::getCookMessages()
 void
 Asset::update()
 {
-    assert(myAssetInfo.id >= 0);
+    assert(myNodeInfo.id >= 0);
 
-    // update object infos
-    myObjectInfos.resize(myAssetInfo.objectCount);
-    HAPI_GetObjects(
+    HAPI_Result hapiResult;
+
+    // Get the child Object nodes
+    int objectCount = 0;
+    hapiResult = HAPI_ComposeChildNodeList(
             Util::theHAPISession.get(),
-            myAssetInfo.id,
-            &myObjectInfos.front(),
-            0, myAssetInfo.objectCount
+            myNodeInfo.id,
+            HAPI_NODETYPE_OBJ,
+            HAPI_NODEFLAGS_OBJ_GEOMETRY,
+            true,
+            &objectCount
             );
+    CHECK_HAPI(hapiResult);
+
+    std::vector<HAPI_NodeId> nodeIds(objectCount);
+    if(objectCount >= 0)
+    {
+        hapiResult = HAPI_GetComposedChildNodeList(
+                Util::theHAPISession.get(),
+                myNodeInfo.id,
+                &nodeIds.front(),
+                objectCount
+                );
+        CHECK_HAPI(hapiResult);
+    }
 
     // Create the OutputObjects
-    if((int) myObjects.size() != myAssetInfo.objectCount)
+    if((int) myObjects.size() != objectCount)
     {
         for(OutputObjects::const_iterator iter = myObjects.begin();
                 iter != myObjects.end(); iter++)
@@ -659,21 +681,13 @@ Asset::update()
             delete *iter;
         }
 
-        myObjects.resize(myAssetInfo.objectCount);
+        myObjects.resize(objectCount);
         for(unsigned int i = 0; i < myObjects.size(); i++)
         {
             myObjects[i] = OutputObject::createObject(
-                    myAssetInfo.id,
-                    i,
-                    myObjectInfos[i]
+                    nodeIds[i]
                     );
         }
-    }
-
-    // Pass the ObjectInfo to the OutputObjects
-    for(unsigned int i = 0; i < myObjects.size(); i++)
-    {
-        myObjects[i]->setObjectInfo(myObjectInfos[i]);
     }
 }
 
@@ -741,8 +755,19 @@ Asset::computeInstancerObjects(
     // mark instanced objects
     for(unsigned int i = 0; i < instancedObjIds.length(); ++i)
     {
-        OutputObject* obj = myObjects[instancedObjIds[i]];
-        obj->myIsInstanced = true;
+        // find OutputObject with the id
+        OutputObject* obj = NULL;
+        for(size_t j = 0; j < myObjects.size(); j++)
+        {
+            if(myObjects[j]->getId() == instancedObjIds[i])
+            {
+                obj = myObjects[j];
+                break;
+            }
+        }
+
+        if(obj)
+            obj->myIsInstanced = true;
     }
 
     instancersHandle.setAllClean();
@@ -826,7 +851,7 @@ Asset::setTime(const MTime &mayaTime)
 void
 Asset::setInputs(const MPlug& plug, MDataBlock& data)
 {
-    assert(myAssetInfo.id >= 0);
+    assert(myNodeInfo.id >= 0);
 
     MStatus status;
 
@@ -834,7 +859,7 @@ Asset::setInputs(const MPlug& plug, MDataBlock& data)
 
     myAssetInputs->compute(data);
 
-    for(int i=0; i< myAssetInfo.geoInputCount; i++)
+    for(int i=0; i< myNodeInfo.inputCount; i++)
     {
         MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
         CHECK_MSTATUS(status);
@@ -853,7 +878,9 @@ Asset::compute(
         bool &needToSyncOutputs
         )
 {
-    assert(myAssetInfo.id >= 0);
+    assert(myNodeInfo.id >= 0);
+
+    HAPI_Result hapiResult;
 
     MStatus stat(MS::kSuccess);
 
@@ -876,11 +903,12 @@ Asset::compute(
             cookOptions.packedPrimInstancingMode = HAPI_PACKEDPRIM_INSTANCING_MODE_HIERARCHY;
         }
 
-        HAPI_CookAsset(
+        hapiResult = HAPI_CookNode(
                 Util::theHAPISession.get(),
-                myAssetInfo.id,
+                myNodeInfo.id,
                 &cookOptions
                 );
+        CHECK_HAPI(hapiResult);
 
         if(!Util::statusCheckLoop())
         {
@@ -1806,7 +1834,7 @@ Asset::setParmValues(
         // multiparm length could change, so we need to get the new parmCount
         HAPI_GetNodeInfo(
                 Util::theHAPISession.get(),
-                myAssetInfo.nodeId,
+                myNodeInfo.id,
                 &myNodeInfo
                 );
     }

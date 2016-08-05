@@ -12,14 +12,13 @@
 #include "util.h"
 
 OutputInstancerObject::OutputInstancerObject(
-        int assetId,
-        int objectId
+        HAPI_NodeId nodeId
         ) :
     OutputObject(
-            assetId,
-            objectId
+            nodeId
           ),
-    myGeoInfo(HAPI_GeoInfo_Create())
+    myGeoInfo(HAPI_GeoInfo_Create()),
+    myLastSopCookCount(0)
 {
     //update();
 }
@@ -35,23 +34,59 @@ OutputInstancerObject::type()
 void
 OutputInstancerObject::update()
 {
-    try
+    HAPI_Result hapiResult;
+
+    hapiResult = HAPI_GetNodeInfo(
+            Util::theHAPISession.get(),
+            myNodeId, &myNodeInfo
+            );
+    CHECK_HAPI(hapiResult);
+
+    hapiResult = HAPI_GetObjectInfo(
+            Util::theHAPISession.get(),
+            myNodeId, &myObjectInfo
+            );
+    CHECK_HAPI(hapiResult);
+
+    // Get the SOP nodes
+    int geoCount;
+    hapiResult = HAPI_ComposeChildNodeList(
+            Util::theHAPISession.get(),
+            myNodeId,
+            HAPI_NODETYPE_SOP,
+            HAPI_NODEFLAGS_DISPLAY,
+            false,
+            &geoCount
+            );
+    CHECK_HAPI(hapiResult);
+
+    std::vector<HAPI_NodeId> geoNodeIds(geoCount);
+    if(geoCount > 0)
     {
-        HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-        hstat = HAPI_GetGeoInfo(
+        hapiResult = HAPI_GetComposedChildNodeList(
                 Util::theHAPISession.get(),
-                myAssetId, myObjectId, 0,
+                myNodeId,
+                &geoNodeIds.front(),
+                geoCount
+                );
+        CHECK_HAPI(hapiResult);
+
+        hapiResult = HAPI_GetNodeInfo(
+                Util::theHAPISession.get(),
+                geoNodeIds[0],
+                &mySopNodeInfo
+                );
+        CHECK_HAPI(hapiResult);
+
+        hapiResult = HAPI_GetGeoInfo(
+                Util::theHAPISession.get(),
+                geoNodeIds[0],
                 &myGeoInfo
                 );
-        Util::checkHAPIStatus(hstat);
-    }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-        return;
+        CHECK_HAPI(hapiResult);
     }
 
-    if(myNeverBuilt || myGeoInfo.hasGeoChanged)
+    if(mySopNodeInfo.totalCookCount > myLastSopCookCount)
     {
         // clear the arrays
         myInstancedObjectNames.clear();
@@ -60,23 +95,12 @@ OutputInstancerObject::update()
         myHoudiniInstanceAttribute.clear();
         myHoudiniNameAttribute.clear();
 
-        try
-        {
-            if(myGeoInfo.partCount <= 0)
-                return;
-
-            HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-            hstat = HAPI_GetPartInfo(
-                    Util::theHAPISession.get(),
-                    myAssetId, myObjectId, 0, 0,
-                    &myPartInfo
-                    );
-            Util::checkHAPIStatus(hstat);
-        }
-        catch (HAPIError& e)
-        {
-            cerr << e.what() << endl;
-        }
+        hapiResult = HAPI_GetPartInfo(
+                Util::theHAPISession.get(),
+                mySopNodeInfo.id, 0,
+                &myPartInfo
+                );
+        CHECK_HAPI(hapiResult);
 
         if(myObjectInfo.objectToInstanceId >= 0)
         {
@@ -87,7 +111,7 @@ OutputInstancerObject::update()
         // fill array of size pointCount of instanced names
         HAPI_AttributeInfo attrInfo;
         MStringArray instanceAttrs;
-        hapiGetPointAttribute(myAssetId, myObjectId, 0, 0, "instance", attrInfo, instanceAttrs);
+        hapiGetPointAttribute(myNodeId, 0, "instance", attrInfo, instanceAttrs);
         for(unsigned int i=0; i<instanceAttrs.length(); i++)
         {
             MStringArray splitObjName;
@@ -97,7 +121,7 @@ OutputInstancerObject::update()
         }
 
         MStringArray nameAttrs;
-        hapiGetPointAttribute(myAssetId, myObjectId, 0, 0, "name", attrInfo, nameAttrs);
+        hapiGetPointAttribute(myNodeId, 0, "name", attrInfo, nameAttrs);
         for(unsigned int ii = 0; ii < nameAttrs.length(); ii++)
         {
             myHoudiniNameAttribute.append(nameAttrs[ii]);
@@ -159,7 +183,7 @@ OutputInstancerObject::compute(
     if(myGeoInfo.partCount <= 0)
         return MS::kFailure;
 
-    if(myNeverBuilt || myGeoInfo.hasGeoChanged)
+    if(mySopNodeInfo.totalCookCount > myLastSopCookCount)
     {
         MDataHandle useInstancerHandle = data.inputValue(AssetNode::useInstancerNode);
 
@@ -190,13 +214,13 @@ OutputInstancerObject::compute(
 
         unsigned int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
-        HAPI_GetInstanceTransforms(
+        CHECK_HAPI(HAPI_GetInstanceTransforms(
                 Util::theHAPISession.get(),
-                myAssetId, myObjectInfo.id, 0,
+                mySopNodeInfo.id,
                 HAPI_SRT,
                 instTransforms,
                 0, size
-                );
+                ));
 
         MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
         MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
@@ -304,12 +328,11 @@ OutputInstancerObject::compute(
         {
             // instancing a single object
             HAPI_ObjectInfo instanceObjectInfo;
-            HAPI_GetObjects(
+            CHECK_HAPI(HAPI_GetObjectInfo(
                     Util::theHAPISession.get(),
-                    myAssetId,
-                    &instanceObjectInfo,
-                    myObjectInfo.objectToInstanceId, 1
-                    );
+                    myObjectInfo.objectToInstanceId,
+                    &instanceObjectInfo
+                    ));
             MString name = Util::HAPIString(instanceObjectInfo.nameSH);
 
             MDataHandle h = builder.addElement(0);
@@ -344,7 +367,7 @@ OutputInstancerObject::compute(
         //data.setClean(plug);
         //data.setClean(instancerDataPlug);
 
-        myNeverBuilt = false;
+        myLastSopCookCount = mySopNodeInfo.totalCookCount;
     }
 
     return MS::kSuccess;

@@ -11,15 +11,19 @@
 
 #include "util.h"
 
-InputCurve::InputCurve(int assetId, int inputIdx) :
-    Input(assetId, inputIdx)
+InputCurve::InputCurve(int nodeId, int inputIdx) :
+    Input(nodeId, inputIdx)
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
 
-    int curveAssetId;
-    CHECK_HAPI(HAPI_CreateCurve(
+    int curveNodeId;
+    CHECK_HAPI(HAPI_CreateNode(
                 Util::theHAPISession.get(),
-                &curveAssetId
+                -1,
+                "Sop/curve",
+                NULL,
+                false,
+                &curveNodeId
                 ));
     if(!Util::statusCheckLoop())
     {
@@ -28,7 +32,7 @@ InputCurve::InputCurve(int assetId, int inputIdx) :
 
     HAPI_GetAssetInfo(
             Util::theHAPISession.get(),
-            curveAssetId,
+            curveNodeId,
             &myCurveAssetInfo
             );
     HAPI_GetNodeInfo(
@@ -40,15 +44,15 @@ InputCurve::InputCurve(int assetId, int inputIdx) :
 
 InputCurve::~InputCurve()
 {
-    HAPI_DisconnectAssetGeometry(
+    HAPI_DisconnectNodeInput(
             Util::theHAPISession.get(),
-            myAssetId,
+            myNodeId,
             myInputIdx
             );
 
-    HAPI_DestroyAsset(
+    HAPI_DeleteNode(
             Util::theHAPISession.get(),
-            myCurveAssetInfo.id
+            myCurveAssetInfo.nodeId
             );
 }
 
@@ -76,8 +80,7 @@ InputCurve::setInputTransform(MDataHandle &dataHandle)
             );
     HAPI_SetObjectTransform(
             Util::theHAPISession.get(),
-            myCurveAssetInfo.id,
-            0,
+            myCurveAssetInfo.nodeId,
             &transformEuler
             );
 }
@@ -88,10 +91,10 @@ InputCurve::setInputGeo(
         const MPlug &plug
         )
 {
-    HAPI_ConnectAssetGeometry(
+    HAPI_ConnectNodeInput(
             Util::theHAPISession.get(),
-            myCurveAssetInfo.id, 0,
-            myAssetId, myInputIdx
+            myNodeId, myInputIdx,
+            myCurveAssetInfo.nodeId
             );
 
     MDataHandle dataHandle = dataBlock.inputValue(plug);

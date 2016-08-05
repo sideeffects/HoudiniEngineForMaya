@@ -12,8 +12,7 @@ class OutputGeometryObject: public OutputObject
 {
     public:
         OutputGeometryObject(
-                int assetId,
-                int objectId
+                HAPI_NodeId nodeId
                 );
         virtual ~OutputGeometryObject();
 

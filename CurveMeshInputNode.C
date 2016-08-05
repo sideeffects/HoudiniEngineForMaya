@@ -1,8 +1,8 @@
+#include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MDataHandle.h>
 #include <maya/MPointArray.h>
 #include <maya/MFnNurbsCurve.h>
-#include <maya/MFnIntArrayData.h>
 
 #include "CurveMeshInputNode.h"
 #include "MayaTypeID.h"
@@ -28,6 +28,7 @@ CurveMeshInputNode::creator()
 MStatus
 CurveMeshInputNode::initialize()
 {
+    MFnNumericAttribute nAttr;
     MFnTypedAttribute tAttr;
     theInputCurves = tAttr.create( "inputCurves", "incs",
                                     MFnData::kNurbsCurve );
@@ -35,13 +36,12 @@ CurveMeshInputNode::initialize()
 
     addAttribute(theInputCurves);
 
-    theOutputObjectMetaData = tAttr.create(
-        "outputObjectMetaData", "oomd",
-        MFnData::kIntArray
-    );
-
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
+    theOutputObjectMetaData  = nAttr.create(
+            "outputObjectMetaData", "outputObjectMetaData",
+            MFnNumericData::kInt
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
 
     addAttribute(theOutputObjectMetaData);
 
@@ -51,17 +51,17 @@ CurveMeshInputNode::initialize()
 }
 
 CurveMeshInputNode::CurveMeshInputNode()
-    : myAssetId(-1)
+    : myNodeId(-1)
 {
 }
 
 CurveMeshInputNode::~CurveMeshInputNode()
 {
-    if ( myAssetId > 0 )
+    if ( myNodeId > 0 )
     {
-        CHECK_HAPI(HAPI_DestroyAsset(
+        CHECK_HAPI(HAPI_DeleteNode(
                     Util::theHAPISession.get(),
-                    myAssetId
+                    myNodeId
                     ));
     }
 }
@@ -76,13 +76,13 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         return MPxNode::compute(plug, data);
     }
 
-    if ( myAssetId < 0 )
+    if ( myNodeId < 0 )
     {
         Util::PythonInterpreterLock pythonInterpreterLock;
 
-        CHECK_HAPI(HAPI_CreateInputAsset(
+        CHECK_HAPI(HAPI_CreateInputNode(
                     Util::theHAPISession.get(),
-                    &myAssetId,
+                    &myNodeId,
                     NULL
                     ));
 
@@ -93,15 +93,9 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
             );
         }
 
-        MDataHandle metaDataHandle = data.outputValue(theOutputObjectMetaData);
-
         // Meta data
-        MFnIntArrayData ffIAD;
-        MIntArray metaDataArray;
-        metaDataArray.append(myAssetId);
-        metaDataArray.append(0); // object ID
-        MObject newMetaData = ffIAD.create(metaDataArray);
-        metaDataHandle.set(newMetaData);
+        MDataHandle metaDataHandle = data.outputValue(theOutputObjectMetaData);
+        metaDataHandle.setInt(myNodeId);
     }
 
     MArrayDataHandle inputCurves(data.inputArrayValue(theInputCurves, &status));
@@ -232,18 +226,18 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
     partInfo.type = HAPI_PARTTYPE_CURVE;
     CHECK_HAPI(HAPI_SetPartInfo(
                 Util::theHAPISession.get(),
-                myAssetId, 0, 0,
+                myNodeId, 0,
                 &partInfo
                 ));
 
     CHECK_HAPI(HAPI_SetCurveInfo(
                 Util::theHAPISession.get(),
-                myAssetId, 0, 0, 0,
+                myNodeId, 0,
                 &curveInfo
                 ));
     CHECK_HAPI(HAPI_SetCurveCounts(
                 Util::theHAPISession.get(),
-                myAssetId, 0, 0, 0,
+                myNodeId, 0,
                 &cvCounts.front(),
                 0, cvCounts.size()
                 ));
@@ -257,14 +251,14 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     CHECK_HAPI(HAPI_AddAttribute(
                 Util::theHAPISession.get(),
-                myAssetId, 0, 0,
+                myNodeId, 0,
                 "P",
                 &attrInfo
                 ));
 
     CHECK_HAPI(HAPI_SetAttributeFloatData(
                 Util::theHAPISession.get(),
-                myAssetId, 0, 0,
+                myNodeId, 0,
                 "P",
                 &attrInfo,
                 &cvP.front(),
@@ -276,14 +270,14 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         attrInfo.tupleSize = 1;
         CHECK_HAPI(HAPI_AddAttribute(
                     Util::theHAPISession.get(),
-                    myAssetId, 0, 0,
+                    myNodeId, 0,
                     "Pw",
                     &attrInfo
                     ));
 
         CHECK_HAPI(HAPI_SetAttributeFloatData(
                     Util::theHAPISession.get(),
-                    myAssetId, 0, 0,
+                    myNodeId, 0,
                     "Pw",
                     &attrInfo,
                     &cvPw.front(),
@@ -295,7 +289,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
     {
         CHECK_HAPI(HAPI_SetCurveKnots(
                     Util::theHAPISession.get(),
-                    myAssetId, 0, 0, 0,
+                    myNodeId, 0,
                     &knots.front(),
                     0, static_cast<int>(knots.size())
                     ));
@@ -303,7 +297,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     CHECK_HAPI(HAPI_CommitGeo(
                 Util::theHAPISession.get(),
-                myAssetId, 0, 0
+                myNodeId
                 ));
 
     data.setClean(plug);

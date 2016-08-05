@@ -66,8 +66,8 @@ Inputs::createInputAttribute()
     return Inputs::input;
 }
 
-Inputs::Inputs(int assetId) :
-    myAssetId(assetId)
+Inputs::Inputs(HAPI_NodeId nodeId) :
+    myNodeId(nodeId)
 {
 }
 
@@ -101,16 +101,17 @@ Inputs::compute(MDataBlock &dataBlock)
 
         MDataHandle inputNameHandle = inputHandle.child(Inputs::inputName);
 
-        HAPI_StringHandle nameSH;
-        HAPI_GetInputName(
-                Util::theHAPISession.get(),
-                myAssetId,
-                i,
-                HAPI_INPUT_GEOMETRY,
-                &nameSH);
+        //TODO: HAPI 3
+        //HAPI_StringHandle nameSH;
+        //HAPI_GetInputName(
+        //        Util::theHAPISession.get(),
+        //        myNodeId,
+        //        i,
+        //        HAPI_INPUT_GEOMETRY,
+        //        &nameSH);
 
         inputNameHandle.set(
-                Util::HAPIString(nameSH)
+                MString() + i
                 );
     }
 
@@ -174,9 +175,9 @@ Inputs::setInput(
 
     if(!isValidInput)
     {
-        HAPI_DisconnectAssetGeometry(
+        HAPI_DisconnectNodeInput(
                 Util::theHAPISession.get(),
-                myAssetId,
+                myNodeId,
                 inputIdx
                 );
 
@@ -214,7 +215,7 @@ Inputs::setInput(
     // create Input if necessary
     if(!assetInput)
     {
-        assetInput = Input::createAssetInput(myAssetId, inputIdx, newAssetInputType);
+        assetInput = Input::createAssetInput(myNodeId, inputIdx, newAssetInputType);
     }
 
     if(!assetInput)
@@ -232,8 +233,8 @@ Inputs::setInput(
     assetInput->setInputGeo(dataBlock, geoPlug);
 }
 
-Input::Input(int assetId, int inputIdx) :
-    myAssetId(assetId),
+Input::Input(HAPI_NodeId nodeId, int inputIdx) :
+    myNodeId(nodeId),
     myInputIdx(inputIdx)
 {
 }
@@ -243,22 +244,22 @@ Input::~Input()
 }
 
 Input*
-Input::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType)
+Input::createAssetInput(HAPI_NodeId nodeId, int inputIdx, AssetInputType assetInputType)
 {
     Input* assetInput = NULL;
     switch(assetInputType)
     {
         case AssetInputType_Asset:
-            assetInput = new InputAsset(assetId, inputIdx);
+            assetInput = new InputAsset(nodeId, inputIdx);
             break;
         case AssetInputType_Mesh:
-            assetInput = new InputMesh(assetId, inputIdx);
+            assetInput = new InputMesh(nodeId, inputIdx);
             break;
         case AssetInputType_Curve:
-            assetInput = new InputCurve(assetId, inputIdx);
+            assetInput = new InputCurve(nodeId, inputIdx);
             break;
         case AssetInputType_Particle:
-            assetInput = new InputParticle(assetId, inputIdx);
+            assetInput = new InputParticle(nodeId, inputIdx);
             break;
         case AssetInputType_Invalid:
             break;
@@ -269,9 +270,8 @@ Input::createAssetInput(int assetId, int inputIdx, AssetInputType assetInputType
 void
 Input::setInputPlugMetaData(
         const MPlug &plug,
-        int inputAssetId,
-        int inputObjectId,
-        int inputGeoId
+        HAPI_NodeId inputNodeId,
+        HAPI_PartId inputPartId
         )
 {
     MStatus status;
@@ -300,9 +300,7 @@ Input::setInputPlugMetaData(
             values.append(shapeName);
 
             CHECK_HAPI(hapiSetDetailAttribute(
-                    inputAssetId,
-                    inputObjectId,
-                    inputGeoId,
+                    inputNodeId, inputPartId,
                     "maya_source_node",
                     values
                     ));
@@ -314,9 +312,7 @@ Input::setInputPlugMetaData(
             values.append(fullPathName);
 
             CHECK_HAPI(hapiSetDetailAttribute(
-                    inputAssetId,
-                    inputObjectId,
-                    inputGeoId,
+                    inputNodeId, inputPartId,
                     "maya_source_dag",
                     values
                     ));

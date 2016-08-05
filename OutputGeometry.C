@@ -6,10 +6,9 @@
 #include "util.h"
 #include "AssetNode.h"
 
-OutputGeometry::OutputGeometry(int assetId, int objectId, int geoId) :
-    myAssetId (assetId),
-    myObjectId (objectId),
-    myGeoId (geoId)
+OutputGeometry::OutputGeometry(HAPI_NodeId nodeId) :
+    myNodeId(nodeId),
+    myLastCookCount(0)
 {
     update();
 }
@@ -28,11 +27,15 @@ OutputGeometry::update()
 {
     HAPI_Result hapiResult;
 
+    hapiResult = HAPI_GetNodeInfo(
+            Util::theHAPISession.get(),
+            myNodeId, &myNodeInfo
+            );
+    CHECK_HAPI(hapiResult);
+
     hapiResult = HAPI_GetGeoInfo(
             Util::theHAPISession.get(),
-            myAssetId,
-            myObjectId,
-            myGeoId,
+            myNodeId,
             &myGeoInfo);
     if(HAPI_FAIL(hapiResult))
     {
@@ -52,9 +55,7 @@ OutputGeometry::update()
         for(int i = myParts.size(); i < myGeoInfo.partCount; i++)
         {
             OutputGeometryPart* outputGeometryPart = new OutputGeometryPart(
-                    myAssetId,
-                    myObjectId,
-                    myGeoId,
+                    myNodeId,
                     i
                     );
             myParts.push_back(outputGeometryPart);
@@ -77,6 +78,8 @@ OutputGeometry::compute(
         )
 {
     MStatus stat;
+
+    update();
 
     MDataHandle geoNameHandle = geoHandle.child(AssetNode::outputGeoName);
     MString geoName;
@@ -103,9 +106,10 @@ OutputGeometry::compute(
         needToSyncOutputs = true;
     }
 
-    if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
-        myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-        myGeoInfo.type == HAPI_GEOTYPE_CURVE)
+    if(myNodeInfo.totalCookCount > myLastCookCount
+            && (myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
+                myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
+                myGeoInfo.type == HAPI_GEOTYPE_CURVE))
     {
         // Compute the OutputGeometryPart
         for(int i=0; i< myGeoInfo.partCount; i++)
@@ -114,7 +118,6 @@ OutputGeometry::compute(
             stat = myParts[i]->compute(
                     time,
                     h,
-                    myGeoInfo.hasGeoChanged,
                     myGeoInfo.hasMaterialChanged,
                     needToSyncOutputs
                     );
@@ -130,6 +133,8 @@ OutputGeometry::compute(
     }
 
     partsArrayHandle.set(partsBuilder);
+
+    myLastCookCount = myNodeInfo.totalCookCount;
 
     return MS::kSuccess;
 }

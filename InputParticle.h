@@ -8,7 +8,7 @@
 class InputParticle : public Input
 {
     public:
-        InputParticle(int assetId, int inputIdx);
+        InputParticle(int nodeId, int inputIdx);
         virtual ~InputParticle();
 
         virtual AssetInputType assetInputType() const;
@@ -29,9 +29,7 @@ class InputParticle : public Input
                 );
 
     protected:
-        int myInputAssetId;
-        int myInputObjectId;
-        int myInputGeoId;
+        HAPI_NodeId myInputNodeId;
 };
 
 #endif

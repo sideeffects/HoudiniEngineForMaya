@@ -8,7 +8,7 @@
 class InputCurve : public Input
 {
     public:
-        InputCurve(int assetId, int inputIdx);
+        InputCurve(int nodeId, int inputIdx);
         virtual ~InputCurve();
 
         virtual AssetInputType assetInputType() const;

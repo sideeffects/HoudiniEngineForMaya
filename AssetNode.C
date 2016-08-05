@@ -599,12 +599,12 @@ AssetNode::initialize()
 #endif
 
     // meta data
-    AssetNode::outputObjectMetaData = tAttr.create(
+    AssetNode::outputObjectMetaData = nAttr.create(
             "outputObjectMetaData", "outputObjectMetaData",
-            MFnData::kIntArray
+            MFnNumericData::kInt
             );
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
     computeAttributes.push_back(AssetNode::outputObjectMetaData);
 
     // part name

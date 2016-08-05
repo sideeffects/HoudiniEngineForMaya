@@ -12,7 +12,7 @@ class MStringArray;
 class InputMesh : public Input
 {
     public:
-        InputMesh(int assetId, int inputIdx);
+        InputMesh(int nodeId, int inputIdx);
         virtual ~InputMesh();
 
         virtual AssetInputType assetInputType() const;
@@ -52,9 +52,7 @@ class InputMesh : public Input
                 );
 
     protected:
-        int myInputAssetId;
-        int myInputObjectId;
-        int myInputGeoId;
+        HAPI_NodeId myInputNodeId;
 };
 
 #endif

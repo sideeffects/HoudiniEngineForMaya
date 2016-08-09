@@ -515,10 +515,11 @@ OutputGeometryPart::computeExtraAttribute(
     };
     static const MString dataTypesString[] = {
         "int",
-        "long",
         "float",
-        "double",
         "string",
+        "",
+        "long",
+        "double",
     };
 
     MDataHandle nameHandle = extraAttributeHandle.child(

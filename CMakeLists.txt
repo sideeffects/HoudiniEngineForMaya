@@ -171,6 +171,9 @@ endif ()
 ########################################
 # Module files
 ########################################
+set( MODULE_DESCRIPTION_ENVIRONMENTS )
+set( MODULE_DESCRIPTION_ABSOLUTE_ENVIRONMENTS )
+
 # Set the PATH variable for executables and dynamic library.
 set(
     MODULE_DESCRIPTION_ENVIRONMENTS

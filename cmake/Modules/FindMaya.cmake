@@ -28,19 +28,6 @@ if ( ${_maya_version_index} EQUAL -1 )
     message( FATAL_ERROR "Unknown Maya version. ${Maya_FIND_VERSION}" )
 endif ()
 
-# On Windows, verify that the correct compiler is used.
-if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-    list( APPEND _maya_msvc_versions 1700 )
-    list( APPEND _maya_msvc_versions 1700 )
-    list( APPEND _maya_msvc_versions 1700 )
-    list( APPEND _maya_msvc_versions 1600 )
-    list( GET _maya_msvc_versions ${_maya_version_index} _maya_msvc_version )
-
-    if ( NOT ${MSVC_VERSION} EQUAL ${_maya_msvc_version} )
-        message( FATAL_ERROR "Using MSVC ${MSVC_VERSION}. Maya ${Maya_FIND_VERSION} requires MSVC ${_maya_msvc_version}." )
-    endif ()
-endif ()
-
 ########################################
 # Determine search directories
 ########################################

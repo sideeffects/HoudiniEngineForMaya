@@ -78,10 +78,12 @@ find_path(
     )
 list( APPEND _houdiniengine_required_vars HoudiniEngine_INCLUDE_DIRS )
 
-# Houdini libraries on Windows are lib<name>.a
+# Houdini libraries on Windows are lib<name>.a or lib<name>.lib
 if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
     set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+    if ( DEFINED HoudiniEngine_OLD_LIBRARY_EXTENSION )
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+    endif ()
 endif ()
 find_library(
     HoudiniEngine_${_houdiniengine_lib}

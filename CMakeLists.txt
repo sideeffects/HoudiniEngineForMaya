@@ -46,7 +46,7 @@ set( install_module_absolute_dir "${CMAKE_INSTALL_PREFIX}/${install_module_dir}"
 ########################################
 # Find packages
 ########################################
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules" )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
 
 set(
     maya_libraries

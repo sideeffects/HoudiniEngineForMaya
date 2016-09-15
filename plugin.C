@@ -12,7 +12,7 @@
 #include "FluidGridConvert.h"
 #include "util.h"
 
-#include <HAPI/HAPI_Version.h>
+#include <HAPI_Version.h>
 
 #include <cstdlib>
 #ifndef _WIN32

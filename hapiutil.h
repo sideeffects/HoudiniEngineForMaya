@@ -1,7 +1,7 @@
 #ifndef __hapiutil_h__
 #define __hapiutil_h__
 
-#include <HAPI/HAPI.h>
+#include <HAPI.h>
 
 #include "traits.h"
 #include "types.h"

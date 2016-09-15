@@ -3,7 +3,7 @@
 
 #include "Input.h"
 
-#include <HAPI/HAPI.h>
+#include <HAPI.h>
 
 class InputParticle : public Input
 {

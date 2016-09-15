@@ -4,8 +4,8 @@
 #include <maya/MArgList.h>
 #include <maya/MStatus.h>
 
-#include <HAPI/HAPI.h>
-#include <HAPI/HAPI_Version.h>
+#include <HAPI.h>
+#include <HAPI_Version.h>
 
 #include "SubCommand.h"
 

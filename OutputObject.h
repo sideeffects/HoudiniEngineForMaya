@@ -11,7 +11,7 @@
 #include <maya/MPlug.h>
 #include <maya/MDataBlock.h>
 
-#include <HAPI/HAPI.h>
+#include <HAPI.h>
 
 class Asset;
 

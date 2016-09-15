@@ -7,7 +7,7 @@
 #include <maya/MPointArray.h>
 #include <maya/MFnNurbsCurve.h>
 
-#include <HAPI/HAPI.h>
+#include <HAPI.h>
 
 #include "util.h"
 

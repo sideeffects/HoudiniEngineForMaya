@@ -4,7 +4,7 @@
 #include <maya/MDataBlock.h>
 #include <maya/MIntArray.h>
 
-#include <HAPI/HAPI.h>
+#include <HAPI.h>
 #include "util.h"
 
 InputAsset::InputAsset(HAPI_NodeId nodeId, int inputIdx) :

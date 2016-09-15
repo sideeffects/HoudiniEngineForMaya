@@ -6,7 +6,7 @@
 #include <maya/MDGModifier.h>
 #include <maya/MObject.h>
 
-#include <HAPI/HAPI.h>
+#include <HAPI.h>
 
 class MFnCompoundAttribute;
 

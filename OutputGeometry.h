@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include <HAPI/HAPI.h>
+#include <HAPI.h>
 
 class OutputObject;
 class OutputGeometryPart;

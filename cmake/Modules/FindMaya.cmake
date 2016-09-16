@@ -19,15 +19,6 @@ if ( NOT Maya_FIND_VERSION )
     message( FATAL_ERROR "Maya version is not specified." )
 endif ()
 
-list( APPEND _maya_versions 2016.5 )
-list( APPEND _maya_versions 2016 )
-list( APPEND _maya_versions 2015 )
-list( APPEND _maya_versions 2014 )
-list( FIND _maya_versions ${Maya_FIND_VERSION} _maya_version_index )
-if ( ${_maya_version_index} EQUAL -1 )
-    message( FATAL_ERROR "Unknown Maya version. ${Maya_FIND_VERSION}" )
-endif ()
-
 ########################################
 # Determine search directories
 ########################################

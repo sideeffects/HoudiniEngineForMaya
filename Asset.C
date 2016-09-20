@@ -648,32 +648,47 @@ Asset::update()
 
     HAPI_Result hapiResult;
 
-    // Get the child Object nodes
-    int objectCount = 0;
-    hapiResult = HAPI_ComposeChildNodeList(
-            Util::theHAPISession.get(),
-            myNodeInfo.id,
-            HAPI_NODETYPE_OBJ,
-            HAPI_NODEFLAGS_OBJ_GEOMETRY,
-            true,
-            &objectCount
-            );
-    CHECK_HAPI(hapiResult);
-
-    std::vector<HAPI_NodeId> nodeIds(objectCount);
-    if(objectCount >= 0)
+    // Get the Object nodes
+    std::vector<HAPI_NodeId> nodeIds;
+    if(myNodeInfo.type == HAPI_NODETYPE_OBJ)
     {
-        hapiResult = HAPI_GetComposedChildNodeList(
+        int objectCount = 0;
+        hapiResult = HAPI_ComposeChildNodeList(
                 Util::theHAPISession.get(),
-                myNodeInfo.id,
-                &nodeIds.front(),
-                objectCount
+                myAssetInfo.objectNodeId,
+                HAPI_NODETYPE_OBJ,
+                HAPI_NODEFLAGS_OBJ_GEOMETRY,
+                true,
+                &objectCount
                 );
         CHECK_HAPI(hapiResult);
+
+        if(objectCount > 0)
+        {
+            nodeIds.resize(objectCount);
+
+            hapiResult = HAPI_GetComposedChildNodeList(
+                    Util::theHAPISession.get(),
+                    myAssetInfo.objectNodeId,
+                    &nodeIds.front(),
+                    objectCount
+                    );
+            CHECK_HAPI(hapiResult);
+        }
+        else
+        {
+            // Note that this can be either an empty Object subnet, or an actual
+            // Object.
+            nodeIds.push_back(myAssetInfo.objectNodeId);
+        }
+    }
+    else if(myNodeInfo.type == HAPI_NODETYPE_SOP)
+    {
+        nodeIds.push_back(myAssetInfo.objectNodeId);
     }
 
     // Create the OutputObjects
-    if((int) myObjects.size() != objectCount)
+    if(myObjects.size() != nodeIds.size())
     {
         for(OutputObjects::const_iterator iter = myObjects.begin();
                 iter != myObjects.end(); iter++)
@@ -681,8 +696,8 @@ Asset::update()
             delete *iter;
         }
 
-        myObjects.resize(objectCount);
-        for(unsigned int i = 0; i < myObjects.size(); i++)
+        myObjects.resize(nodeIds.size());
+        for(size_t i = 0; i < myObjects.size(); i++)
         {
             myObjects[i] = OutputObject::createObject(
                     nodeIds[i]

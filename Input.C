@@ -101,18 +101,14 @@ Inputs::compute(MDataBlock &dataBlock)
 
         MDataHandle inputNameHandle = inputHandle.child(Inputs::inputName);
 
-        //TODO: HAPI 3
-        //HAPI_StringHandle nameSH;
-        //HAPI_GetInputName(
-        //        Util::theHAPISession.get(),
-        //        myNodeId,
-        //        i,
-        //        HAPI_INPUT_GEOMETRY,
-        //        &nameSH);
+        HAPI_StringHandle nameSH;
+        HAPI_GetNodeInputName(
+                Util::theHAPISession.get(),
+                myNodeId,
+                i,
+                &nameSH);
 
-        inputNameHandle.set(
-                MString() + i
-                );
+        inputNameHandle.set(Util::HAPIString(nameSH));
     }
 
     status = inputArrayHandle.set(inputArrayBuilder);

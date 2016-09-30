@@ -44,7 +44,7 @@ MAYA_VERSION = 2014
 ifeq ($(OS), Linux)
     ifneq ($(findstring $(MAYA_VERSION), 2012 2013 2013.5 2014 2015),)
 	MAYA_DIR = /usr/autodesk/maya$(MAYA_VERSION)-x64
-    else ifneq ($(findstring $(MAYA_VERSION), 2016 2016.5),)
+    else ifneq ($(findstring $(MAYA_VERSION), 2016 2016.5 2017),)
 	MAYA_DIR = /usr/autodesk/maya$(MAYA_VERSION)
     endif
     MAYA_INCLUDE_DIR = $(MAYA_DIR)/include
@@ -56,7 +56,22 @@ else ifeq ($(OS), Cygwin)
     MAYA_LIB_DIR = $(MAYA_DIR)/lib
 
     # each versin of Maya requires a different version of Visual C++
-    ifeq ($(MAYA_VERSION), 2016.5)
+    ifeq ($(MAYA_VERSION), 2017)
+	# Visual C++ 2012
+	MSVC_SDK := $(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/VisualStudio/SxS/VC7/11.0" 2> /dev/null)
+
+	# Windows SDK 8.0: standalone
+	# Windows SDK 8.0a: included in Visual Studio 2012
+	WIN32_SDK := $(or \
+		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v8.0/InstallationFolder" 2> /dev/null), \
+		$(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Microsoft SDKs/Windows/v8.0A/InstallationFolder" 2> /dev/null), \
+		)
+
+	# Windows SDK
+	WIN32_SDK_INCLUDE = $(WIN32_SDK)/Include/um \
+			    $(WIN32_SDK)/Include/shared
+	WIN32_SDK_LIB = $(WIN32_SDK)/Lib/win8/um/x64
+    else ifeq ($(MAYA_VERSION), 2016.5)
 	# Visual C++ 2012
 	MSVC_SDK := $(shell cygpath -m -s -f "/proc/registry32/HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/VisualStudio/SxS/VC7/11.0" 2> /dev/null)
 
@@ -167,7 +182,7 @@ else ifeq ($(OS), Darwin)
     MAYA_DIR = /Applications/Autodesk/maya$(MAYA_VERSION)/Maya.app/Contents
     ifneq ($(findstring $(MAYA_VERSION), 2012 2013 2013.5 2014 2015 2016),)
 	MAYA_INCLUDE_DIR = $(MAYA_DIR)/../../devkit/include
-    else ifneq ($(findstring $(MAYA_VERSION), 2016.5),)
+    else ifneq ($(findstring $(MAYA_VERSION), 2016.5 2017),)
 	MAYA_INCLUDE_DIR = $(MAYA_DIR)/../../include
     endif
     MAYA_LIB_DIR = $(MAYA_DIR)/MacOS
@@ -328,7 +343,7 @@ DEPFILES = $(patsubst %.C, $(OBJ_DIR)/%.d, $(CXXFILES))
 # This module description file uses relative path to specify the module
 # directory. Relative path is only supported by Maya 2013 and newer. The file
 # can also be used to set environment variables.
-ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016 2016.5),)
+ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016 2016.5 2017),)
 DST_MODULE = $(DST_MODULE_DIR)/houdiniEngine-maya$(MAYA_VERSION)
 endif
 # This module description file uses absolute path to specify the module
@@ -372,7 +387,7 @@ endif
 $(DST_MODULE):
 	@mkdir -p $(dir $(@))
 	echo "+ MAYAVERSION:$(MAYA_VERSION) houdiniEngine 1.5 maya$(MAYA_VERSION)" > $(@)
-ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016 2016.5),)
+ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016 2016.5 2017),)
     # The module file for Maya 2013 and newer can be used to set environment variables
     ifeq ($(OS), Linux)
 	echo "PATH +:= ../../../bin" >> $(@)
@@ -392,7 +407,7 @@ ifeq ($(OS), Cygwin)
 else
 	echo "+ houdiniEngine 1.5 $(DST_DIR)" > $(@)
 endif
-ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016 2016.5),)
+ifneq ($(findstring $(MAYA_VERSION), 2013 2013.5 2014 2015 2016 2016.5 2017),)
     # The module file for Maya 2013 and newer can be used to set environment variables
     ifeq ($(OS), Linux)
 	echo "PATH += $(DST_DIR)/../../../bin" >> $(@)
@@ -450,7 +465,8 @@ endif
 	rm -f $(DEPFILES)
 
 # build multiple Maya versions
-ALL_MAYA_VERSIONS = 2016.5 \
+ALL_MAYA_VERSIONS = 2017 \
+		2016.5 \
 		2016 \
 		2015 \
 		2014 \

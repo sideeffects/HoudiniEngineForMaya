@@ -63,27 +63,4 @@ When the asset creates an `nParticle` node for outputting points/particles, the 
 
 One example is a Houdini asset that takes some input points, removes some points, and outputs the resulting points. If a simulated `nParticle` is used as the input, the output `nParticle` will be assigned to the same Nucleus Solver as the input `nParticle`. Since the output particles have the exact same positions as the input particles, this input particles would collide with the output particles, which affects the motion of the input particles. In this case, to prevent the collisions, one of the `nParticle` nodes should be assigned to a different Nucleus solver.
 
-\dot
-digraph {
-    node [ shape = box ];
-
-    rankdir = LR;
-
-    subgraph cluster_houdini {
-        label = "Houdini Engine";
-        b [ label = "asset" ];
-    }
-
-    subgraph cluster_maya {
-        label = "Maya";
-        a [ label = "simulated nParticle" ];
-        c [ label = "outputted nParticle" ];
-        d [ style=invis ];
-        a -> d -> c [ style=invis ];
-    }
-
-    a -> b -> c;
-}
-\enddot
-
 */

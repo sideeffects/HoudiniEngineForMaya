@@ -214,6 +214,7 @@ install(
 install(
     DIRECTORY scripts
     DESTINATION "${install_module_dir}"
+    PATTERN ".svn" EXCLUDE
     )
 
 install(

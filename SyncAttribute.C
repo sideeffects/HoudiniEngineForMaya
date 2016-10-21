@@ -480,42 +480,55 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
 }
 
 static void
-getConnectedChildrenPlugs(MPlugArray &connections, const MPlug &parentPlug)
+getConnectedChildrenPlugs(MPlugArray &connections, const MPlug &plug)
 {
-    unsigned int numChildren = parentPlug.numChildren();
-    for(unsigned int i = 0; i < numChildren; i++)
+    std::vector<MPlug> plugsToTraverse;
+    plugsToTraverse.push_back(plug);
+
+    while(plugsToTraverse.size())
     {
-        MPlug childPlug = parentPlug.child(i);
+        const MPlug currentPlug = plugsToTraverse.back();
+        plugsToTraverse.pop_back();
 
         // as destination
         {
             MPlugArray connectedPlugs;
-            childPlug.connectedTo(connectedPlugs, true, false);
+            currentPlug.connectedTo(connectedPlugs, true, false);
 
             unsigned int connectedPlugsLength = connectedPlugs.length();
             for(unsigned int j = 0; j < connectedPlugsLength; ++j)
             {
                 connections.append(connectedPlugs[j]);
-                connections.append(childPlug);
+                connections.append(currentPlug);
             }
         }
 
         // as source
         {
             MPlugArray connectedPlugs;
-            childPlug.connectedTo(connectedPlugs, false, true);
+            currentPlug.connectedTo(connectedPlugs, false, true);
 
             unsigned int connectedPlugsLength = connectedPlugs.length();
             for(unsigned int j = 0; j < connectedPlugsLength; ++j)
             {
-                connections.append(childPlug);
+                connections.append(currentPlug);
                 connections.append(connectedPlugs[j]);
             }
         }
 
-        if(childPlug.isCompound())
+        if(currentPlug.isArray())
         {
-            getConnectedChildrenPlugs(connections, childPlug);
+            for(unsigned int i = currentPlug.numElements(); i-- > 0 ;)
+            {
+                plugsToTraverse.push_back(currentPlug.elementByPhysicalIndex(i));
+            }
+        }
+        else if(currentPlug.isCompound())
+        {
+            for(unsigned int i = currentPlug.numChildren(); i-- > 0;)
+            {
+                plugsToTraverse.push_back(currentPlug.child(i));
+            }
         }
     }
 }

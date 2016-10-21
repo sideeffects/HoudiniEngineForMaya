@@ -172,3 +172,27 @@ Input::setInputPlugMetaData(
         }
     }
 }
+
+void
+Input::setInputTransform(MDataHandle &dataHandle)
+{
+    MMatrix transformMatrix = dataHandle.asMatrix();
+
+    float matrix[16];
+    transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
+
+    HAPI_TransformEuler transformEuler;
+    HAPI_ConvertMatrixToEuler(
+            Util::theHAPISession.get(),
+            matrix,
+            HAPI_SRT,
+            HAPI_XYZ,
+            &transformEuler
+            );
+
+    CHECK_HAPI(HAPI_SetObjectTransform(
+            Util::theHAPISession.get(),
+            transformNodeId(),
+            &transformEuler
+            ));
+}

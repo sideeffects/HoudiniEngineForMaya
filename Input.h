@@ -52,21 +52,28 @@ class Input
 
         virtual AssetInputType assetInputType() const = 0;
 
+        HAPI_NodeId transformNodeId() const { return myTransformNodeId; };
         HAPI_NodeId geometryNodeId() const { return myGeometryNodeId; };
 
-        virtual void setInputTransform(MDataHandle &dataHandle) = 0;
+        void setInputTransform(MDataHandle &dataHandle);
+
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug
                 ) = 0;
 
     protected:
+        void setTransformNodeId( HAPI_NodeId nodeId )
+        {
+            myTransformNodeId = nodeId;
+        };
         void setGeometryNodeId( HAPI_NodeId nodeId )
         {
             myGeometryNodeId = nodeId;
         };
 
     private:
+        HAPI_NodeId myTransformNodeId;
         HAPI_NodeId myGeometryNodeId;
 };
 

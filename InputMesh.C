@@ -32,6 +32,14 @@ InputMesh::InputMesh() :
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
     }
 
+    HAPI_NodeInfo nodeInfo;
+    HAPI_GetNodeInfo(
+        Util::theHAPISession.get(),
+        nodeId,
+        &nodeInfo
+        );
+
+    setTransformNodeId(nodeInfo.parentId);
     setGeometryNodeId(nodeId);
 }
 
@@ -47,29 +55,6 @@ Input::AssetInputType
 InputMesh::assetInputType() const
 {
     return Input::AssetInputType_Mesh;
-}
-
-void
-InputMesh::setInputTransform(MDataHandle &dataHandle)
-{
-    MMatrix transformMatrix = dataHandle.asMatrix();
-
-    float matrix[16];
-    transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
-
-    HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(
-            Util::theHAPISession.get(),
-            matrix,
-            HAPI_SRT,
-            HAPI_XYZ,
-            &transformEuler
-            );
-    HAPI_SetObjectTransform(
-            Util::theHAPISession.get(),
-            geometryNodeId(),
-            &transformEuler
-            );
 }
 
 void

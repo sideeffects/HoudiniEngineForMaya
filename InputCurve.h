@@ -13,7 +13,6 @@ class InputCurve : public Input
 
         virtual AssetInputType assetInputType() const;
 
-        virtual void setInputTransform(MDataHandle &dataHandle);
         virtual void setInputGeo(
                 MDataBlock &dataBlock,
                 const MPlug &plug

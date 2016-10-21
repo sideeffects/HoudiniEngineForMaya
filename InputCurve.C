@@ -30,13 +30,14 @@ InputCurve::InputCurve() :
         DISPLAY_ERROR(MString("Unexpected error when creating input curve."));
     }
 
-    setGeometryNodeId(nodeId);
-
     HAPI_GetNodeInfo(
             Util::theHAPISession.get(),
             geometryNodeId(),
             &myCurveNodeInfo
             );
+
+    setTransformNodeId(myCurveNodeInfo.parentId);
+    setGeometryNodeId(nodeId);
 }
 
 InputCurve::~InputCurve()
@@ -51,29 +52,6 @@ InputCurve::AssetInputType
 InputCurve::assetInputType() const
 {
     return Input::AssetInputType_Curve;
-}
-
-void
-InputCurve::setInputTransform(MDataHandle &dataHandle)
-{
-    MMatrix transformMatrix = dataHandle.asMatrix();
-
-    float matrix[16];
-    transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
-
-    HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(
-            Util::theHAPISession.get(),
-            matrix,
-            HAPI_SRT,
-            HAPI_XYZ,
-            &transformEuler
-            );
-    HAPI_SetObjectTransform(
-            Util::theHAPISession.get(),
-            geometryNodeId(),
-            &transformEuler
-            );
 }
 
 void

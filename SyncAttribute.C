@@ -271,6 +271,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 case HAPI_PARMTYPE_FLOAT:
                 case HAPI_PARMTYPE_COLOR:
                 case HAPI_PARMTYPE_TOGGLE:
+                case HAPI_PARMTYPE_NODE:
                     attrObj = createNumericAttr(parmInfo);
                     break;
                 case HAPI_PARMTYPE_STRING:
@@ -383,6 +384,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
             break;
         case HAPI_PARMTYPE_INT:
         case HAPI_PARMTYPE_BUTTON:
+        case HAPI_PARMTYPE_NODE:
             type = MFnNumericData::kInt;
             break;
         case HAPI_PARMTYPE_FLOAT:
@@ -427,6 +429,14 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
 
     result = nAttr.create(attrName, attrName, type);
     nAttr.setNiceNameOverride(niceName);
+
+    if(parm.type == HAPI_PARMTYPE_NODE)
+    {
+        nAttr.setDefault(-1);
+        nAttr.setDisconnectBehavior(MFnAttribute::kReset);
+        nAttr.setCached(false);
+        nAttr.setStorable(false);
+    }
 
     // TODO: support min/max for all sizes
     if(parm.hasMin)

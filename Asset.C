@@ -10,6 +10,7 @@
 #include <maya/MDataHandle.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
+#include <maya/MPlugArray.h>
 
 #include "Asset.h"
 #include "Input.h"
@@ -1374,6 +1375,9 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             delete[] values;
                         }
                         break;
+                    case HAPI_PARMTYPE_NODE:
+                        // nothing need to be done
+                        break;
                     default:
                         break;
                 }
@@ -1821,11 +1825,26 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         }
                         break;
                     case HAPI_PARMTYPE_NODE:
-                        // Avoid setting path parameters. Path parameters
-                        // should all be HAPI inputs. So technically, the user
-                        // wouldn't know what values to set these parameters
-                        // to. And the values restored from a previous session
-                        // are not necessarily correct.
+                        {
+                            HAPI_NodeId inputNodeId = -1;
+
+                            // only use inputNodeId if it's coming from a
+                            // connection
+                            MPlugArray srcPlugs;
+                            if(plug.connectedTo(srcPlugs, true, false))
+                            {
+                                inputNodeId = dataHandle.asInt();
+                            }
+
+                            std::string name = Util::HAPIString(parmInfo.nameSH);
+
+                            CHECK_HAPI(HAPI_SetParmNodeValue(
+                                        Util::theHAPISession.get(),
+                                        myNodeInfo.id,
+                                        name.c_str(),
+                                        inputNodeId
+                                        ));
+                        }
                     default:
                         break;
                 }

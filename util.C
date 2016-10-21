@@ -93,6 +93,10 @@ getAttrNameFromParm(const HAPI_ParmInfo &parm)
     {
         name += "__folder";
     }
+    else if(parm.type == HAPI_PARMTYPE_NODE)
+    {
+        name += "__node";
+    }
     else if(parm.rampType != HAPI_RAMPTYPE_INVALID)
     {
         name += "__ramp";

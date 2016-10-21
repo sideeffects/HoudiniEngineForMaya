@@ -117,6 +117,46 @@ AEhoudiniAssetTemplate_textEdit(string $plug)
     showWindow $window;
 }
 
+proc createInputWidget(string $attr, string $label)
+{
+    string $inputLayout = $attr + "Layout";
+    $inputLayout = substituteAllString($inputLayout, "|", "_");
+    $inputLayout = substituteAllString($inputLayout, ".", "_");
+    $inputLayout = substituteAllString($inputLayout, "[", "_");
+    $inputLayout = substituteAllString($inputLayout, "]", "_");
+    string $inputLayoutFull = `setParent -q` + "|" + $inputLayout;
+
+    text -align left -label $label;
+
+    rowLayout
+        -numberOfColumns 2
+        -adjustableColumn 1
+        -columnAlign  1 "right"
+        -columnAttach 1 "both"     2
+        -columnAttach 2 "left"  2
+        $inputLayout;
+
+        string $inputTextFieldFull = ($inputLayoutFull + "|inputTextField");
+        textField
+            -alwaysInvokeEnterCommandOnReturn true
+            -enterCommand ("AEhoudiniAssetSetInputToText \"" + $inputTextFieldFull + "\" \""
+             + $attr + "\"")
+            "inputTextField";
+        button
+            -label "Set to Selection"
+            -command ("AEhoudiniAssetSetInputToSelection \"" + $attr + "\"");
+
+    setParent ..;
+
+    scriptJob
+        -parent $inputLayoutFull
+        -replacePrevious
+        -attributeChange $attr
+        ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $attr + "\"");
+
+    AEhoudiniAssetUpdateInput $inputLayoutFull $attr;
+}
+
 proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 {
     string $fullAttrName = $nodeName + "." + $fullAttr;
@@ -157,6 +197,11 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         {
             string $niceName = `attributeQuery -node $nodeName -niceName $child`;
             button -label $niceName -command ("setAttr " + $fullAttrName + "." + $child + " 1");
+        }
+        else if(endsWith($child, "__node"))
+        {
+            string $niceName = `attributeQuery -node $nodeName -niceName $child`;
+            createInputWidget($fullAttrName + "." + $child, $niceName);
         }
         // simple attributes
         else if($isSimpleAttribute)
@@ -458,13 +503,13 @@ proc string[] getValidAssetInputs(string $objects[])
 
 proc clearInput(string $inputAttr)
 {
-    string $sourceInputPlug = `connectionInfo -sfd ($inputAttr + ".inputNodeId")`;
+    string $sourceInputPlug = `connectionInfo -sfd $inputAttr`;
     if($sourceInputPlug == "")
     {
         return;
     }
 
-    disconnectAttr $sourceInputPlug ($inputAttr + ".inputNodeId");
+    disconnectAttr $sourceInputPlug $inputAttr;
 
     string $sourceInputNode = `plugNode($sourceInputPlug)`;
     if(`nodeType $sourceInputNode` == "houdiniInput")
@@ -585,11 +630,9 @@ proc setInput(string $inputAttr, string $object)
 {
     clearInput($inputAttr);
 
-    string $inputNodeIdAttr = $inputAttr + ".inputNodeId";
+    string $sourceInputAttr = getInputNode($object);
 
-    string $outputNodeIdAttr = getInputNode($object);
-
-    connectAttr $outputNodeIdAttr $inputNodeIdAttr;
+    connectAttr $sourceInputAttr $inputAttr;
 
     string $assetNodeName = plugNode($inputAttr);
     if(`getAttr ($assetNodeName + ".syncWhenInputConnects")`)
@@ -731,37 +774,8 @@ global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
         string $inputAttribute = $inputsAttribute + "[" + $index + "]";
 
         string $inputName = `getAttr ($inputAttribute + ".inputName")`;
-        text -align left -label $inputName;
 
-        string $inputLayout = "input" + ($index + 1) + "Layout";
-        string $inputLayoutFull = $inputsLayoutFull + "|" + $inputLayout;
-        rowLayout
-            -numberOfColumns 2
-            -adjustableColumn 1
-            -columnAlign  1 "right"
-            -columnAttach 1 "both"     2
-            -columnAttach 2 "left"  2
-            $inputLayout;
-
-            string $inputTextFieldFull = ($inputLayoutFull + "|inputTextField");
-            textField
-                -alwaysInvokeEnterCommandOnReturn true
-                -enterCommand ("AEhoudiniAssetSetInputToText \"" + $inputTextFieldFull + "\" \""
-                 + $inputAttribute + "\"")
-                "inputTextField";
-            button
-                -label "Set to Selection"
-                -command ("AEhoudiniAssetSetInputToSelection \"" + $inputAttribute + "\"");
-
-        setParent ..;
-
-        scriptJob
-            -parent $inputLayoutFull
-            -replacePrevious
-            -attributeChange ($inputAttribute + ".inputNodeId")
-            ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
-
-        AEhoudiniAssetUpdateInput $inputLayoutFull $inputAttribute;
+        createInputWidget($inputAttribute + ".inputNodeId", $inputName);
 
         if($i < size($multiIndices) - 1)
         {
@@ -782,7 +796,7 @@ global proc AEhoudiniAssetUpdateInput(string $inputLayout, string $inputAttribut
         {
             string $connectedInputNodeIdAttr = `connectionInfo
                 -sourceFromDestination
-                ($inputAttribute + "inputNodeId")`;
+                $inputAttribute`;
 
             if(size($connectedInputNodeIdAttr))
             {

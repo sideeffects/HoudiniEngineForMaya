@@ -104,6 +104,8 @@ class AssetNode: public MPxTransform
         static MObject outputTemplatedGeometries;
 
         static MObject input;
+        static MObject inputName;
+        static MObject inputNodeId;
 
         static MObject output;
 

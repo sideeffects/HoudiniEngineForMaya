@@ -3,6 +3,8 @@
 
 #include <maya/MPxNode.h>
 
+class Input;
+
 class InputNode : public MPxNode
 {
 public:
@@ -17,13 +19,22 @@ public:
     static MObject inputGeometry;
 
     static MObject outputNodeId;
-    static MObject outputNodePath;
 
 public:
+    InputNode();
+    virtual ~InputNode();
+
     virtual MStatus compute(
             const MPlug &plug,
             MDataBlock &dataBlock
             );
+
+private:
+    void clearInput();
+    bool checkInput(MDataBlock &dataBlock);
+
+private:
+    Input* myInput;
 };
 
 #endif

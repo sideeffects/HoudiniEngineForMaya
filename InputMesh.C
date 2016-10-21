@@ -16,34 +16,30 @@
 #include "types.h"
 #include "util.h"
 
-InputMesh::InputMesh(int nodeId, int inputIdx) :
-    Input(nodeId, inputIdx)
+InputMesh::InputMesh() :
+    Input()
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
 
+    HAPI_NodeId nodeId;
     CHECK_HAPI(HAPI_CreateInputNode(
         Util::theHAPISession.get(),
-        &myInputNodeId,
+        &nodeId,
         NULL
         ));
-
     if(!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
     }
 
-    CHECK_HAPI(HAPI_ConnectNodeInput(
-                Util::theHAPISession.get(),
-                myNodeId, myInputIdx,
-                myInputNodeId
-                ));
+    setGeometryNodeId(nodeId);
 }
 
 InputMesh::~InputMesh()
 {
     CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
-                myInputNodeId
+                geometryNodeId()
                 ));
 }
 
@@ -71,7 +67,7 @@ InputMesh::setInputTransform(MDataHandle &dataHandle)
             );
     HAPI_SetObjectTransform(
             Util::theHAPISession.get(),
-            myInputNodeId,
+            geometryNodeId(),
             &transformEuler
             );
 }
@@ -116,18 +112,18 @@ InputMesh::setInputGeo(
     // Set the data
     HAPI_SetPartInfo(
             Util::theHAPISession.get(),
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             &partInfo
             );
     HAPI_SetFaceCounts(
             Util::theHAPISession.get(),
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             &vertexCount[0],
             0, partInfo.faceCount
             );
     HAPI_SetVertexList(
             Util::theHAPISession.get(),
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             &vertexList[0],
             0, partInfo.vertexCount
             );
@@ -148,13 +144,13 @@ InputMesh::setInputGeo(
 
     Input::setInputPlugMetaData(
             plug,
-            myInputNodeId, 0
+            geometryNodeId(), 0
             );
 
     // Commit it
     HAPI_CommitGeo(
             Util::theHAPISession.get(),
-            myInputNodeId
+            geometryNodeId()
             );
 }
 
@@ -164,7 +160,7 @@ InputMesh::processPoints(
         )
 {
     CHECK_HAPI(hapiSetPointAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             3,
             "P",
             rawArray(
@@ -210,7 +206,7 @@ InputMesh::processNormals(
 
     // add and set it to HAPI
     CHECK_HAPI(hapiSetVertexAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             3,
             "N",
             vertexNormals
@@ -293,13 +289,13 @@ InputMesh::processUVs(
 
         // add and set it to HAPI
         CHECK_HAPI(hapiSetVertexAttribute(
-                myInputNodeId, 0,
+                geometryNodeId(), 0,
                 3,
                 uvAttributeName.asChar(),
                 vertexUVs
                 ));
         CHECK_HAPI(hapiSetVertexAttribute(
-                myInputNodeId, 0,
+                geometryNodeId(), 0,
                 1,
                 uvNumberAttributeName.asChar(),
                 vertexUVNumbers
@@ -307,19 +303,19 @@ InputMesh::processUVs(
     }
 
     CHECK_HAPI(hapiSetDetailAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             "maya_uv_current",
             currentUVSetName
             ));
 
     CHECK_HAPI(hapiSetDetailAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             "maya_uv_name",
             uvSetNames
             ));
 
     CHECK_HAPI(hapiSetDetailAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             "maya_uv_mapped_uv",
             mappedUVAttributeNames
             ));
@@ -397,7 +393,7 @@ InputMesh::processColorSets(
 
             // add and set Cd
             CHECK_HAPI(hapiSetVertexAttribute(
-                    myInputNodeId, 0,
+                    geometryNodeId(), 0,
                     3,
                     colorAttributeName.asChar(),
                     buffer
@@ -420,7 +416,7 @@ InputMesh::processColorSets(
 
             // add and set Alpha
             CHECK_HAPI(hapiSetVertexAttribute(
-                    myInputNodeId, 0,
+                    geometryNodeId(), 0,
                     1,
                     alphaAttributeName.asChar(),
                     buffer
@@ -429,25 +425,25 @@ InputMesh::processColorSets(
     }
 
     CHECK_HAPI(hapiSetDetailAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             "maya_colorset_current",
             currentColorSetName
             ));
 
     CHECK_HAPI(hapiSetDetailAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             "maya_colorset_name",
             colorSetNames
             ));
 
     CHECK_HAPI(hapiSetDetailAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             "maya_colorset_mapped_Cd",
             mappedCdNames
             ));
 
     CHECK_HAPI(hapiSetDetailAttribute(
-            myInputNodeId, 0,
+            geometryNodeId(), 0,
             "maya_colorset_mapped_Alpha",
             mappedAlphaNames
             ));
@@ -564,14 +560,14 @@ InputMesh::processSets(
 
         CHECK_HAPI(HAPI_AddGroup(
                     Util::theHAPISession.get(),
-                    myInputNodeId, 0,
+                    geometryNodeId(), 0,
                     groupType,
                     setName.asChar()
                     ));
 
         CHECK_HAPI(HAPI_SetGroupMembership(
                     Util::theHAPISession.get(),
-                    myInputNodeId, 0,
+                    geometryNodeId(), 0,
                     groupType,
                     setName.asChar(),
                     &groupMembership[0],
@@ -596,7 +592,7 @@ InputMesh::processShadingGroups(
     if(sgCompObjs.length() == 1 && sgCompObjs[0].isNull())
     {
         CHECK_HAPI(hapiSetDetailAttribute(
-                    myInputNodeId, 0,
+                    geometryNodeId(), 0,
                     "maya_shading_group",
                     const_cast<MStringArray&>(sgNames)[0]
                     ));
@@ -628,7 +624,7 @@ InputMesh::processShadingGroups(
         }
 
         CHECK_HAPI(hapiSetPrimAttribute(
-                    myInputNodeId, 0,
+                    geometryNodeId(), 0,
                     1,
                     "maya_shading_group",
                     sgNamePerComp

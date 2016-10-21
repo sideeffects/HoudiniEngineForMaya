@@ -39,6 +39,8 @@ MObject AssetNode::outputHiddenObjects;
 MObject AssetNode::outputTemplatedGeometries;
 
 MObject AssetNode::input;
+MObject AssetNode::inputName;
+MObject AssetNode::inputNodeId;
 
 MObject AssetNode::output;
 MObject AssetNode::outputObjects;
@@ -297,7 +299,28 @@ AssetNode::initialize()
             );
 
     // input
-    AssetNode::input = Inputs::createInputAttribute();
+    AssetNode::inputName = tAttr.create(
+            "inputName", "inputName",
+            MFnData::kString);
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
+    AssetNode::inputNodeId = nAttr.create(
+            "inputNodeId", "inputNodeId",
+            MFnNumericData::kInt,
+            -1
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(false);
+    nAttr.setDisconnectBehavior(MFnAttribute::kReset);
+
+    AssetNode::input = cAttr.create(
+            "input", "input"
+            );
+    cAttr.addChild(AssetNode::inputName);
+    cAttr.addChild(AssetNode::inputNodeId);
+    cAttr.setArray(true);
+    cAttr.setUsesArrayDataBuilder(true);
 
     //----------------------------------  instancer compound multi----------------------------------------------
     // instancer data
@@ -1532,7 +1555,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         {
             myNeedToMarshalInput = false;
 
-            myAsset->setInputs(plug, data);
+            MPlug inputPlug(thisMObject(), AssetNode::input);
+            myAsset->setInputs(inputPlug, data);
         }
 
         MFnDagNode assetNodeFn(thisMObject());

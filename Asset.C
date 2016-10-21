@@ -870,16 +870,38 @@ Asset::setInputs(const MPlug& plug, MDataBlock& data)
 
     MStatus status;
 
-    MPlug inputsPlug(myNode, AssetNode::input);
-
     myAssetInputs->compute(data);
 
     for(int i=0; i< myNodeInfo.inputCount; i++)
     {
-        MPlug inputPlug = inputsPlug.elementByLogicalIndex(i, &status);
-        CHECK_MSTATUS(status);
+        MPlug elementPlug = plug.elementByLogicalIndex(i);
+        MPlug inputNodeIdPlug = elementPlug.child(AssetNode::inputNodeId);
 
-        myAssetInputs->setInput(i, data, inputPlug);
+        MDataHandle inputNodeIdHandle = data.inputValue(inputNodeIdPlug);
+
+        HAPI_NodeId inputNodeId = -1;
+
+        // only use inputNodeId if it's coming from a connection
+        MPlugArray srcPlugs;
+        if(inputNodeIdPlug.connectedTo(srcPlugs, true, false))
+        {
+            inputNodeId = inputNodeIdHandle.asInt();
+        }
+
+        if(inputNodeId < 0)
+        {
+            HAPI_DisconnectNodeInput(
+                    Util::theHAPISession.get(),
+                    myNodeInfo.id, i
+                    );
+            continue;
+        }
+
+        CHECK_HAPI(HAPI_ConnectNodeInput(
+            Util::theHAPISession.get(),
+            myNodeInfo.id, i,
+            inputNodeId
+            ));
     }
 }
 

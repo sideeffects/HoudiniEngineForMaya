@@ -8,7 +8,7 @@
 class InputCurve : public Input
 {
     public:
-        InputCurve(int nodeId, int inputIdx);
+        InputCurve();
         virtual ~InputCurve();
 
         virtual AssetInputType assetInputType() const;
@@ -20,7 +20,6 @@ class InputCurve : public Input
                 );
 
     protected:
-        HAPI_AssetInfo myCurveAssetInfo;
         HAPI_NodeInfo myCurveNodeInfo;
 };
 

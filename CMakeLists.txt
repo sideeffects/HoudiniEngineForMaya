@@ -18,7 +18,6 @@ set(
     Asset.C
     InputNode.C
     Input.C
-    InputAsset.C
     InputMesh.C
     InputCurve.C
     InputParticle.C

@@ -11,48 +11,39 @@
 
 #include "util.h"
 
-InputCurve::InputCurve(int nodeId, int inputIdx) :
-    Input(nodeId, inputIdx)
+InputCurve::InputCurve() :
+    Input()
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
 
-    int curveNodeId;
+    HAPI_NodeId nodeId;
     CHECK_HAPI(HAPI_CreateNode(
                 Util::theHAPISession.get(),
                 -1,
                 "Sop/curve",
                 NULL,
                 false,
-                &curveNodeId
+                &nodeId
                 ));
     if(!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input curve."));
     }
 
-    HAPI_GetAssetInfo(
-            Util::theHAPISession.get(),
-            curveNodeId,
-            &myCurveAssetInfo
-            );
+    setGeometryNodeId(nodeId);
+
     HAPI_GetNodeInfo(
             Util::theHAPISession.get(),
-            myCurveAssetInfo.nodeId,
+            geometryNodeId(),
             &myCurveNodeInfo
             );
 }
 
 InputCurve::~InputCurve()
 {
-    HAPI_DisconnectNodeInput(
-            Util::theHAPISession.get(),
-            myNodeId,
-            myInputIdx
-            );
-
     HAPI_DeleteNode(
             Util::theHAPISession.get(),
-            myCurveAssetInfo.nodeId
+            geometryNodeId()
             );
 }
 
@@ -80,7 +71,7 @@ InputCurve::setInputTransform(MDataHandle &dataHandle)
             );
     HAPI_SetObjectTransform(
             Util::theHAPISession.get(),
-            myCurveAssetInfo.nodeId,
+            geometryNodeId(),
             &transformEuler
             );
 }
@@ -91,12 +82,6 @@ InputCurve::setInputGeo(
         const MPlug &plug
         )
 {
-    HAPI_ConnectNodeInput(
-            Util::theHAPISession.get(),
-            myNodeId, myInputIdx,
-            myCurveAssetInfo.nodeId
-            );
-
     MDataHandle dataHandle = dataBlock.inputValue(plug);
 
     MObject curveObj = dataHandle.asNurbsCurve();

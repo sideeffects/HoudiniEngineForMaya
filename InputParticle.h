@@ -8,7 +8,7 @@
 class InputParticle : public Input
 {
     public:
-        InputParticle(int nodeId, int inputIdx);
+        InputParticle();
         virtual ~InputParticle();
 
         virtual AssetInputType assetInputType() const;
@@ -27,9 +27,6 @@ class InputParticle : public Input
                 int tupleSize,
                 void* data
                 );
-
-    protected:
-        HAPI_NodeId myInputNodeId;
 };
 
 #endif

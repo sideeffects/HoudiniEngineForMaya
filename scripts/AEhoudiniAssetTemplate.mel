@@ -458,36 +458,59 @@ proc string[] getValidAssetInputs(string $objects[])
 
 proc clearInput(string $inputAttr)
 {
-    string $inputTransformAttr = $inputAttr + ".inputTransform";
-    string $inputGeoAttr = $inputAttr + ".inputGeo";
-
-    // remove input if cleared
-    string $inPlug = `connectionInfo -sfd $inputGeoAttr`;
-    string $inTransformPlug = `connectionInfo -sfd $inputTransformAttr`;
-    if($inPlug != "")
+    string $sourceInputPlug = `connectionInfo -sfd ($inputAttr + ".inputNodeId")`;
+    if($sourceInputPlug == "")
     {
-        disconnectAttr $inPlug $inputGeoAttr;
-        disconnectAttr $inTransformPlug $inputTransformAttr;
-        //string $inMesh = plugNode($inPlug);
-        //showHidden $inMesh;
+        return;
+    }
+
+    disconnectAttr $sourceInputPlug ($inputAttr + ".inputNodeId");
+
+    string $sourceInputNode = `plugNode($sourceInputPlug)`;
+    if(`nodeType $sourceInputNode` == "houdiniInput")
+    {
+        // if houdiniInput node is no longer outputting to anything anymore,
+        // delete it
+        string $sourceOutputPlugs[] = `connectionInfo -dfs $sourceInputPlug`;
+        if(!size($sourceOutputPlugs))
+        {
+            delete $sourceInputNode;
+        }
     }
 }
 
-proc setInput(string $inputAttr, string $object)
+proc string createInputNode(string $transformAttr, string $geometryAttr)
 {
-    string $nodeName = plugNode($inputAttr);
+    // if a houdiniInput already exists, reuse it
+    {
+        string $connections[] =
+            `listConnections -type houdiniInput -destination true $geometryAttr`;
+        if(size($connections))
+        {
+            return (plugNode($connections[0]) + ".outputNodeId");
+        }
+    }
 
-    string $inputTransformAttr = $inputAttr + ".inputTransform";
-    string $inputGeoAttr = $inputAttr + ".inputGeo";
+    string $inputNode = `createNode -skipSelect houdiniInput`;
+
+    connectAttr $transformAttr ($inputNode + ".inputTransform");
+    connectAttr $geometryAttr ($inputNode + ".inputGeometry");
+
+    return ($inputNode + ".outputNodeId");
+}
+
+proc string getInputNode(string $object)
+{
+    string $transformAttr;
+    {
+        string $parents[] = `listRelatives -fullPath -parent $object`;
+        $transformAttr = $parents[0] + ".worldMatrix";
+    }
 
     if(`objectType -isAType "houdiniAsset" $object`)
     {
         // if we just got the houdiniAsset, just assume the first output
-        connectAttr -force
-            ($object + ".output.outputObjects[0].outputObjectMetaData")
-            $inputGeoAttr;
-                
-        connectAttr -force ($object + ".worldMatrix") $inputTransformAttr;
+        return ($object + ".output.outputObjects[0].outputObjectMetaData");
     }
     else if(`objectType -isAType "mesh" $object`)
     {
@@ -503,42 +526,26 @@ proc setInput(string $inputAttr, string $object)
             // not a node.
             string $obj = plugNode(plugAttr($histPlug));
 
-            connectAttr -force
-                ($histNode + "." + $obj + ".outputObjectMetaData")
-                $inputGeoAttr;
-
-            connectAttr -force ($histNode + ".worldMatrix") $inputTransformAttr;
+            return ($histNode + "." + $obj + ".outputObjectMetaData");
         }
         else
         {
-            connectAttr -force ($object + ".outMesh") $inputGeoAttr;
-            string $parent[] = `listRelatives -fullPath -parent $object`;
-            if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
-            {
-                string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
-                connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
-            }
+            string $geometryAttr = $object + ".outMesh";
+
+            return createInputNode($transformAttr, $geometryAttr);
         }
     }
     else if(`objectType -isAType "nurbsCurve" $object`)
     {
-        connectAttr -force ($object + ".local") $inputGeoAttr;
-        string $parent[] = `listRelatives -fullPath -parent $object`;
-        if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
-        {
-            string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
-            connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
-        }
+        string $geometryAttr = $object + ".local";
+
+        return createInputNode($transformAttr, $geometryAttr);
     }
     else if(`objectType -isAType "particle" $object`)
     {
-        connectAttr -force ($object + ".position") $inputGeoAttr;
-        string $parent[] = `listRelatives -fullPath -parent $object`;
-        if(size($parent) > 0 && `nodeType $parent[0]` == "transform")
-        {
-            string $parentWorldMatrixPlug = $parent[0] + ".worldMatrix";
-            connectAttr -force $parentWorldMatrixPlug $inputTransformAttr;
-        }
+        string $geometryAttr = $object + ".position";
+
+        return createInputNode($transformAttr, $geometryAttr);
     }
     else if(`objectType -isAType "hairSystem" $object`)
     {
@@ -566,19 +573,28 @@ proc setInput(string $inputAttr, string $object)
             $iInput += 1;
         }        
 
-        connectAttr -force
-            ($inputNode + ".outputObjectMetaData")
-            $inputGeoAttr;
-
+        return $inputNode + ".outputObjectMetaData";
     }
     else
     {
         error("Cannot handle object:" + $object + "\n");
     }
+}
 
-    if(`getAttr ($nodeName + ".syncWhenInputConnects")`)
+proc setInput(string $inputAttr, string $object)
+{
+    clearInput($inputAttr);
+
+    string $inputNodeIdAttr = $inputAttr + ".inputNodeId";
+
+    string $outputNodeIdAttr = getInputNode($object);
+
+    connectAttr $outputNodeIdAttr $inputNodeIdAttr;
+
+    string $assetNodeName = plugNode($inputAttr);
+    if(`getAttr ($assetNodeName + ".syncWhenInputConnects")`)
     {
-        houdiniEngine_syncAssetOutput $nodeName;
+        houdiniEngine_syncAssetOutput $assetNodeName;
     }
 }
 
@@ -742,13 +758,7 @@ global proc AEhoudiniAssetInputsReplace(string $inputsAttribute)
         scriptJob
             -parent $inputLayoutFull
             -replacePrevious
-            -attributeChange ($inputAttribute + ".inputGeo")
-            ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
-
-        scriptJob
-            -parent $inputLayoutFull
-            -replacePrevious
-            -attributeChange ($inputAttribute + ".inputTransform")
+            -attributeChange ($inputAttribute + ".inputNodeId")
             ("AEhoudiniAssetUpdateInput \"" + $inputLayoutFull + "\" \"" + $inputAttribute + "\"");
 
         AEhoudiniAssetUpdateInput $inputLayoutFull $inputAttribute;
@@ -766,10 +776,40 @@ global proc AEhoudiniAssetUpdateInput(string $inputLayout, string $inputAttribut
 {
     string $inputTextField = $inputLayout + "|inputTextField";
 
-    // set the appropriate text
-    string $connectedMeshAttr = `connectionInfo -sourceFromDestination ($inputAttribute + ".inputGeo")`;
-    string $connectedMesh = plugNode($connectedMeshAttr);
-    textField -edit -text $connectedMesh $inputTextField;
+    string $connectedGeometryNode;
+    {
+        string $connectedInputNode;
+        {
+            string $connectedInputNodeIdAttr = `connectionInfo
+                -sourceFromDestination
+                ($inputAttribute + "inputNodeId")`;
+
+            if(size($connectedInputNodeIdAttr))
+            {
+                $connectedInputNode = plugNode($connectedInputNodeIdAttr);
+            }
+        }
+
+        if(size($connectedInputNode)
+                && `nodeType $connectedInputNode` == "houdiniInput")
+        {
+            string $connectedGeometryNodeAttr = `connectionInfo
+                -sourceFromDestination
+                ($connectedInputNode  + ".inputGeometry")`;
+
+            if(size($connectedGeometryNodeAttr))
+            {
+                $connectedGeometryNode = plugNode($connectedGeometryNodeAttr);
+            }
+        }
+        else if(size($connectedInputNode)
+                && `nodeType $connectedInputNode` == "houdiniAsset")
+        {
+            $connectedGeometryNode = $connectedInputNode;
+        }
+    }
+
+    textField -edit -text $connectedGeometryNode $inputTextField;
 }
 
 global proc AEhoudiniAssetParmNew(string $houdiniAssetParmAttribute)

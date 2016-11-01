@@ -256,7 +256,8 @@ houdiniEngine_clearAssetInput(string $inputAttr)
     string $sourceInputNode = `plugNode($sourceInputPlug)`;
     if(`nodeType $sourceInputNode` == "houdiniInputGeometry"
         || `nodeType $sourceInputNode` == "houdiniInputCurve"
-        || `nodeType $sourceInputNode` == "houdiniInputLocator")
+        || `nodeType $sourceInputNode` == "houdiniInputLocator"
+        || `nodeType $sourceInputNode` == "houdiniInputMerge")
     {
         // if houdiniInputGeometry node is no longer outputting to anything anymore,
         // delete it
@@ -284,49 +285,61 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
         return 0;
     }
 
-    if($validObjectsCount > 1)
-    {
-        print("Error: Specified objects contains multiple supported objects. Please select exactly one object to be used for input.");
-        return 0;
-    }
-
     if($validObjectsCount == 0)
     {
         houdiniEngine_clearAssetInput($inputAttr);
         return 1;
     }
 
-    string $sourceInputAttr;
-    for($i = 0; !size($sourceInputAttr) && $i < size($validObjects); $i++)
+    string $sourceInputAttr[];
+    for($i = 0; $i < size($validObjects); $i++)
     {
         string $validObject = $validObjects[$i];
-        $sourceInputAttr = getInputNodeForSingle($validObject);
+        $sourceInputAttr[size($sourceInputAttr)] =
+            getInputNodeForSingle($validObject);
     }
 
-    for($i = 0; !size($sourceInputAttr) && $i < size($multiObjects); $i++)
+    for($i = 0; $i < size($multiObjects); $i++)
     {
         string $multiObject = $multiObjects[$i];
 
         if(!size($multiObject))
             continue;
 
-        $sourceInputAttr = getInputNodeForMultiple($i,
-                stringToStringArray($multiObject, " "));
+        $sourceInputAttr[size($sourceInputAttr)] =
+            getInputNodeForMultiple($i,
+                    stringToStringArray($multiObject, " "));
     }
 
+    string $finalInputAttr;
     if(!size($sourceInputAttr))
     {
         return 0;
     }
+    else if(size($sourceInputAttr) == 1)
+    {
+        $finalInputAttr = $sourceInputAttr[0];
+    }
+    else
+    {
+        string $mergeNode = `createNode -skipSelect houdiniInputMerge`;
 
-    if(`isConnected $sourceInputAttr $inputAttr`)
+        for($i = 0; $i < size($sourceInputAttr); $i++)
+        {
+            connectAttr $sourceInputAttr[$i] ($mergeNode + ".inputNode[" + $i + "]");
+        }
+
+        $finalInputAttr = $mergeNode + ".outputNodeId";
+    }
+
+    if(`isConnected $finalInputAttr $inputAttr`)
     {
         return 1;
     }
 
     houdiniEngine_clearAssetInput($inputAttr);
 
-    connectAttr $sourceInputAttr $inputAttr;
+    connectAttr $finalInputAttr $inputAttr;
 
     string $assetNodeName = plugNode($inputAttr);
     if(`getAttr ($assetNodeName + ".syncWhenInputConnects")`)
@@ -342,7 +355,7 @@ houdiniEngine_getAssetInput(string $inputAttr)
 {
     string $inputGeometryNodes[];
 
-    string $inputNode;
+    string $inputNodes[];
     {
         string $connectedInputNodeIdAttr = `connectionInfo
             -sourceFromDestination
@@ -353,45 +366,66 @@ houdiniEngine_getAssetInput(string $inputAttr)
             return $inputGeometryNodes;
         }
 
-        $inputNode = plugNode($connectedInputNodeIdAttr);
+        $inputNodes[size($inputNodes)] = plugNode($connectedInputNodeIdAttr);
     }
 
-    if(`nodeType $inputNode` == "houdiniInputGeometry")
+    int $end = size($inputNodes);
+    while($end)
     {
-        string $connectedGeometryNodeAttr = `connectionInfo
-            -sourceFromDestination
-            ($inputNode  + ".inputGeometry")`;
+        string $inputNode = $inputNodes[$end - 1];
+        $end--;
 
-        if(size($connectedGeometryNodeAttr))
+        if(`nodeType $inputNode` == "houdiniInputGeometry")
         {
-            $inputGeometryNodes[0] = plugNode($connectedGeometryNodeAttr);
-        }
-    }
-    else if(`nodeType $inputNode` == "houdiniInputCurve")
-    {
-        string $plugs[] = `listConnections
-            -plugs true -destination true
-            ($inputNode + ".inputCurve")`;
+            string $connectedGeometryNodeAttr = `connectionInfo
+                -sourceFromDestination
+                ($inputNode  + ".inputGeometry")`;
 
-        for($plug in $plugs)
-        {
-            $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($plug);
+            if(size($connectedGeometryNodeAttr))
+            {
+                $inputGeometryNodes[0] = plugNode($connectedGeometryNodeAttr);
+            }
         }
-    }
-    else if(`nodeType $inputNode` == "houdiniInputLocator")
-    {
-        string $plugs[] = `listConnections
-            -plugs true -destination true
-            ($inputNode + ".inputMatrix")`;
+        else if(`nodeType $inputNode` == "houdiniInputCurve")
+        {
+            string $plugs[] = `listConnections
+                -plugs true -destination true
+                ($inputNode + ".inputCurve")`;
 
-        for($plug in $plugs)
-        {
-            $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($plug);
+            for($plug in $plugs)
+            {
+                $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($plug);
+            }
         }
-    }
-    else if(`nodeType $inputNode` == "houdiniAsset")
-    {
-        $inputGeometryNodes[0] = $inputNode;
+        else if(`nodeType $inputNode` == "houdiniInputLocator")
+        {
+            string $plugs[] = `listConnections
+                -plugs true -destination true
+                ($inputNode + ".inputMatrix")`;
+
+            for($plug in $plugs)
+            {
+                $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($plug);
+            }
+        }
+        else if(`nodeType $inputNode` == "houdiniInputMerge")
+        {
+            string $plugs[] = `listConnections
+                -plugs true -destination true
+                ($inputNode + ".inputNode")`;
+
+            string $connectedNodes[];
+            for($plug in $plugs)
+            {
+                $connectedNodes[size($connectedNodes)] = plugNode($plug);
+            }
+
+            $end = stringArrayReverseAppend($inputNodes, $end, $connectedNodes);
+        }
+        else if(`nodeType $inputNode` == "houdiniAsset")
+        {
+            $inputGeometryNodes[0] = $inputNode;
+        }
     }
 
     return $inputGeometryNodes;

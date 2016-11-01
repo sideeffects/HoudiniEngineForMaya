@@ -12,6 +12,7 @@
 #include "FluidGridConvert.h"
 #include "InputGeometryNode.h"
 #include "InputLocatorNode.h"
+#include "InputMergeNode.h"
 #include "util.h"
 
 #include <HAPI_Version.h>
@@ -559,6 +560,14 @@ initializePlugin(MObject obj)
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    status = plugin.registerNode(
+            InputMergeNode::typeName,
+            InputMergeNode::typeId,
+            InputMergeNode::creator,
+            InputMergeNode::initialize
+            );
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
             FluidGridConvert::typeName,
@@ -607,6 +616,9 @@ uninitializePlugin(MObject obj)
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.deregisterNode(InputLocatorNode::typeId);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    status = plugin.deregisterNode(InputMergeNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
 #if MAYA_API_VERSION >= 201400

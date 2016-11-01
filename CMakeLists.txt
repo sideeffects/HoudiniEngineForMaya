@@ -22,6 +22,7 @@ set(
     InputCurve.C
     InputParticle.C
     InputLocatorNode.C
+    InputMergeNode.C
     OutputObject.C
     util.C
     OutputGeometryObject.C

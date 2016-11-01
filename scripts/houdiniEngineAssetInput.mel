@@ -22,6 +22,7 @@ validateInputObjects(string $objects[],
     int $validObjectsCount = 0;
 
     string $curveObjects[];
+    string $locatorObjects[];
 
     while($objectsToProcessEnd)
     {
@@ -42,6 +43,10 @@ validateInputObjects(string $objects[],
         else if(`objectType -isAType "nurbsCurve" $object`)
         {
             $curveObjects[size($curveObjects)] = $object;
+        }
+        else if(`objectType -isAType "locator" $object`)
+        {
+            $locatorObjects[size($locatorObjects)] = $object;
         }
         else if(`objectType -isAType "mesh" $object`
                 || `objectType -isAType "particle" $object`
@@ -70,6 +75,13 @@ validateInputObjects(string $objects[],
     {
         $curveObjects = stringArrayRemoveDuplicates($curveObjects);
         $multiObjects[0] = stringArrayToString($curveObjects, " ");
+        $validObjectsCount++;
+    }
+
+    if(size($locatorObjects))
+    {
+        $locatorObjects = stringArrayRemoveDuplicates($locatorObjects);
+        $multiObjects[1] = stringArrayToString($locatorObjects, " ");
         $validObjectsCount++;
     }
 
@@ -243,7 +255,8 @@ houdiniEngine_clearAssetInput(string $inputAttr)
 
     string $sourceInputNode = `plugNode($sourceInputPlug)`;
     if(`nodeType $sourceInputNode` == "houdiniInputGeometry"
-        || `nodeType $sourceInputNode` == "houdiniInputCurve")
+        || `nodeType $sourceInputNode` == "houdiniInputCurve"
+        || `nodeType $sourceInputNode` == "houdiniInputLocator")
     {
         // if houdiniInputGeometry node is no longer outputting to anything anymore,
         // delete it
@@ -359,6 +372,17 @@ houdiniEngine_getAssetInput(string $inputAttr)
         string $plugs[] = `listConnections
             -plugs true -destination true
             ($inputNode + ".inputCurve")`;
+
+        for($plug in $plugs)
+        {
+            $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($plug);
+        }
+    }
+    else if(`nodeType $inputNode` == "houdiniInputLocator")
+    {
+        string $plugs[] = `listConnections
+            -plugs true -destination true
+            ($inputNode + ".inputMatrix")`;
 
         for($plug in $plugs)
         {

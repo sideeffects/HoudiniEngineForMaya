@@ -38,6 +38,7 @@ enum MayaTypeID
     MayaTypeID_HoudiniFluidGridConvert = 0x0011E241,
     MayaTypeID_HoudiniInputGeometryNode = 0x0011E242,
     MayaTypeID_HoudiniInputCurveNode = 0x0011E243,
+    MayaTypeID_HoudiniInputLocatorNode = 0x0011E244
 };
 
 #endif

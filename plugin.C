@@ -11,6 +11,7 @@
 #include "InputCurveNode.h"
 #include "FluidGridConvert.h"
 #include "InputGeometryNode.h"
+#include "InputLocatorNode.h"
 #include "util.h"
 
 #include <HAPI_Version.h>
@@ -550,6 +551,14 @@ initializePlugin(MObject obj)
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    status = plugin.registerNode(
+            InputLocatorNode::typeName,
+            InputLocatorNode::typeId,
+            InputLocatorNode::creator,
+            InputLocatorNode::initialize
+            );
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
             FluidGridConvert::typeName,
@@ -595,6 +604,9 @@ uninitializePlugin(MObject obj)
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.deregisterNode(InputCurveNode::typeId);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    status = plugin.deregisterNode(InputLocatorNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
 #if MAYA_API_VERSION >= 201400

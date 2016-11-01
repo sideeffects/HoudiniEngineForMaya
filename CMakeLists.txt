@@ -21,6 +21,7 @@ set(
     InputMesh.C
     InputCurve.C
     InputParticle.C
+    InputLocatorNode.C
     OutputObject.C
     util.C
     OutputGeometryObject.C

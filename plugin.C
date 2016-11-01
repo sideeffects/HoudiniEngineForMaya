@@ -591,6 +591,12 @@ uninitializePlugin(MObject obj)
     status = plugin.deregisterNode(AssetNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    status = plugin.deregisterNode(InputGeometryNode::typeId);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    status = plugin.deregisterNode(CurveMeshInputNode::typeId);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
 #if MAYA_API_VERSION >= 201400
     status = plugin.deregisterNode(FluidGridConvert::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);

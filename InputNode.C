@@ -3,7 +3,6 @@
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnNumericAttribute.h>
-#include <maya/MFnTypedAttribute.h>
 
 #include "MayaTypeID.h"
 #include "Input.h"
@@ -27,7 +26,6 @@ InputNode::initialize()
     MFnGenericAttribute gAttr;
     MFnMatrixAttribute mAttr;
     MFnNumericAttribute nAttr;
-    MFnTypedAttribute tAttr;
 
     InputNode::inputTransform = mAttr.create(
             "inputTransform", "inputTransform"

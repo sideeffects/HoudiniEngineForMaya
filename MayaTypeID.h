@@ -36,8 +36,8 @@ enum MayaTypeID
 {
     MayaTypeID_HoudiniAssetNode = 0x0011E240,
     MayaTypeID_HoudiniFluidGridConvert = 0x0011E241,
-    MayaTypeID_HoudiniCurveMeshInput = 0x0011E242,
-    MayaTypeID_HoudiniInputGeometryNode = 0x0011E243
+    MayaTypeID_HoudiniInputGeometryNode = 0x0011E242,
+    MayaTypeID_HoudiniInputCurveNode = 0x0011E243,
 };
 
 #endif

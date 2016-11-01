@@ -8,7 +8,7 @@
 #include "EngineCommand.h"
 #include "AssetCommand.h"
 #include "AssetNode.h"
-#include "CurveMeshInputNode.h"
+#include "InputCurveNode.h"
 #include "FluidGridConvert.h"
 #include "InputGeometryNode.h"
 #include "util.h"
@@ -543,10 +543,10 @@ initializePlugin(MObject obj)
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerNode(
-            CurveMeshInputNode::typeName,
-            CurveMeshInputNode::typeId,
-            CurveMeshInputNode::creator,
-            CurveMeshInputNode::initialize
+            InputCurveNode::typeName,
+            InputCurveNode::typeId,
+            InputCurveNode::creator,
+            InputCurveNode::initialize
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -594,7 +594,7 @@ uninitializePlugin(MObject obj)
     status = plugin.deregisterNode(InputGeometryNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = plugin.deregisterNode(CurveMeshInputNode::typeId);
+    status = plugin.deregisterNode(InputCurveNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
 #if MAYA_API_VERSION >= 201400

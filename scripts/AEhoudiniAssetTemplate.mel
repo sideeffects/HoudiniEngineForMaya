@@ -443,7 +443,7 @@ proc int isSupportedInput(string $object)
     string $supportedTypes[] = {
         "hairSystem",
         "houdiniAsset",
-        "houdiniCurveMeshInput",
+        "houdiniInputCurve",
         "mesh",
         "nurbsCurve",
         "particle"
@@ -597,7 +597,7 @@ proc string getInputNode(string $object)
         string $path[];
         int $pathLen = `tokenize $object "|" $path`;
         string $inputNode = $path[$pathLen - 1] + "_HoudiniInput";
-        $inputNode = `createNode "houdiniCurveMeshInput" -name $inputNode`;
+        $inputNode = `createNode "houdiniInputCurve" -name $inputNode`;
         
         string $outputHairs[] = `listAttr -multi ($object + ".outputHair")`;
         
@@ -610,7 +610,7 @@ proc string getInputNode(string $object)
             for ($follicleShape in $follicleShapes)
             {
                 string $inputPlug =
-                    `format -s $inputNode -s $iInput "^1s.inputCurves[^2s]"`;
+                    `format -s $inputNode -s $iInput "^1s.inputCurve[^2s]"`;
                      
                 connectAttr ($follicleShape + ".outCurve") $inputPlug;                
             }
@@ -618,7 +618,7 @@ proc string getInputNode(string $object)
             $iInput += 1;
         }        
 
-        return $inputNode + ".outputObjectMetaData";
+        return $inputNode + ".outputNodeId";
     }
     else
     {

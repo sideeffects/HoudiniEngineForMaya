@@ -1,5 +1,5 @@
-#ifndef __CurveMeshInputNode_h__
-#define __CurveMeshInputNode_h__
+#ifndef __InputCurveNode_h__
+#define __InputCurveNode_h__
 
 #include <maya/MPxNode.h>
 #include <maya/MTypeId.h>
@@ -9,11 +9,11 @@ class MPlugArray;
 
 #include <vector>
 
-class CurveMeshInputNode: public MPxNode
+class InputCurveNode: public MPxNode
 {
     public:
-        CurveMeshInputNode();
-        virtual ~CurveMeshInputNode();
+        InputCurveNode();
+        virtual ~InputCurveNode();
 
         virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 
@@ -26,8 +26,8 @@ class CurveMeshInputNode: public MPxNode
     private:
         HAPI_NodeId myNodeId;
 
-        static MObject theInputCurves;
-        static MObject theOutputObjectMetaData;
+        static MObject inputCurve;
+        static MObject outputNodeId;
 };
 
 #endif

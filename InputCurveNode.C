@@ -4,58 +4,57 @@
 #include <maya/MPointArray.h>
 #include <maya/MFnNurbsCurve.h>
 
-#include "CurveMeshInputNode.h"
+#include "InputCurveNode.h"
 #include "MayaTypeID.h"
 #include "util.h"
 
 #include <cassert>
 
-MString CurveMeshInputNode::typeName = "houdiniCurveMeshInput";
+MString InputCurveNode::typeName = "houdiniInputCurve";
 
-MTypeId CurveMeshInputNode::typeId = MayaTypeID_HoudiniCurveMeshInput;
+MTypeId InputCurveNode::typeId = MayaTypeID_HoudiniInputCurveNode;
 
-MObject
-    CurveMeshInputNode::theInputCurves,
-    CurveMeshInputNode::theOutputObjectMetaData;
+MObject InputCurveNode::inputCurve;
+MObject InputCurveNode::outputNodeId;
 
 void*
-CurveMeshInputNode::creator()
+InputCurveNode::creator()
 {
-    CurveMeshInputNode* ret = new CurveMeshInputNode();
+    InputCurveNode* ret = new InputCurveNode();
     return ret;
 }
 
 MStatus
-CurveMeshInputNode::initialize()
+InputCurveNode::initialize()
 {
     MFnNumericAttribute nAttr;
     MFnTypedAttribute tAttr;
-    theInputCurves = tAttr.create( "inputCurves", "incs",
+    InputCurveNode::inputCurve = tAttr.create( "inputCurve", "inputCurve",
                                     MFnData::kNurbsCurve );
     tAttr.setArray(true);
 
-    addAttribute(theInputCurves);
+    addAttribute(InputCurveNode::inputCurve);
 
-    theOutputObjectMetaData  = nAttr.create(
-            "outputObjectMetaData", "outputObjectMetaData",
+    InputCurveNode::outputNodeId  = nAttr.create(
+            "outputNodeId", "outputNodeId",
             MFnNumericData::kInt
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
-    addAttribute(theOutputObjectMetaData);
+    addAttribute(InputCurveNode::outputNodeId);
 
-    attributeAffects(theInputCurves, theOutputObjectMetaData);
+    attributeAffects(InputCurveNode::inputCurve, InputCurveNode::outputNodeId);
 
     return MS::kSuccess;
 }
 
-CurveMeshInputNode::CurveMeshInputNode()
+InputCurveNode::InputCurveNode()
     : myNodeId(-1)
 {
 }
 
-CurveMeshInputNode::~CurveMeshInputNode()
+InputCurveNode::~InputCurveNode()
 {
     if ( myNodeId > 0 )
     {
@@ -67,11 +66,11 @@ CurveMeshInputNode::~CurveMeshInputNode()
 }
 
 MStatus
-CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
+InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
 {
     MStatus status;
 
-    if ( plug != theOutputObjectMetaData )
+    if ( plug != InputCurveNode::outputNodeId )
     {
         return MPxNode::compute(plug, data);
     }
@@ -94,14 +93,14 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         }
 
         // Meta data
-        MDataHandle metaDataHandle = data.outputValue(theOutputObjectMetaData);
+        MDataHandle metaDataHandle = data.outputValue(InputCurveNode::outputNodeId);
         metaDataHandle.setInt(myNodeId);
     }
 
-    MArrayDataHandle inputCurves(data.inputArrayValue(theInputCurves, &status));
+    MArrayDataHandle inputCurveArrayHandle(data.inputArrayValue(InputCurveNode::inputCurve, &status));
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    const int nInputCurves = inputCurves.elementCount();
+    const int nInputCurves = inputCurveArrayHandle.elementCount();
     if ( nInputCurves <= 0 )
     {
         data.setClean(plug);
@@ -119,7 +118,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
     for ( int iCurve = 0; iCurve < nInputCurves; ++iCurve )
     {
-        MDataHandle curveHandle = inputCurves.inputValue();
+        MDataHandle curveHandle = inputCurveArrayHandle.inputValue();
         MObject curveObject = curveHandle.asNurbsCurve();
         MFnNurbsCurve fnCurve( curveObject );
 
@@ -212,7 +211,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
 
         ++curveInfo.curveCount;
 
-        if ( !inputCurves.next() )
+        if ( !inputCurveArrayHandle.next() )
         {
             break;
         }

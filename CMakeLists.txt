@@ -33,7 +33,7 @@ set(
     SyncOutputInstance.C
     FluidGridConvert.C
     plugin.C
-    CurveMeshInputNode.C
+    InputCurveNode.C
     )
 
 ########################################

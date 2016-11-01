@@ -32,7 +32,7 @@ InputCurve::InputCurve() :
 
     HAPI_GetNodeInfo(
             Util::theHAPISession.get(),
-            geometryNodeId(),
+            nodeId,
             &myCurveNodeInfo
             );
 

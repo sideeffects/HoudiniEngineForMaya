@@ -12,6 +12,7 @@ stringArrayReverseAppend(string $to[], int $end, string $from[])
 proc int
 validateInputObjects(string $objects[],
         string $validObjects[],
+        string $multiObjects[],
         string $invalidObjects[])
 {
     string $objectsToProcess[];
@@ -19,6 +20,8 @@ validateInputObjects(string $objects[],
             $objectsToProcess, 0, $objects);
 
     int $validObjectsCount = 0;
+
+    string $curveObjects[];
 
     while($objectsToProcessEnd)
     {
@@ -36,10 +39,13 @@ validateInputObjects(string $objects[],
             $validObjects[size($validObjects)] = $object;
             $validObjectsCount++;
         }
+        else if(`objectType -isAType "nurbsCurve" $object`)
+        {
+            $curveObjects[size($curveObjects)] = $object;
+        }
         else if(`objectType -isAType "mesh" $object`
                 || `objectType -isAType "particle" $object`
                 || `objectType -isAType "hairSystem" $object`
-                || `objectType -isAType "nurbsCurve" $object`
                )
         {
             $validObjects[size($validObjects)] = $object;
@@ -59,6 +65,13 @@ validateInputObjects(string $objects[],
     }
 
     $validObjects = stringArrayRemoveDuplicates($validObjects);
+
+    if(size($curveObjects))
+    {
+        $curveObjects = stringArrayRemoveDuplicates($curveObjects);
+        $multiObjects[0] = stringArrayToString($curveObjects, " ");
+        $validObjectsCount++;
+    }
 
     return $validObjectsCount;
 }
@@ -167,6 +180,56 @@ getInputNodeForSingle(string $object)
     return "";
 }
 
+proc string
+getInputNodeForMultiple(int $type, string $objects[])
+{
+    string $inputNode;
+    switch($type)
+    {
+        // curve
+        case 0:
+            if(!size($objects))
+                return "";
+
+            if(size($objects) == 1)
+            {
+                return getInputNodeForSingle($objects[0]);
+            }
+
+            $inputNode = `createNode -skipSelect "houdiniInputCurve"`;
+
+            for($i = 0; $i < size($objects); $i++)
+            {
+                string $object = $objects[$i];
+
+                string $parent[] = `listRelatives -parent -fullPath $object`;
+
+                connectAttr ($parent[0] + ".local")
+                    ($inputNode + ".inputCurve[" + $i + "]");
+            }
+            break;
+        // locator
+        case 1:
+            if(!size($objects))
+                return "";
+
+            $inputNode = `createNode -skipSelect "houdiniInputLocator"`;
+
+            for($i = 0; $i < size($objects); $i++)
+            {
+                string $object = $objects[$i];
+
+                string $parent[] = `listRelatives -parent -fullPath $object`;
+
+                connectAttr ($parent[0] + ".worldMatrix")
+                    ($inputNode + ".inputMatrix[" + $i + "]");
+            }
+            break;
+    }
+
+    return ($inputNode + ".outputNodeId");
+}
+
 global proc
 houdiniEngine_clearAssetInput(string $inputAttr)
 {
@@ -179,7 +242,8 @@ houdiniEngine_clearAssetInput(string $inputAttr)
     disconnectAttr $sourceInputPlug $inputAttr;
 
     string $sourceInputNode = `plugNode($sourceInputPlug)`;
-    if(`nodeType $sourceInputNode` == "houdiniInputGeometry")
+    if(`nodeType $sourceInputNode` == "houdiniInputGeometry"
+        || `nodeType $sourceInputNode` == "houdiniInputCurve")
     {
         // if houdiniInputGeometry node is no longer outputting to anything anymore,
         // delete it
@@ -195,9 +259,10 @@ global proc int
 houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
 {
     string $validObjects[];
+    string $multiObjects[];
     string $invalidObjects[];
     int $validObjectsCount = validateInputObjects($objects,
-            $validObjects, $invalidObjects);
+            $validObjects, $multiObjects, $invalidObjects);
 
     if(size($invalidObjects))
     {
@@ -223,6 +288,17 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     {
         string $validObject = $validObjects[$i];
         $sourceInputAttr = getInputNodeForSingle($validObject);
+    }
+
+    for($i = 0; !size($sourceInputAttr) && $i < size($multiObjects); $i++)
+    {
+        string $multiObject = $multiObjects[$i];
+
+        if(!size($multiObject))
+            continue;
+
+        $sourceInputAttr = getInputNodeForMultiple($i,
+                stringToStringArray($multiObject, " "));
     }
 
     if(!size($sourceInputAttr))
@@ -276,6 +352,17 @@ houdiniEngine_getAssetInput(string $inputAttr)
         if(size($connectedGeometryNodeAttr))
         {
             $inputGeometryNodes[0] = plugNode($connectedGeometryNodeAttr);
+        }
+    }
+    else if(`nodeType $inputNode` == "houdiniInputCurve")
+    {
+        string $plugs[] = `listConnections
+            -plugs true -destination true
+            ($inputNode + ".inputCurve")`;
+
+        for($plug in $plugs)
+        {
+            $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($plug);
         }
     }
     else if(`nodeType $inputNode` == "houdiniAsset")

@@ -107,12 +107,6 @@ InputNode::~InputNode()
 void
 InputNode::clearInput()
 {
-    //HAPI_DisconnectNodeInput(
-    //        Util::theHAPISession.get(),
-    //        myNodeId,
-    //        inputIdx
-    //        );
-
     delete myInput;
     myInput = NULL;
 }

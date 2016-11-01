@@ -1,4 +1,4 @@
-#include "InputNode.h"
+#include "InputGeometryNode.h"
 
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
@@ -7,32 +7,32 @@
 #include "MayaTypeID.h"
 #include "Input.h"
 
-MString InputNode::typeName("houdiniInput");
-MTypeId InputNode::typeId(MayaTypeID_HoudiniInputNode);
+MString InputGeometryNode::typeName("houdiniInputGeometry");
+MTypeId InputGeometryNode::typeId(MayaTypeID_HoudiniInputGeometryNode);
 
-MObject InputNode::inputTransform;
-MObject InputNode::inputGeometry;
-MObject InputNode::outputNodeId;
+MObject InputGeometryNode::inputTransform;
+MObject InputGeometryNode::inputGeometry;
+MObject InputGeometryNode::outputNodeId;
 
 void*
-InputNode::creator()
+InputGeometryNode::creator()
 {
-    return new InputNode();
+    return new InputGeometryNode();
 }
 
 MStatus
-InputNode::initialize()
+InputGeometryNode::initialize()
 {
     MFnGenericAttribute gAttr;
     MFnMatrixAttribute mAttr;
     MFnNumericAttribute nAttr;
 
-    InputNode::inputTransform = mAttr.create(
+    InputGeometryNode::inputTransform = mAttr.create(
             "inputTransform", "inputTransform"
             );
-    addAttribute(InputNode::inputTransform);
+    addAttribute(InputGeometryNode::inputTransform);
 
-    InputNode::inputGeometry = gAttr.create(
+    InputGeometryNode::inputGeometry = gAttr.create(
             "inputGeometry", "inputGeometry"
             );
     gAttr.addDataAccept(MFnData::kIntArray);
@@ -41,32 +41,32 @@ InputNode::initialize()
     gAttr.addDataAccept(MFnData::kVectorArray);
     gAttr.setCached(false);
     gAttr.setStorable(false);
-    addAttribute(InputNode::inputGeometry);
+    addAttribute(InputGeometryNode::inputGeometry);
 
-    InputNode::outputNodeId = nAttr.create(
+    InputGeometryNode::outputNodeId = nAttr.create(
             "outputNodeId", "outputNodeId",
             MFnNumericData::kInt,
             -1
             );
     nAttr.setCached(false);
     nAttr.setStorable(false);
-    addAttribute(InputNode::outputNodeId);
+    addAttribute(InputGeometryNode::outputNodeId);
 
-    attributeAffects(InputNode::inputTransform, InputNode::outputNodeId);
-    attributeAffects(InputNode::inputGeometry, InputNode::outputNodeId);
+    attributeAffects(InputGeometryNode::inputTransform, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::inputGeometry, InputGeometryNode::outputNodeId);
 
     return MStatus::kSuccess;
 }
 
 MStatus
-InputNode::compute(
+InputGeometryNode::compute(
         const MPlug &plug,
         MDataBlock &dataBlock
         )
 {
-    if(plug == InputNode::outputNodeId)
+    if(plug == InputGeometryNode::outputNodeId)
     {
-        MDataHandle outputNodeIdHandle = dataBlock.outputValue(InputNode::outputNodeId);
+        MDataHandle outputNodeIdHandle = dataBlock.outputValue(InputGeometryNode::outputNodeId);
 
         if(!checkInput(dataBlock))
         {
@@ -76,12 +76,12 @@ InputNode::compute(
         }
 
         // set input transform
-        MPlug transformPlug(thisMObject(), InputNode::inputTransform);
+        MPlug transformPlug(thisMObject(), InputGeometryNode::inputTransform);
         MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
         myInput->setInputTransform(transformHandle);
 
         // set input geo
-        MPlug geometryPlug(thisMObject(), InputNode::inputGeometry);
+        MPlug geometryPlug(thisMObject(), InputGeometryNode::inputGeometry);
         myInput->setInputGeo(dataBlock, geometryPlug);
 
         outputNodeIdHandle.setInt(myInput->geometryNodeId());
@@ -92,27 +92,27 @@ InputNode::compute(
     return MPxNode::compute(plug, dataBlock);
 }
 
-InputNode::InputNode() :
+InputGeometryNode::InputGeometryNode() :
     myInput(NULL)
 {
 }
 
-InputNode::~InputNode()
+InputGeometryNode::~InputGeometryNode()
 {
     clearInput();
 }
 
 void
-InputNode::clearInput()
+InputGeometryNode::clearInput()
 {
     delete myInput;
     myInput = NULL;
 }
 
 bool
-InputNode::checkInput(MDataBlock &dataBlock)
+InputGeometryNode::checkInput(MDataBlock &dataBlock)
 {
-    MPlug inputGeometryPlug(thisMObject(), InputNode::inputGeometry);
+    MPlug inputGeometryPlug(thisMObject(), InputGeometryNode::inputGeometry);
 
     Input::AssetInputType newAssetInputType = Input::AssetInputType_Invalid;
     {

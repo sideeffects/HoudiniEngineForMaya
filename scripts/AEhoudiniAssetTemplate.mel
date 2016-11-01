@@ -512,9 +512,9 @@ proc clearInput(string $inputAttr)
     disconnectAttr $sourceInputPlug $inputAttr;
 
     string $sourceInputNode = `plugNode($sourceInputPlug)`;
-    if(`nodeType $sourceInputNode` == "houdiniInput")
+    if(`nodeType $sourceInputNode` == "houdiniInputGeometry")
     {
-        // if houdiniInput node is no longer outputting to anything anymore,
+        // if houdiniInputGeometry node is no longer outputting to anything anymore,
         // delete it
         string $sourceOutputPlugs[] = `connectionInfo -dfs $sourceInputPlug`;
         if(!size($sourceOutputPlugs))
@@ -526,17 +526,17 @@ proc clearInput(string $inputAttr)
 
 proc string createInputNode(string $transformAttr, string $geometryAttr)
 {
-    // if a houdiniInput already exists, reuse it
+    // if a houdiniInputGeometry already exists, reuse it
     {
         string $connections[] =
-            `listConnections -type houdiniInput -destination true $geometryAttr`;
+            `listConnections -type houdiniInputGeometry -destination true $geometryAttr`;
         if(size($connections))
         {
             return (plugNode($connections[0]) + ".outputNodeId");
         }
     }
 
-    string $inputNode = `createNode -skipSelect houdiniInput`;
+    string $inputNode = `createNode -skipSelect houdiniInputGeometry`;
 
     connectAttr $transformAttr ($inputNode + ".inputTransform");
     connectAttr $geometryAttr ($inputNode + ".inputGeometry");
@@ -805,7 +805,7 @@ global proc AEhoudiniAssetUpdateInput(string $inputLayout, string $inputAttribut
         }
 
         if(size($connectedInputNode)
-                && `nodeType $connectedInputNode` == "houdiniInput")
+                && `nodeType $connectedInputNode` == "houdiniInputGeometry")
         {
             string $connectedGeometryNodeAttr = `connectionInfo
                 -sourceFromDestination

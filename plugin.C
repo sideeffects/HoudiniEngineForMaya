@@ -10,7 +10,7 @@
 #include "AssetNode.h"
 #include "CurveMeshInputNode.h"
 #include "FluidGridConvert.h"
-#include "InputNode.h"
+#include "InputGeometryNode.h"
 #include "util.h"
 
 #include <HAPI_Version.h>
@@ -535,10 +535,10 @@ initializePlugin(MObject obj)
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerNode(
-            InputNode::typeName,
-            InputNode::typeId,
-            InputNode::creator,
-            InputNode::initialize
+            InputGeometryNode::typeName,
+            InputGeometryNode::typeId,
+            InputGeometryNode::creator,
+            InputGeometryNode::initialize
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 

@@ -16,7 +16,7 @@ set(
     AssetSubCommandSync.C
     EngineCommand.C
     Asset.C
-    InputNode.C
+    InputGeometryNode.C
     Input.C
     InputMesh.C
     InputCurve.C

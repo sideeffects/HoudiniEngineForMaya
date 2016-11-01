@@ -1,11 +1,11 @@
-#ifndef __InputNode_h__
-#define __InputNode_h__
+#ifndef __InputGeometryNode_h__
+#define __InputGeometryNode_h__
 
 #include <maya/MPxNode.h>
 
 class Input;
 
-class InputNode : public MPxNode
+class InputGeometryNode : public MPxNode
 {
 public:
     static void* creator();
@@ -21,8 +21,8 @@ public:
     static MObject outputNodeId;
 
 public:
-    InputNode();
-    virtual ~InputNode();
+    InputGeometryNode();
+    virtual ~InputGeometryNode();
 
     virtual MStatus compute(
             const MPlug &plug,

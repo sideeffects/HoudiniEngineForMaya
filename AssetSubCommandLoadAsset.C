@@ -137,8 +137,11 @@ AssetSubCommandLoadAsset::redoIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = myAssetSubCommandSync->redoIt();
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if(myAssetSubCommandSync)
+    {
+        status = myAssetSubCommandSync->redoIt();
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
     return MStatus::kSuccess;
 }
@@ -148,8 +151,11 @@ AssetSubCommandLoadAsset::undoIt()
 {
     MStatus status;
 
-    status = myAssetSubCommandSync->undoIt();
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if(myAssetSubCommandSync)
+    {
+        status = myAssetSubCommandSync->undoIt();
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
     status = myDagModifier.undoIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);

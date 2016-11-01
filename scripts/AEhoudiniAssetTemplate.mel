@@ -1,4 +1,5 @@
 source AEaddRampControl;
+source houdiniEngineAssetInput;
 
 global proc
 AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
@@ -438,209 +439,6 @@ global proc houdiniAssetAdjustMulti(
     setUITemplate -popTemplate;
 }
 
-proc int isSupportedInput(string $object)
-{
-    string $supportedTypes[] = {
-        "hairSystem",
-        "houdiniAsset",
-        "houdiniInputCurve",
-        "mesh",
-        "nurbsCurve",
-        "particle"
-    };
-
-    for($supportedType in $supportedTypes)
-    {
-        if(`objectType -isAType $supportedType $object`)
-        {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-proc string[] getValidAssetInputs(string $objects[])
-{
-    int $validInputsCount = 0;
-    string $validAssetInputs[];
-
-    for($object in $objects)
-    {
-        int $found = 0;
-
-        // check if the object is a supported node
-        if(!$found)
-        {
-            if(isSupportedInput($object))
-            {
-                $validAssetInputs[$validInputsCount++] = $object;
-                $found = 1;
-            }
-        }
-
-        // check if there are any supported nodes in immediate children
-        if(!$found)
-        {
-            string $tempObjects[] = `listRelatives
-                -fullPath
-                -shapes
-                -noIntermediate
-                $object`;
-            for($tempObject in $tempObjects)
-            {
-                if(isSupportedInput($tempObject))
-                {
-                    $validAssetInputs[$validInputsCount++] = $tempObject;
-                    $found = 1;
-                }
-            }
-        }
-    }
-
-    return $validAssetInputs;
-}
-
-proc clearInput(string $inputAttr)
-{
-    string $sourceInputPlug = `connectionInfo -sfd $inputAttr`;
-    if($sourceInputPlug == "")
-    {
-        return;
-    }
-
-    disconnectAttr $sourceInputPlug $inputAttr;
-
-    string $sourceInputNode = `plugNode($sourceInputPlug)`;
-    if(`nodeType $sourceInputNode` == "houdiniInputGeometry")
-    {
-        // if houdiniInputGeometry node is no longer outputting to anything anymore,
-        // delete it
-        string $sourceOutputPlugs[] = `connectionInfo -dfs $sourceInputPlug`;
-        if(!size($sourceOutputPlugs))
-        {
-            delete $sourceInputNode;
-        }
-    }
-}
-
-proc string createInputNode(string $transformAttr, string $geometryAttr)
-{
-    // if a houdiniInputGeometry already exists, reuse it
-    {
-        string $connections[] =
-            `listConnections -type houdiniInputGeometry -destination true $geometryAttr`;
-        if(size($connections))
-        {
-            return (plugNode($connections[0]) + ".outputNodeId");
-        }
-    }
-
-    string $inputNode = `createNode -skipSelect houdiniInputGeometry`;
-
-    connectAttr $transformAttr ($inputNode + ".inputTransform");
-    connectAttr $geometryAttr ($inputNode + ".inputGeometry");
-
-    return ($inputNode + ".outputNodeId");
-}
-
-proc string getInputNode(string $object)
-{
-    string $transformAttr;
-    {
-        string $parents[] = `listRelatives -fullPath -parent $object`;
-        $transformAttr = $parents[0] + ".worldMatrix";
-    }
-
-    if(`objectType -isAType "houdiniAsset" $object`)
-    {
-        // if we just got the houdiniAsset, just assume the first output
-        return ($object + ".output.outputObjects[0].outputObjectMetaData");
-    }
-    else if(`objectType -isAType "mesh" $object`)
-    {
-        string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
-        string $histNode = plugNode($histPlug);
-
-        if($histNode != ""
-                && `nodeType $histNode` == "houdiniAsset")
-        {
-            // TODO: Assume that assets with inputs are SOPs
-            // *** A bit of a hack, plugNode just takes a substring of
-            // everything before the first '.', even if the substring is
-            // not a node.
-            string $obj = plugNode(plugAttr($histPlug));
-
-            return ($histNode + "." + $obj + ".outputObjectMetaData");
-        }
-        else
-        {
-            string $geometryAttr = $object + ".outMesh";
-
-            return createInputNode($transformAttr, $geometryAttr);
-        }
-    }
-    else if(`objectType -isAType "nurbsCurve" $object`)
-    {
-        string $geometryAttr = $object + ".local";
-
-        return createInputNode($transformAttr, $geometryAttr);
-    }
-    else if(`objectType -isAType "particle" $object`)
-    {
-        string $geometryAttr = $object + ".position";
-
-        return createInputNode($transformAttr, $geometryAttr);
-    }
-    else if(`objectType -isAType "hairSystem" $object`)
-    {
-        string $path[];
-        int $pathLen = `tokenize $object "|" $path`;
-        string $inputNode = $path[$pathLen - 1] + "_HoudiniInput";
-        $inputNode = `createNode "houdiniInputCurve" -name $inputNode`;
-        
-        string $outputHairs[] = `listAttr -multi ($object + ".outputHair")`;
-        
-        int $iInput = 0;
-        for ($outputHair in $outputHairs)
-        {
-            string $follicleShapes[] =
-                `listConnections ($object + "." + $outputHair)`;
-                
-            for ($follicleShape in $follicleShapes)
-            {
-                string $inputPlug =
-                    `format -s $inputNode -s $iInput "^1s.inputCurve[^2s]"`;
-                     
-                connectAttr ($follicleShape + ".outCurve") $inputPlug;                
-            }
-            
-            $iInput += 1;
-        }        
-
-        return $inputNode + ".outputNodeId";
-    }
-    else
-    {
-        error("Cannot handle object:" + $object + "\n");
-    }
-}
-
-proc setInput(string $inputAttr, string $object)
-{
-    clearInput($inputAttr);
-
-    string $sourceInputAttr = getInputNode($object);
-
-    connectAttr $sourceInputAttr $inputAttr;
-
-    string $assetNodeName = plugNode($inputAttr);
-    if(`getAttr ($assetNodeName + ".syncWhenInputConnects")`)
-    {
-        houdiniEngine_syncAssetOutput $assetNodeName;
-    }
-}
-
 global proc
 AEhoudiniAssetOperationNew(string $attr)
 {
@@ -679,69 +477,35 @@ AEhoudiniAssetOperationReplace(string $attr)
 
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
 {
-    string $validInputs[];
-
-    string $selection[] = `ls -selection`;
+    string $objects[] = `ls -selection -long`;
 
     // make sure we don't include the houdiniAsset node itself if it's selected last
-    if(size($selection))
+    if(size($objects))
     {
-        int $lastSelectionIndex = size($selection) - 1;
-        if(plugNode($inputAttr) == $selection[$lastSelectionIndex])
+        int $lastSelectionIndex = size($objects) - 1;
+        string $node[];
+        $node[0] = plugNode($inputAttr);
+        $node = `ls -long $node[0]`;
+        if($node[0] == $objects[$lastSelectionIndex])
         {
-            stringArrayRemoveAtIndex($lastSelectionIndex, $selection);
+            stringArrayRemoveAtIndex($lastSelectionIndex, $objects);
         }
     }
 
-    if(size($selection) == 0)
+    if(!houdiniEngine_setAssetInput($inputAttr, $objects))
     {
-        clearInput($inputAttr);
-        return;
+        error("Cannot set input.");
     }
-    else if(size($selection) > 1)
-    {
-        error("Please select exactly one object to be used for input.");
-    }
-
-    $validInputs = getValidAssetInputs($selection);
-    if(size($validInputs) > 1)
-    {
-        error("Selection contains multiple supported objects. Please select exactly one object to be used for input.");
-    }
-    else if(size($validInputs) == 0)
-    {
-        error("Selection has no supported object that can be used for input.");
-    }
-
-    setInput($inputAttr, $validInputs[0]);
 }
 
 global proc AEhoudiniAssetSetInputToText(string $textField, string $inputAttr)
 {
-    string $validInputs[];
+    string $objects[] = stringToStringArray(`textField -q -text $textField`, " ");
 
-    string $str = `textField -q -text $textField`;
-    if($str == "")
+    if(!houdiniEngine_setAssetInput($inputAttr, $objects))
     {
-        clearInput($inputAttr);
-        return;
+        error("Cannot set input.");
     }
-    else if(!`objExists $str`)
-    {
-        error("Entered object doesn't exist.");
-    }
-
-    $validInputs = getValidAssetInputs({$str});
-    if(size($validInputs) > 1)
-    {
-        error("Entered object contains multiple supported objects. Please enter the exact object to be used for input.");
-    }
-    else if(size($validInputs) == 0)
-    {
-        error("Entered object has no supported object that can be used for input.");
-    }
-
-    setInput($inputAttr, $validInputs[0]);
 }
 
 global proc AEhoudiniAssetInputsNew(string $inputsAttribute)
@@ -790,40 +554,12 @@ global proc AEhoudiniAssetUpdateInput(string $inputLayout, string $inputAttribut
 {
     string $inputTextField = $inputLayout + "|inputTextField";
 
-    string $connectedGeometryNode;
-    {
-        string $connectedInputNode;
-        {
-            string $connectedInputNodeIdAttr = `connectionInfo
-                -sourceFromDestination
-                $inputAttribute`;
+    string $inputGeometryNodes[] = houdiniEngine_getAssetInput(
+            $inputAttribute
+            );
 
-            if(size($connectedInputNodeIdAttr))
-            {
-                $connectedInputNode = plugNode($connectedInputNodeIdAttr);
-            }
-        }
-
-        if(size($connectedInputNode)
-                && `nodeType $connectedInputNode` == "houdiniInputGeometry")
-        {
-            string $connectedGeometryNodeAttr = `connectionInfo
-                -sourceFromDestination
-                ($connectedInputNode  + ".inputGeometry")`;
-
-            if(size($connectedGeometryNodeAttr))
-            {
-                $connectedGeometryNode = plugNode($connectedGeometryNodeAttr);
-            }
-        }
-        else if(size($connectedInputNode)
-                && `nodeType $connectedInputNode` == "houdiniAsset")
-        {
-            $connectedGeometryNode = $connectedInputNode;
-        }
-    }
-
-    textField -edit -text $connectedGeometryNode $inputTextField;
+    textField -edit -text (stringArrayToString($inputGeometryNodes, " "))
+        $inputTextField;
 }
 
 global proc AEhoudiniAssetParmNew(string $houdiniAssetParmAttribute)

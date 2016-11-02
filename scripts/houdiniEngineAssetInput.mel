@@ -40,6 +40,14 @@ validateInputObjects(string $objects[],
             $validObjects[size($validObjects)] = $object;
             $validObjectsCount++;
         }
+        else if(`objectType -isAType "houdiniInputGeometry" $object`
+            || `objectType -isAType "houdiniInputCurve" $object`
+            || `objectType -isAType "houdiniInputLocator" $object`
+            || `objectType -isAType "houdiniInputMerge" $object`)
+        {
+            $validObjects[size($validObjects)] = $object;
+            $validObjectsCount++;
+        }
         else if(`objectType -isAType "nurbsCurve" $object`)
         {
             $curveObjects[size($curveObjects)] = $object;
@@ -123,6 +131,13 @@ getInputNodeForSingle(string $object)
     {
         // if we just got the houdiniAsset, just assume the first output
         return ($object + ".output.outputObjects[0].outputObjectMetaData");
+    }
+    else if(`objectType -isAType "houdiniInputGeometry" $object`
+            || `objectType -isAType "houdiniInputCurve" $object`
+            || `objectType -isAType "houdiniInputLocator" $object`
+            || `objectType -isAType "houdiniInputMerge" $object`)
+    {
+        return ($object + ".outputNodeId");
     }
     else if(`objectType -isAType "mesh" $object`)
     {

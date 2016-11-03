@@ -1698,8 +1698,6 @@ OutputGeometryPart::computeMesh(
         MStringArray mappedCdAttributeNames;
         MStringArray mappedAlphaAttributeNames;
 
-        HAPI_AttributeInfo attrInfo;
-
         hapiGetDetailAttribute(
                     myNodeId, myPartId,
                     "maya_colorset_current",

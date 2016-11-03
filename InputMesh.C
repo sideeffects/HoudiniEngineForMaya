@@ -215,16 +215,17 @@ InputMesh::processUVs(
     MStringArray mappedUVAttributeNames;
     mappedUVAttributeNames.setLength(uvSetNames.length());
 
-    for(unsigned int i = 0; i < uvSetNames.length(); i++)
+    for(unsigned int uvSetIndex = 0;
+            uvSetIndex < uvSetNames.length(); uvSetIndex++)
     {
-        const MString uvSetName = uvSetNames[i];
+        const MString uvSetName = uvSetNames[uvSetIndex];
 
         const MString uvAttributeName
-            = Util::getAttrLayerName("uv", i);
+            = Util::getAttrLayerName("uv", uvSetIndex);
         const MString uvNumberAttributeName
-            = Util::getAttrLayerName("uvNumber", i);
+            = Util::getAttrLayerName("uvNumber", uvSetIndex);
 
-        mappedUVAttributeNames[i] = uvAttributeName;
+        mappedUVAttributeNames[uvSetIndex] = uvAttributeName;
 
         // get UV IDs
         MIntArray uvCounts;
@@ -467,10 +468,10 @@ InputMesh::processSets(
     MObjectArray sgCompObjs;
 
     std::vector<int> groupMembership;
-    for(int i = 0; i < (int) sets.length(); i++)
+    for(int setIndex = 0; setIndex < (int) sets.length(); setIndex++)
     {
-        const MObject &setObj = sets[i];
-        const MObject &compObj = comps[i];
+        const MObject &setObj = sets[setIndex];
+        const MObject &compObj = comps[setIndex];
 
         MFnDependencyNode setFn(setObj, &status);
         CHECK_MSTATUS(status);

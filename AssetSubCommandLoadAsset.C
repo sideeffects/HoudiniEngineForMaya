@@ -29,7 +29,8 @@ AssetSubCommandLoadAsset::doIt()
     MStatus status;
 
     // create houdiniAsset node
-    MObject assetNode = myDagModifier.createNode(AssetNode::typeId, MObject::kNullObj, &status);
+    MObject assetNodeObj = myDagModifier.createNode(
+            AssetNode::typeId, MObject::kNullObj, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node
@@ -65,20 +66,20 @@ AssetSubCommandLoadAsset::doIt()
             nodeName = myAssetName;
         }
         nodeName = Util::sanitizeStringForNodeName(nodeName);
-        status = myDagModifier.renameNode(assetNode, nodeName);
+        status = myDagModifier.renameNode(assetNodeObj, nodeName);
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // set otl file attribute
     {
-        MPlug plug(assetNode, AssetNode::otlFilePath);
+        MPlug plug(assetNodeObj, AssetNode::otlFilePath);
         status = myDagModifier.newPlugValueString(plug, myOTLFilePath);
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // set asset name attribute
     {
-        MPlug plug(assetNode, AssetNode::assetName);
+        MPlug plug(assetNodeObj, AssetNode::assetName);
         status = myDagModifier.newPlugValueString(plug, myAssetName);
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
@@ -87,7 +88,7 @@ AssetSubCommandLoadAsset::doIt()
     {
         MObject srcNode = Util::findNodeByName("time1");
         MPlug srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
-        MPlug dstPlug(assetNode, AssetNode::inTime);
+        MPlug dstPlug(assetNodeObj, AssetNode::inTime);
 
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -98,7 +99,7 @@ AssetSubCommandLoadAsset::doIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    MFnDependencyNode assetNodeFn(assetNode);
+    MFnDependencyNode assetNodeFn(assetNodeObj);
 
     // The asset should have been instantiated by now. If we couldn't
     // instantiate the asset, then don't operate on the asset any further. This
@@ -116,12 +117,12 @@ AssetSubCommandLoadAsset::doIt()
     // Only attempt to sync if the node is valid
     if(!MFAIL(status))
     {
-        myAssetSubCommandSync = new AssetSubCommandSync(assetNode);
+        myAssetSubCommandSync = new AssetSubCommandSync(assetNodeObj);
         myAssetSubCommandSync->doIt();
     }
 
     // select the node
-    MGlobal::select(assetNode);
+    MGlobal::select(assetNodeObj);
 
     // set result
     MPxCommand::setResult(assetNodeFn.name());

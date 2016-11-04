@@ -26,6 +26,7 @@ set(
     OutputObject.C
     util.C
     OutputGeometryObject.C
+    OutputPartInstancerNode.C
     OutputInstancerObject.C
     OutputGeometry.C
     OutputGeometryPart.C

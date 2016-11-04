@@ -39,7 +39,8 @@ enum MayaTypeID
     MayaTypeID_HoudiniInputGeometryNode = 0x0011E242,
     MayaTypeID_HoudiniInputCurveNode = 0x0011E243,
     MayaTypeID_HoudiniInputLocatorNode = 0x0011E244,
-    MayaTypeID_HoudiniInputMergeNode = 0x0011E245
+    MayaTypeID_HoudiniInputMergeNode = 0x0011E245,
+    MayaTypeID_HoudiniOutputPartInstancerNode = 0x0011E246,
 };
 
 #endif

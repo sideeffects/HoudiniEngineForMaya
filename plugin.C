@@ -13,6 +13,7 @@
 #include "InputGeometryNode.h"
 #include "InputLocatorNode.h"
 #include "InputMergeNode.h"
+#include "OutputPartInstancerNode.h"
 #include "util.h"
 
 #include <HAPI_Version.h>
@@ -567,6 +568,14 @@ initializePlugin(MObject obj)
             InputMergeNode::initialize
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    status = plugin.registerNode(
+        OutputPartInstancerNode::typeName,
+        OutputPartInstancerNode::typeId,
+        OutputPartInstancerNode::creator,
+        OutputPartInstancerNode::initialize
+    );
+    CHECK_MSTATUS_AND_RETURN_IT( status );
 
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(

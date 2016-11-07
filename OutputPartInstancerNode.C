@@ -3,7 +3,7 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnArrayAttrsData.h>
 #include <maya/MArrayDataBuilder.h>
-#include <maya/MFnPointArrayData.h>
+#include <maya/MFnVectorArrayData.h>
 #include <maya/MPointArray.h>
 #include <maya/MIntArray.h>
 #include <maya/MFnIntArrayData.h>
@@ -50,7 +50,7 @@ OutputPartInstancerNode::initialize()
 
     OutputPartInstancerNode::storablePositions = tAttr.create(
         "storablePositions", "storablePositions",
-        MFnData::kPointArray
+        MFnData::kVectorArray
     );
     tAttr.setStorable( true );
     tAttr.setWritable( true );
@@ -60,7 +60,7 @@ OutputPartInstancerNode::initialize()
 
     OutputPartInstancerNode::storableRotations = tAttr.create(
         "storableRotations", "storableRotations",
-        MFnData::kPointArray
+        MFnData::kVectorArray
     );
     tAttr.setStorable( true );
     tAttr.setWritable( true );
@@ -70,7 +70,7 @@ OutputPartInstancerNode::initialize()
 
     OutputPartInstancerNode::storableScales = tAttr.create(
         "storableScales", "storableScales",
-        MFnData::kPointArray
+        MFnData::kVectorArray
     );
     tAttr.setStorable( true );
     tAttr.setWritable( true );
@@ -147,17 +147,12 @@ OutputPartInstancerNode::compute(
                 MDataHandle storableHandle = dataBlock.inputValue( attrObjs[ i ], &status );
                 CHECK_MSTATUS_AND_RETURN_IT( status );
                 MObject storableObj = storableHandle.data();
-                MFnPointArrayData storableFn( storableObj, &status );
+                MFnVectorArrayData storableFn( storableObj, &status );
                 CHECK_MSTATUS_AND_RETURN_IT( status );
                 MVectorArray vectorArray = pointDataFnArrayAttrs.vectorArray( attr[ i ], &status );
                 CHECK_MSTATUS_AND_RETURN_IT( status );
-                // convert points->vectors
-                int nPoints = storableFn.length();
-                vectorArray.setLength( nPoints );
-                for ( int j = 0; j < nPoints; ++j )
-                {
-                    vectorArray.set( MVector( storableFn[ j ] ), j);
-                }
+                status = storableFn.copyTo(vectorArray);
+                CHECK_MSTATUS_AND_RETURN_IT(status);
             }
 
             // copy int array
@@ -169,8 +164,9 @@ OutputPartInstancerNode::compute(
             MIntArray intArray = pointDataFnArrayAttrs.intArray( "objectIndex", &status );
             CHECK_MSTATUS_AND_RETURN_IT( status );
             status = storableFn.copyTo( intArray );
-
+            CHECK_MSTATUS_AND_RETURN_IT(status);
             pointDataDataHandle.setClean();
+            return status;
         }
     }
     else if ( plug == OutputPartInstancerNode::storablePositions ||
@@ -237,7 +233,7 @@ OutputPartInstancerNode::compute(
                 MDataHandle storableHandle = dataBlock.outputValue( plug, &status );
                 CHECK_MSTATUS_AND_RETURN_IT( status );
                 MObject storableObj = storableHandle.data();
-                MFnPointArrayData storableFn( storableObj, &status );
+                MFnVectorArrayData storableFn( storableObj, &status );
                 if ( storableObj.isNull() )
                 {
                     storableObj = storableFn.create( &status );
@@ -249,15 +245,7 @@ OutputPartInstancerNode::compute(
                     status = storableFn.setObject( storableObj );
                     CHECK_MSTATUS_AND_RETURN_IT( status );
                 }
-                // Convert vectors -> points
-                unsigned int numElems = arrayData.length();
-                MPointArray tempPointArray;
-                tempPointArray.setLength( numElems );
-                for ( unsigned int i = 0; i < numElems; ++i )
-                {
-                    status = tempPointArray.set( MPoint( arrayData[ i ] ), i );
-                }
-                status = storableFn.set( tempPointArray );
+                status = storableFn.set(arrayData);
                 CHECK_MSTATUS_AND_RETURN_IT( status );
                 storableHandle.setClean();
             }

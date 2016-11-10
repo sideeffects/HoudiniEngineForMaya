@@ -398,7 +398,7 @@ houdiniEngine_getAssetInput(string $inputAttr)
 
             if(size($connectedGeometryNodeAttr))
             {
-                $inputGeometryNodes[0] = plugNode($connectedGeometryNodeAttr);
+                $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($connectedGeometryNodeAttr);
             }
         }
         else if(`nodeType $inputNode` == "houdiniInputCurve")

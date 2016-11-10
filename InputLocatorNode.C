@@ -39,6 +39,7 @@ InputLocatorNode::initialize()
     mAttr.setArray(true);
     mAttr.setCached(false);
     mAttr.setStorable(false);
+    mAttr.setDisconnectBehavior(MFnAttribute::kDelete);
     addAttribute(InputLocatorNode::inputMatrix);
 
     InputLocatorNode::outputNodeId = nAttr.create(
@@ -88,10 +89,9 @@ InputLocatorNode::compute(
 {
     if(plug == InputLocatorNode::outputNodeId)
     {
-        MArrayDataHandle inputMatrixArrayHandle =
-            dataBlock.inputArrayValue(InputLocatorNode::inputMatrix);
+        MPlug inputMatrixArrayPlug(thisMObject(), InputLocatorNode::inputMatrix);
 
-        const unsigned int pointCount = inputMatrixArrayHandle.elementCount();
+        const unsigned int pointCount = inputMatrixArrayPlug.numElements();
 
         HAPI_PartInfo partInfo;
         HAPI_PartInfo_Init(&partInfo);
@@ -109,11 +109,16 @@ InputLocatorNode::compute(
         std::vector<float> P(pointCount * 3);
         std::vector<float> orient(pointCount * 4);
         std::vector<float> scale(pointCount * 3);
+        MStringArray name(pointCount, MString());
 
         for(unsigned int i = 0; i < pointCount; i++)
         {
-            inputMatrixArrayHandle.jumpToElement(i);
-            MDataHandle inputMatrixHandle = inputMatrixArrayHandle.inputValue();
+            MPlug inputMatrixPlug = inputMatrixArrayPlug.elementByPhysicalIndex(i);
+
+            MPlug sourceNodePlug = Util::plugSource(inputMatrixPlug);
+            name[i] = Util::getNodeName(sourceNodePlug.node());
+
+            MDataHandle inputMatrixHandle = dataBlock.inputValue(inputMatrixPlug);
 
             MTransformationMatrix transformation = inputMatrixHandle.asMatrix();
 
@@ -134,6 +139,13 @@ InputLocatorNode::compute(
             scale[i * 3 + 1] = s[1];
             scale[i * 3 + 2] = s[2];
         }
+
+        CHECK_HAPI(hapiSetPointAttribute(
+                    myGeometryNodeId, 0,
+                    1,
+                    "name",
+                    name
+                    ));
 
         CHECK_HAPI(hapiSetPointAttribute(
                     myGeometryNodeId, 0,

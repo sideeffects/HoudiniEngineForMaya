@@ -31,6 +31,7 @@ InputCurveNode::initialize()
     MFnTypedAttribute tAttr;
     InputCurveNode::inputCurve = tAttr.create( "inputCurve", "inputCurve",
                                     MFnData::kNurbsCurve );
+    tAttr.setDisconnectBehavior(MFnAttribute::kDelete);
     tAttr.setArray(true);
 
     addAttribute(InputCurveNode::inputCurve);
@@ -97,10 +98,9 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
         metaDataHandle.setInt(myNodeId);
     }
 
-    MArrayDataHandle inputCurveArrayHandle(data.inputArrayValue(InputCurveNode::inputCurve, &status));
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    MPlug inputCurveArrayPlug(thisMObject(), InputCurveNode::inputCurve);
 
-    const int nInputCurves = inputCurveArrayHandle.elementCount();
+    const int nInputCurves = inputCurveArrayPlug.numElements();
     if ( nInputCurves <= 0 )
     {
         data.setClean(plug);
@@ -115,10 +115,13 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
     std::vector<int>    cvCounts;
     std::vector<float>  knots;
     std::vector<int>    orders;
+    MStringArray name;
 
     for ( int iCurve = 0; iCurve < nInputCurves; ++iCurve )
     {
-        MDataHandle curveHandle = inputCurveArrayHandle.inputValue();
+        MPlug inputCurvePlug = inputCurveArrayPlug.elementByPhysicalIndex(iCurve);
+
+        MDataHandle curveHandle = data.inputValue(inputCurvePlug);
         MObject curveObject = curveHandle.asNurbsCurve();
         MFnNurbsCurve fnCurve( curveObject );
 
@@ -211,10 +214,9 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
 
         ++curveInfo.curveCount;
 
-        if ( !inputCurveArrayHandle.next() )
-        {
-            break;
-        }
+        name.append(
+                Util::getNodeName(Util::plugSource(inputCurvePlug))
+                );
     }
 
     curveInfo.hasKnots = curveInfo.knotCount > 0;

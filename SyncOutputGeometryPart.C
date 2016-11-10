@@ -869,8 +869,22 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
             dstAttributeName = "velocity";
         }
 
-        // Use existing attribute if it exists.
         MObject dstAttribute = dstNodeFn.attribute(dstAttributeName);
+
+        if(owner == "detail")
+        {
+            // Use existing attribute if it exists.
+        }
+        else
+        {
+            if(!dstAttribute.isNull())
+            {
+                // If the attribute already exists, add a prefix. This avoids
+                // name conflict when outputting attributes with the same name.
+                dstAttributeName = owner + "_" + dstAttributeName;
+                dstAttribute = MObject::kNullObj;
+            }
+        }
 
         // If it doesn't exist, create it.
         if(dstAttribute.isNull())

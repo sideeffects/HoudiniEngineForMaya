@@ -231,7 +231,7 @@ getInputNodeForMultiple(int $type, string $objects[])
 
                 string $parent[] = `listRelatives -parent -fullPath $object`;
 
-                connectAttr ($parent[0] + ".local")
+                connectAttr ($parent[0] + ".worldSpace")
                     ($inputNode + ".inputCurve[" + $i + "]");
             }
             break;

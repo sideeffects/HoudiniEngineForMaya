@@ -103,11 +103,27 @@ class AssetNode: public MPxTransform
         static MObject outputHiddenObjects;
         static MObject outputTemplatedGeometries;
 
+        static MObject useAssetObjectTransform;
+
         static MObject input;
         static MObject inputName;
         static MObject inputNodeId;
 
         static MObject output;
+
+        static MObject outputAssetTransform;
+        static MObject outputAssetTranslate;
+        static MObject outputAssetTranslateX;
+        static MObject outputAssetTranslateY;
+        static MObject outputAssetTranslateZ;
+        static MObject outputAssetRotate;
+        static MObject outputAssetRotateX;
+        static MObject outputAssetRotateY;
+        static MObject outputAssetRotateZ;
+        static MObject outputAssetScale;
+        static MObject outputAssetScaleX;
+        static MObject outputAssetScaleY;
+        static MObject outputAssetScaleZ;
 
         static MObject outputObjects;
         static MObject outputObjectName;

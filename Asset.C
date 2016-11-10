@@ -661,7 +661,9 @@ Asset::update()
                 );
         CHECK_HAPI(hapiResult);
 
-        if(objectCount > 0)
+        myIsObjSubnet = objectCount > 0;
+
+        if(myIsObjSubnet)
         {
             nodeIds.resize(objectCount);
 
@@ -954,6 +956,56 @@ Asset::compute(
     }
 
     update();
+
+    // output asset transform
+    {
+        MPlug assetTransformPlug = plug.child(
+                AssetNode::outputAssetTransform);
+
+        MDataHandle assetTranslateHandle = data.outputValue(
+                assetTransformPlug .child(AssetNode::outputAssetTranslate));
+        MDataHandle assetRotateHandle = data.outputValue(
+                assetTransformPlug .child(AssetNode::outputAssetRotate));
+        MDataHandle assetScaleHandle = data.outputValue(
+                assetTransformPlug .child(AssetNode::outputAssetScale));
+
+        if(myIsObjSubnet)
+        {
+            HAPI_Transform trans;
+            HAPI_GetObjectTransform(
+                    Util::theHAPISession.get(),
+                    myAssetInfo.objectNodeId,
+                    -1,
+                    HAPI_SRT,
+                    &trans
+                    );
+
+            MEulerRotation eulerRotation = MQuaternion(
+                    trans.rotationQuaternion[0],
+                    trans.rotationQuaternion[1],
+                    trans.rotationQuaternion[2],
+                    trans.rotationQuaternion[3]
+                    ).asEulerRotation();
+
+
+            assetTranslateHandle.set3Double(
+                    trans.position[0],
+                    trans.position[1],
+                    trans.position[2]);
+            assetRotateHandle.set3Double(
+                    eulerRotation.x,
+                    eulerRotation.y,
+                    eulerRotation.z);
+            assetScaleHandle.set3Double(
+                    trans.scale[0],
+                    trans.scale[1],
+                    trans.scale[2]);
+        } else {
+            assetTranslateHandle.set3Double(0.0, 0.0, 0.0);
+            assetRotateHandle.set3Double(0.0, 0.0, 0.0);
+            assetScaleHandle.set3Double(1.0, 1.0, 1.0);
+        }
+    }
 
     // first pass - instancers
     // There is a reason that instancers are computed first.

@@ -91,6 +91,8 @@ class Asset {
         MTime myTime;
 
         HAPI_AssetInfo         myAssetInfo;
+        bool myIsObjSubnet;
+
         ObjectInfos myObjectInfos;
         MObject myNode;                    //The Maya asset node
 

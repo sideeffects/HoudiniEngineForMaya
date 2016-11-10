@@ -697,6 +697,12 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 "Output templated geometries."
                 );
 
+        createAttrCheckBox(
+                "useAssetObjectTransform",
+                "Use Asset Object Transform",
+                "Use asset's object-level transform, if exists."
+                );
+
     setParent ..;
 
     setParent ..;
@@ -747,6 +753,11 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
             $optionsLayoutFull + "|outputLayout|outputTemplatedGeometries",
             $nodeName + ".outputTemplatedGeometries",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|useAssetObjectTransform",
+            $nodeName + ".useAssetObjectTransform",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
 }
 
 global proc AEhoudiniAssetTemplate(string $nodeName)
@@ -792,6 +803,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "useInstancerNode";
         editorTemplate -suppress "outputHiddenObjects";
         editorTemplate -suppress "outputTemplatedGeometries";
+        editorTemplate -suppress "useAssetObjectTransform";
 
     editorTemplate -endLayout;
 

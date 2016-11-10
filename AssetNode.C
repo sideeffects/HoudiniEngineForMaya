@@ -37,12 +37,28 @@ MObject AssetNode::autoSyncOutputs;
 MObject AssetNode::splitGeosByGroup;
 MObject AssetNode::outputHiddenObjects;
 MObject AssetNode::outputTemplatedGeometries;
+MObject AssetNode::useAssetObjectTransform;
 
 MObject AssetNode::input;
 MObject AssetNode::inputName;
 MObject AssetNode::inputNodeId;
 
 MObject AssetNode::output;
+
+MObject AssetNode::outputAssetTransform;
+MObject AssetNode::outputAssetTranslate;
+MObject AssetNode::outputAssetTranslateX;
+MObject AssetNode::outputAssetTranslateY;
+MObject AssetNode::outputAssetTranslateZ;
+MObject AssetNode::outputAssetRotate;
+MObject AssetNode::outputAssetRotateX;
+MObject AssetNode::outputAssetRotateY;
+MObject AssetNode::outputAssetRotateZ;
+MObject AssetNode::outputAssetScale;
+MObject AssetNode::outputAssetScaleX;
+MObject AssetNode::outputAssetScaleY;
+MObject AssetNode::outputAssetScaleZ;
+
 MObject AssetNode::outputObjects;
 
 MObject AssetNode::outputObjectName;
@@ -298,6 +314,11 @@ AssetNode::initialize()
             MFnNumericData::kBoolean
             );
 
+    AssetNode::useAssetObjectTransform = nAttr.create(
+            "useAssetObjectTransform", "useAssetObjectTransform",
+            MFnNumericData::kBoolean
+            );
+
     // input
     AssetNode::inputName = tAttr.create(
             "inputName", "inputName",
@@ -321,6 +342,118 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::inputNodeId);
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
+
+    // output
+
+    // translate
+    AssetNode::outputAssetTranslateX = uAttr.create(
+            "outputAssetTranslateX", "outputAssetTranslateX",
+            MFnUnitAttribute::kDistance
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetTranslateX);
+    AssetNode::outputAssetTranslateY = uAttr.create(
+            "outputAssetTranslateY", "outputAssetTranslateY",
+            MFnUnitAttribute::kDistance
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetTranslateY);
+    AssetNode::outputAssetTranslateZ = uAttr.create(
+            "outputAssetTranslateZ", "outputAssetTranslateZ",
+            MFnUnitAttribute::kDistance
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetTranslateZ);
+    AssetNode::outputAssetTranslate = nAttr.create(
+            "outputAssetTranslate", "outputAssetTranslate",
+            AssetNode::outputAssetTranslateX,
+            AssetNode::outputAssetTranslateY,
+            AssetNode::outputAssetTranslateZ
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetTranslate);
+
+    // rotate
+    AssetNode::outputAssetRotateX = uAttr.create(
+            "outputAssetRotateX", "outputAssetRotateX",
+            MFnUnitAttribute::kAngle
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetRotateX);
+    AssetNode::outputAssetRotateY = uAttr.create(
+            "outputAssetRotateY", "outputAssetRotateY",
+            MFnUnitAttribute::kAngle
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetRotateY);
+    AssetNode::outputAssetRotateZ = uAttr.create(
+            "outputAssetRotateZ", "outputAssetRotateZ",
+            MFnUnitAttribute::kAngle
+            );
+    uAttr.setStorable(false);
+    uAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetRotateZ);
+    AssetNode::outputAssetRotate = nAttr.create(
+            "outputAssetRotate", "outputAssetRotate",
+            AssetNode::outputAssetRotateX,
+            AssetNode::outputAssetRotateY,
+            AssetNode::outputAssetRotateZ
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetRotate);
+
+    // scale
+    AssetNode::outputAssetScaleX = nAttr.create(
+            "outputAssetScaleX", "outputAssetScaleX",
+            MFnNumericData::kDouble,
+            1.0
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetScaleX);
+    AssetNode::outputAssetScaleY = nAttr.create(
+            "outputAssetScaleY", "outputAssetScaleY",
+            MFnNumericData::kDouble,
+            1.0
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetScaleY);
+    AssetNode::outputAssetScaleZ = nAttr.create(
+            "outputAssetScaleZ", "outputAssetScaleZ",
+            MFnNumericData::kDouble,
+            1.0
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetScaleZ);
+    AssetNode::outputAssetScale = nAttr.create(
+            "outputAssetScale", "outputAssetScale",
+            AssetNode::outputAssetScaleX,
+            AssetNode::outputAssetScaleY,
+            AssetNode::outputAssetScaleZ
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    computeAttributes.push_back(AssetNode::outputAssetScale);
+
+    // transform
+    AssetNode::outputAssetTransform = cAttr.create(
+            "outputAssetTransform", "outputAssetTransform"
+            );
+    cAttr.addChild(AssetNode::outputAssetTranslate);
+    cAttr.addChild(AssetNode::outputAssetRotate);
+    cAttr.addChild(AssetNode::outputAssetScale);
+    cAttr.setWritable(false);
+    cAttr.setStorable(false);
+    computeAttributes.push_back(AssetNode::outputAssetTransform);
 
     //----------------------------------  instancer compound multi----------------------------------------------
     // instancer data
@@ -1323,6 +1456,7 @@ AssetNode::initialize()
     AssetNode::output = cAttr.create(
             "output", "out"
             );
+    cAttr.addChild(AssetNode::outputAssetTransform);
     cAttr.addChild(AssetNode::outputObjects);
     cAttr.addChild(AssetNode::outputInstancers);
     cAttr.setWritable(false);
@@ -1343,6 +1477,7 @@ AssetNode::initialize()
     addAttribute(AssetNode::splitGeosByGroup);
     addAttribute(AssetNode::outputHiddenObjects);
     addAttribute(AssetNode::outputTemplatedGeometries);
+    addAttribute(AssetNode::useAssetObjectTransform);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);

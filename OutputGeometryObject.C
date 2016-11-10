@@ -187,9 +187,10 @@ void OutputGeometryObject::updateTransform(MDataHandle& handle)
             trans.position[0],
             trans.position[1],
             trans.position[2]);
-    rotateHandle.set3Double(eulerRotation.x * 2.0 * M_PI / 360.0,
-            eulerRotation.y * 2.0 * M_PI / 360.0,
-            eulerRotation.z * 2.0 * M_PI / 360.0);
+    rotateHandle.set3Double(
+            eulerRotation.x,
+            eulerRotation.y,
+            eulerRotation.z);
     scaleHandle.set3Double(
             trans.scale[0],
             trans.scale[1],

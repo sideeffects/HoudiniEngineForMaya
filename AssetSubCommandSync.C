@@ -103,6 +103,39 @@ AssetSubCommandSync::doIt()
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
 
+        // Asset
+        {
+            MPlug assetTranslate = assetNodeFn.findPlug(AssetNode::outputAssetTranslate);
+            MPlug assetRotate = assetNodeFn.findPlug(AssetNode::outputAssetRotate);
+            MPlug assetScale = assetNodeFn.findPlug(AssetNode::outputAssetScale);
+
+            MPlug transformTranslate = assetNodeFn.findPlug(MPxTransform::translate);
+            MPlug transformRotate = assetNodeFn.findPlug(MPxTransform::rotate);
+            MPlug transformScale = assetNodeFn.findPlug(MPxTransform::scale);
+
+            if(assetNodeFn.findPlug(AssetNode::useAssetObjectTransform).asBool())
+            {
+                if(Util::plugSource(transformTranslate).isNull())
+                    myDagModifier.connect(assetTranslate, transformTranslate);
+                if(Util::plugSource(transformRotate).isNull())
+                    myDagModifier.connect(assetRotate, transformRotate);
+                if(Util::plugSource(transformScale).isNull())
+                    myDagModifier.connect(assetScale, transformScale);
+            }
+            else
+            {
+                if(Util::plugSource(transformTranslate) == assetTranslate)
+                    myDagModifier.disconnect(assetTranslate, transformTranslate);
+                if(Util::plugSource(transformRotate) == assetRotate)
+                    myDagModifier.disconnect(assetRotate, transformRotate);
+                if(Util::plugSource(transformScale) == assetScale)
+                    myDagModifier.disconnect(assetScale, transformScale);
+            }
+        }
+
+        status = myDagModifier.doIt();
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
         // Objects
         MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
         unsigned int objCount = objectsPlug.evaluateNumElements(&status);

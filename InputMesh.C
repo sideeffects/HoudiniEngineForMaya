@@ -127,9 +127,10 @@ InputMesh::setInputGeo(
 
     processSets(plug, meshFn);
 
-    Input::setInputPlugMetaData(
-            plug,
-            geometryNodeId(), 0
+    Input::setInputName(
+            geometryNodeId(), 0,
+            HAPI_ATTROWNER_PRIM, partInfo.faceCount,
+            plug
             );
 
     // Commit it

@@ -121,54 +121,35 @@ Input::createAssetInput(AssetInputType assetInputType)
 }
 
 void
-Input::setInputPlugMetaData(
-        const MPlug &plug,
+Input::setInputName(
         HAPI_NodeId inputNodeId,
-        HAPI_PartId inputPartId
+        HAPI_PartId inputPartId,
+        HAPI_AttributeOwner owner, int count,
+        const MPlug &plug
         )
 {
-    MStatus status;
+    MPlug sourcePlug = Util::plugSource(plug);
+    MObject sourceNodeObj = sourcePlug.node();
 
-    // maya_source_node
+    MString name = Util::getNodeName(sourceNodeObj);
+
+    if(owner == HAPI_ATTROWNER_PRIM)
     {
-        MString shapeName;
-        MString fullPathName;
-
-        MPlug srcPlug = Util::plugSource(plug);
-        if(!srcPlug.isNull())
-        {
-            shapeName = MFnDependencyNode(srcPlug.node()).name();
-
-            MFnDagNode dagFn(srcPlug.node(), &status);
-            if(status)
-            {
-                fullPathName = dagFn.fullPathName();
-            }
-        }
-
-        if(shapeName.length())
-        {
-            MStringArray values;
-            values.append(shapeName);
-
-            CHECK_HAPI(hapiSetDetailAttribute(
+        CHECK_HAPI(hapiSetPrimAttribute(
                     inputNodeId, inputPartId,
-                    "maya_source_node",
-                    values
+                    1,
+                    "name",
+                    std::vector<const char*>(count, name.asChar())
                     ));
-        }
-
-        if(fullPathName.length())
-        {
-            MStringArray values;
-            values.append(fullPathName);
-
-            CHECK_HAPI(hapiSetDetailAttribute(
+    }
+    else if(owner == HAPI_ATTROWNER_POINT)
+    {
+        CHECK_HAPI(hapiSetPointAttribute(
                     inputNodeId, inputPartId,
-                    "maya_source_dag",
-                    values
+                    1,
+                    "name",
+                    std::vector<const char*>(count, name.asChar())
                     ));
-        }
     }
 }
 

@@ -313,6 +313,7 @@ class LogProgressBar : public ProgressBar
 
 bool statusCheckLoop(bool wantMainProgressBar = true);
 
+MString getNodeName(const MObject &nodeObj);
 MObject findNodeByName(const MString &name);
 MObject findDagChild(const MFnDagNode &dag, const MString &name);
 MStatus createNodeByModifierCommand(

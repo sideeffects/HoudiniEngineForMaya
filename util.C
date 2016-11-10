@@ -592,6 +592,31 @@ statusCheckLoop(bool wantMainProgressBar)
     return true;
 }
 
+MString
+getNodeName(const MObject &nodeObj)
+{
+    MStatus status;
+
+    MString name;
+
+    if(nodeObj.hasFn(MFn::kDagNode))
+    {
+        MFnDagNode nodeFn(nodeObj, &status);
+        CHECK_MSTATUS(status);
+
+        name = nodeFn.fullPathName();
+    }
+    else if(nodeObj.hasFn(MFn::kDependencyNode))
+    {
+        MFnDependencyNode nodeFn(nodeObj, &status);
+        CHECK_MSTATUS(status);
+
+        name = nodeFn.name();
+    }
+
+    return name;
+}
+
 MObject
 findNodeByName(const MString& name)
 {

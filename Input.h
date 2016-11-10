@@ -40,10 +40,11 @@ class Input
 
         static Input* createAssetInput(AssetInputType assetInputType);
 
-        static void setInputPlugMetaData(
-                const MPlug &plug,
+        static void setInputName(
                 HAPI_NodeId inputNodeId,
-                HAPI_PartId inputPartId
+                HAPI_PartId inputPartId,
+                HAPI_AttributeOwner owner, int count,
+                const MPlug &plug
                 );
 
     public:

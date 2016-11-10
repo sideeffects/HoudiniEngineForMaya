@@ -339,9 +339,10 @@ InputParticle::setInputGeo(
         }
     }
 
-    Input::setInputPlugMetaData(
-            plug,
-            geometryNodeId(), 0
+    Input::setInputName(
+            geometryNodeId(), 0,
+            HAPI_ATTROWNER_POINT, partInfo.pointCount,
+            plug
             );
 
     // Commit it

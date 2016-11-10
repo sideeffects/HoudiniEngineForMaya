@@ -1,4 +1,6 @@
 #include <maya/MDGModifier.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
 #include <maya/MStringArray.h>
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
@@ -872,5 +874,41 @@ walkParm(const std::vector<HAPI_ParmInfo> &parmInfos, WalkParmOperation &operati
         walkParmInfos += consumed;
         index += consumed;
     }
+}
+
+MPlug
+plugSource(const MPlug &plug)
+{
+    MStatus status;
+
+    MPlugArray connectedPlugs;
+    plug.connectedTo(connectedPlugs, true, false, &status);
+    CHECK_MSTATUS(status);
+
+    if(!connectedPlugs.length())
+    {
+        return MPlug();
+    }
+
+    assert(connectedPlugs.length() == 1);
+
+    return connectedPlugs[0];
+}
+
+MPlugArray
+plugDestination(const MPlug &plug)
+{
+    MStatus status;
+
+    MPlugArray connectedPlugs;
+    plug.connectedTo(connectedPlugs, true, false, &status);
+    CHECK_MSTATUS(status);
+
+    if(!connectedPlugs.length())
+    {
+        return MPlugArray();
+    }
+
+    return connectedPlugs;
 }
 }

@@ -19,6 +19,8 @@
 #include "types.h"
 
 class MDGModifier;
+class MPlug;
+class MPlugArray;
 class MFnDagNode;
 
 #define DISPLAY_MSG(displayMethod, ...) \
@@ -706,6 +708,13 @@ promoteAttributeData(
             break;
     }
 }
+
+MPlug
+plugSource(const MPlug &plug);
+
+MPlugArray
+plugDestination(const MPlug &plug);
+
 }
 
 #endif

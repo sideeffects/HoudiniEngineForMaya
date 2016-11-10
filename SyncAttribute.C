@@ -502,21 +502,18 @@ getConnectedChildrenPlugs(MPlugArray &connections, const MPlug &plug)
 
         // as destination
         {
-            MPlugArray connectedPlugs;
-            currentPlug.connectedTo(connectedPlugs, true, false);
+            MPlug srcPlug = Util::plugSource(currentPlug);
 
-            unsigned int connectedPlugsLength = connectedPlugs.length();
-            for(unsigned int j = 0; j < connectedPlugsLength; ++j)
+            if(!srcPlug.isNull())
             {
-                connections.append(connectedPlugs[j]);
+                connections.append(srcPlug);
                 connections.append(currentPlug);
             }
         }
 
         // as source
         {
-            MPlugArray connectedPlugs;
-            currentPlug.connectedTo(connectedPlugs, false, true);
+            MPlugArray connectedPlugs = Util::plugDestination(currentPlug);
 
             unsigned int connectedPlugsLength = connectedPlugs.length();
             for(unsigned int j = 0; j < connectedPlugsLength; ++j)

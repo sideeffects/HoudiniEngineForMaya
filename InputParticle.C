@@ -115,13 +115,10 @@ InputParticle::setInputGeo(
     // get particle node
     MObject particleObj;
     {
-        MPlugArray plugArray;
-        plug.connectedTo(plugArray, true, false, &status);
-        CHECK_MSTATUS(status);
-
-        if(plugArray.length() == 1)
+        MPlug srcPlug = Util::plugSource(plug);
+        if(!srcPlug.isNull())
         {
-            particleObj = plugArray[0].node();
+            particleObj = srcPlug.node();
         }
     }
 

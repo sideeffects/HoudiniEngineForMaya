@@ -446,14 +446,14 @@ InputMesh::processSets(
     MStatus status;
 
     // The source node may not be actually mesh node.
-    MPlugArray srcPlugs;
-    if(!plug.connectedTo(srcPlugs, true, false))
+    MPlug srcPlug = Util::plugSource(plug);
+    if(srcPlug.isNull())
     {
         return false;
     }
 
     // XXX: instance number
-    MDagPath srcDagPath = MDagPath::getAPathTo(srcPlugs[0].node());
+    MDagPath srcDagPath = MDagPath::getAPathTo(srcPlug.node());
 
     // Sets and Members
     MFnMesh srcNodeFn(srcDagPath, &status);

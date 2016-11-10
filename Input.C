@@ -134,13 +134,12 @@ Input::setInputPlugMetaData(
         MString shapeName;
         MString fullPathName;
 
-        MPlugArray plugs;
-        if(plug.connectedTo(plugs, true, false))
+        MPlug srcPlug = Util::plugSource(plug);
+        if(!srcPlug.isNull())
         {
-            assert(plugs.length() == 1);
-            shapeName = MFnDependencyNode(plugs[0].node()).name();
+            shapeName = MFnDependencyNode(srcPlug.node()).name();
 
-            MFnDagNode dagFn(plugs[0].node(), &status);
+            MFnDagNode dagFn(srcPlug.node(), &status);
             if(status)
             {
                 fullPathName = dagFn.fullPathName();

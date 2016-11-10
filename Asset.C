@@ -880,8 +880,7 @@ Asset::setInputs(const MPlug& plug, MDataBlock& data)
         HAPI_NodeId inputNodeId = -1;
 
         // only use inputNodeId if it's coming from a connection
-        MPlugArray srcPlugs;
-        if(inputNodeIdPlug.connectedTo(srcPlugs, true, false))
+        if(!Util::plugSource(inputNodeIdPlug).isNull())
         {
             inputNodeId = inputNodeIdHandle.asInt();
         }
@@ -1827,8 +1826,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                             // only use inputNodeId if it's coming from a
                             // connection
-                            MPlugArray srcPlugs;
-                            if(plug.connectedTo(srcPlugs, true, false))
+                            if(!Util::plugSource(plug).isNull())
                             {
                                 inputNodeId = dataHandle.asInt();
                             }

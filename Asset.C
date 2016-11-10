@@ -542,8 +542,6 @@ Asset::Asset(
 
 Asset::~Asset()
 {
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-
     for(OutputObjects::const_iterator iter = myObjects.begin();
             iter != myObjects.end(); iter++)
     {
@@ -555,11 +553,10 @@ Asset::~Asset()
 
     if(myNodeInfo.id >= 0)
     {
-        hstat = HAPI_DeleteNode(
+        CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
                 myNodeInfo.id
-                );
-        Util::checkHAPIStatus(hstat);
+                ));
     }
 }
 

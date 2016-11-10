@@ -147,51 +147,34 @@ OutputGeometryPart::computeVolumeTransform(
 void
 OutputGeometryPart::update()
 {
-    HAPI_Result hstat = HAPI_RESULT_SUCCESS;
-    try
-    {
-        hstat = HAPI_GetGeoInfo(
+    CHECK_HAPI(HAPI_GetGeoInfo(
                 Util::theHAPISession.get(),
                 myNodeId,
                 &myGeoInfo
-                );
-        Util::checkHAPIStatus(hstat);
+                ));
 
-        hstat = HAPI_GetPartInfo(
+    CHECK_HAPI(HAPI_GetPartInfo(
                 Util::theHAPISession.get(),
                 myNodeId, myPartId,
                 &myPartInfo
-                );
-        Util::checkHAPIStatus(hstat);
+                ));
 
-        if(myPartInfo.type == HAPI_PARTTYPE_VOLUME)
-        {
-            hstat = HAPI_GetVolumeInfo(
+    if(myPartInfo.type == HAPI_PARTTYPE_VOLUME)
+    {
+        CHECK_HAPI(HAPI_GetVolumeInfo(
                     Util::theHAPISession.get(),
                     myNodeId, myPartId,
                     &myVolumeInfo
-                    );
-            Util::checkHAPIStatus(hstat);
-        }
+                    ));
+    }
 
-        if(myPartInfo.type == HAPI_PARTTYPE_CURVE)
-        {
-            hstat = HAPI_GetCurveInfo(
+    if(myPartInfo.type == HAPI_PARTTYPE_CURVE)
+    {
+        CHECK_HAPI(HAPI_GetCurveInfo(
                     Util::theHAPISession.get(),
                     myNodeId, myPartId,
                     &myCurveInfo
-                    );
-            Util::checkHAPIStatus(hstat);
-        }
-        else
-        {
-            HAPI_CurveInfo_Init(&myCurveInfo);
-        }
-    }
-    catch (HAPIError& e)
-    {
-        cerr << e.what() << endl;
-        HAPI_PartInfo_Init(&myPartInfo);
+                    ));
     }
 }
 
@@ -243,7 +226,8 @@ OutputGeometryPart::compute(
         MDataHandle curvesHandle = handle.child(AssetNode::outputPartCurves);
         MDataHandle curvesIsBezierHandle =
             handle.child(AssetNode::outputPartCurvesIsBezier);
-        if(myCurveInfo.curveCount)
+        if(myPartInfo.type == HAPI_PARTTYPE_CURVE
+                && myCurveInfo.curveCount)
         {
             computeCurves(time, curvesHandle, curvesIsBezierHandle);
         }

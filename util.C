@@ -15,34 +15,6 @@
 
 #include "util.h"
 
-//=============================================================================
-// HAPIError
-//=============================================================================
-
-HAPIError::HAPIError() throw()
-    : exception()
-    , myMessage("")
-{}
-
-HAPIError::HAPIError(const HAPIError & error) throw()
-    : exception()
-    , myMessage(error.myMessage)
-{}
-
-HAPIError::HAPIError(MString msg) throw()
-    : exception()
-    , myMessage(msg)
-{}
-
-const char *
-HAPIError::what() const throw()
-{
-    myBuffer = "******************** HAPI Error ********************\n";
-    myBuffer += myMessage;
-    myBuffer += "\n****************************************************";
-    return myBuffer.asChar();
-}
-
 namespace Util
 {
 std::auto_ptr<HAPISession> theHAPISession;
@@ -154,29 +126,6 @@ bool
 hasHAPICallFailed(HAPI_Result stat)
 {
     return stat > 0;
-}
-
-void
-checkHAPIStatus(HAPI_Result stat)
-{
-    if(hasHAPICallFailed(stat))
-    {
-        int bufLen;
-        HAPI_GetStatusStringBufLength(
-                theHAPISession.get(),
-                HAPI_STATUS_CALL_RESULT,
-                HAPI_STATUSVERBOSITY_ERRORS,
-                &bufLen
-                );
-        char * buffer = new char[bufLen];
-        HAPI_GetStatusString(
-                theHAPISession.get(),
-                HAPI_STATUS_CALL_RESULT,
-                buffer,
-                bufLen
-                );
-        throw HAPIError(buffer);
-    }
 }
 
 PythonInterpreterLock::PythonInterpreterLock()

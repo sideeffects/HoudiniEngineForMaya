@@ -21,22 +21,6 @@
 class MDGModifier;
 class MFnDagNode;
 
-class HAPIError: public std::exception
-{
-    public:
-        HAPIError() throw();
-        HAPIError(const HAPIError & error) throw();
-        HAPIError(MString msg) throw();
-
-        virtual           ~HAPIError() throw() {}
-
-        virtual const char* what() const throw();
-
-    protected:
-        mutable MString myBuffer;
-        MString myMessage;
-};
-
 #define DISPLAY_MSG(displayMethod, ...) \
     { \
         MString msg; \
@@ -237,9 +221,6 @@ getAttrLayerName(const char *name, int layer)
 bool startsWith(const MString &str, const MString &begin);
 bool endsWith(const MString &str, const MString &end);
 MString escapeString(const MString &str);
-
-// Throws an exception if an error occurred
-void checkHAPIStatus(HAPI_Result stat);
 
 class PythonInterpreterLock
 {

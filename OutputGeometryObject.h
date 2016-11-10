@@ -16,8 +16,6 @@ class OutputGeometryObject: public OutputObject
                 );
         virtual ~OutputGeometryObject();
 
-        //MObject createMesh();
-
         virtual MStatus compute(
                 const MTime &time,
                 MDataBlock& data,
@@ -31,26 +29,9 @@ class OutputGeometryObject: public OutputObject
         void update();
 
         void updateTransform(MDataHandle& handle);
-        //void updateMaterial(MDataHandle& handle);
-        //void updateFaceCounts();
-        //void updateVertexList();
-        //void updatePoints();
-        //void updateNormals();
-        //void updateUVs();
 
     private:
-
-        HAPI_Transform myTransformInfo;
         std::vector<OutputGeometry *> myGeos;
-
-        //HAPI_MaterialInfo materialInfo;
-
-        //MIntArray faceCounts;
-        //MIntArray vertexList;
-        //MFloatPointArray points;
-        //MVectorArray normals;
-        //MFloatArray us;
-        //MFloatArray vs;
 };
 
 #endif

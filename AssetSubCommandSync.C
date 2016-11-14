@@ -66,6 +66,17 @@ AssetSubCommandSync::doIt()
 {
     MStatus status;
 
+    MFnDagNode assetNodeFn(myAssetNodeObj, &status);
+
+    MPlug lockAsset = assetNodeFn.findPlug(AssetNode::lockAsset, &status);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    bool lockOnState = lockAsset.asBool();
+    if(lockOnState)
+    {
+        MGlobal::displayWarning("Cannot sync " + assetNodeFn.name() + MString(" because lockAsset is set."));
+        return MStatus::kFailure;
+    }
+
     // save selection
     MSelectionList oldSelection;
     MGlobal::getActiveSelectionList(oldSelection);
@@ -82,8 +93,6 @@ AssetSubCommandSync::doIt()
     // outputs
     if(mySyncAll || mySyncOutputs)
     {
-        MFnDagNode assetNodeFn(myAssetNodeObj, &status);
-
         // Delete all children nodes. This way the sync will completely recreate
         // the connections. Otherwise, output connections may not be connected to
         // the right output node. For example, if parts were inserted in the

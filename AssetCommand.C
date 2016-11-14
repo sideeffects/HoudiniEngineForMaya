@@ -2,9 +2,11 @@
 #include <maya/MArgList.h>
 #include <maya/MSelectionList.h>
 #include <maya/MStatus.h>
+#include <maya/MItDependencyGraph.h>
 
 #include "Asset.h"
 #include "AssetNode.h"
+#include "OutputPartInstancerNode.h"
 #include "AssetCommand.h"
 #include "SubCommand.h"
 #include "AssetSubCommandLoadAsset.h"
@@ -15,6 +17,8 @@
 #define kListAssetsFlagLong "-listAssets"
 #define kLoadAssetFlag "-la"
 #define kLoadAssetFlagLong "-loadAsset"
+#define kLockAssetFlag "-lk"
+#define kLockAssetFlagLong "-lockAsset"
 #define kSyncFlag "-syn"
 #define kSyncFlagLong "-sync"
 #define kResetSimulationFlag "-rs"
@@ -124,6 +128,145 @@ class AssetSubCommandListAssets : public SubCommand
         MString myOTLFilePath;
 };
 
+class AssetSubCommandLockAsset : public SubCommandAsset
+{
+    bool myLockOn;
+    MDagModifier myDagModifier;
+
+public:
+    AssetSubCommandLockAsset(const MObject &assetNodeObj, bool lockOn) 
+    : SubCommandAsset(assetNodeObj)
+    , myLockOn(lockOn)
+    {
+    }
+
+    virtual MStatus doIt() override
+    {
+        GET_COMMAND_ASSET_OR_RETURN_FAIL();
+
+        MStatus status;
+
+        MFnDependencyNode assetNodeFn(myAssetNodeObj);
+        MPlug lockAsset = assetNodeFn.findPlug(AssetNode::lockAsset, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        bool lockOnState = lockAsset.asBool();
+
+        if(myLockOn == lockOnState)
+        {
+            // nothing to do
+            return MStatus::kSuccess;
+        }
+        myDagModifier.newPlugValueBool(lockAsset, myLockOn);
+
+        MItDependencyGraph iter(myAssetNodeObj,
+            MFn::kMessageAttribute, MItDependencyGraph::kUpstream,
+            MItDependencyGraph::kBreadthFirst, MItDependencyGraph::kPlugLevel, &status);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+        CHECK_MSTATUS_AND_RETURN_IT(iter.enablePruningOnFilter());
+
+        for(; !iter.isDone(); iter.next())
+        {
+            MPlug myNodeMsgPlug = iter.thisPlug(&status);
+            const unsigned int msgIx = myNodeMsgPlug.logicalIndex(&status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            MObject otherNode = myNodeMsgPlug.source().node(&status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+            
+            MPlug myNodeOutputPartPlug = myNodeMsgPlug.array().parent(&status);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+            
+            MFnDependencyNode otherNodeFn(otherNode, &status);
+            
+            if (otherNodeFn.typeId() == OutputPartInstancerNode::typeId)
+            {
+                if(myLockOn)
+                {
+                    MPlug pointDataPlug = otherNodeFn.findPlug(OutputPartInstancerNode::pointData, true, &status);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                    status = myDagModifier.disconnect(pointDataPlug.source(), pointDataPlug);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                }
+                else
+                {
+                    MPlug sourcePlug = myNodeOutputPartPlug.child(AssetNode::outputPartInstancer, &status);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                    sourcePlug = sourcePlug.child(AssetNode::outputPartInstancerArrayData, &status);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+                    MPlug pointDataPlug = otherNodeFn.findPlug(OutputPartInstancerNode::pointData, false, &status);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                    myDagModifier.connect(sourcePlug, pointDataPlug);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                }
+            }
+            else if(otherNode.hasFn(MFn::kMesh))
+            {
+                if(myLockOn)
+                {
+                    MPlug inMeshPlug = otherNodeFn.findPlug("inMesh", true, &status);
+                    status = myDagModifier.disconnect(inMeshPlug.source(), inMeshPlug);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                }
+                else
+                {
+                    MPlug inMeshPlug = otherNodeFn.findPlug("inMesh", false, &status);
+                    MPlug sourcePlug = myNodeOutputPartPlug.child(AssetNode::outputPartMesh, &status);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                    sourcePlug = sourcePlug.child(AssetNode::outputPartMeshData, &status);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                    status = myDagModifier.connect(sourcePlug, inMeshPlug);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+                }
+            }
+            else if(otherNode.hasFn(MFn::kNurbsCurve))
+            {
+                if(myLockOn)
+                {
+                    MPlug createPlug = otherNodeFn.findPlug("create", true, &status);
+                    status = myDagModifier.disconnect(createPlug.source(), createPlug);
+                    CHECK_MSTATUS(status);
+                }
+                else
+                {
+                    MPlug createPlug = otherNodeFn.findPlug("create", false, &status);
+                    MPlug sourcePlug = myNodeOutputPartPlug.child(AssetNode::outputPartCurves, &status);
+                    sourcePlug = sourcePlug.elementByLogicalIndex(msgIx, &status);
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+                    status = myDagModifier.connect(sourcePlug, createPlug);
+                    CHECK_MSTATUS(status);
+                }
+            }
+            else
+            {
+                DISPLAY_WARNING("Unexpected message connection to node ^1s", otherNodeFn.name());
+            }
+        }
+        status = myDagModifier.doIt();
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        return MStatus::kSuccess;
+    }
+
+    MStatus redoIt() override
+    {
+        myDagModifier.doIt();
+        return MStatus::kSuccess;
+    }
+
+    MStatus undoIt() override
+    {
+        myDagModifier.undoIt();
+        return MStatus::kSuccess;
+    }
+
+    bool isUndoable() const override
+    {
+        return true;
+    }
+};
+
 void* AssetCommand::creator()
 {
     return new AssetCommand();
@@ -143,6 +286,14 @@ AssetCommand::newSyntax()
     CHECK_MSTATUS(syntax.addFlag(kLoadAssetFlag, kLoadAssetFlagLong,
                 MSyntax::kString,
                 MSyntax::kString));
+
+    // -lockAsset will enable or disable 'locked' mode on the asset node, 
+    // which prevents any cooking of the asset node until the mode is disabled.
+    // expected arguments:
+    //        asset node
+    //        on/off
+    CHECK_MSTATUS(syntax.addFlag(kLockAssetFlag, kLockAssetFlagLong,
+        MSyntax::kSelectionItem, MSyntax::kBoolean));
 
     // -sync synchronize the Maya nodes with the asset's state
     // expected arguments:
@@ -207,6 +358,7 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(!(argData.isFlagSet(kListAssetsFlag)
                 ^ argData.isFlagSet(kLoadAssetFlag)
+                ^ argData.isFlagSet(kLockAssetFlag)
                 ^ argData.isFlagSet(kSyncFlag)
                 ^ argData.isFlagSet(kResetSimulationFlag)
                 ^ argData.isFlagSet(kCookMessagesFlag)
@@ -214,6 +366,7 @@ AssetCommand::parseArgs(const MArgList &args)
     {
         displayError("Exactly one of these flags must be specified:\n"
                 kLoadAssetFlagLong "\n"
+                kLockAssetFlagLong "\n"
                 kSyncFlagLong "\n"
                 kResetSimulationFlagLong "\n"
                 kCookMessagesFlagLong "\n"
@@ -354,6 +507,34 @@ AssetCommand::parseArgs(const MArgList &args)
         }
 
         mySubCommand = new AssetSubCommandResetSimulation(assetNodeObj);
+    }
+
+    if(argData.isFlagSet(kLockAssetFlag))
+    {
+        MObject assetNodeObj;
+        bool lockOn;
+        {
+            MSelectionList selection;
+
+            status = argData.getFlagArgument(kLockAssetFlag, 0, selection);
+            if(!status)
+            {
+                displayError("Invalid first argument for \"" kLockAssetFlagLong "\".");
+                return status;
+            }
+
+            selection.getDependNode(0, assetNodeObj);
+            CHECK_MSTATUS_AND_RETURN_IT(status);
+
+            status = argData.getFlagArgument(kLockAssetFlag, 1, lockOn);
+            if(!status)
+            {
+                displayError("Invalid second argument for \"" kLockAssetFlagLong "\".");
+                return status;
+            }
+        }
+
+        mySubCommand = new AssetSubCommandLockAsset(assetNodeObj, lockOn);
     }
 
     if(argData.isFlagSet(kCookMessagesFlag))

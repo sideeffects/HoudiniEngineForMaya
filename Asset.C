@@ -916,6 +916,12 @@ Asset::compute(
 {
     assert(myNodeInfo.id >= 0);
 
+    bool lockAsset = data
+        .inputValue(AssetNode::lockAsset).asBool();
+
+    if(lockAsset)
+        return MStatus::kSuccess;
+
     HAPI_Result hapiResult;
 
     MStatus stat(MS::kSuccess);

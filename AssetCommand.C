@@ -171,7 +171,7 @@ public:
             const unsigned int msgIx = myNodeMsgPlug.logicalIndex(&status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
-            MObject otherNode = myNodeMsgPlug.source().node(&status);
+            MObject otherNode = Util::plugSource(myNodeMsgPlug).node(&status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
             
             MPlug myNodeOutputPartPlug = myNodeMsgPlug.array().parent(&status);
@@ -185,7 +185,7 @@ public:
                 {
                     MPlug pointDataPlug = otherNodeFn.findPlug(OutputPartInstancerNode::pointData, true, &status);
                     CHECK_MSTATUS_AND_RETURN_IT(status);
-                    status = myDagModifier.disconnect(pointDataPlug.source(), pointDataPlug);
+                    status = myDagModifier.disconnect(Util::plugSource(pointDataPlug), pointDataPlug);
                     CHECK_MSTATUS_AND_RETURN_IT(status);
                 }
                 else
@@ -206,7 +206,7 @@ public:
                 if(myLockOn)
                 {
                     MPlug inMeshPlug = otherNodeFn.findPlug("inMesh", true, &status);
-                    status = myDagModifier.disconnect(inMeshPlug.source(), inMeshPlug);
+                    status = myDagModifier.disconnect(Util::plugSource(inMeshPlug), inMeshPlug);
                     CHECK_MSTATUS_AND_RETURN_IT(status);
                 }
                 else
@@ -225,7 +225,7 @@ public:
                 if(myLockOn)
                 {
                     MPlug createPlug = otherNodeFn.findPlug("create", true, &status);
-                    status = myDagModifier.disconnect(createPlug.source(), createPlug);
+                    status = myDagModifier.disconnect(Util::plugSource(createPlug), createPlug);
                     CHECK_MSTATUS(status);
                 }
                 else

@@ -3,6 +3,7 @@
 #include <maya/MSelectionList.h>
 #include <maya/MStatus.h>
 #include <maya/MItDependencyGraph.h>
+#include <maya/MPlug.h>
 
 #include "Asset.h"
 #include "AssetNode.h"

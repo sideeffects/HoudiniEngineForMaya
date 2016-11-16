@@ -3,7 +3,6 @@
 #include <maya/MSelectionList.h>
 #include <maya/MStatus.h>
 #include <maya/MItDependencyGraph.h>
-#include <maya/MPlug.h>
 
 #include "Asset.h"
 #include "AssetNode.h"
@@ -141,7 +140,7 @@ public:
     {
     }
 
-    virtual MStatus doIt() override
+    virtual MStatus doIt()
     {
         GET_COMMAND_ASSET_OR_RETURN_FAIL();
 
@@ -250,19 +249,19 @@ public:
         return MStatus::kSuccess;
     }
 
-    MStatus redoIt() override
+    MStatus redoIt()
     {
         myDagModifier.doIt();
         return MStatus::kSuccess;
     }
 
-    MStatus undoIt() override
+    MStatus undoIt()
     {
         myDagModifier.undoIt();
         return MStatus::kSuccess;
     }
 
-    bool isUndoable() const override
+    bool isUndoable() const
     {
         return true;
     }

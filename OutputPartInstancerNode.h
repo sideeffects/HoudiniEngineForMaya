@@ -1,12 +1,12 @@
 #ifndef __OutputPartInstancerNode_h_
 #define __OutputPartInstancerNode_h_
 
-#include <maya/MPxNode.h>
+#include <maya/MPxTransform.h>
 
 #include <HAPI_Common.h>
 
 // Utility node to allow persistence of instancer point data
-class OutputPartInstancerNode : public MPxNode
+class OutputPartInstancerNode : public MPxTransform
 {
 public:
     static void* creator();

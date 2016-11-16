@@ -581,11 +581,13 @@ initializePlugin(MObject obj)
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = plugin.registerNode(
+    status = plugin.registerTransform(
         OutputPartInstancerNode::typeName,
         OutputPartInstancerNode::typeId,
         OutputPartInstancerNode::creator,
-        OutputPartInstancerNode::initialize
+        OutputPartInstancerNode::initialize,
+        MPxTransformationMatrix::creator,
+        MPxTransformationMatrix::baseTransformationMatrixId
     );
     CHECK_MSTATUS_AND_RETURN_IT( status );
 

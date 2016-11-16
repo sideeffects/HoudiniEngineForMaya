@@ -608,7 +608,7 @@ SyncOutputGeometryPart::createOutputInstancer(
             if(Util::assetLockingEnabled())
             {
                 // Add a caching pass-through node for the inputPoints connection
-                MObject opiNode = myDagModifier.MDGModifier::createNode(OutputPartInstancerNode::typeId, &status);
+                MObject opiNode = myDagModifier.createNode(OutputPartInstancerNode::typeId, myPartTransform, &status);
                 CHECK_MSTATUS_AND_RETURN_IT(status);
 
                 MFnDependencyNode opiNodeFn(opiNode);

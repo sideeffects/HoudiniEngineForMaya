@@ -13,6 +13,7 @@ set(
     AssetCommand.C
     SubCommand.C
     AssetSubCommandLoadAsset.C
+    AssetSubCommandLockAsset.C
     AssetSubCommandSync.C
     EngineCommand.C
     Asset.C

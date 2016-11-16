@@ -1348,13 +1348,16 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
 
-    AssetNode::outputPartLockTracking = mAttr.create(
-        "outputPartLockTracking", "oplt"
-    );
-    mAttr.setStorable(false);
-    mAttr.setArray(true);
-    mAttr.setIndexMatters(true);
-    mAttr.setReadable(false);
+    if (Util::assetLockingEnabled())
+    {
+        AssetNode::outputPartLockTracking = mAttr.create(
+            "outputPartLockTracking", "oplt"
+        );
+        mAttr.setStorable(false);
+        mAttr.setArray(true);
+        mAttr.setIndexMatters(true);
+        mAttr.setReadable(false);
+    }
 
     AssetNode::outputParts = cAttr.create(
             "outputParts", "outputParts"
@@ -1371,8 +1374,11 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartInstancer);
     cAttr.addChild(AssetNode::outputPartExtraAttributes);
     cAttr.addChild(AssetNode::outputPartGroups);
-    cAttr.addChild(AssetNode::outputPartLockTracking);
-
+    
+    if(Util::assetLockingEnabled())
+    {
+        cAttr.addChild(AssetNode::outputPartLockTracking);
+    }
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
 #endif

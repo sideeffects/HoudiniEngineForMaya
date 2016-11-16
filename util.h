@@ -716,6 +716,9 @@ plugSource(const MPlug &plug);
 MPlugArray
 plugDestination(const MPlug &plug);
 
+bool
+assetLockingEnabled();
+
 }
 
 #endif

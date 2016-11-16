@@ -371,6 +371,12 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kLockAssetFlag))
     {
+        if(!Util::assetLockingEnabled())
+        {
+            displayError("Asset Locking is not enabled.");
+            return MStatus::kFailure;
+        }
+
         MObject assetNodeObj;
         bool lockOn;
         {

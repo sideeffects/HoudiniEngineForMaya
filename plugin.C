@@ -176,6 +176,7 @@ namespace
             , thriftPort("ThriftPort", 9090)
             , sessionPipeCustom("SessionPipeCustom", 0)
             , thriftPipe("ThriftPipe", "hapi")
+            , assetLocking("AssetLocking", 0)
         {}
 
         IntOptionVar     asyncMode;
@@ -184,10 +185,21 @@ namespace
         IntOptionVar     thriftPort;
         IntOptionVar     sessionPipeCustom;
         StringOptionVar  thriftPipe;
+        IntOptionVar     assetLocking;
 
     private:
         OptionVars& operator=(const OptionVars&);
     };
+}
+
+namespace Util
+{
+    bool
+    assetLockingEnabled()
+    {
+        OptionVars optionVars;
+        return optionVars.assetLocking.get() == 1;
+    }
 }
 
 namespace SessionType

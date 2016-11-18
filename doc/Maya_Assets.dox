@@ -10,14 +10,6 @@ The `houdiniAsset` node stores the asset name and the path of the HDA file. The 
 
 Instead of explicitly specifying the HDA path, you can use Houdini's path search mechanism for HDA files. This means Houdini Engine can also search for HDA files according to environment variables like `HOUDINI_PATH` and `HOUDINI_OTLSCAN_PATH`. This makes the HDA path optional, as long as the asset name can be found via the path search mechanism.
 
-@section Maya_Assets_SyncAsset Sync Asset
-
-In Houdini, a SOP can output any combination of geometry types, and the output geometry can change dynamically depending on many factors, such as parameters, input geometries, and asset logic. On the other hand, Maya requires a specific shape node for each specific kind of geometry. For example, creating a mesh requires a mesh node, and creating particles require a particle node.
-
-This means that depending on what an asset outputs, the corresponding shape nodes on the Maya side have to change. Otherwise, some of the asset outputs would not be available on the Maya side. One way to handle this is by using a Switch SOP, which switches between a box and some points. For example, if an asset is outputting a box, the Maya scene would require a mesh shape node to represent the mesh inside Maya. By changing a parameter on the Switch SOP, the asset could output points. The Maya scene would now require a particle shape node to represent the points inside Maya. So it's important to keep the Maya shape nodes in sync with what the asset is outputting.
-
-Another common scenario is an asset that emits particles. In the initial frame, the asset might not be emitting any particles yet. This means if the asset is instantiated in the initial frame, the asset won't be outputting any geometry at all, and no shape node will be created on the Maya side. So when the asset does begin to emit particles, they will not be visible in Maya because no shape node was created. You will need to sync the asset representation in Maya to match what the asset is actually outputting.
-
 @section Maya_Assets_Options Asset Options
 
 @image html Maya_AssetOptions.png

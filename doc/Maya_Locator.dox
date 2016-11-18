@@ -1,0 +1,11 @@
+/*!
+
+@page Maya_Locator Locator
+
+The plug-in supports inputting Maya locators.
+
+@section Maya_Locator_Input Input
+
+Maya locators are inputted into a Houdini asset as points. For each locator that is being inputted, a point is created in the Houdini side. The translation, rotation, and scale of each locator are inputted as `P`, `orient`, and `scale` attribute of the respective point.
+
+*/

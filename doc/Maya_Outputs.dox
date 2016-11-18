@@ -1,0 +1,26 @@
+/*!
+
+@page Maya_Outputs Outputs
+
+The plug-in supports outputting various types of Maya geometries from Houdini assets.
+
+The supported Maya geometry types for input are:
+- @ref Maya_Mesh_Output "Mesh"
+- @ref Maya_Particle_Output "Particle"
+- @ref Maya_Curve_Output "Curve"
+- @ref Maya_Volume_Output "Volume"
+- @ref Maya_Instancing_Output "Instancing"
+
+Outputting geometries from Houdini assets is fairly straightforward. Geometries are outputted from the SOP nodes that have the display flag set. For SOP-type assets, the display SOP within the SOP subnet will be outputted. For Object-type assets, the display SOP of each Object node within the Object subnet will be outputted.
+
+@section Maya_Outputs_Sync Sync
+
+In Houdini, a SOP can output any combination of geometry types, and the output geometry can change dynamically depending on many factors, such as parameters, input geometries, and asset logic. On the other hand, Maya requires a specific shape node for each specific kind of geometry. For example, creating polygons in Maya would require a `mesh` node, and creating particles require a `nParticle` node.
+
+This means that depending on what an asset outputs, the corresponding output nodes on the Maya side have to change. Otherwise, some of the geometries that the asset outputs would not incorrect or missing available on the Maya side.
+
+For example, it's easy to create an asset that uses a Switch SOP to switch between a box and some points. Depending on the parameter on the Switch SOP, the output geometry could be polygons or points. If the asset is outputting the box, then the Maya scene would require a `mesh` node. And if the parameter is changed, and the asset is outputting points, then the Maya scene would require a `nParticle` node. So it's important to keep the Maya shape nodes in sync with what the asset is outputting.
+
+Another common scenario is an asset that emits particles. In the initial frame, the asset might not be emitting any particles yet. This means if the asset is instantiated in the initial frame, the asset won't be outputting any geometry at all, and no shape node will be created on the Maya side. So when the asset does begin to emit particles, they will not be visible in Maya because no shape node was created. You will need to sync the asset representation in Maya to match what the asset is actually outputting.
+
+*/

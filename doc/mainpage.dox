@@ -9,14 +9,20 @@
   - @subpage Maya_Nodes "Nodes"
   - @subpage Maya_Parameters "Parameters"
 
+Input and Output Geometries
+
   - @subpage Maya_Inputs "Inputs"
+  - @subpage Maya_Outputs "Outputs"
   - @subpage Maya_Mesh "Mesh"
   - @subpage Maya_Particle "Particle"
+  - @subpage Maya_Locator "Locator"
   - @subpage Maya_Curve "Curve"
   - @subpage Maya_Hair "Hair"
   - @subpage Maya_Volume "Volume"
 
   - @subpage Maya_Instancing "Instancing"
+
+Other topics
 
   - @subpage Maya_Group "Group"
   - @subpage Maya_Materials "Materials"

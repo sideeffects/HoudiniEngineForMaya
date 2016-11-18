@@ -1,0 +1,35 @@
+/*!
+
+@page Maya_Instancing Instancing
+
+@tableofcontents
+
+@section Maya_Instancing_Output Output
+
+The plug-in supports outputting instances. Instances can be outputted from an asset in two ways, packed primitive or instancer object. Previously, instancer object was the only way to output instances. However, since support for packed primitive was added, using packed primitive is the recommended way to output instances.  Packed primitive can be represented in Maya in two ways, as a particle instancer, or as transform instances. Using particle instancer is also recommended, since it is more efficient than using transform instance, so it is able to handle large number of instances.
+
+@subsection Maya_Instancing_Output_ParticleInstancer Particle Instancer
+
+The recommended way to output instances is to use Maya's particle instancer. This will output the packed primitive using the instancer node, which is used for Maya's particle instancing.
+
+Since adding and removing instances does not require modifying the Maya scene, sync is not needed when instances are added or removed.
+
+Point and primitive attributes of the packed primitives are also available on the instancer node.
+
+@subsection Maya_Instancing_Output_TransformInstance Transform Instance
+
+Transform instances use DAG parenting to create instances. This creates DAG instances of the geometries in the Maya scene, which may be desirable depending on the situation. However, for large number of instances, this is less efficient than using particle instancer.
+
+Since DAG parenting require modification to the Maya scene, sync is required when instances are added or removed.
+
+Point and primitive attributes of the packed primitives are not available at the moment.
+
+@subsection Maya_Instancing_Output_NestedPackedPrimitive Nested Packed Primitive
+
+It's also possible to output nested packed primitives. This is where a packed primitive contains other packed primitives.
+
+When using particle instancer, the nested packed primitives will be flattened, and each geometry being instanced is put into its own instancer. This is because particle instancer doesn't support instancing another particle instancer.
+
+When using transform instances, the nested packed primitives are represented exactly. This is because DAG parenting is able to instance other DAG instances.
+
+*/

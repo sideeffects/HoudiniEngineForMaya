@@ -34,6 +34,12 @@ Toggle parameters are supported.
 
 Float and color ramp parameters are supported.
 
+@section Maya_Parameters_OperatorPath Operator Path
+
+@image html Maya_Parameters_OperatorPath.png
+
+Operator Path parameters are supported if the `Op Filter` is set to "Any Object" or "Any SOP". Maya geometries can be connected to these parameters. Similar to @ref Maya_Inputs, the connected Maya geometries are sent through Houdini Engine, and available as an input node on the Houdini side. The path of the input node is then set to the parameter. See @ref Maya_Inputs for more details.
+
 @section Maya_Parameters_Button Button
 
 @image html Maya_Parameters_Button.png

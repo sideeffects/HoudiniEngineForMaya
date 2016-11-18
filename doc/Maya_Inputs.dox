@@ -1,0 +1,44 @@
+/*!
+
+@page Maya_Inputs Inputs
+
+The plug-in supports using various types of Maya geometries as inputs to Houdini assets. When Maya geometries are connected as inputs, changes made to the Maya geometries will be automatically pushed to the Houdini asset, causing the Houdini asset to be evaluated.
+
+The supported Maya geometry types for input are:
+- @ref Maya_Mesh_Input "Mesh"
+- @ref Maya_Particle_Input "Particle"
+- @ref Maya_Curve_Input "Curve"
+- @ref Maya_Hair_Input "Hair"
+- @ref Maya_Locator_Input "Locator"
+
+There are two ways for to input geometries into Houdini assets: operator path parameters, and node inputs. These two ways are also how Houdini users would typically input geometries into Houdini assets.
+
+In the plug-in, there is no difference in functionality between the two ways of inputting geometry. They support the same types of geometry, and have the same features. The interface for setting the input in the Attribute Editor are also the same.
+
+@section Maya_Inputs_OperatorPathParameters Operator Path parameters
+
+@image html Maya_Input_Parameter.png
+
+Operator Path parameters are asset parameters that accepts an operator path to a Houdini node. For inputting geometries, the `Op Filter` needs to be set to "Any Object" or "Any SOP". When Maya geometries are assigned to an operator path parameter, appropriate Houdini nodes that represent the input geometry will be created, and the path of the Houdini node will then be set to the parameter. The asset can then use the operator path normally to access the input geometry.
+
+Although the parameter can be created manually, the more common and simple to create an Object Merge SOP, and promote the object parameter to the asset level. The input geometry is then accessible from the output of the Object Merge SOP.
+
+Inside Maya's Attribute Editor, Operator Path parameters would appear mixed in with other asset parameters, because Operator Path parameters are just another type of parameters.
+
+Operator Path parameters can be used for both Object-type assets and SOP-type assets to input geometry. However, for SOP-type assets, it is more common to use node connections directly.
+
+@section Maya_Inputs_NodeInputs Node Inputs
+
+@image html Maya_Input_Input.png
+
+By design, SOPs have node connectors for passing geometries. This means SOP-type assets can have node connectors for inputting geometries. The node connectors of an asset can be configured by changing the "Minimum Inputs" and "Maximum Inputs" in the "Operator Type Properties" dialog.
+
+In Maya's Attribute Editor, node inputs would appear at the very top under the "Inputs" section.
+
+@section Maya_Inputs_MultipleMixed Multiple and mixed geometry types
+
+It is possible to input any number of Maya geometries into a single asset input. It is also possible to mixed different types of geometries in an input. For example, it is possible to connect a mesh, curve, and particle from Maya into a single input of an Houdini asset. Each input geometry is inputted separately, and all the input geometries are then joined together on the Houdini side using a Merge SOP. The Merge SOP is then connected to the asset as a single input.
+
+If a group that contains multiple child objects is selected to use as input, the child objects will be expanded, and inputted as separate geometries. The group/transform hierarchy of the objects are not preserved.
+
+*/

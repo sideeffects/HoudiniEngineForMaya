@@ -11,7 +11,7 @@
 #include "InputCurveNode.h"
 #include "FluidGridConvert.h"
 #include "InputGeometryNode.h"
-#include "InputLocatorNode.h"
+#include "InputTransformNode.h"
 #include "InputMergeNode.h"
 #include "OutputPartInstancerNode.h"
 #include "util.h"
@@ -566,10 +566,10 @@ initializePlugin(MObject obj)
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.registerNode(
-            InputLocatorNode::typeName,
-            InputLocatorNode::typeId,
-            InputLocatorNode::creator,
-            InputLocatorNode::initialize
+            InputTransformNode::typeName,
+            InputTransformNode::typeId,
+            InputTransformNode::creator,
+            InputTransformNode::initialize
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -638,7 +638,7 @@ uninitializePlugin(MObject obj)
     status = plugin.deregisterNode(InputCurveNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = plugin.deregisterNode(InputLocatorNode::typeId);
+    status = plugin.deregisterNode(InputTransformNode::typeId);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     status = plugin.deregisterNode(InputMergeNode::typeId);

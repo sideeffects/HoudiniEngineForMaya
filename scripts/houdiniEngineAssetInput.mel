@@ -22,7 +22,7 @@ validateInputObjects(string $objects[],
     int $validObjectsCount = 0;
 
     string $curveObjects[];
-    string $locatorObjects[];
+    string $transformObjects[];
 
     while($objectsToProcessEnd)
     {
@@ -42,7 +42,7 @@ validateInputObjects(string $objects[],
         }
         else if(`objectType -isAType "houdiniInputGeometry" $object`
             || `objectType -isAType "houdiniInputCurve" $object`
-            || `objectType -isAType "houdiniInputLocator" $object`
+            || `objectType -isAType "houdiniInputTransform" $object`
             || `objectType -isAType "houdiniInputMerge" $object`)
         {
             $validObjects[size($validObjects)] = $object;
@@ -54,7 +54,7 @@ validateInputObjects(string $objects[],
         }
         else if(`objectType -isAType "locator" $object`)
         {
-            $locatorObjects[size($locatorObjects)] = $object;
+            $transformObjects[size($transformObjects)] = $object;
         }
         else if(`objectType -isAType "mesh" $object`
                 || `objectType -isAType "particle" $object`
@@ -86,10 +86,10 @@ validateInputObjects(string $objects[],
         $validObjectsCount++;
     }
 
-    if(size($locatorObjects))
+    if(size($transformObjects))
     {
-        $locatorObjects = stringArrayRemoveDuplicates($locatorObjects);
-        $multiObjects[1] = stringArrayToString($locatorObjects, " ");
+        $transformObjects = stringArrayRemoveDuplicates($transformObjects);
+        $multiObjects[1] = stringArrayToString($transformObjects, " ");
         $validObjectsCount++;
     }
 
@@ -134,7 +134,7 @@ getInputNodeForSingle(string $object)
     }
     else if(`objectType -isAType "houdiniInputGeometry" $object`
             || `objectType -isAType "houdiniInputCurve" $object`
-            || `objectType -isAType "houdiniInputLocator" $object`
+            || `objectType -isAType "houdiniInputTransform" $object`
             || `objectType -isAType "houdiniInputMerge" $object`)
     {
         return ($object + ".outputNodeId");
@@ -235,12 +235,12 @@ getInputNodeForMultiple(int $type, string $objects[])
                     ($inputNode + ".inputCurve[" + $i + "]");
             }
             break;
-        // locator
+        // transform
         case 1:
             if(!size($objects))
                 return "";
 
-            $inputNode = `createNode -skipSelect "houdiniInputLocator"`;
+            $inputNode = `createNode -skipSelect "houdiniInputTransform"`;
 
             for($i = 0; $i < size($objects); $i++)
             {
@@ -271,7 +271,7 @@ houdiniEngine_clearAssetInput(string $inputAttr)
     string $sourceInputNode = `plugNode($sourceInputPlug)`;
     if(`nodeType $sourceInputNode` == "houdiniInputGeometry"
         || `nodeType $sourceInputNode` == "houdiniInputCurve"
-        || `nodeType $sourceInputNode` == "houdiniInputLocator"
+        || `nodeType $sourceInputNode` == "houdiniInputTransform"
         || `nodeType $sourceInputNode` == "houdiniInputMerge")
     {
         // if houdiniInputGeometry node is no longer outputting to anything anymore,
@@ -412,7 +412,7 @@ houdiniEngine_getAssetInput(string $inputAttr)
                 $inputGeometryNodes[size($inputGeometryNodes)] = plugNode($plug);
             }
         }
-        else if(`nodeType $inputNode` == "houdiniInputLocator")
+        else if(`nodeType $inputNode` == "houdiniInputTransform")
         {
             string $plugs[] = `listConnections
                 -plugs true -destination true

@@ -1,11 +1,11 @@
-#ifndef __InputLocatorNode_h__
-#define __InputLocatorNode_h__
+#ifndef __InputTransformNode_h__
+#define __InputTransformNode_h__
 
 #include <maya/MPxNode.h>
 
 #include <HAPI_Common.h>
 
-class InputLocatorNode : public MPxNode
+class InputTransformNode : public MPxNode
 {
 public:
     static void* creator();
@@ -21,8 +21,8 @@ public:
     static MObject outputNodeId;
 
 public:
-    InputLocatorNode();
-    virtual ~InputLocatorNode();
+    InputTransformNode();
+    virtual ~InputTransformNode();
 
     virtual MStatus compute(
             const MPlug &plug,

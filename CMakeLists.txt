@@ -22,7 +22,7 @@ set(
     InputMesh.C
     InputCurve.C
     InputParticle.C
-    InputLocatorNode.C
+    InputTransformNode.C
     InputMergeNode.C
     OutputObject.C
     util.C

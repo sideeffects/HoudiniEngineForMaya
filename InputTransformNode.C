@@ -1,4 +1,4 @@
-#include "InputLocatorNode.h"
+#include "InputTransformNode.h"
 
 #include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnNumericAttribute.h>
@@ -9,55 +9,55 @@
 #include "hapiutil.h"
 #include "util.h"
 
-MString InputLocatorNode::typeName("houdiniInputLocator");
-MTypeId InputLocatorNode::typeId(MayaTypeID_HoudiniInputLocatorNode);
+MString InputTransformNode::typeName("houdiniInputTransform");
+MTypeId InputTransformNode::typeId(MayaTypeID_HoudiniInputTransformNode);
 
-MObject InputLocatorNode::inputTransform;
-MObject InputLocatorNode::inputMatrix;
-MObject InputLocatorNode::outputNodeId;
+MObject InputTransformNode::inputTransform;
+MObject InputTransformNode::inputMatrix;
+MObject InputTransformNode::outputNodeId;
 
 void*
-InputLocatorNode::creator()
+InputTransformNode::creator()
 {
-    return new InputLocatorNode();
+    return new InputTransformNode();
 }
 
 MStatus
-InputLocatorNode::initialize()
+InputTransformNode::initialize()
 {
     MFnMatrixAttribute mAttr;
     MFnNumericAttribute nAttr;
 
-    InputLocatorNode::inputTransform = mAttr.create(
+    InputTransformNode::inputTransform = mAttr.create(
             "inputTransform", "inputTransform"
             );
-    addAttribute(InputLocatorNode::inputTransform);
+    addAttribute(InputTransformNode::inputTransform);
 
-    InputLocatorNode::inputMatrix = mAttr.create(
+    InputTransformNode::inputMatrix = mAttr.create(
             "inputMatrix", "inputMatrix"
             );
     mAttr.setArray(true);
     mAttr.setCached(false);
     mAttr.setStorable(false);
     mAttr.setDisconnectBehavior(MFnAttribute::kDelete);
-    addAttribute(InputLocatorNode::inputMatrix);
+    addAttribute(InputTransformNode::inputMatrix);
 
-    InputLocatorNode::outputNodeId = nAttr.create(
+    InputTransformNode::outputNodeId = nAttr.create(
             "outputNodeId", "outputNodeId",
             MFnNumericData::kInt,
             -1
             );
     nAttr.setCached(false);
     nAttr.setStorable(false);
-    addAttribute(InputLocatorNode::outputNodeId);
+    addAttribute(InputTransformNode::outputNodeId);
 
-    attributeAffects(InputLocatorNode::inputTransform, InputLocatorNode::outputNodeId);
-    attributeAffects(InputLocatorNode::inputMatrix, InputLocatorNode::outputNodeId);
+    attributeAffects(InputTransformNode::inputTransform, InputTransformNode::outputNodeId);
+    attributeAffects(InputTransformNode::inputMatrix, InputTransformNode::outputNodeId);
 
     return MStatus::kSuccess;
 }
 
-InputLocatorNode::InputLocatorNode() :
+InputTransformNode::InputTransformNode() :
     myGeometryNodeId(-1)
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
@@ -73,7 +73,7 @@ InputLocatorNode::InputLocatorNode() :
     }
 }
 
-InputLocatorNode::~InputLocatorNode()
+InputTransformNode::~InputTransformNode()
 {
     CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
@@ -82,14 +82,14 @@ InputLocatorNode::~InputLocatorNode()
 }
 
 MStatus
-InputLocatorNode::compute(
+InputTransformNode::compute(
         const MPlug &plug,
         MDataBlock &dataBlock
         )
 {
-    if(plug == InputLocatorNode::outputNodeId)
+    if(plug == InputTransformNode::outputNodeId)
     {
-        MPlug inputMatrixArrayPlug(thisMObject(), InputLocatorNode::inputMatrix);
+        MPlug inputMatrixArrayPlug(thisMObject(), InputTransformNode::inputMatrix);
 
         const unsigned int pointCount = inputMatrixArrayPlug.numElements();
 
@@ -174,7 +174,7 @@ InputLocatorNode::compute(
                 );
 
         MDataHandle outputNodeIdHandle =
-            dataBlock.outputValue(InputLocatorNode::outputNodeId);
+            dataBlock.outputValue(InputTransformNode::outputNodeId);
 
         outputNodeIdHandle.setInt(myGeometryNodeId);
 

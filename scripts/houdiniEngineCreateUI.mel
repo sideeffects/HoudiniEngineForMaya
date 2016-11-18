@@ -359,6 +359,14 @@ houdiniEngine_launchOrboltPageClick()
 }
 
 global proc
+houdiniEngine_onlineDocumentation()
+{
+    string $houdiniVersions[] = getHoudiniVersions();
+
+    launch -web ("http://www.sidefx.com/docs/maya" + $houdiniVersions[0] + "/");
+}
+
+global proc
 houdiniEngine_launchForum()
 {
     launch -web "https://www.sidefx.com/forum/46/";
@@ -553,6 +561,11 @@ houdiniEngineCreateUI()
     menuItem
         -label "Help and Support"
         -subMenu true;
+
+        menuItem -label "Online documentation"
+            -command "houdiniEngine_onlineDocumentation";
+
+        menuItem -divider true;
 
         menuItem -label "Visit Houdini Engine for Maya forum"
             -command "houdiniEngine_launchForum";

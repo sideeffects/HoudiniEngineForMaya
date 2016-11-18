@@ -361,7 +361,7 @@ houdiniEngine_launchOrboltPageClick()
 global proc
 houdiniEngine_launchForum()
 {
-    launch -web "http://www.sidefx.com/index.php?option=com_forum&Itemid=172&page=viewforum&f=53";
+    launch -web "https://www.sidefx.com/forum/46/";
 }
 
 global proc
@@ -456,7 +456,7 @@ houdiniEngine_launchSubmitBugs()
         -stringArg $description
         "&description=^1s"`;
 
-    launch -web ("http://www.sidefx.com/index.php?option=com_content&task=view&id=768&Itemid=239"
+    launch -web ("http://archive.sidefx.com/index.php?option=com_content&task=view&id=768&Itemid=239"
             + $extraURLParameters);
 }
 
@@ -477,7 +477,7 @@ houdiniEngine_launchChangeLog()
         -stringArg $houdiniVersions[1]
         "&buildend=^1s"`;
 
-    launch -web ("https://www.sidefx.com/index.php?option=com_journal&Itemid=213&page=index&journal=default&view=FULL&logfile=ALL&icon=maya&perpage=20"
+    launch -web ("https://archive.sidefx.com/index.php?option=com_journal&Itemid=213&page=index&journal=default&view=FULL&logfile=ALL&icon=maya&perpage=20"
             + $extraURLParameters);
 }
 

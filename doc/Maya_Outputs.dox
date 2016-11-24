@@ -2,6 +2,8 @@
 
 @page Maya_Outputs Outputs
 
+@tableofcontents
+
 The plug-in supports outputting various types of Maya geometries from Houdini assets.
 
 The supported Maya geometry types for input are:
@@ -12,6 +14,19 @@ The supported Maya geometry types for input are:
 - @ref Maya_Instancing_Output "Instancing"
 
 Outputting geometries from Houdini assets is fairly straightforward. Geometries are outputted from the SOP nodes that have the display flag set. For SOP-type assets, the display SOP within the SOP subnet will be outputted. For Object-type assets, the display SOP of each Object node within the Object subnet will be outputted.
+
+@section Maya_Outputs_ExtraAttributes Custom Attributes
+
+Depending on which geometry type is being outputted, the plug-in will recognize and use certain standard attributes. For example, `N` and `uv` attributes are used to output Maya meshes, and `v` and `id` attributes are used to output Maya particles. In addition to the standard attributes, it is common for Houdini assets to output custom attributes. When the output Houdini geometry contains attributes that are not recognized by the geometry type, the attributes will be treated as custom attributes. Custom attributes will be outputted onto the Maya shape node as an extra attribute.
+
+Detail, primitive, vertex, and point class attributes are supported. The supported data types for custom attributes are:
+- float
+- int
+- string
+
+Tuples of the above data types are also supported.
+
+There are some restrictions when outputting particles. See @ref Maya_Particle_Output "particles" for more details.
 
 @section Maya_Outputs_Sync Sync
 

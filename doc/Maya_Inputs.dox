@@ -2,6 +2,8 @@
 
 @page Maya_Inputs Inputs
 
+@tableofcontents
+
 The plug-in supports using various types of Maya geometries as inputs to Houdini assets. When Maya geometries are connected as inputs, changes made to the Maya geometries will be automatically pushed to the Houdini asset, causing the Houdini asset to be evaluated.
 
 The supported Maya geometry types for input are:

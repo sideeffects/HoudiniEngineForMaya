@@ -12,7 +12,7 @@ Maya particles are inputted into Houdini assets as points. Both Maya particle an
 
 @section Maya_Particle_Output Output
 
-Points from a Houdini asset are output as an `nParticle` node. When points are output, the plug-in will output all Houdini point attributes as Maya per-particle attributes. Since Maya only supports float and vector per-particle attributes, only `float` and `float3` point attributes are output into Maya particles. Any other attributes are ignored.
+Points from a Houdini asset are output as an `nParticle` node. When points are output, the plug-in will output all Houdini point attributes as Maya per-particle attributes. Since Maya only supports float and vector per-particle attributes, `float` and `float3` point attributes are output into Maya particles. Since Maya particles does not support integer per-particle attributes, `int` point attributes would be converted and outputted as `float` attributes. Any other attributes, such as string attributes, are ignored.
 
 @section Maya_Particle_MappedAttributes Mapped Attributes
 

@@ -1,0 +1,17 @@
+/*!
+
+@page Maya_Debugging Debugging
+
+When using Houdini Engine, Houdini Engine is internally managing a Houdini scene. When a Houdini asset is instantiated inside Maya, Houdini Engine actually instantiates the Houdini asset inside the Houdini scene. When input geometries from Maya are connected to the Houdini asset, the Maya geometry is replicated into the Houdini scene. Asset parameters that are set in Maya are also mirrored in the Houdini scene. Finally, the geometries that the Houdini asset outputs from the Houdini scene are replicated back into Maya. So the internal Houdini scene is at the very core of how Houdini Engine works.
+
+The internals are normally hidden away from users. However, there are times when there is a need to investigate into why an asset isn't behaving as expected. So being able to inspect the internal Houdini scene can be very useful. This is especially true in cases where an asset is behaving correctly inside Houdini, but behaving correctly through Houdini Engine.
+
+@image html Maya_Debugging.png
+
+In the `Houdini Engine -> Debugging` menu, there are options to view, or save out, the internal Houdini scene. The internal Houdini scene can then be inspected in a separate Houdini UI session. This is extremely helpful when troubleshooting various Houdini Engine issues. This also means that inspecting the internal Houdini scene requires a license capable of running the Houdini UI.
+
+Another interesting use of this debugging feature is to see exactly what data and metadata is being passed into the Houdini scene when inputting geometry. For example, simply create a null asset and connect a Maya geometry to the asset. The exact data and metadata can then be seen from the Houdini scene. This is much quicker and reliable than checking the documentations.
+
+Another useful workflow is to author assets while viewing this internal Houdini scene. The benefit is that the replicated Maya geometry is immediately available in this Houdini scene. Asset authors can directly test how the Maya geometry would behave in the asset. The author can also have Houdini and Maya running at the same time. Then, the author can make changes to the asset in the Houdini UI, save the asset in the Houdini UI, and @ref Maya_Assets_Options_ReloadAsset "reload the asset" inside Maya to immediately see the changes.
+
+*/

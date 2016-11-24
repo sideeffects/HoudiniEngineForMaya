@@ -25,8 +25,7 @@ Input and Output Geometries
 Other topics
 
   - @subpage Maya_Group "Group"
-  - @subpage Maya_Materials "Materials"
+  - @subpage Maya_Debugging "Debugging"
   - @subpage Maya_Time "Time"
-  - @subpage Maya_Handles "Handles"
 
 */

@@ -1,0 +1,30 @@
+/*!
+
+@page Maya_Time Time
+
+@section Maya_Time_TimeAndFrame Time and Frame
+
+Whenever time changes in Maya, Houdini Engine is also updated with the new time. This means assets can use time, and be time-dependent. It's important to note that, in Houdini, "frame 1" is "0 seconds". However, in Maya, "frame 0" is "0 seconds". The plugin sets time such that Houdini Engine's frame number match with Maya's frame number. This means `$F` in Houdini will evaluate to the same frame number as Maya. However, this also means that, when compared to Maya, `$T` in Houdini will look to be shifted by one frame.
+
+Maya's unit of time (frames per second) is also passed into Houdini. This is important for assets that relies on time in seconds for evaluation, such as dynamic simulations.
+
+@section Maya_Time_TimeDependentInputs Time-dependent Inputs
+
+Assets can be time-dependent, input geometries to the asset can be animated, and asset parameters can also be animated.
+
+Houdini Engine is designed to use a push mechanism for passing input geometries and asset parameters from Maya to Houdini Engine. Before evaluating an asset through Houdini Engine at the current frame, the input geometries and asset parameters of the current frame are passed into Houdini Engine. And while an asset is evaluating, the asset is unable to request additional data from Maya. So the asset only has access to the current frame's data that.
+
+When evaluating an asset for the current frame, most assets only use input data from the current frame, so they will evaluate correctly under this push mechanism. However, in some more advanced assets, assets may contain nodes and expressions that need to access input geometries and asset parameters from other frames. From the point of view of these nodes and expressions, the input geometries and asset parameters from Maya would seem static for all frames, and these nodes and expressions won't produce the correct results.
+
+Some nodes that are likely to run into this limitation are easily identifiable:
+- `timeshift` SOP
+- `timewarp` SOP
+- `timeblend` SOP
+
+The nature of these nodes are to produce an output in the current frame, by using geometries from other frames. So it's quite clear that these nodes would have run into this limitation. However, there are some nodes that are slightly less obvious. For example, when using the `trail` SOP under "Compute Velocity" mode, the SOP would still require geometries from other frames to produce the correct output.
+
+Another less obvious example is using ROP nodes, like `rop_geometry` and `rop_alembic`, to output frame sequences. In order for ROP nodes to render out frame sequences, they also need to access input geometry from multiple frames. In this case, a potential workaround on the Maya side would be to use a script to iterate the frame range, and render out the geometry of the each frame one at a time. This would ensure the ROP node only writes out the frame that the input geometry is available for.
+
+It is also important to note that this limitation only applies to accessing time-dependent input from Maya. If the time-dependent data is generated from inside the asset, then nodes and expressions are still able to access the time-dependent data freely without limitation.
+
+*/

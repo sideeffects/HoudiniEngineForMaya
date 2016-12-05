@@ -563,7 +563,7 @@ Asset::~Asset()
 bool
 Asset::isValid() const
 {
-    return myAssetInfo.id >= 0;
+    return myAssetInfo.nodeId >= 0;
 }
 
 MString

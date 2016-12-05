@@ -2086,7 +2086,7 @@ OutputGeometryPart::computeMaterial(
                 // this could fail if texture parameter is empty
                 hapiResult = HAPI_RenderTextureToImage(
                         Util::theHAPISession.get(),
-                        myMaterialInfo.id,
+                        myMaterialInfo.nodeId,
                         texturePathSHParmIndex
                         );
 
@@ -2104,7 +2104,7 @@ OutputGeometryPart::computeMaterial(
                 // this could fail if the image planes don't exist
                 hapiResult = HAPI_ExtractImageToFile(
                         Util::theHAPISession.get(),
-                        myMaterialInfo.id,
+                        myMaterialInfo.nodeId,
                         HAPI_PNG_FORMAT_NAME,
                         "C A",
                         destinationFolderPath.asChar(),

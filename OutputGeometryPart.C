@@ -1954,7 +1954,7 @@ OutputGeometryPart::computeMaterial(
         = materialHandle.child(AssetNode::outputPartTexturePath);
 
     //TODO: HAPI 3
-    //HAPI_MaterialId materialId;
+    //HAPI_NodeId materialId;
     //HAPI_GetMaterialIdsOnFaces(
     //        Util::theHAPISession.get(),
     //        myNodeId, myPartId,

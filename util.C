@@ -926,7 +926,7 @@ plugDestination(const MPlug &plug)
     MStatus status;
 
     MPlugArray connectedPlugs;
-    plug.connectedTo(connectedPlugs, true, false, &status);
+    plug.connectedTo(connectedPlugs, false, true, &status);
     CHECK_MSTATUS(status);
 
     if(!connectedPlugs.length())

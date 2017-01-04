@@ -13,7 +13,6 @@ set(
     AssetCommand.C
     SubCommand.C
     AssetSubCommandLoadAsset.C
-    AssetSubCommandLockAsset.C
     AssetSubCommandSync.C
     EngineCommand.C
     Asset.C
@@ -27,7 +26,6 @@ set(
     OutputObject.C
     util.C
     OutputGeometryObject.C
-    OutputPartInstancerNode.C
     OutputInstancerObject.C
     OutputGeometry.C
     OutputGeometryPart.C

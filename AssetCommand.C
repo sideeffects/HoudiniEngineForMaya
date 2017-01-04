@@ -8,7 +8,6 @@
 #include "AssetCommand.h"
 #include "SubCommand.h"
 #include "AssetSubCommandLoadAsset.h"
-#include "AssetSubCommandLockAsset.h"
 #include "AssetSubCommandSync.h"
 #include "util.h"
 
@@ -16,8 +15,6 @@
 #define kListAssetsFlagLong "-listAssets"
 #define kLoadAssetFlag "-la"
 #define kLoadAssetFlagLong "-loadAsset"
-#define kLockAssetFlag "-lk"
-#define kLockAssetFlagLong "-lockAsset"
 #define kSyncFlag "-syn"
 #define kSyncFlagLong "-sync"
 #define kResetSimulationFlag "-rs"
@@ -147,14 +144,6 @@ AssetCommand::newSyntax()
                 MSyntax::kString,
                 MSyntax::kString));
 
-    // -lockAsset will enable or disable 'locked' mode on the asset node, 
-    // which prevents any cooking of the asset node until the mode is disabled.
-    // expected arguments:
-    //        asset node
-    //        on/off
-    CHECK_MSTATUS(syntax.addFlag(kLockAssetFlag, kLockAssetFlagLong,
-        MSyntax::kSelectionItem, MSyntax::kBoolean));
-
     // -sync synchronize the Maya nodes with the asset's state
     // expected arguments:
     //        asset node
@@ -218,7 +207,6 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(!(argData.isFlagSet(kListAssetsFlag)
                 ^ argData.isFlagSet(kLoadAssetFlag)
-                ^ argData.isFlagSet(kLockAssetFlag)
                 ^ argData.isFlagSet(kSyncFlag)
                 ^ argData.isFlagSet(kResetSimulationFlag)
                 ^ argData.isFlagSet(kCookMessagesFlag)
@@ -226,7 +214,6 @@ AssetCommand::parseArgs(const MArgList &args)
     {
         displayError("Exactly one of these flags must be specified:\n"
                 kLoadAssetFlagLong "\n"
-                kLockAssetFlagLong "\n"
                 kSyncFlagLong "\n"
                 kResetSimulationFlagLong "\n"
                 kCookMessagesFlagLong "\n"
@@ -367,40 +354,6 @@ AssetCommand::parseArgs(const MArgList &args)
         }
 
         mySubCommand = new AssetSubCommandResetSimulation(assetNodeObj);
-    }
-
-    if(argData.isFlagSet(kLockAssetFlag))
-    {
-        if(!Util::assetLockingEnabled())
-        {
-            displayError("Asset Locking is not enabled.");
-            return MStatus::kFailure;
-        }
-
-        MObject assetNodeObj;
-        bool lockOn;
-        {
-            MSelectionList selection;
-
-            status = argData.getFlagArgument(kLockAssetFlag, 0, selection);
-            if(!status)
-            {
-                displayError("Invalid first argument for \"" kLockAssetFlagLong "\".");
-                return status;
-            }
-
-            selection.getDependNode(0, assetNodeObj);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-
-            status = argData.getFlagArgument(kLockAssetFlag, 1, lockOn);
-            if(!status)
-            {
-                displayError("Invalid second argument for \"" kLockAssetFlagLong "\".");
-                return status;
-            }
-        }
-
-        mySubCommand = new AssetSubCommandLockAsset(assetNodeObj, lockOn);
     }
 
     if(argData.isFlagSet(kCookMessagesFlag))

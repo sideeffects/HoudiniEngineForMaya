@@ -38,7 +38,6 @@ MObject AssetNode::autoSyncOutputs;
 MObject AssetNode::splitGeosByGroup;
 MObject AssetNode::outputHiddenObjects;
 MObject AssetNode::outputTemplatedGeometries;
-MObject AssetNode::lockAsset;
 MObject AssetNode::useAssetObjectTransform;
 
 MObject AssetNode::input;
@@ -139,7 +138,6 @@ MObject AssetNode::outputPartVolumeScaleZ;
 
 MObject AssetNode::outputPartInstancer;
 MObject AssetNode::outputPartInstancerArrayData;
-MObject AssetNode::outputPartLockTracking;
 MObject AssetNode::outputPartInstancerParts;
 
 MObject AssetNode::outputPartInstancerTransform;
@@ -320,11 +318,6 @@ AssetNode::initialize()
 
     AssetNode::useAssetObjectTransform = nAttr.create(
             "useAssetObjectTransform", "useAssetObjectTransform",
-            MFnNumericData::kBoolean
-            );
-
-    AssetNode::lockAsset = nAttr.create(
-            "lockAsset", "lockAsset",
             MFnNumericData::kBoolean
             );
 
@@ -1348,17 +1341,6 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
 
-    if (Util::assetLockingEnabled())
-    {
-        AssetNode::outputPartLockTracking = mAttr.create(
-            "outputPartLockTracking", "oplt"
-        );
-        mAttr.setStorable(false);
-        mAttr.setArray(true);
-        mAttr.setIndexMatters(true);
-        mAttr.setReadable(false);
-    }
-
     AssetNode::outputParts = cAttr.create(
             "outputParts", "outputParts"
             );
@@ -1375,10 +1357,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartExtraAttributes);
     cAttr.addChild(AssetNode::outputPartGroups);
     
-    if(Util::assetLockingEnabled())
-    {
-        cAttr.addChild(AssetNode::outputPartLockTracking);
-    }
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
 #endif
@@ -1502,7 +1480,6 @@ AssetNode::initialize()
     addAttribute(AssetNode::outputHiddenObjects);
     addAttribute(AssetNode::outputTemplatedGeometries);
     addAttribute(AssetNode::useAssetObjectTransform);
-    addAttribute(AssetNode::lockAsset);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);
@@ -1691,13 +1668,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
         != computeAttributes.end() && !myResultsClean)
     {
-        bool lockAsset = data
-            .inputValue( AssetNode::lockAsset ).asBool();
-        if (lockAsset)
-        {
-            return MStatus::kSuccess;
-        }
-
         // make sure asset was created properly
         if(!isAssetValid())
         {

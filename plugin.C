@@ -13,7 +13,6 @@
 #include "InputGeometryNode.h"
 #include "InputTransformNode.h"
 #include "InputMergeNode.h"
-#include "OutputPartInstancerNode.h"
 #include "util.h"
 
 #include <HAPI_Version.h>
@@ -580,16 +579,6 @@ initializePlugin(MObject obj)
             InputMergeNode::initialize
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    status = plugin.registerTransform(
-        OutputPartInstancerNode::typeName,
-        OutputPartInstancerNode::typeId,
-        OutputPartInstancerNode::creator,
-        OutputPartInstancerNode::initialize,
-        MPxTransformationMatrix::creator,
-        MPxTransformationMatrix::baseTransformationMatrixId
-    );
-    CHECK_MSTATUS_AND_RETURN_IT( status );
 
 #if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(

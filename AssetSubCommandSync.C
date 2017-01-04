@@ -68,15 +68,6 @@ AssetSubCommandSync::doIt()
 
     MFnDagNode assetNodeFn(myAssetNodeObj, &status);
 
-    MPlug lockAsset = assetNodeFn.findPlug(AssetNode::lockAsset, &status);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-    bool lockOnState = lockAsset.asBool();
-    if(lockOnState)
-    {
-        MGlobal::displayWarning("Cannot sync " + assetNodeFn.name() + MString(" because lockAsset is set."));
-        return MStatus::kFailure;
-    }
-
     // save selection
     MSelectionList oldSelection;
     MGlobal::getActiveSelectionList(oldSelection);

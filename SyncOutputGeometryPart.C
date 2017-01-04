@@ -16,7 +16,6 @@
 
 #include "AssetNode.h"
 #include "util.h"
-#include "OutputPartInstancerNode.h"
 
 #include <string>
 #include <algorithm>
@@ -309,19 +308,6 @@ SyncOutputGeometryPart::createOutputMesh(
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
-    // tracking message
-    if (Util::assetLockingEnabled())
-    {
-        MPlug dstPlug = meshPlug.parent();
-        MPlug srcPlug = partMeshFn.findPlug("message");
-        dstPlug = dstPlug.child(AssetNode::outputPartLockTracking, &status);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-        dstPlug = dstPlug.elementByLogicalIndex(0, &status);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-        status = myDagModifier.connect(srcPlug, dstPlug);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
-
     MPlug mayaSGAttributePlug;
     createOutputExtraAttributes(
             meshShape,
@@ -384,17 +370,6 @@ SyncOutputGeometryPart::createOutputCurves(
         CHECK_MSTATUS(status);
 
         myDagModifier.connect(curvePlug, dstPlug);
-
-        // tracking message
-        if(Util::assetLockingEnabled())
-        {
-            MPlug opltPlug = curvesPlug.parent().child(AssetNode::outputPartLockTracking, &status);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-            opltPlug = opltPlug.elementByLogicalIndex(i, &status);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-            status = myDagModifier.connect(curveShapeFn.findPlug("message"), opltPlug);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-        }
     }
 
     return MStatus::kSuccess;
@@ -605,36 +580,10 @@ SyncOutputGeometryPart::createOutputInstancer(
             status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits"), 1);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
-            if(Util::assetLockingEnabled())
-            {
-                // Add a caching pass-through node for the inputPoints connection
-                MObject opiNode = myDagModifier.createNode(OutputPartInstancerNode::typeId, myPartTransform, &status);
-                CHECK_MSTATUS_AND_RETURN_IT(status);
-
-                MFnDependencyNode opiNodeFn(opiNode);
-                MPlug pointDataPlug = opiNodeFn.findPlug(OutputPartInstancerNode::pointData, &status);
-
-                status = myDagModifier.connect(instancerPlug.child(AssetNode::outputPartInstancerArrayData), pointDataPlug);
-                CHECK_MSTATUS_AND_RETURN_IT(status);
-
-                status = myDagModifier.connect(pointDataPlug, instancerFn.findPlug("inputPoints", &status));
-                CHECK_MSTATUS_AND_RETURN_IT(status);
-
-                // tracking message
-                MPlug opltPlug = instancerPlug.parent().child(AssetNode::outputPartLockTracking, &status);
-                CHECK_MSTATUS_AND_RETURN_IT(status);
-                opltPlug = opltPlug.elementByLogicalIndex(i, &status);
-                CHECK_MSTATUS_AND_RETURN_IT(status);
-                status = myDagModifier.connect(opiNodeFn.findPlug("message"), opltPlug);
-                CHECK_MSTATUS_AND_RETURN_IT(status);
-            }
-            else
-            {
-                // connect instancer directly to assetnode
-                status = myDagModifier.connect(
-                    instancerPlug.child(AssetNode::outputPartInstancerArrayData),
-                    instancerFn.findPlug("inputPoints"));
-            }
+            // connect instancer directly to assetnode
+            status = myDagModifier.connect(
+                instancerPlug.child(AssetNode::outputPartInstancerArrayData),
+                instancerFn.findPlug("inputPoints"));
 
             MPlug mayaSGAttributePlug;
             createOutputExtraAttributes(

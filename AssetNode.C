@@ -13,6 +13,7 @@
 #include <maya/MFileIO.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
+#include <maya/MModelMessage.h>
 #include <maya/MPlugArray.h>
 
 #include <algorithm>
@@ -1497,6 +1498,27 @@ AssetNode::initialize()
     return MS::kSuccess;
 }
 
+void
+AssetNode::nodeAdded(MObject& node,void *clientData)
+{
+    if(MGlobal::isUndoing())
+    {
+        AssetNode* assetNode = static_cast<AssetNode*>(clientData);
+        assetNode->createAsset();
+
+        // If a node was removed from the scene, all the parms need to be set
+        // again.
+        assetNode->mySetAllParms = true;
+    }
+}
+
+void
+AssetNode::nodeRemoved(MObject& node,void *clientData)
+{
+    AssetNode* assetNode = static_cast<AssetNode*>(clientData);
+    assetNode->destroyAsset();
+}
+
 AssetNode::AssetNode() :
     myNeedToMarshalInput(false)
 {
@@ -1522,6 +1544,16 @@ AssetNode::~AssetNode()
 void
 AssetNode::postConstructor()
 {
+    MModelMessage::addNodeAddedToModelCallback(
+            thisMObject(),
+            AssetNode::nodeAdded,
+            this
+            );
+    MModelMessage::addNodeRemovedFromModelCallback(
+            thisMObject(),
+            AssetNode::nodeRemoved,
+            this
+            );
 }
 
 MStatus
@@ -1656,8 +1688,6 @@ AssetNode::rebuildAsset()
     destroyAsset();
 
     createAsset();
-
-    myResultsClean = false;
 }
 
 MStatus
@@ -1915,6 +1945,8 @@ AssetNode::createAsset()
     // loaded yet. So we can't restore the parameter values here.
 
     myNeedToMarshalInput = true;
+
+    myResultsClean = false;
 }
 
 void

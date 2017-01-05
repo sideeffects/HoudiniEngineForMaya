@@ -41,6 +41,9 @@ class AssetNode: public MPxTransform
         static MString typeName;
         static MTypeId typeId;
 
+        static void nodeAdded(MObject& node,void *clientData);
+        static void nodeRemoved(MObject& node,void *clientData);
+
     public:
         AssetNode();
         virtual ~AssetNode();

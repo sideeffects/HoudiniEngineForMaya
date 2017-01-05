@@ -613,11 +613,10 @@ Asset::resetSimulation()
 {
     assert(myNodeInfo.id >= 0);
 
-    //TODO: HAPI 3
-    //HAPI_ResetSimulation(
-    //        Util::theHAPISession.get(),
-    //        myAssetInfo.id
-    //        );
+    HAPI_ResetSimulation(
+            Util::theHAPISession.get(),
+            myNodeInfo.id
+            );
 }
 
 MString

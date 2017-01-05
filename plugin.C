@@ -596,9 +596,11 @@ initializePlugin(MObject obj)
             );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = plugin.registerCommand( "houdiniAsset", AssetCommand::creator,
-                                     AssetCommand::newSyntax);
-
+    status = plugin.registerCommand(
+            AssetCommand::commandName,
+            AssetCommand::creator,
+            AssetCommand::newSyntax
+            );
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     initializeMessageCallbacks();

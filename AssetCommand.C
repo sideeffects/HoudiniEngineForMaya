@@ -32,6 +32,8 @@
 #define kSyncTemplatedGeosFlag "-stm"
 #define kSyncTemplatedGeosFlagLong "-syncTemplatedGeos"
 
+const char* AssetCommand::commandName = "houdiniAsset";
+
 class AssetSubCommandResetSimulation : public SubCommandAsset
 {
     public:

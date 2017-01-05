@@ -10,6 +10,9 @@ class SubCommand;
 class AssetCommand: public MPxCommand
 {
     public:
+        static const char* commandName;
+
+    public:
         static void* creator();
         static MSyntax newSyntax();
 

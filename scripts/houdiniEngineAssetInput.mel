@@ -66,7 +66,7 @@ validateInputObjects(string $objects[],
         }
         else if(`objectType -isAType "transform" $object`)
         {
-            string $expandedObjects[] = `ls -long -objectsOnly -dagObjects -shapes $object`;
+            string $expandedObjects[] = `ls -long -objectsOnly -dagObjects -shapes -noIntermediate $object`;
 
             $objectsToProcessEnd = stringArrayReverseAppend(
                     $objectsToProcess, $objectsToProcessEnd, $expandedObjects);

@@ -298,11 +298,14 @@ configureStringAttribute(
     {
         tAttr.setUsedAsFilename(true);
 
-        MString filterString = Util::HAPIString(parm.typeInfoSH);
-        if(filterString.length())
+        if(parm.typeInfoSH)
         {
-            filterString = filterString + "(" + filterString + ")";
-            tAttr.addToCategory("hapiParmFile_filter" + filterString);
+            MString filterString = Util::HAPIString(parm.typeInfoSH);
+            if(filterString.length())
+            {
+                filterString = filterString + "(" + filterString + ")";
+                tAttr.addToCategory("hapiParmFile_filter" + filterString);
+            }
         }
 
         switch(parm.permissions)

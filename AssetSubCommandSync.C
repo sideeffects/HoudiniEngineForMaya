@@ -10,6 +10,7 @@
 #include "AssetNode.h"
 #include "SyncAttribute.h"
 #include "SyncOutputObject.h"
+#include "SyncOutputMaterial.h"
 #include "SyncOutputInstance.h"
 
 AssetSubCommandSync::AssetSubCommandSync(
@@ -96,6 +97,31 @@ AssetSubCommandSync::doIt()
                 // node as well.
                 MFnDagNode childFnDag(childNode);
                 myDagModifier.commandToExecute("delete " + childFnDag.fullPathName());
+            }
+
+            // delete all the materials
+            MPlug materialsPlug = assetNodeFn.findPlug(AssetNode::outputMaterials);
+            for(unsigned int i = 0; i < materialsPlug.numElements(); i++)
+            {
+                MPlug materialPlug = materialsPlug.elementByPhysicalIndex(i);
+
+                MObject shaderObj = SyncOutputMaterial::findShader(materialPlug);
+                if(shaderObj.isNull())
+                {
+                    continue;
+                }
+
+                MObject shadingGroupObj = SyncOutputMaterial::findShadingGroup(shaderObj);
+
+                if(!shaderObj.isNull())
+                {
+                    myDagModifier.deleteNode(shaderObj);
+                }
+
+                if(!shaderObj.isNull())
+                {
+                    myDagModifier.deleteNode(shadingGroupObj);
+                }
             }
 
             // Call doIt() here so that the delete commands are actually executed.

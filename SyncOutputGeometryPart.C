@@ -15,10 +15,12 @@
 #include <maya/MFnTypedAttribute.h>
 
 #include "AssetNode.h"
+#include "SyncOutputMaterial.h"
 #include "util.h"
 
 #include <string>
 #include <algorithm>
+#include <map>
 
 static MObject
 createAttributeFromDataHandle(
@@ -95,10 +97,6 @@ SyncOutputGeometryPart::doIt()
         partName = "emptyPart";
     }
 
-    MPlug materialPlug = myOutputPlug.child(AssetNode::outputPartMaterial);
-    MPlug materialExistsPlug = materialPlug.child(AssetNode::outputPartMaterialExists);
-    bool materialExists = materialExistsPlug.asBool();
-
     MFnDagNode objectTransformFn(myObjectTransform);
 
     myPartTransform = Util::findDagChild(objectTransformFn, partName);
@@ -112,7 +110,7 @@ SyncOutputGeometryPart::doIt()
     status = myDagModifier.renameNode(myPartTransform, partName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    bool hasMaterial = materialExists;
+    bool hasMaterial = false;
 
     // create part
     status = createOutputPart(
@@ -120,16 +118,6 @@ SyncOutputGeometryPart::doIt()
             partName,
             hasMaterial
             );
-
-    // create material
-    if(materialExists)
-    {
-        //TODO: check if material already exists
-        status = createOutputMaterial(materialPlug);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-
-        hasMaterial = true;
-    }
 
     if(!hasMaterial)
     {
@@ -262,7 +250,7 @@ SyncOutputGeometryPart::createOutputMesh(
     status = myDagModifier.renameNode(meshShape, partName + "Shape");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    MFnDependencyNode partMeshFn(meshShape, &status);
+    MFnDagNode partMeshFn(meshShape, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set mesh.displayColors
@@ -319,6 +307,73 @@ SyncOutputGeometryPart::createOutputMesh(
             hasMaterial
             );
 
+    // if there are material ids, create and assign material
+    MPlug materialIdsPlug = meshPlug.parent().child(AssetNode::outputPartMaterialIds);
+    const MFnIntArrayData materialIdsData(materialIdsPlug.asMObject());
+    if(!hasMaterial && materialIdsData.length())
+    {
+        std::map<int, MIntArray*> materialComponentsMap;
+
+        // gather components
+        for(size_t i = 0; i < materialIdsData.length(); i++)
+        {
+            // material id may be -1, which is mapped to initialShadingGroup
+            int materialId = materialIdsData[i];
+            MIntArray* &components = materialComponentsMap[materialId];
+
+            if(!components)
+            {
+                components = new MIntArray();
+            }
+
+            components->append(i);
+        }
+
+        // create and assign material
+        for(std::map<int, MIntArray*>::iterator iter
+                = materialComponentsMap.begin();
+                iter != materialComponentsMap.end(); iter++)
+        {
+            int materialId = iter->first;
+            MIntArray* &components = iter->second;
+
+            MObject shadingGroupObj = SyncOutputMaterial::createOutputMaterial(
+                    myDagModifier,
+                    myOutputPlug.node(),
+                    materialId);
+
+            MObject componentObj;
+            //do per-face assignment if there are more than one materials
+            if(materialComponentsMap.size() > 1)
+            {
+                MFnSingleIndexedComponent componentFn;
+                componentObj = componentFn.create(MFn::kMeshPolygonComponent);
+                componentFn.addElements(*components);
+            }
+
+            MDagPath partMeshDag;
+            partMeshFn.getPath(partMeshDag);
+
+            MString assignCommand = "sets -e -forceElement "
+                + MFnDependencyNode(shadingGroupObj).name();
+
+            MSelectionList selectionList;
+            MStringArray selectionStrings;
+            selectionList.add(partMeshDag, componentObj);
+            selectionList.getSelectionStrings(selectionStrings);
+            for(unsigned int i = 0; i < selectionStrings.length(); i++)
+            {
+                assignCommand += " " + selectionStrings[i];
+            }
+
+            myDagModifier.commandToExecute(assignCommand);
+
+            delete components;
+        }
+
+        hasMaterial = true;
+    }
+
     return MStatus::kSuccess;
 }
 
@@ -371,110 +426,6 @@ SyncOutputGeometryPart::createOutputCurves(
 
         myDagModifier.connect(curvePlug, dstPlug);
     }
-
-    return MStatus::kSuccess;
-}
-
-MStatus
-SyncOutputGeometryPart::createOutputMaterial(
-        const MPlug &materialPlug
-        )
-{
-    MStatus status;
-
-    MFnDagNode partTransformFn(myPartTransform, &status);
-
-    // create shader
-    MFnDependencyNode shaderFn;
-    {
-        MObject shader;
-        status = Util::createNodeByModifierCommand(
-                myDagModifier,
-                "shadingNode -asShader phong",
-                shader
-                );
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-
-        status = shaderFn.setObject(shader);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
-
-    // rename the shader
-    MPlug namePlug = materialPlug.child(AssetNode::outputPartMaterialName);
-    myDagModifier.renameNode(shaderFn.object(), namePlug.asString());
-    CHECK_MSTATUS_AND_RETURN_IT(myDagModifier.doIt());
-
-    // assign shader
-    status = myDagModifier.commandToExecute(
-            "assignSG " + shaderFn.name() + " " + partTransformFn.fullPathName()
-            );
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    // create file node if texture exists
-    MPlug texturePathPlug = materialPlug.child(AssetNode::outputPartTexturePath);
-    MString texturePath = texturePathPlug.asString();
-    MFnDependencyNode textureFileFn;
-    if(texturePath.length())
-    {
-        MObject textureFile;
-        status = Util::createNodeByModifierCommand(
-                myDagModifier,
-                "shadingNode -asTexture file",
-                textureFile
-                );
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-
-        status = textureFileFn.setObject(textureFile);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
-
-    // connect shader attributse
-    {
-        MPlug srcPlug;
-        MPlug dstPlug;
-
-        // color
-        if(textureFileFn.object().isNull())
-        {
-            srcPlug = materialPlug.child(AssetNode::outputPartDiffuseColor);
-            dstPlug = shaderFn.findPlug("color");
-            status = myDagModifier.connect(srcPlug, dstPlug);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-        }
-        else
-        {
-            dstPlug = textureFileFn.findPlug("fileTextureName");
-            status = myDagModifier.connect(texturePathPlug, dstPlug);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-
-            srcPlug = textureFileFn.findPlug("outColor");
-            dstPlug = shaderFn.findPlug("color");
-            status = myDagModifier.connect(srcPlug, dstPlug);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-        }
-
-        // specularColor
-        srcPlug = materialPlug.child(AssetNode::outputPartSpecularColor);
-        dstPlug = shaderFn.findPlug("specularColor");
-        status = myDagModifier.connect(srcPlug, dstPlug);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-
-        // ambientColor
-        srcPlug = materialPlug.child(AssetNode::outputPartAmbientColor);
-        dstPlug = shaderFn.findPlug("ambientColor");
-        status = myDagModifier.connect(srcPlug, dstPlug);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-
-        // transparency
-        srcPlug = materialPlug.child(AssetNode::outputPartAlphaColor);
-        dstPlug = shaderFn.findPlug("transparency");
-        status = myDagModifier.connect(srcPlug, dstPlug);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
-
-    // doIt
-    status = myDagModifier.doIt();
-    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return MStatus::kSuccess;
 }

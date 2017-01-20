@@ -49,9 +49,6 @@ class SyncOutputGeometryPart : public SubCommand
                 const MPlug &meshPlug,
                 bool &hasMaterial
                 );
-        MStatus createOutputMaterial(
-                const MPlug &materialPlug
-                );
         MStatus createOutputParticle(
                 const MString &partName,
                 const MPlug &particlePlug

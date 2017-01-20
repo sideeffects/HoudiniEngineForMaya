@@ -33,6 +33,7 @@ set(
     SyncAttribute.C
     SyncOutputObject.C
     SyncOutputGeometryPart.C
+    SyncOutputMaterial.C
     SyncOutputInstance.C
     FluidGridConvert.C
     plugin.C

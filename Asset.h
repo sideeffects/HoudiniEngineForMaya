@@ -32,6 +32,7 @@ class Asset {
         OutputObject* findObjectByName(MString name);
         OutputObject* findObjectById(int id);
         HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
+        HAPI_NodeInfo getNodeInfo() { return myNodeInfo; }
 
         void resetSimulation();
 
@@ -66,9 +67,6 @@ class Asset {
                 const std::vector<MObject>* attrs
                 );
 
-    public:
-        HAPI_NodeInfo        myNodeInfo;
-
     private:
 
         void update();
@@ -92,6 +90,8 @@ class Asset {
 
         HAPI_AssetInfo         myAssetInfo;
         bool myIsObjSubnet;
+
+        HAPI_NodeInfo        myNodeInfo;
 
         ObjectInfos myObjectInfos;
         MObject myNode;                    //The Maya asset node

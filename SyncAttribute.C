@@ -563,8 +563,6 @@ SyncAttribute::doIt()
 
     MFnDagNode assetNodeFn(myAssetNodeObj);
 
-    HAPI_NodeInfo nodeInfo = asset->myNodeInfo;
-
     // Save the current state of the parameters
     MStringArray setAttrCmds;
     MStringArray connectAttrCmds;
@@ -604,6 +602,7 @@ SyncAttribute::doIt()
         myDGModifier.doIt();
     }
 
+    HAPI_NodeInfo nodeInfo = asset->getNodeInfo();
     if(nodeInfo.parmCount != 0)
     {
         std::vector<HAPI_ParmInfo> parmInfos;

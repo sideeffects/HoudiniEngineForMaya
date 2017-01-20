@@ -3,7 +3,7 @@
 
 #include <maya/MPxNode.h>
 #include <maya/MTypeId.h>
-#include <HAPI.h>
+#include <HAPI/HAPI.h>
 
 class MPlugArray;
 

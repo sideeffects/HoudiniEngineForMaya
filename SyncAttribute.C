@@ -9,7 +9,7 @@
 #include <maya/MPlugArray.h>
 #include <maya/MRampAttribute.h>
 
-#include <HAPI.h>
+#include <HAPI/HAPI.h>
 
 #include "Asset.h"
 #include "AssetNode.h"

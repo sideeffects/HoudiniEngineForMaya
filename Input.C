@@ -14,7 +14,7 @@
 #include <maya/MPlugArray.h>
 #include <maya/MString.h>
 
-#include <HAPI.h>
+#include <HAPI/HAPI.h>
 
 #include "AssetNode.h"
 #include "InputMesh.h"

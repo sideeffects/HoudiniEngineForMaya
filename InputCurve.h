@@ -3,7 +3,7 @@
 
 #include "Input.h"
 
-#include <HAPI_Common.h>
+#include <HAPI/HAPI_Common.h>
 
 class InputCurve : public Input
 {

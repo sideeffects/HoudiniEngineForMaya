@@ -6,7 +6,7 @@
 #include <maya/MString.h>
 #include <maya/MTime.h>
 
-#include <HAPI.h>
+#include <HAPI/HAPI.h>
 
 #include "OutputObject.h"
 

@@ -56,15 +56,15 @@ if ( DEFINED HoudiniEngine_ROOT )
 endif ()
 if ( _houdiniengine_root )
     if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
-        list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include/HAPI" )
+        list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include" )
         list( APPEND _houdiniengine_library_search_dirs "${_houdiniengine_root}/dsolib" )
         list( APPEND _houdiniengine_binary_search_dirs "${_houdiniengine_root}/bin" )
     elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-        list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include/HAPI" )
+        list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include" )
         list( APPEND _houdiniengine_library_search_dirs "${_houdiniengine_root}/custom/houdini/dsolib" )
         list( APPEND _houdiniengine_binary_search_dirs "${_houdiniengine_root}/bin" )
     elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
-        list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include/HAPI" )
+        list( APPEND _houdiniengine_include_search_dirs "${_houdiniengine_root}/toolkit/include" )
         list( APPEND _houdiniengine_library_search_dirs "${_houdiniengine_root}/../Libraries" )
         list( APPEND _houdiniengine_binary_search_dirs "${_houdiniengine_root}/bin" )
     endif ()
@@ -75,7 +75,7 @@ endif ()
 ########################################
 find_path(
     HoudiniEngine_INCLUDE_DIRS
-    HAPI.h
+    HAPI/HAPI.h
     HINTS ${_houdiniengine_include_search_dirs}
     )
 list( APPEND _houdiniengine_required_vars HoudiniEngine_INCLUDE_DIRS )

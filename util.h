@@ -13,7 +13,7 @@
 #include <memory>
 #include <string>
 
-#include <HAPI.h>
+#include <HAPI/HAPI.h>
 
 #include "traits.h"
 #include "types.h"

@@ -3,7 +3,7 @@
 
 #include <maya/MPxNode.h>
 
-#include <HAPI_Common.h>
+#include <HAPI/HAPI_Common.h>
 
 class InputTransformNode : public MPxNode
 {

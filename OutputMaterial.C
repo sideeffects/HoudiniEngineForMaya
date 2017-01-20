@@ -6,7 +6,8 @@
 #include "AssetNode.h"
 #include "util.h"
 
-OutputMaterial::OutputMaterial() :
+OutputMaterial::OutputMaterial(HAPI_NodeId assetId) :
+    myAssetId(assetId),
     myNodeId(-1),
     myMaterialLastCookCount(0)
 {
@@ -19,6 +20,8 @@ OutputMaterial::compute(
         )
 {
     HAPI_Result hapiResult;
+
+    update(materialHandle);
 
     MDataHandle nodeIdHandle
         = materialHandle.child(AssetNode::outputMaterialNodeId);
@@ -207,4 +210,73 @@ OutputMaterial::compute(
     texturePathHandle.setClean();
 
     return MStatus::kSuccess;
+}
+
+void
+OutputMaterial::update(MDataHandle &materialHandle)
+{
+    MDataHandle pathHandle
+        = materialHandle.child(AssetNode::outputMaterialPath);
+    std::string path = pathHandle.asString().asChar();
+
+    if(myNodePath != path)
+    {
+        myNodeId = -1;
+    }
+
+    // find node id from path
+    if(myNodeId < 0)
+    {
+        int count;
+        CHECK_HAPI(HAPI_ComposeChildNodeList(
+                    Util::theHAPISession.get(),
+                    myAssetId,
+                    HAPI_NODETYPE_SHOP | HAPI_NODETYPE_VOP,
+                    HAPI_NODEFLAGS_ANY,
+                    true,
+                    &count));
+
+        std::vector<HAPI_NodeId> nodeIds(count);
+        if(count)
+        {
+            CHECK_HAPI(HAPI_GetComposedChildNodeList(
+                        Util::theHAPISession.get(),
+                        myAssetId,
+                        &nodeIds[0],
+                        count));
+        }
+
+        for(size_t i = 0; i < nodeIds.size(); i++)
+        {
+            HAPI_NodeId testNodeId = nodeIds[i];
+
+            HAPI_StringHandle testPath;
+
+            CHECK_HAPI(HAPI_GetNodePath(
+                        Util::theHAPISession.get(),
+                        testNodeId,
+                        myAssetId,
+                        &testPath));
+
+            if(Util::HAPIString(testPath) == path)
+            {
+                myNodeId = testNodeId;
+                break;
+            }
+        }
+    }
+
+    if(myNodeId < 0)
+    {
+        return;
+    }
+
+    myNodePath = path;
+
+    // get material info
+    CHECK_HAPI(HAPI_GetNodeInfo(
+            Util::theHAPISession.get(),
+            myNodeId,
+            &myNodeInfo
+            ));
 }

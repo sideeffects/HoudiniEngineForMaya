@@ -878,7 +878,7 @@ Asset::computeMaterial(
         myMaterials.reserve(numElements);
         for(size_t i = myMaterials.size(); i < numElements; i++)
         {
-            myMaterials.push_back(new OutputMaterial());
+            myMaterials.push_back(new OutputMaterial(myAssetInfo.nodeId));
         }
     }
 

@@ -250,6 +250,7 @@ class AssetNode: public MPxTransform
         static MObject outputInstanceScaleZ;
 
         static MObject outputMaterials;
+        static MObject outputMaterialPath;
         static MObject outputMaterialName;
         static MObject outputMaterialNodeId;
         static MObject outputMaterialAmbientColor;

@@ -182,6 +182,7 @@ MObject AssetNode::outputInstanceScaleY;
 MObject AssetNode::outputInstanceScaleZ;
 
 MObject AssetNode::outputMaterials;
+MObject AssetNode::outputMaterialPath;
 MObject AssetNode::outputMaterialName;
 MObject AssetNode::outputMaterialNodeId;
 MObject AssetNode::outputMaterialTexturePath;
@@ -1282,6 +1283,11 @@ AssetNode::initialize()
 
     //------------------------------- END  objects compound multi------------------------------------------------
 
+    // material path
+    AssetNode::outputMaterialPath = tAttr.create(
+            "outputMaterialPath", "outputMaterialPath",
+            MFnData::kString
+            );
     // material name
     AssetNode::outputMaterialName = tAttr.create(
             "outputMaterialName", "outputMaterialName",
@@ -1332,6 +1338,7 @@ AssetNode::initialize()
     AssetNode::outputMaterials = cAttr.create(
             "outputMaterials", "outputMaterials"
             );
+    cAttr.addChild(AssetNode::outputMaterialPath);
     cAttr.addChild(AssetNode::outputMaterialName);
     cAttr.addChild(AssetNode::outputMaterialNodeId);
     cAttr.addChild(AssetNode::outputMaterialAmbientColor);
@@ -1349,8 +1356,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputObjects);
     cAttr.addChild(AssetNode::outputInstancers);
     cAttr.addChild(AssetNode::outputMaterials);
-    cAttr.setWritable(false);
-    cAttr.setStorable(false);
 
     AssetNode::useInstancerNode = nAttr.create(
             "useInstancerNode", "useInstancerNode",

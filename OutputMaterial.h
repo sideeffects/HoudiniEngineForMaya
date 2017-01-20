@@ -12,13 +12,20 @@ class MStatus;
 class OutputMaterial
 {
 public:
-    OutputMaterial();
+    OutputMaterial(HAPI_NodeId assetId);
 
     MStatus compute(
             const MTime &time,
             MDataHandle &materialHandle
             );
 private:
+    void update(MDataHandle &materialHandle);
+
+private:
+    HAPI_NodeId myAssetId;
+
+    std::string myNodePath;
+
     HAPI_NodeId myNodeId;
     HAPI_NodeInfo myNodeInfo;
     int myMaterialLastCookCount;

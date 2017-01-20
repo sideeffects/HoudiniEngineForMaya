@@ -33,6 +33,7 @@ class Asset {
         OutputObject* findObjectById(int id);
         HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
         HAPI_NodeInfo getNodeInfo() { return myNodeInfo; }
+        MString getRelativePath(HAPI_NodeId id);
 
         void resetSimulation();
 

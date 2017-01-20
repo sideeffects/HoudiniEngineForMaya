@@ -608,6 +608,19 @@ Asset::findObjectById(int id)
     return myObjects[id];
 }
 
+MString
+Asset::getRelativePath(HAPI_NodeId id)
+{
+    HAPI_StringHandle relativePathHandle;
+    CHECK_HAPI(HAPI_GetNodePath(
+            Util::theHAPISession.get(),
+            id,
+            myNodeInfo.id,
+            &relativePathHandle
+            ));
+    return Util::HAPIString(relativePathHandle);
+}
+
 void
 Asset::resetSimulation()
 {

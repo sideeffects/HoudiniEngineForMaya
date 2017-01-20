@@ -189,6 +189,8 @@ MObject AssetNode::outputInstanceScaleX;
 MObject AssetNode::outputInstanceScaleY;
 MObject AssetNode::outputInstanceScaleZ;
 
+MObject AssetNode::outputMaterials;
+
 MObject AssetNode::useInstancerNode;
 
 template <typename T>
@@ -1345,6 +1347,12 @@ AssetNode::initialize()
 
     //------------------------------- END  objects compound multi------------------------------------------------
 
+    // material
+    AssetNode::outputMaterials = cAttr.create(
+            "outputMaterials", "outputMaterials"
+            );
+    cAttr.setArray(true);
+
     // output
     AssetNode::output = cAttr.create(
             "output", "out"
@@ -1352,6 +1360,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputAssetTransform);
     cAttr.addChild(AssetNode::outputObjects);
     cAttr.addChild(AssetNode::outputInstancers);
+    cAttr.addChild(AssetNode::outputMaterials);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 

@@ -257,6 +257,8 @@ class AssetNode: public MPxTransform
         static MObject outputInstanceScaleY;
         static MObject outputInstanceScaleZ;
 
+        static MObject outputMaterials;
+
         static MObject useInstancerNode;
 };
 

@@ -13,6 +13,7 @@
 #include <vector>
 
 class Inputs;
+class OutputMaterial;
 class MFnDependencyNode;
 
 class Asset {
@@ -82,10 +83,16 @@ class Asset {
                 MDataBlock& data,
                 bool &needToSyncOutputs
                 );
+        void computeMaterial(
+                const MPlug& plug,
+                MDataBlock& data,
+                bool &needToSyncOutputs
+                );
 
     private:
         typedef std::vector<HAPI_ObjectInfo> ObjectInfos;
         typedef std::vector<OutputObject*> OutputObjects;
+        typedef std::vector<OutputMaterial*> OutputMaterials;
 
         MTime myTime;
 
@@ -100,6 +107,7 @@ class Asset {
         Inputs* myAssetInputs;
         OutputObjects myObjects;            //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
 
+        OutputMaterials myMaterials;
 };
 
 #endif

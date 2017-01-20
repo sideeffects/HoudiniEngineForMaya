@@ -17,6 +17,7 @@
 #include "AssetNode.h"
 #include "OutputGeometryObject.h"
 #include "OutputInstancerObject.h"
+#include "OutputMaterial.h"
 #include "util.h"
 
 #include <cassert>
@@ -551,6 +552,13 @@ Asset::~Asset()
     myObjectInfos.clear();
     delete myAssetInputs;
 
+    for(OutputMaterials::const_iterator iter = myMaterials.begin();
+            iter != myMaterials.end(); iter++)
+    {
+        delete *iter;
+    }
+    myMaterials.clear();
+
     if(myNodeInfo.id >= 0)
     {
         CHECK_HAPI(HAPI_DeleteNode(
@@ -854,6 +862,36 @@ Asset::computeGeometryObjects(
     data.setClean(objectsPlug);
 }
 
+void
+Asset::computeMaterial(
+        const MPlug& plug,
+        MDataBlock& data,
+        bool &needToSyncOutputs
+        )
+{
+    MStatus status;
+
+    MPlug materialsPlug = plug.child(AssetNode::outputMaterials);
+    size_t numElements = materialsPlug.numElements();
+    if(myMaterials.size() < numElements)
+    {
+        myMaterials.reserve(numElements);
+        for(size_t i = myMaterials.size(); i < numElements; i++)
+        {
+            myMaterials.push_back(new OutputMaterial());
+        }
+    }
+
+    for(size_t i = 0; i < numElements; i++)
+    {
+        MPlug childPlug = materialsPlug.elementByPhysicalIndex(i, &status);
+        CHECK_MSTATUS(status);
+
+        MDataHandle materialHandle = data.outputValue(childPlug);
+        myMaterials[i]->compute(myTime, materialHandle);
+    }
+}
+
 MTime
 Asset::getTime() const
 {
@@ -1029,6 +1067,8 @@ Asset::compute(
 
     // second pass - geometry objects
     computeGeometryObjects(plug, data, needToSyncOutputs);
+
+    computeMaterial(plug, data, needToSyncOutputs);
 
     return stat;
 }

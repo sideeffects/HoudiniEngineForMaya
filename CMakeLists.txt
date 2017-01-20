@@ -29,6 +29,7 @@ set(
     OutputInstancerObject.C
     OutputGeometry.C
     OutputGeometryPart.C
+    OutputMaterial.C
     SyncAttribute.C
     SyncOutputObject.C
     SyncOutputGeometryPart.C

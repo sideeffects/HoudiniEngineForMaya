@@ -93,14 +93,6 @@ MObject AssetNode::outputPartName;
 MObject AssetNode::outputPartHasMesh;
 MObject AssetNode::outputPartHasParticles;
 MObject AssetNode::outputPartHasInstancer;
-MObject AssetNode::outputPartMaterial;
-MObject AssetNode::outputPartMaterialExists;
-MObject AssetNode::outputPartMaterialName;
-MObject AssetNode::outputPartTexturePath;
-MObject AssetNode::outputPartAmbientColor;
-MObject AssetNode::outputPartDiffuseColor;
-MObject AssetNode::outputPartSpecularColor;
-MObject AssetNode::outputPartAlphaColor;
 
 MObject AssetNode::outputPartMesh;
 MObject AssetNode::outputPartMeshCurrentColorSet;
@@ -190,6 +182,13 @@ MObject AssetNode::outputInstanceScaleY;
 MObject AssetNode::outputInstanceScaleZ;
 
 MObject AssetNode::outputMaterials;
+MObject AssetNode::outputMaterialName;
+MObject AssetNode::outputMaterialNodeId;
+MObject AssetNode::outputMaterialTexturePath;
+MObject AssetNode::outputMaterialAmbientColor;
+MObject AssetNode::outputMaterialDiffuseColor;
+MObject AssetNode::outputMaterialSpecularColor;
+MObject AssetNode::outputMaterialAlphaColor;
 
 MObject AssetNode::useInstancerNode;
 
@@ -746,69 +745,6 @@ AssetNode::initialize()
             false
             );
 
-    // material exists
-    AssetNode::outputPartMaterialExists = nAttr.create(
-            "outputPartMaterialExists", "outputPartMaterialExists",
-            MFnNumericData::kBoolean,
-            false
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    nAttr.setConnectable(false);
-    nAttr.setHidden(true);
-    // material name
-    AssetNode::outputPartMaterialName = tAttr.create(
-            "outputPartMaterialName", "outputPartMaterialName",
-            MFnData::kString
-            );
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
-    // material ambient
-    AssetNode::outputPartAmbientColor = nAttr.createColor(
-            "outputPartAmbientColor", "outputPartAmbientColor"
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    // material diffuse
-    AssetNode::outputPartDiffuseColor = nAttr.createColor(
-            "outputPartDiffuseColor", "outputPartDiffuseColor"
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    // material specular
-    AssetNode::outputPartSpecularColor = nAttr.createColor(
-            "outputPartSpecularColor", "outputPartSpecularColor"
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    // material alpha
-    AssetNode::outputPartAlphaColor = nAttr.createColor(
-            "outputPartAlphaColor", "outputPartAlphaColor"
-            );
-    nAttr.setStorable(false);
-    nAttr.setWritable(false);
-    // texture path
-    AssetNode::outputPartTexturePath = tAttr.create(
-            "outputPartTexturePath", "outputPartTexturePath",
-            MFnData::kString
-            );
-    tAttr.setStorable(false);
-    tAttr.setWritable(false);
-
-    // material
-    AssetNode::outputPartMaterial = cAttr.create(
-            "outputPartMaterial", "outputPartMaterial"
-            );
-    cAttr.addChild(AssetNode::outputPartMaterialExists);
-    cAttr.addChild(AssetNode::outputPartMaterialName);
-    cAttr.addChild(AssetNode::outputPartAmbientColor);
-    cAttr.addChild(AssetNode::outputPartDiffuseColor);
-    cAttr.addChild(AssetNode::outputPartSpecularColor);
-    cAttr.addChild(AssetNode::outputPartAlphaColor);
-    cAttr.addChild(AssetNode::outputPartTexturePath);
-    cAttr.setWritable(false);
-    cAttr.setStorable(false);
-
     // mesh
     AssetNode::outputPartMeshCurrentColorSet = tAttr.create(
             "outputPartMeshCurrentColorSet", "outputPartMeshCurrentColorSet",
@@ -1248,7 +1184,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartHasMesh);
     cAttr.addChild(AssetNode::outputPartHasParticles);
     cAttr.addChild(AssetNode::outputPartHasInstancer);
-    cAttr.addChild(AssetNode::outputPartMaterial);
     cAttr.addChild(AssetNode::outputPartMesh);
     cAttr.addChild(AssetNode::outputPartParticle);
     cAttr.addChild(AssetNode::outputPartCurves);
@@ -1347,10 +1282,63 @@ AssetNode::initialize()
 
     //------------------------------- END  objects compound multi------------------------------------------------
 
+    // material name
+    AssetNode::outputMaterialName = tAttr.create(
+            "outputMaterialName", "outputMaterialName",
+            MFnData::kString
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+    // material node id
+    AssetNode::outputMaterialNodeId = nAttr.create(
+            "outputMaterialNodeId", "outputMaterialNodeId",
+            MFnNumericData::kInt
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // material ambient
+    AssetNode::outputMaterialAmbientColor = nAttr.createColor(
+            "outputMaterialAmbientColor", "outputMaterialAmbientColor"
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // material diffuse
+    AssetNode::outputMaterialDiffuseColor = nAttr.createColor(
+            "outputMaterialDiffuseColor", "outputMaterialDiffuseColor"
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // material specular
+    AssetNode::outputMaterialSpecularColor = nAttr.createColor(
+            "outputMaterialSpecularColor", "outputMaterialSpecularColor"
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // material alpha
+    AssetNode::outputMaterialAlphaColor = nAttr.createColor(
+            "outputMaterialAlphaColor", "outputMaterialAlphaColor"
+            );
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    // texture path
+    AssetNode::outputMaterialTexturePath = tAttr.create(
+            "outputMaterialTexturePath", "outputMaterialTexturePath",
+            MFnData::kString
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
     // material
     AssetNode::outputMaterials = cAttr.create(
             "outputMaterials", "outputMaterials"
             );
+    cAttr.addChild(AssetNode::outputMaterialName);
+    cAttr.addChild(AssetNode::outputMaterialNodeId);
+    cAttr.addChild(AssetNode::outputMaterialAmbientColor);
+    cAttr.addChild(AssetNode::outputMaterialDiffuseColor);
+    cAttr.addChild(AssetNode::outputMaterialSpecularColor);
+    cAttr.addChild(AssetNode::outputMaterialAlphaColor);
+    cAttr.addChild(AssetNode::outputMaterialTexturePath);
     cAttr.setArray(true);
 
     // output

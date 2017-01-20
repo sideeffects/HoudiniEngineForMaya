@@ -160,14 +160,6 @@ class AssetNode: public MPxTransform
         static MObject outputPartHasMesh;
         static MObject outputPartHasParticles;
         static MObject outputPartHasInstancer;
-        static MObject outputPartMaterial;
-        static MObject outputPartMaterialExists;
-        static MObject outputPartMaterialName;
-        static MObject outputPartTexturePath;
-        static MObject outputPartAmbientColor;
-        static MObject outputPartDiffuseColor;
-        static MObject outputPartSpecularColor;
-        static MObject outputPartAlphaColor;
 
         static MObject outputPartMesh;
         static MObject outputPartMeshCurrentColorSet;
@@ -258,6 +250,13 @@ class AssetNode: public MPxTransform
         static MObject outputInstanceScaleZ;
 
         static MObject outputMaterials;
+        static MObject outputMaterialName;
+        static MObject outputMaterialNodeId;
+        static MObject outputMaterialAmbientColor;
+        static MObject outputMaterialDiffuseColor;
+        static MObject outputMaterialSpecularColor;
+        static MObject outputMaterialAlphaColor;
+        static MObject outputMaterialTexturePath;
 
         static MObject useInstancerNode;
 };

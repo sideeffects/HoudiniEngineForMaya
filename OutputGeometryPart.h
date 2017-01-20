@@ -106,7 +106,6 @@ class OutputGeometryPart
         HAPI_PartInfo myPartInfo;
         HAPI_VolumeInfo myVolumeInfo;
         HAPI_CurveInfo myCurveInfo;
-        HAPI_MaterialInfo myMaterialInfo;
 };
 
 #endif

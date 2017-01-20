@@ -191,8 +191,6 @@ MObject AssetNode::outputInstanceScaleZ;
 
 MObject AssetNode::useInstancerNode;
 
-std::vector<MObject> computeAttributes;
-
 template <typename T>
 static bool
 isPlugBelow(const MPlug &plug, const T &upper)
@@ -355,21 +353,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetTranslateX);
     AssetNode::outputAssetTranslateY = uAttr.create(
             "outputAssetTranslateY", "outputAssetTranslateY",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetTranslateY);
     AssetNode::outputAssetTranslateZ = uAttr.create(
             "outputAssetTranslateZ", "outputAssetTranslateZ",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetTranslateZ);
     AssetNode::outputAssetTranslate = nAttr.create(
             "outputAssetTranslate", "outputAssetTranslate",
             AssetNode::outputAssetTranslateX,
@@ -378,7 +373,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetTranslate);
 
     // rotate
     AssetNode::outputAssetRotateX = uAttr.create(
@@ -387,21 +381,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetRotateX);
     AssetNode::outputAssetRotateY = uAttr.create(
             "outputAssetRotateY", "outputAssetRotateY",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetRotateY);
     AssetNode::outputAssetRotateZ = uAttr.create(
             "outputAssetRotateZ", "outputAssetRotateZ",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetRotateZ);
     AssetNode::outputAssetRotate = nAttr.create(
             "outputAssetRotate", "outputAssetRotate",
             AssetNode::outputAssetRotateX,
@@ -410,7 +401,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetRotate);
 
     // scale
     AssetNode::outputAssetScaleX = nAttr.create(
@@ -420,7 +410,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetScaleX);
     AssetNode::outputAssetScaleY = nAttr.create(
             "outputAssetScaleY", "outputAssetScaleY",
             MFnNumericData::kDouble,
@@ -428,7 +417,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetScaleY);
     AssetNode::outputAssetScaleZ = nAttr.create(
             "outputAssetScaleZ", "outputAssetScaleZ",
             MFnNumericData::kDouble,
@@ -436,7 +424,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetScaleZ);
     AssetNode::outputAssetScale = nAttr.create(
             "outputAssetScale", "outputAssetScale",
             AssetNode::outputAssetScaleX,
@@ -445,7 +432,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputAssetScale);
 
     // transform
     AssetNode::outputAssetTransform = cAttr.create(
@@ -456,7 +442,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputAssetScale);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputAssetTransform);
 
     //----------------------------------  instancer compound multi----------------------------------------------
     // instancer data
@@ -466,7 +451,6 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstancerData);
 
     // instanced object names
     AssetNode::outputInstancedObjectNames = tAttr.create(
@@ -478,7 +462,6 @@ AssetNode::initialize()
     tAttr.setArray(true);
     tAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputInstancedObjectNames);
 
     // houdini instance attribute
     AssetNode::outputHoudiniInstanceAttribute = tAttr.create(
@@ -490,7 +473,6 @@ AssetNode::initialize()
     tAttr.setArray(true);
     tAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputHoudiniInstanceAttribute);
 
     // houdini name attribute
     AssetNode::outputHoudiniNameAttribute = tAttr.create(
@@ -502,7 +484,6 @@ AssetNode::initialize()
     tAttr.setArray(true);
     tAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputHoudiniNameAttribute);
 
     // translate
     AssetNode::outputInstanceTranslateX = uAttr.create(
@@ -511,21 +492,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceTranslateX);
     AssetNode::outputInstanceTranslateY = uAttr.create(
             "outputInstanceTranslateY", "outputInstanceTranslateY",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceTranslateY);
     AssetNode::outputInstanceTranslateZ = uAttr.create(
             "outputInstanceTranslateZ", "outputInstanceTranslateZ",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceTranslateZ);
     AssetNode::outputInstanceTranslate = nAttr.create(
             "outputInstanceTranslate", "outputInstanceTranslate",
             AssetNode::outputInstanceTranslateX,
@@ -534,7 +512,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceTranslate);
 
     // rotate
     AssetNode::outputInstanceRotateX = uAttr.create(
@@ -543,21 +520,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceRotateX);
     AssetNode::outputInstanceRotateY = uAttr.create(
             "outputInstanceRotateY", "outputInstanceRotateY",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceRotateY);
     AssetNode::outputInstanceRotateZ = uAttr.create(
             "outputInstanceRotateZ", "outputInstanceRotateZ",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceRotateZ);
     AssetNode::outputInstanceRotate = nAttr.create(
             "outputInstanceRotate", "outputInstanceRotate",
             AssetNode::outputInstanceRotateX,
@@ -566,7 +540,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceRotate);
 
     // scale
     AssetNode::outputInstanceScaleX = nAttr.create(
@@ -576,7 +549,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceScaleX);
     AssetNode::outputInstanceScaleY = nAttr.create(
             "outputInstanceScaleY", "outputInstanceScaleY",
             MFnNumericData::kDouble,
@@ -584,7 +556,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceScaleY);
     AssetNode::outputInstanceScaleZ = nAttr.create(
             "outputInstanceScaleZ", "outputInstanceScaleZ",
             MFnNumericData::kDouble,
@@ -592,7 +563,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceScaleZ);
     AssetNode::outputInstanceScale = nAttr.create(
             "outputInstanceScale", "outputInstanceScale",
             AssetNode::outputInstanceScaleX,
@@ -601,7 +571,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputInstanceScale);
 
     // transform
     AssetNode::outputInstanceTransform = cAttr.create(
@@ -614,7 +583,6 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputInstanceTransform);
 
     // instancers
     AssetNode::outputInstancers = cAttr.create(
@@ -629,7 +597,6 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputInstancers);
 
     //--------------------------------End instancer compound multi----------------------------------------------
 
@@ -642,21 +609,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectTranslateX);
     AssetNode::outputObjectTranslateY = uAttr.create(
             "outputObjectTranslateY", "outputObjectTranslateY",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectTranslateY);
     AssetNode::outputObjectTranslateZ = uAttr.create(
             "outputObjectTranslateZ", "outputObjectTranslateZ",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectTranslateZ);
     AssetNode::outputObjectTranslate = nAttr.create(
             "outputObjectTranslate", "outputObjectTranslate",
             AssetNode::outputObjectTranslateX,
@@ -665,7 +629,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectTranslate);
 
     // rotate
     AssetNode::outputObjectRotateX = uAttr.create(
@@ -674,21 +637,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectRotateX);
     AssetNode::outputObjectRotateY = uAttr.create(
             "outputObjectRotateY", "outputObjectRotateY",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectRotateY);
     AssetNode::outputObjectRotateZ = uAttr.create(
             "outputObjectRotateZ", "outputObjectRotateZ",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectRotateZ);
     AssetNode::outputObjectRotate = nAttr.create(
             "outputObjectRotate", "outputObjectRotate",
             AssetNode::outputObjectRotateX,
@@ -697,7 +657,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectRotate);
 
     // scale
     AssetNode::outputObjectScaleX = nAttr.create(
@@ -707,7 +666,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectScaleX);
     AssetNode::outputObjectScaleY = nAttr.create(
             "outputObjectScaleY", "outputObjectScaleY",
             MFnNumericData::kDouble,
@@ -715,7 +673,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectScaleY);
     AssetNode::outputObjectScaleZ = nAttr.create(
             "outputObjectScaleZ", "outputObjectScaleZ",
             MFnNumericData::kDouble,
@@ -723,7 +680,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectScaleZ);
     AssetNode::outputObjectScale = nAttr.create(
             "outputObjectScale", "outputObjectScale",
             AssetNode::outputObjectScaleX,
@@ -732,7 +688,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectScale);
 
     // transform
     AssetNode::outputObjectTransform = cAttr.create(
@@ -743,7 +698,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputObjectScale);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputObjectTransform);
 
 #if MAYA_API_VERSION >= 201400
     // object fluid from asset
@@ -754,7 +708,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectFluidFromAsset);
 #endif
 
     // meta data
@@ -764,7 +717,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectMetaData);
 
     // part name
     AssetNode::outputPartName = tAttr.create(
@@ -773,28 +725,24 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartName);
 
     AssetNode::outputPartHasMesh = nAttr.create(
             "outputPartHasMesh", "outputPartHasMesh",
             MFnNumericData::kBoolean,
             false
             );
-    computeAttributes.push_back(AssetNode::outputPartHasMesh);
 
     AssetNode::outputPartHasParticles = nAttr.create(
             "outputPartHasParticles", "outputPartHasParticles",
             MFnNumericData::kBoolean,
             false
             );
-    computeAttributes.push_back(AssetNode::outputPartHasParticles);
 
     AssetNode::outputPartHasInstancer = nAttr.create(
             "outputPartHasInstancer", "outputPartHasInstancer",
             MFnNumericData::kBoolean,
             false
             );
-    computeAttributes.push_back(AssetNode::outputPartHasInstancer);
 
     // material exists
     AssetNode::outputPartMaterialExists = nAttr.create(
@@ -806,7 +754,6 @@ AssetNode::initialize()
     nAttr.setWritable(false);
     nAttr.setConnectable(false);
     nAttr.setHidden(true);
-    computeAttributes.push_back(AssetNode::outputPartMaterialExists);
     // material name
     AssetNode::outputPartMaterialName = tAttr.create(
             "outputPartMaterialName", "outputPartMaterialName",
@@ -814,35 +761,30 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartMaterialName);
     // material ambient
     AssetNode::outputPartAmbientColor = nAttr.createColor(
             "outputPartAmbientColor", "outputPartAmbientColor"
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartAmbientColor);
     // material diffuse
     AssetNode::outputPartDiffuseColor = nAttr.createColor(
             "outputPartDiffuseColor", "outputPartDiffuseColor"
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartDiffuseColor);
     // material specular
     AssetNode::outputPartSpecularColor = nAttr.createColor(
             "outputPartSpecularColor", "outputPartSpecularColor"
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartSpecularColor);
     // material alpha
     AssetNode::outputPartAlphaColor = nAttr.createColor(
             "outputPartAlphaColor", "outputPartAlphaColor"
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartAlphaColor);
     // texture path
     AssetNode::outputPartTexturePath = tAttr.create(
             "outputPartTexturePath", "outputPartTexturePath",
@@ -850,7 +792,6 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartTexturePath);
 
     // material
     AssetNode::outputPartMaterial = cAttr.create(
@@ -865,7 +806,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartTexturePath);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartMaterial);
 
     // mesh
     AssetNode::outputPartMeshCurrentColorSet = tAttr.create(
@@ -874,7 +814,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartMeshCurrentColorSet);
 
     AssetNode::outputPartMeshCurrentUV = tAttr.create(
             "outputPartMeshCurrentUV", "outputPartMeshCurrentUV",
@@ -882,7 +821,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartMeshCurrentUV);
 
     AssetNode::outputPartMeshData = tAttr.create(
             "outputPartMeshData", "outputPartMeshData",
@@ -890,7 +828,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartMeshData);
 
     AssetNode::outputPartMesh = cAttr.create(
             "outputPartMesh", "outputPartMesh"
@@ -900,7 +837,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartMeshData);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartMesh);
 
     // particle
     AssetNode::outputPartParticleCurrentTime = uAttr.create(
@@ -909,7 +845,6 @@ AssetNode::initialize()
             );
     uAttr.setWritable(false);
     uAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartParticleCurrentTime);
 
     AssetNode::outputPartParticlePositions = tAttr.create(
             "outputPartParticlePositions", "outputPartParticlePositions",
@@ -917,7 +852,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartParticlePositions);
 
     AssetNode::outputPartParticleArrayData = tAttr.create(
             "outputPartParticleArrayData", "outputPartParticleArrayData",
@@ -925,7 +859,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartParticleArrayData);
 
     AssetNode::outputPartParticle = cAttr.create(
             "outputPartParticle", "outputPartParticle"
@@ -935,7 +868,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartParticleArrayData);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartParticle);
 
     // curves
     AssetNode::outputPartCurves = tAttr.create(
@@ -947,7 +879,6 @@ AssetNode::initialize()
     tAttr.setArray(true);
     tAttr.setIndexMatters(true);
     tAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputPartCurves);
 
     AssetNode::outputPartCurvesIsBezier = nAttr.create(
             "outputPartCurvesIsBezier", "outputPartCurvesIsBezier",
@@ -956,7 +887,6 @@ AssetNode::initialize()
             );
     nAttr.setWritable(false);
     nAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartCurvesIsBezier);
 
 #if MAYA_API_VERSION >= 201400
     // Volumes ---------
@@ -966,7 +896,6 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeName);
 
     AssetNode::outputPartVolumeGrid = tAttr.create(
             "outputPartVolumeGrid", "outputPartVolumeGrid",
@@ -974,7 +903,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeGrid);
 
     // Volume resolution
     AssetNode::outputPartVolumeRes = tAttr.create(
@@ -983,7 +911,6 @@ AssetNode::initialize()
             );
     nAttr.setWritable(false);
     nAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeRes);
 
     // volume transform
     // translate
@@ -993,21 +920,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeTranslateX);
     AssetNode::outputPartVolumeTranslateY = uAttr.create(
             "outputPartVolumeTranslateY", "outputPartVolumeTranslateY",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeTranslateY);
     AssetNode::outputPartVolumeTranslateZ = uAttr.create(
             "outputPartVolumeTranslateZ", "outputPartVolumeTranslateZ",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeTranslateZ);
     AssetNode::outputPartVolumeTranslate = nAttr.create(
             "outputPartVolumeTranslate", "outputPartVolumeTranslate",
             AssetNode::outputPartVolumeTranslateX,
@@ -1016,7 +940,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeTranslate);
 
     // rotate
     AssetNode::outputPartVolumeRotateX = uAttr.create(
@@ -1025,21 +948,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeRotateX);
     AssetNode::outputPartVolumeRotateY = uAttr.create(
             "outputPartVolumeRotateY", "outputPartVolumeRotateY",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeRotateY);
     AssetNode::outputPartVolumeRotateZ = uAttr.create(
             "outputPartVolumeRotateZ", "outputPartVolumeRotateZ",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeRotateZ);
     AssetNode::outputPartVolumeRotate = nAttr.create(
             "outputPartVolumeRotate", "outputPartVolumeRotate",
             AssetNode::outputPartVolumeRotateX,
@@ -1048,7 +968,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeRotate);
 
     // scale
     AssetNode::outputPartVolumeScaleX = nAttr.create(
@@ -1058,7 +977,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeScaleX);
     AssetNode::outputPartVolumeScaleY = nAttr.create(
             "outputPartVolumeScaleY", "outputPartVolumeScaleY",
             MFnNumericData::kDouble,
@@ -1066,7 +984,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeScaleY);
     AssetNode::outputPartVolumeScaleZ = nAttr.create(
             "outputPartVolumeScaleZ", "outputPartVolumeScaleZ",
             MFnNumericData::kDouble,
@@ -1074,7 +991,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeScaleZ);
     AssetNode::outputPartVolumeScale = nAttr.create(
             "outputPartVolumeScale", "outputPartVolumeScale",
             AssetNode::outputPartVolumeScaleX,
@@ -1083,7 +999,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputObjectScale);
     AssetNode::outputPartVolumeTransform = cAttr.create(
             "outputPartVolumeTransform", "outputPartVolumeTransform"
             );
@@ -1092,7 +1007,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartVolumeScale);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolumeTransform);
 
     // volume
     AssetNode::outputPartVolume = cAttr.create(
@@ -1104,7 +1018,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartVolumeRes);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartVolume);
 #endif
 
     // instancer
@@ -1114,7 +1027,6 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerArrayData);
 
     AssetNode::outputPartInstancerParts = tAttr.create(
             "outputPartInstancerParts", "outputPartInstancerParts",
@@ -1122,7 +1034,6 @@ AssetNode::initialize()
             );
     tAttr.setStorable(false);
     tAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerParts);
 
     AssetNode::outputPartInstancerTranslateX = uAttr.create(
             "outputPartInstancerTranslateX", "outputPartInstancerTranslateX",
@@ -1130,21 +1041,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerTranslateX);
     AssetNode::outputPartInstancerTranslateY = uAttr.create(
             "outputPartInstancerTranslateY", "outputPartInstancerTranslateY",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerTranslateY);
     AssetNode::outputPartInstancerTranslateZ = uAttr.create(
             "outputPartInstancerTranslateZ", "outputPartInstancerTranslateZ",
             MFnUnitAttribute::kDistance
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerTranslateZ);
     AssetNode::outputPartInstancerTranslate = nAttr.create(
             "outputPartInstancerTranslate", "outputPartInstancerTranslate",
             AssetNode::outputPartInstancerTranslateX,
@@ -1153,7 +1061,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerTranslate);
 
     // rotate
     AssetNode::outputPartInstancerRotateX = uAttr.create(
@@ -1162,21 +1069,18 @@ AssetNode::initialize()
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerRotateX);
     AssetNode::outputPartInstancerRotateY = uAttr.create(
             "outputPartInstancerRotateY", "outputPartInstancerRotateY",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerRotateY);
     AssetNode::outputPartInstancerRotateZ = uAttr.create(
             "outputPartInstancerRotateZ", "outputPartInstancerRotateZ",
             MFnUnitAttribute::kAngle
             );
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerRotateZ);
     AssetNode::outputPartInstancerRotate = nAttr.create(
             "outputPartInstancerRotate", "outputPartInstancerRotate",
             AssetNode::outputPartInstancerRotateX,
@@ -1185,7 +1089,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerRotate);
 
     // scale
     AssetNode::outputPartInstancerScaleX = nAttr.create(
@@ -1195,7 +1098,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerScaleX);
     AssetNode::outputPartInstancerScaleY = nAttr.create(
             "outputPartInstancerScaleY", "outputPartInstancerScaleY",
             MFnNumericData::kDouble,
@@ -1203,7 +1105,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerScaleY);
     AssetNode::outputPartInstancerScaleZ = nAttr.create(
             "outputPartInstancerScaleZ", "outputPartInstancerScaleZ",
             MFnNumericData::kDouble,
@@ -1211,7 +1112,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerScaleZ);
     AssetNode::outputPartInstancerScale = nAttr.create(
             "outputPartInstancerScale", "outputPartInstancerScale",
             AssetNode::outputPartInstancerScaleX,
@@ -1220,7 +1120,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancerScale);
 
     // transform
     AssetNode::outputPartInstancerTransform = cAttr.create(
@@ -1233,7 +1132,6 @@ AssetNode::initialize()
     cAttr.setStorable(false);
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputPartInstancerTransform);
 
     AssetNode::outputPartInstancer = cAttr.create(
             "outputPartInstancer", "outputPartInstancer"
@@ -1243,7 +1141,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartInstancerTransform);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputPartInstancer);
 
     // extra attributes
     AssetNode::outputPartExtraAttributeName = tAttr.create(
@@ -1366,7 +1263,6 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputParts);
 
     // output geos
     AssetNode::outputGeoName = tAttr.create(
@@ -1375,7 +1271,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputGeoName);
 
     AssetNode::outputGeoIsTemplated = nAttr.create(
             "outputGeoIsTemplated", "outputGeoIsTemplated",
@@ -1384,7 +1279,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoIsTemplated);
 
     AssetNode::outputGeoIsDisplayGeo = nAttr.create(
             "outputGeoIsDisplayGeo", "outputGeoIsDisplayGeo",
@@ -1393,7 +1287,6 @@ AssetNode::initialize()
             );
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    computeAttributes.push_back(AssetNode::outputGeoIsDisplayGeo);
 
     AssetNode::outputGeos = cAttr.create(
             "outputGeos", "outputGeos"
@@ -1407,7 +1300,6 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputGeos);
 
     AssetNode::outputVisibility = nAttr.create(
             "outputVisibility", "outputVisibility",
@@ -1431,7 +1323,6 @@ AssetNode::initialize()
             );
     tAttr.setWritable(false);
     tAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::outputObjectName);
 
     AssetNode::outputObjects = cAttr.create(
             "outputObjects", "outputObjects"
@@ -1451,7 +1342,6 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
-    computeAttributes.push_back(AssetNode::outputObjects);
 
     //------------------------------- END  objects compound multi------------------------------------------------
 
@@ -1464,7 +1354,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputInstancers);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-    computeAttributes.push_back(AssetNode::output);
 
     AssetNode::useInstancerNode = nAttr.create(
             "useInstancerNode", "useInstancerNode",
@@ -1695,8 +1584,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
     MStatus status;
 
-    if(std::find(computeAttributes.begin(), computeAttributes.end(), plug)
-        != computeAttributes.end() && !myResultsClean)
+    if(isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output))
+            && !myResultsClean)
     {
         // make sure asset was created properly
         if(!isAssetValid())

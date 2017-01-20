@@ -147,6 +147,8 @@ MObject AssetNode::outputPartInstancerScaleX;
 MObject AssetNode::outputPartInstancerScaleY;
 MObject AssetNode::outputPartInstancerScaleZ;
 
+MObject AssetNode::outputPartMaterialIds;
+
 MObject AssetNode::outputPartExtraAttributes;
 MObject AssetNode::outputPartExtraAttributeName;
 MObject AssetNode::outputPartExtraAttributeOwner;
@@ -1081,6 +1083,14 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
+    // material id
+    AssetNode::outputPartMaterialIds = tAttr.create(
+            "outputPartMaterialIds", "outputPartMaterialIds",
+            MFnData::kIntArray
+            );
+    tAttr.setStorable(false);
+    tAttr.setWritable(false);
+
     // extra attributes
     AssetNode::outputPartExtraAttributeName = tAttr.create(
             "outputPartExtraAttributeName", "outputPartExtraAttributeName",
@@ -1190,6 +1200,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartCurves);
     cAttr.addChild(AssetNode::outputPartCurvesIsBezier);
     cAttr.addChild(AssetNode::outputPartInstancer);
+    cAttr.addChild(AssetNode::outputPartMaterialIds);
     cAttr.addChild(AssetNode::outputPartExtraAttributes);
     cAttr.addChild(AssetNode::outputPartGroups);
     

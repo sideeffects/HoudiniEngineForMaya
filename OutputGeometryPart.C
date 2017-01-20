@@ -252,6 +252,11 @@ OutputGeometryPart::compute(
                 AssetNode::outputPartGroups
                 );
         computeGroups(time, groupsHandle);
+
+        // compute material
+        MDataHandle materialHandle =
+            handle.child(AssetNode::outputPartMaterialIds);
+        computeMaterial(time, materialHandle);
     }
 
     return MS::kSuccess;
@@ -1928,7 +1933,31 @@ OutputGeometryPart::computeMaterial(
         MDataHandle& materialHandle
         )
 {
+    MObject materialObj = materialHandle.data();
+    MFnIntArrayData materialDataFn(materialObj);
+    if(materialObj.isNull())
+    {
+        materialObj = materialDataFn.create();
+        materialHandle.setMObject(materialObj);
 
+        materialObj = materialHandle.data();
+        materialDataFn.setObject(materialObj);
+    }
+
+    std::vector<int> materialIdsBuffer(myPartInfo.faceCount);
+    if(materialIdsBuffer.size())
+    {
+        CHECK_HAPI(HAPI_GetMaterialNodeIdsOnFaces(
+                Util::theHAPISession.get(),
+                myNodeId, myPartId,
+                NULL,
+                &materialIdsBuffer[0],
+                0, materialIdsBuffer.size()
+                ));
+    }
+
+    MIntArray materialIds = materialDataFn.array();
+    Util::convertArray(materialIds, materialIdsBuffer);
 }
 
 void

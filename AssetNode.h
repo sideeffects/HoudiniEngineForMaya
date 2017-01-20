@@ -213,6 +213,8 @@ class AssetNode: public MPxTransform
         static MObject outputPartInstancerScaleY;
         static MObject outputPartInstancerScaleZ;
 
+        static MObject outputPartMaterialIds;
+
         static MObject outputPartExtraAttributes;
         static MObject outputPartExtraAttributeName;
         static MObject outputPartExtraAttributeOwner;

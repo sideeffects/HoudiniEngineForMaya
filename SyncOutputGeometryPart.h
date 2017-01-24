@@ -41,13 +41,11 @@ class SyncOutputGeometryPart : public SubCommand
     protected:
         MStatus createOutputPart(
                 const MObject &objectTransform,
-                const MString &partName,
-                bool &hasMaterial
+                const MString &partName
                 );
         MStatus createOutputMesh(
                 const MString &partName,
-                const MPlug &meshPlug,
-                bool &hasMaterial
+                const MPlug &meshPlug
                 );
         MStatus createOutputParticle(
                 const MString &partName,
@@ -68,12 +66,10 @@ class SyncOutputGeometryPart : public SubCommand
                 );
         MStatus createOutputExtraAttributes(
                 const MObject &dstNode,
-                MPlug &mayaSGAttributePlug
+                MPlug* mayaSGAttributePlug = NULL
                 );
         MStatus createOutputGroups(
-                const MObject &dstNode,
-                const MPlug &mayaSGAttributePlug,
-                bool &hasMaterial
+                const MObject &dstNode
                 );
 
     protected:

@@ -110,21 +110,11 @@ SyncOutputGeometryPart::doIt()
     status = myDagModifier.renameNode(myPartTransform, partName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    bool hasMaterial = false;
-
     // create part
     status = createOutputPart(
             myObjectTransform,
-            partName,
-            hasMaterial
+            partName
             );
-
-    if(!hasMaterial)
-    {
-        MFnDagNode partTransformFn(myPartTransform);
-        status = myDagModifier.commandToExecute("assignSG \"lambert1\" \"" + partTransformFn.fullPathName() + "\";");
-        CHECK_MSTATUS_AND_RETURN_IT(status);
-    }
 
     return redoIt();
 }
@@ -180,8 +170,7 @@ SyncOutputGeometryPart::isUndoable() const
 MStatus
 SyncOutputGeometryPart::createOutputPart(
         const MObject &objectTransform,
-        const MString &partName,
-        bool &hasMaterial
+        const MString &partName
         )
 {
     MStatus status;
@@ -192,8 +181,7 @@ SyncOutputGeometryPart::createOutputPart(
     {
         status = createOutputMesh(
                 partName,
-                myOutputPlug.child(AssetNode::outputPartMesh),
-                hasMaterial
+                myOutputPlug.child(AssetNode::outputPartMesh)
                 );
     }
 
@@ -236,8 +224,7 @@ SyncOutputGeometryPart::createOutputPart(
 MStatus
 SyncOutputGeometryPart::createOutputMesh(
         const MString &partName,
-        const MPlug &meshPlug,
-        bool &hasMaterial
+        const MPlug &meshPlug
         )
 {
     MStatus status;
@@ -299,52 +286,212 @@ SyncOutputGeometryPart::createOutputMesh(
     MPlug mayaSGAttributePlug;
     createOutputExtraAttributes(
             meshShape,
-            mayaSGAttributePlug
+            &mayaSGAttributePlug
             );
     createOutputGroups(
-            meshShape,
-            mayaSGAttributePlug,
-            hasMaterial
+            meshShape
             );
 
-    // if there are material ids, create and assign material
-    MPlug materialIdsPlug = meshPlug.parent().child(AssetNode::outputPartMaterialIds);
-    const MFnIntArrayData materialIdsData(materialIdsPlug.asMObject());
-    if(!hasMaterial && materialIdsData.length())
+    // material
     {
-        std::map<int, MIntArray*> materialComponentsMap;
+        std::vector<bool> hasMaterials;
+        typedef std::pair<MObject, MIntArray*> MaterialComponent;
+        std::vector<MaterialComponent> materialComponents;
 
-        // gather components
-        for(size_t i = 0; i < materialIdsData.length(); i++)
+        // if there are material ids
+        MPlug materialIdsPlug = meshPlug.parent().child(AssetNode::outputPartMaterialIds);
+        const MFnIntArrayData materialIdsData(materialIdsPlug.asMObject());
+        if(materialIdsData.length())
         {
-            // material id may be -1, which is mapped to initialShadingGroup
-            int materialId = materialIdsData[i];
-            MIntArray* &components = materialComponentsMap[materialId];
+            std::map<int, MaterialComponent> materialComponentsMap;
 
-            if(!components)
+            if(hasMaterials.size() < materialIdsData.length())
             {
-                components = new MIntArray();
+                hasMaterials.resize(materialIdsData.length());
             }
 
-            components->append(i);
+            // gather material ids
+            for(size_t i = 0; i < materialIdsData.length(); i++)
+            {
+                if(hasMaterials[i])
+                {
+                    continue;
+                }
+
+                int materialId = materialIdsData[i];
+                if(materialId == -1)
+                {
+                    continue;
+                }
+
+                hasMaterials[i] = true;
+
+                std::pair<std::map<int, MaterialComponent>::iterator, bool> r
+                    = materialComponentsMap.insert(
+                            std::pair<int, MaterialComponent>(
+                                materialId, MaterialComponent()));
+                // if first time seeing the material id
+                if(r.second)
+                {
+                    MaterialComponent &materialComponent = r.first->second;
+                    // create the material
+                    materialComponent.first = SyncOutputMaterial::createOutputMaterial(
+                            myDagModifier,
+                            myOutputPlug.node(),
+                            materialId);
+                    materialComponent.second = new MIntArray();
+                }
+
+                r.first->second.second->append(i);
+            }
+
+            for(std::map<int, MaterialComponent>::iterator iter
+                    = materialComponentsMap.begin();
+                    iter != materialComponentsMap.end(); iter++)
+            {
+                materialComponents.push_back(iter->second);
+            }
         }
 
-        // create and assign material
-        for(std::map<int, MIntArray*>::iterator iter
-                = materialComponentsMap.begin();
-                iter != materialComponentsMap.end(); iter++)
+        // if there are maya_shading_group
+        if(!mayaSGAttributePlug.isNull())
         {
-            int materialId = iter->first;
-            MIntArray* &components = iter->second;
+            MPlug mayaSGOwnerPlug = mayaSGAttributePlug.child(
+                    AssetNode::outputPartExtraAttributeOwner
+                    );
+            MPlug mayaSGDataPlug = mayaSGAttributePlug.child(
+                    AssetNode::outputPartExtraAttributeData
+                    );
 
-            MObject shadingGroupObj = SyncOutputMaterial::createOutputMaterial(
-                    myDagModifier,
-                    myOutputPlug.node(),
-                    materialId);
+            MString owner = mayaSGOwnerPlug.asString();
+
+            if(owner == "detail")
+            {
+                MString mayaSG = mayaSGDataPlug.asString();
+
+                MIntArray* components = NULL;
+
+                if(hasMaterials.size())
+                {
+                    components = new MIntArray();
+                    for(size_t i = 0; i < hasMaterials.size(); i++)
+                    {
+                        if(hasMaterials[i])
+                        {
+                            continue;
+                        }
+
+                        hasMaterials[i] = true;
+
+                        components->append(i);
+                    }
+                }
+
+                materialComponents.push_back(MaterialComponent(
+                            Util::findNodeByName(mayaSG.asChar()), components));
+            }
+            else if(owner == "primitive")
+            {
+                MFnStringArrayData mayaSGData(mayaSGDataPlug.asMObject());
+                MStringArray mayaSG = mayaSGData.array();
+
+                std::map<const char*, MaterialComponent> materialComponentsMap;
+
+                if(hasMaterials.size() < mayaSG.length())
+                {
+                    hasMaterials.resize(mayaSG.length());
+                }
+
+                // gather shading group name
+                for(size_t i = 0; i < mayaSG.length(); i++)
+                {
+                    if(hasMaterials[i])
+                    {
+                        continue;
+                    }
+
+                    const char* sgName = mayaSG[i].asChar();
+                    if(!sgName || !sgName[0])
+                    {
+                        continue;
+                    }
+
+                    hasMaterials[i] = true;
+
+                    std::pair<std::map<const char*, MaterialComponent>::iterator, bool> r
+                        = materialComponentsMap.insert(
+                                std::pair<const char*, MaterialComponent>(
+                                    sgName, MaterialComponent()));
+                    // if first time seeing the shading group
+                    if(r.second)
+                    {
+                        MaterialComponent &materialComponent = r.first->second;
+                        materialComponent.first = Util::findNodeByName(sgName);
+                        materialComponent.second = new MIntArray();
+                    }
+
+                    r.first->second.second->append(i);
+                }
+
+                for(std::map<const char*, MaterialComponent>::iterator iter
+                        = materialComponentsMap.begin();
+                        iter != materialComponentsMap.end(); iter++)
+                {
+                    materialComponents.push_back(iter->second);
+                }
+            }
+        }
+
+        // faces with no materials
+        MObject defaultMaterialObj = Util::findNodeByName("initialShadingGroup");
+        if(hasMaterials.size())
+        {
+            MIntArray* components = new MIntArray();
+            for(size_t i = 0; i < hasMaterials.size(); i++)
+            {
+                if(hasMaterials[i])
+                {
+                    continue;
+                }
+
+                components->append(i);
+            }
+
+            if(components->length())
+            {
+                materialComponents.push_back(MaterialComponent(
+                            defaultMaterialObj,
+                            components));
+            }
+            else
+            {
+                delete components;
+            }
+        }
+
+        // if no materials was assigned at all
+        if(!materialComponents.size())
+        {
+            materialComponents.push_back(MaterialComponent(
+                        defaultMaterialObj, NULL));
+        }
+
+        // assign materials
+        for(std::vector<MaterialComponent>::iterator iter
+                = materialComponents.begin();
+                iter != materialComponents.end(); iter++)
+        {
+            MObject materialObj = iter->first;
+            MIntArray *components = iter->second;
+
+            if(materialObj.isNull())
+            {
+                materialObj = defaultMaterialObj;
+            }
 
             MObject componentObj;
-            //do per-face assignment if there are more than one materials
-            if(materialComponentsMap.size() > 1)
+            //do per-face assignment if components is null
+            if(components)
             {
                 MFnSingleIndexedComponent componentFn;
                 componentObj = componentFn.create(MFn::kMeshPolygonComponent);
@@ -355,7 +502,7 @@ SyncOutputGeometryPart::createOutputMesh(
             partMeshFn.getPath(partMeshDag);
 
             MString assignCommand = "sets -e -forceElement "
-                + MFnDependencyNode(shadingGroupObj).name();
+                + MFnDependencyNode(materialObj).name();
 
             MSelectionList selectionList;
             MStringArray selectionStrings;
@@ -370,8 +517,6 @@ SyncOutputGeometryPart::createOutputMesh(
 
             delete components;
         }
-
-        hasMaterial = true;
     }
 
     return MStatus::kSuccess;
@@ -490,8 +635,7 @@ SyncOutputGeometryPart::createOutputParticle(
             true);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    MPlug mayaSGAttributePlug;
-    createOutputExtraAttributes(particleShapeObj, mayaSGAttributePlug);
+    createOutputExtraAttributes(particleShapeObj);
 
     return MStatus::kSuccess;
 }
@@ -536,10 +680,8 @@ SyncOutputGeometryPart::createOutputInstancer(
                 instancerPlug.child(AssetNode::outputPartInstancerArrayData),
                 instancerFn.findPlug("inputPoints"));
 
-            MPlug mayaSGAttributePlug;
             createOutputExtraAttributes(
-                    myPartShapes[i],
-                    mayaSGAttributePlug
+                    myPartShapes[i]
                     );
         }
     }
@@ -688,7 +830,7 @@ SyncOutputGeometryPart::createOutputInstancerPost(
 MStatus
 SyncOutputGeometryPart::createOutputExtraAttributes(
         const MObject &dstNode,
-        MPlug &mayaSGAttributePlug
+        MPlug* mayaSGAttributePlug
         )
 {
     MStatus status;
@@ -805,7 +947,10 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
         if((owner == "primitive" || owner == "detail")
                 && dstAttributeName == "maya_shading_group")
         {
-            mayaSGAttributePlug = extraAttributePlug;
+            if(mayaSGAttributePlug)
+            {
+                *mayaSGAttributePlug = extraAttributePlug;
+            }
             continue;
         }
 
@@ -906,13 +1051,10 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
 
 MStatus
 SyncOutputGeometryPart::createOutputGroups(
-        const MObject &dstNode,
-        const MPlug &mayaSGAttributePlug,
-        bool &hasMaterial
+        const MObject &dstNode
         )
 {
     MStatus status;
-    bool didAssignMaterial = false;
 
     MDagPath dagPath;
     MDagPath::getAPathTo(dstNode, dagPath);
@@ -921,119 +1063,6 @@ SyncOutputGeometryPart::createOutputGroups(
     // Otherwise, set components can't be assigned.
     status = myDagModifier.doIt();
     CHECK_MSTATUS(status);
-
-    // Do material assignment according to "maya_shading_group"
-    if(!hasMaterial && !mayaSGAttributePlug.isNull())
-    {
-        MPlug mayaSGOwnerPlug = mayaSGAttributePlug.child(
-                AssetNode::outputPartExtraAttributeOwner
-                );
-        MPlug mayaSGDataPlug = mayaSGAttributePlug.child(
-                AssetNode::outputPartExtraAttributeData
-                );
-
-        MString owner = mayaSGOwnerPlug.asString();
-        MFnStringArrayData mayaSGData(mayaSGDataPlug.asMObject());
-        MStringArray mayaSG = mayaSGData.array();
-
-        std::vector<std::string> sgNames;
-        std::vector<MFnSingleIndexedComponent*> sgComponents;
-
-        if(owner == "detail")
-        {
-            sgNames.push_back(mayaSG[0].asChar());
-            sgComponents.push_back(NULL);
-        }
-        else if(owner == "primitive")
-        {
-            // Separate the list of primitive attributes by shading group.
-            for(size_t i = 0; i < mayaSG.length(); i++)
-            {
-                const char* sgName = mayaSG[i].asChar();
-                MFnSingleIndexedComponent *sgComponent = NULL;
-
-                std::vector<std::string>::iterator iter
-                    = std::lower_bound(
-                            sgNames.begin(), sgNames.end(),
-                            sgName
-                            );
-                if(iter == sgNames.end()
-                        || *iter != sgName)
-                {
-                    sgComponent = new MFnSingleIndexedComponent();
-                    sgComponent->create(MFn::kMeshPolygonComponent);
-
-                    std::vector<MFnSingleIndexedComponent*>::iterator iter2
-                        = sgComponents.end();
-                    if(iter != sgNames.end())
-                    {
-                        iter2 = sgComponents.begin()
-                            + (iter - sgNames.begin());
-                    }
-
-                    sgNames.insert(iter, sgName);
-                    sgComponents.insert(iter2, sgComponent);
-                }
-                else
-                {
-                    sgComponent = *(sgComponents.begin()
-                            + (iter - sgNames.begin()));
-                }
-
-                sgComponent->addElement(i);
-            }
-        }
-
-        // Assign each primitive list to its own set.
-        for(size_t i = 0; i < sgNames.size(); i++)
-        {
-            didAssignMaterial = true;
-
-            const char* sgName;
-            if(sgNames[i].empty())
-            {
-                sgName = "initialShadingGroup";
-            }
-            else
-            {
-                sgName = sgNames[i].c_str();
-            }
-
-            const MFnSingleIndexedComponent* sgComponent
-                = sgComponents[i];
-
-            MObject setObj = Util::findNodeByName(sgName);
-            MFnSet setFn;
-            if(!setObj.isNull())
-            {
-                status = setFn.setObject(setObj);
-                if(MFAIL(status))
-                {
-                    setObj = MObject::kNullObj;
-                }
-            }
-
-            if(setObj.isNull())
-            {
-                sgName = "initialShadingGroup";
-
-                setObj = Util::findNodeByName(sgName);
-
-                CHECK_MSTATUS(setFn.setObject(setObj));
-            }
-
-            if(!sgComponent)
-            {
-                setFn.addMember(dagPath);
-            }
-            else
-            {
-                setFn.addMember(dagPath, sgComponent->object());
-
-                delete sgComponent;
-            }
-        }
-    }
 
     MPlug groupsPlug = myOutputPlug.child(
             AssetNode::outputPartGroups
@@ -1067,20 +1096,6 @@ SyncOutputGeometryPart::createOutputGroups(
             {
                 setObj = MObject::kNullObj;
             }
-
-            // Can't test with MFnSet::hasObj(MFn::kShadingEngine). Regular
-            // sets will also return true.
-            if(setObj.hasFn(MFn::kShadingEngine))
-            {
-                if(hasMaterial)
-                {
-                    continue;
-                }
-                else
-                {
-                    didAssignMaterial = true;
-                }
-            }
         }
 
         if(setObj.isNull())
@@ -1108,8 +1123,6 @@ SyncOutputGeometryPart::createOutputGroups(
 
         setFn.addMember(dagPath, componentObj);
     }
-
-    hasMaterial |= didAssignMaterial;
 
     return MStatus::kSuccess;
 }

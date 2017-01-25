@@ -469,7 +469,7 @@ SyncOutputGeometryPart::createOutputMesh(
         if(!materialComponents.size())
         {
             materialComponents.push_back(MaterialComponent(
-                        defaultMaterialObj, NULL));
+                        defaultMaterialObj, static_cast<MIntArray*>(NULL)));
         }
 
         // assign materials

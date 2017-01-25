@@ -9,7 +9,6 @@
 #include <maya/MFnIntArrayData.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnNurbsCurve.h>
-#include <maya/MFnSet.h>
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MFnStringArrayData.h>
 #include <maya/MFnTypedAttribute.h>
@@ -1088,26 +1087,14 @@ SyncOutputGeometryPart::createOutputGroups(
         MFn::Type componentType = (MFn::Type) groupTypePlug.asInt();
 
         MObject setObj = Util::findNodeByName(setName);
-        MFnSet setFn;
-        if(!setObj.isNull())
-        {
-            status = setFn.setObject(setObj);
-            if(MFAIL(status))
-            {
-                setObj = MObject::kNullObj;
-            }
-        }
-
         if(setObj.isNull())
         {
-            setObj = setFn.create(
-                    MSelectionList(),
-                    MFnSet::kNone,
-                    &status
+            status = Util::createNodeByModifierCommand(
+                    myDagModifier,
+                    "select -noExpand `sets "
+                    "-name \"" + setName + "\"`",
+                    setObj
                     );
-            CHECK_MSTATUS(status);
-
-            status = myDagModifier.renameNode(setObj, setName);
             CHECK_MSTATUS(status);
         }
 
@@ -1121,7 +1108,19 @@ SyncOutputGeometryPart::createOutputGroups(
         MIntArray componentArray = groupMembersDataFn.array();
         componentFn.addElements(componentArray);
 
-        setFn.addMember(dagPath, componentObj);
+        MString assignCommand = "sets -e -forceElement "
+            + MFnDependencyNode(setObj).name();
+
+        MSelectionList selectionList;
+        MStringArray selectionStrings;
+        selectionList.add(dagPath, componentObj);
+        selectionList.getSelectionStrings(selectionStrings);
+        for(unsigned int i = 0; i < selectionStrings.length(); i++)
+        {
+            assignCommand += " " + selectionStrings[i];
+        }
+
+        myDagModifier.commandToExecute(assignCommand);
     }
 
     return MStatus::kSuccess;

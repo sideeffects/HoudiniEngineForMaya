@@ -1,14 +1,11 @@
 #include "SyncOutputGeometryPart.h"
 
 #include <maya/MDagPath.h>
-#include <maya/MGlobal.h>
 #include <maya/MSelectionList.h>
 
 #include <maya/MFnDagNode.h>
-#include <maya/MFnGenericAttribute.h>
 #include <maya/MFnIntArrayData.h>
 #include <maya/MFnNumericAttribute.h>
-#include <maya/MFnNurbsCurve.h>
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MFnStringArrayData.h>
 #include <maya/MFnTypedAttribute.h>

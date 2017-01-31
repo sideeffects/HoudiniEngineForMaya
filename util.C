@@ -387,6 +387,12 @@ MainProgressBar::displayProgress(
         const MString &status
         )
 {
+    if(maxProgress == 0)
+    {
+        progress = -1;
+        maxProgress = -1;
+    }
+
     if(progress == -1 || maxProgress == -1)
     {
         // unknown progress

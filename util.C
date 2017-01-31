@@ -624,7 +624,7 @@ getNodeName(const MObject &nodeObj)
 }
 
 MObject
-findNodeByName(const MString& name)
+findNodeByName(const MString& name, MFn::Type expectedFn)
 {
     MSelectionList selection;
     selection.add(name);
@@ -633,6 +633,10 @@ findNodeByName(const MString& name)
 
     if(selection.length())
         selection.getDependNode(0, ret);
+
+    if(expectedFn != MFn::kInvalid && !ret.hasFn(expectedFn))
+        return MObject::kNullObj;
+
     return ret;
 }
 

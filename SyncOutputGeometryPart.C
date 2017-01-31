@@ -384,7 +384,9 @@ SyncOutputGeometryPart::createOutputMesh(
                 }
 
                 materialComponents.push_back(MaterialComponent(
-                            Util::findNodeByName(mayaSG.asChar()), components));
+                            Util::findNodeByName(mayaSG.asChar(),
+                                MFn::kShadingEngine),
+                            components));
             }
             else if(owner == "primitive")
             {
@@ -422,7 +424,8 @@ SyncOutputGeometryPart::createOutputMesh(
                     if(r.second)
                     {
                         MaterialComponent &materialComponent = r.first->second;
-                        materialComponent.first = Util::findNodeByName(sgName);
+                        materialComponent.first = Util::findNodeByName(sgName,
+                                MFn::kShadingEngine);
                         materialComponent.second = new MIntArray();
                     }
 
@@ -439,7 +442,8 @@ SyncOutputGeometryPart::createOutputMesh(
         }
 
         // faces with no materials
-        MObject defaultMaterialObj = Util::findNodeByName("initialShadingGroup");
+        MObject defaultMaterialObj = Util::findNodeByName("initialShadingGroup",
+                MFn::kShadingEngine);
         if(hasMaterials.size())
         {
             MIntArray* components = new MIntArray();
@@ -1083,7 +1087,7 @@ SyncOutputGeometryPart::createOutputGroups(
 
         MFn::Type componentType = (MFn::Type) groupTypePlug.asInt();
 
-        MObject setObj = Util::findNodeByName(setName);
+        MObject setObj = Util::findNodeByName(setName, MFn::kSet);
         if(setObj.isNull())
         {
             status = Util::createNodeByModifierCommand(

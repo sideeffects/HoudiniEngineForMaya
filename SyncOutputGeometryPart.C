@@ -284,6 +284,13 @@ SyncOutputGeometryPart::createOutputMesh(
             meshShape,
             &mayaSGAttributePlug
             );
+
+    // createOutputExtraAttributes() seems to cause something in the DG to be
+    // dirty/invalid. We need to force the mesh to evaluate before running the
+    // "sets" command. Otherwise, the "sets" command would fail when there are
+    // extra attributes.
+    partMeshFn.findPlug("outMesh").asMObject();
+
     createOutputGroups(
             meshShape
             );

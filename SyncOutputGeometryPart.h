@@ -69,7 +69,8 @@ class SyncOutputGeometryPart : public SubCommand
                 MPlug* mayaSGAttributePlug = NULL
                 );
         MStatus createOutputGroups(
-                const MObject &dstNode
+                const MObject &dstNode,
+                std::vector<bool>* hasMaterials = NULL
                 );
 
     protected:

@@ -277,6 +277,9 @@ SyncOutputGeometryPart::createOutputMesh(
         dstPlug = partMeshFn.findPlug("inMesh");
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
+
+        status = myDagModifier.doIt();
+        CHECK_MSTATUS(status);
     }
 
     MPlug mayaSGAttributePlug;

@@ -241,12 +241,6 @@ OutputGeometryPart::compute(
         MDataHandle instanceHandle = handle.child(AssetNode::outputPartInstancer);
         computeInstancer(time, hasInstancerHandle, instanceHandle);
 
-        // Extra attributes
-        MDataHandle extraAttributesHandle = handle.child(
-                AssetNode::outputPartExtraAttributes
-                );
-        computeExtraAttributes(time, extraAttributesHandle);
-
         // Groups
         MDataHandle groupsHandle = handle.child(
                 AssetNode::outputPartGroups
@@ -257,6 +251,12 @@ OutputGeometryPart::compute(
         MDataHandle materialHandle =
             handle.child(AssetNode::outputPartMaterialIds);
         computeMaterial(time, materialHandle);
+
+        // Extra attributes
+        MDataHandle extraAttributesHandle = handle.child(
+                AssetNode::outputPartExtraAttributes
+                );
+        computeExtraAttributes(time, extraAttributesHandle);
     }
 
     return MS::kSuccess;
@@ -1947,6 +1947,8 @@ OutputGeometryPart::computeMaterial(
     std::vector<int> materialIdsBuffer(myPartInfo.faceCount);
     if(materialIdsBuffer.size())
     {
+        markAttributeUsed("shop_materialpath");
+
         CHECK_HAPI(HAPI_GetMaterialNodeIdsOnFaces(
                 Util::theHAPISession.get(),
                 myNodeId, myPartId,

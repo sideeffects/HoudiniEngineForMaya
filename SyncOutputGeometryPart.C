@@ -5,6 +5,7 @@
 
 #include <maya/MFnDagNode.h>
 #include <maya/MFnIntArrayData.h>
+#include <maya/MFnMesh.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MFnStringArrayData.h>
@@ -302,13 +303,19 @@ SyncOutputGeometryPart::createOutputMesh(
     // extra attributes.
     partMeshFn.findPlug("outMesh").asMObject();
 
+    std::vector<bool> hasMaterials;
+    {
+        MFnMesh meshFn(meshShape, &status);
+        hasMaterials.resize(meshFn.numPolygons());
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
+
     createOutputGroups(
             meshShape
             );
 
     // material
     {
-        std::vector<bool> hasMaterials;
         typedef std::pair<MObject, MIntArray*> MaterialComponent;
         std::vector<MaterialComponent> materialComponents;
 
@@ -318,11 +325,6 @@ SyncOutputGeometryPart::createOutputMesh(
         if(materialIdsData.length())
         {
             std::map<int, MaterialComponent> materialComponentsMap;
-
-            if(hasMaterials.size() < materialIdsData.length())
-            {
-                hasMaterials.resize(materialIdsData.length());
-            }
 
             // gather material ids
             for(size_t i = 0; i < materialIdsData.length(); i++)
@@ -383,28 +385,30 @@ SyncOutputGeometryPart::createOutputMesh(
             {
                 MString mayaSG = mayaSGDataPlug.asString();
 
-                MIntArray* components = NULL;
-
-                if(hasMaterials.size())
+                MIntArray* components = new MIntArray();
+                for(size_t i = 0; i < hasMaterials.size(); i++)
                 {
-                    components = new MIntArray();
-                    for(size_t i = 0; i < hasMaterials.size(); i++)
+                    if(hasMaterials[i])
                     {
-                        if(hasMaterials[i])
-                        {
-                            continue;
-                        }
-
-                        hasMaterials[i] = true;
-
-                        components->append(i);
+                        continue;
                     }
+
+                    hasMaterials[i] = true;
+
+                    components->append(i);
                 }
 
-                materialComponents.push_back(MaterialComponent(
-                            Util::findNodeByName(mayaSG.asChar(),
-                                MFn::kShadingEngine),
-                            components));
+                if(components->length())
+                {
+                    materialComponents.push_back(MaterialComponent(
+                                Util::findNodeByName(mayaSG.asChar(),
+                                    MFn::kShadingEngine),
+                                components));
+                }
+                else
+                {
+                    delete components;
+                }
             }
             else if(owner == "primitive")
             {
@@ -412,11 +416,6 @@ SyncOutputGeometryPart::createOutputMesh(
                 MStringArray mayaSG = mayaSGData.array();
 
                 std::map<const char*, MaterialComponent> materialComponentsMap;
-
-                if(hasMaterials.size() < mayaSG.length())
-                {
-                    hasMaterials.resize(mayaSG.length());
-                }
 
                 // gather shading group name
                 for(size_t i = 0; i < mayaSG.length(); i++)

@@ -311,7 +311,8 @@ SyncOutputGeometryPart::createOutputMesh(
     }
 
     createOutputGroups(
-            meshShape
+            meshShape,
+            &hasMaterials
             );
 
     // material
@@ -1035,7 +1036,8 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
 
 MStatus
 SyncOutputGeometryPart::createOutputGroups(
-        const MObject &dstNode
+        const MObject &dstNode,
+        std::vector<bool>* hasMaterials
         )
 {
     MStatus status;
@@ -1092,6 +1094,14 @@ SyncOutputGeometryPart::createOutputGroups(
 
         MIntArray componentArray = groupMembersDataFn.array();
         componentFn.addElements(componentArray);
+
+        if(hasMaterials && setObj.hasFn(MFn::kShadingEngine))
+        {
+            for(unsigned int i = 0; i < componentArray.length(); i++)
+            {
+                (*hasMaterials)[componentArray[i]] = true;
+            }
+        }
 
         MString assignCommand = "sets -e -forceElement "
             + MFnDependencyNode(setObj).name();

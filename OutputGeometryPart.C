@@ -1944,6 +1944,7 @@ OutputGeometryPart::computeMaterial(
         materialDataFn.setObject(materialObj);
     }
 
+    bool are_all_the_same = true;
     std::vector<int> materialIdsBuffer(myPartInfo.faceCount);
     if(materialIdsBuffer.size())
     {
@@ -1952,10 +1953,16 @@ OutputGeometryPart::computeMaterial(
         CHECK_HAPI(HAPI_GetMaterialNodeIdsOnFaces(
                 Util::theHAPISession.get(),
                 myNodeId, myPartId,
-                NULL,
+                &are_all_the_same,
                 &materialIdsBuffer[0],
                 0, materialIdsBuffer.size()
                 ));
+    }
+
+    if(materialIdsBuffer.size()
+            && materialIdsBuffer[0] == -1 && are_all_the_same)
+    {
+        return;
     }
 
     MIntArray materialIds = materialDataFn.array();

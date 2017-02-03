@@ -236,6 +236,14 @@ SyncOutputGeometryPart::createOutputMesh(
     MFnDagNode partMeshFn(meshShape, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    // always assign a default material to the object level
+    // this ensures faces are always shaded, even when asset has changing number
+    // of faces
+    myDagModifier.commandToExecute(
+            MString("sets -e -forceElement initialShadingGroup ")
+            + partMeshFn.fullPathName()
+            );
+
     // set mesh.displayColors
     myDagModifier.newPlugValueBool(
             partMeshFn.findPlug("displayColors"),
@@ -451,42 +459,9 @@ SyncOutputGeometryPart::createOutputMesh(
             }
         }
 
-        // faces with no materials
+        // assign materials
         MObject defaultMaterialObj = Util::findNodeByName("initialShadingGroup",
                 MFn::kShadingEngine);
-        if(hasMaterials.size())
-        {
-            MIntArray* components = new MIntArray();
-            for(size_t i = 0; i < hasMaterials.size(); i++)
-            {
-                if(hasMaterials[i])
-                {
-                    continue;
-                }
-
-                components->append(i);
-            }
-
-            if(components->length())
-            {
-                materialComponents.push_back(MaterialComponent(
-                            defaultMaterialObj,
-                            components));
-            }
-            else
-            {
-                delete components;
-            }
-        }
-
-        // if no materials was assigned at all
-        if(!materialComponents.size())
-        {
-            materialComponents.push_back(MaterialComponent(
-                        defaultMaterialObj, static_cast<MIntArray*>(NULL)));
-        }
-
-        // assign materials
         for(std::vector<MaterialComponent>::iterator iter
                 = materialComponents.begin();
                 iter != materialComponents.end(); iter++)

@@ -237,6 +237,9 @@ SyncOutputGeometryPart::createOutputMesh(
     MFnDagNode partMeshFn(meshShape, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
+    status = myDagModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
     // always assign a default material to the object level
     // this ensures faces are always shaded, even when asset has changing number
     // of faces

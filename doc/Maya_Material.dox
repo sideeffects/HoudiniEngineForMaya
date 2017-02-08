@@ -1,0 +1,19 @@
+/*!
+
+@page Maya_Material Material
+
+@tableofcontents
+
+At the moment, mesh is the only geometry that has material support. Material support is implemented through string attributes, namely `maya_shading_group` and `shop_materialpath`. Similar to a typical Houdini workflow, setting these string attributes is equivalent to assigning materials.
+
+- `maya_shading_group` - detail|primitive string
+
+When geometry is inputted from Maya into a Houdini asset, the name of the Maya shading group that is assigned to the geometry is stored in the `maya_shading_group` string attribute. When this string attribute is output from an asset, the output Maya geometry will be assigned to the corresponding shading group.
+
+The original intention of the attribute is to preserve the material assignment when the geometry is input into, and output from Houdini Engine. However, the attribute could also be used to control the material assignment of the output geometry. For example, the asset could explicitly create the `maya_shading_group` attribute, and set it to the name of a Maya shading group. Then when the geometry is output into Maya, if the shading group exists, the geometry will be assigned to the corresponding shading groups.
+
+- `shop_materialpath` - detail|primitive string
+
+In a typical Houdini workflow, materials are assigned through the `shop_materialpath` attribute. When an asset outputs geometries that contain Houdini materials, some basic parameters of the materials are recreated in the Maya scene. Materials in Maya are created as `blinn`. And the basic parameters `ogl_diff`, `ogl_amb`, `ogl_alpha`, and `ogl_spec`, `ogl_tex1` of the Houdini material is output into the Maya material.
+
+*/

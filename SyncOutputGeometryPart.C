@@ -419,7 +419,7 @@ SyncOutputGeometryPart::createOutputMesh(
                 MFnStringArrayData mayaSGData(mayaSGDataPlug.asMObject());
                 MStringArray mayaSG = mayaSGData.array();
 
-                std::map<const char*, MaterialComponent> materialComponentsMap;
+                std::map<std::string, MaterialComponent> materialComponentsMap;
 
                 // gather shading group name
                 for(size_t i = 0; i < mayaSG.length(); i++)
@@ -437,9 +437,9 @@ SyncOutputGeometryPart::createOutputMesh(
 
                     hasMaterials[i] = true;
 
-                    std::pair<std::map<const char*, MaterialComponent>::iterator, bool> r
+                    std::pair<std::map<std::string, MaterialComponent>::iterator, bool> r
                         = materialComponentsMap.insert(
-                                std::pair<const char*, MaterialComponent>(
+                                std::pair<std::string, MaterialComponent>(
                                     sgName, MaterialComponent()));
                     // if first time seeing the shading group
                     if(r.second)
@@ -453,7 +453,7 @@ SyncOutputGeometryPart::createOutputMesh(
                     r.first->second.second->append(i);
                 }
 
-                for(std::map<const char*, MaterialComponent>::iterator iter
+                for(std::map<std::string, MaterialComponent>::iterator iter
                         = materialComponentsMap.begin();
                         iter != materialComponentsMap.end(); iter++)
                 {

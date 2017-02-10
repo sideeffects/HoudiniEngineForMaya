@@ -503,6 +503,9 @@ SyncOutputGeometryPart::createOutputMesh(
 
             myDagModifier.commandToExecute(assignCommand);
 
+            status = myDagModifier.doIt();
+            CHECK_MSTATUS(status);
+
             delete components;
         }
     }

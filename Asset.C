@@ -409,6 +409,7 @@ Asset::Asset(
     HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
 
     HAPI_AssetInfo_Init(&myAssetInfo);
+    HAPI_NodeInfo_Init(&myNodeInfo);
 
     // load the otl
     int libraryId = -1;

@@ -159,7 +159,7 @@ CurveMeshInputNode::compute(const MPlug& plug, MDataBlock& data)
         }
 
         MPointArray cvArray;
-        CHECK_MSTATUS_AND_RETURN_IT( fnCurve.getCVs( cvArray ) );
+        CHECK_MSTATUS_AND_RETURN_IT( fnCurve.getCVs( cvArray, MSpace::kWorld ) );
 
         unsigned int nCVs = cvArray.length();
 

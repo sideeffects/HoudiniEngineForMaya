@@ -174,7 +174,9 @@ class HAPIString
 
         operator MString() const
         {
-            return myString.c_str();
+            MString mayaString;
+            mayaString.setUTF8(myString.c_str());
+            return mayaString;
         }
 
         template<typename T>

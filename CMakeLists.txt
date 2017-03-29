@@ -193,7 +193,7 @@ set(
 # Block out Houdini plugins that would load Houdini's UI libraries.
 set(
     houdini_dso_exclude_pattern
-    "HOUDINI_DSO_EXCLUDE_PATTERN={ROP_OpenGL,COP2_GPULighting,COP2_GPUFog,COP2_GPUEnvironment,COP2_GPUZComposite,COP2_EnableGPU,SHOP_OGL,SOP_VDBUI,OBJ_ReLight,VEX_OpRender,VGC_H_ROP,ROP_PyPDG}*"
+    "HOUDINI_DSO_EXCLUDE_PATTERN={ROP_OpenGL,COP2_GPULighting,COP2_GPUFog,COP2_GPUEnvironment,COP2_GPUZComposite,COP2_EnableGPU,SHOP_OGL,SOP_VDBUI,OBJ_ReLight,VEX_OpRender,KA_H_ROP,ROP_PyPDG}*"
     )
 set(
     MODULE_DESCRIPTION_ENVIRONMENTS

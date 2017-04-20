@@ -181,16 +181,28 @@ InputMesh::processNormals(
     const float* rawNormals = meshFn.getRawNormals(NULL);
 
     // build the per-vertex normals
+    std::vector<int> lockedNormals(normalIds.length());
     std::vector<float> vertexNormals;
     vertexNormals.reserve(normalIds.length() * 3);
     for(unsigned int i = 0; i < normalIds.length(); ++i)
     {
+        if(meshFn.isNormalLocked(normalIds[i]))
+        {
+            lockedNormals[i] = 1;
+        }
+
         vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 0]);
         vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 1]);
         vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 2]);
     }
 
     // add and set it to HAPI
+    CHECK_HAPI(hapiSetVertexAttribute(
+                geometryNodeId(), 0,
+                1,
+                "maya_locked_normal",
+                lockedNormals
+                ));
     CHECK_HAPI(hapiSetVertexAttribute(
             geometryNodeId(), 0,
             3,

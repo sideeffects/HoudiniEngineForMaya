@@ -8,6 +8,7 @@
 #include <maya/MFloatPointArray.h>
 #include <maya/MFloatVectorArray.h>
 #include <maya/MIntArray.h>
+#include <maya/MItMeshPolygon.h>
 #include <maya/MMatrix.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
@@ -117,7 +118,7 @@ InputMesh::setInputGeo(
     processPoints(meshFn);
 
     // normals
-    processNormals(meshFn, vertexCount);
+    processNormals(meshObj, meshFn, vertexCount);
 
     // UVs
     processUVs(meshFn, vertexCount, vertexList);
@@ -160,6 +161,7 @@ InputMesh::processPoints(
 
 bool
 InputMesh::processNormals(
+        const MObject &meshObj,
         const MFnMesh &meshFn,
         std::vector<int> vertexCount
         )
@@ -209,6 +211,46 @@ InputMesh::processNormals(
             "N",
             vertexNormals
             ));
+
+    // hard/soft edges
+    {
+        std::vector<int> hardEdges(meshFn.numFaceVertices());
+
+        int polygonVertexOffset = 0;
+        for(MItMeshPolygon itMeshPolygon(meshObj);
+                !itMeshPolygon.isDone(); itMeshPolygon.next())
+        {
+            MIntArray edges;
+            itMeshPolygon.getEdges(edges);
+
+            for(ArrayIterator<MIntArray> itEdge = arrayBegin(edges);
+                    itEdge != arrayEnd(edges);
+                    ++itEdge,
+                    ++polygonVertexOffset)
+            {
+                if(!meshFn.isEdgeSmooth(*itEdge))
+                {
+                    hardEdges[polygonVertexOffset] = 1;
+                }
+                else
+                {
+                    // default is already 0
+                }
+            }
+        }
+        assert(polygonVertexOffset == meshFn.numFaceVertices());
+
+        // reverse winding order
+        Util::reverseWindingOrder(hardEdges, vertexCount);
+
+        CHECK_HAPI(hapiSetVertexAttribute(
+                    geometryNodeId(), 0,
+                    1,
+                    "maya_hard_edge",
+                    hardEdges
+                    ));
+    }
+
 
     return true;
 }

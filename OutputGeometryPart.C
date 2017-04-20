@@ -2,6 +2,7 @@
 #include <maya/MFnMeshData.h>
 #include <maya/MArrayDataBuilder.h>
 #include <maya/MGlobal.h>
+#include <maya/MItMeshPolygon.h>
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 #include <maya/MMatrix.h>
@@ -1449,6 +1450,44 @@ OutputGeometryPart::computeMesh(
                     meshFn.unlockVertexNormals(unlockVertexList);
                 }
             }
+        }
+    }
+
+    // hard/soft edge
+    if(hasMesh)
+    {
+        if(!HAPI_FAIL(hapiGetVertexAttribute(
+                    myNodeId, myPartId,
+                    "maya_hard_edge",
+                    attrInfo,
+                    intArray
+                    )))
+        {
+            Util::reverseWindingOrder(intArray, polygonCounts);
+
+            size_t polygonVertexOffset = 0;
+            for(MItMeshPolygon itMeshPolygon(meshDataObj);
+                    !itMeshPolygon.isDone(); itMeshPolygon.next())
+            {
+                MIntArray edges;
+                itMeshPolygon.getEdges(edges);
+
+                for(ArrayIterator<MIntArray> itEdge = arrayBegin(edges);
+                        itEdge != arrayEnd(edges);
+                        ++itEdge,
+                        ++polygonVertexOffset)
+                {
+                    if(intArray[polygonVertexOffset])
+                    {
+                        // default is already hard edge
+                    }
+                    else
+                    {
+                        CHECK_MSTATUS(meshFn.setEdgeSmoothing(*itEdge, true));
+                    }
+                }
+            }
+            assert(polygonVertexOffset == intArray.size());
         }
     }
 

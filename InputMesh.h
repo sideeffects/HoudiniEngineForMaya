@@ -27,6 +27,7 @@ class InputMesh : public Input
                 const MFnMesh &meshFn
                 );
         bool processNormals(
+                const MObject &meshObj,
                 const MFnMesh &meshFn,
                 std::vector<int> vertexCount
                 );

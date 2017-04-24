@@ -1488,14 +1488,9 @@ OutputGeometryPart::computeMesh(
                         ++itEdge,
                         ++polygonVertexOffset)
                 {
-                    if(intArray[polygonVertexOffset])
-                    {
-                        // default is already hard edge
-                    }
-                    else
-                    {
-                        CHECK_MSTATUS(meshFn.setEdgeSmoothing(*itEdge, true));
-                    }
+                    CHECK_MSTATUS(meshFn.setEdgeSmoothing(*itEdge,
+                                !intArray[polygonVertexOffset]
+                                ));
                 }
             }
             assert(polygonVertexOffset == intArray.size());

@@ -1409,6 +1409,8 @@ OutputGeometryPart::computeMesh(
                         intArray
                         )))
         {
+            markAttributeUsed("maya_locked_normal");
+
             Util::reverseWindingOrder(intArray, polygonCounts);
 
             MIntArray unlockFaceList;
@@ -1440,6 +1442,8 @@ OutputGeometryPart::computeMesh(
                         intArray
                         )))
         {
+            markAttributeUsed("maya_locked_normal");
+
             MIntArray unlockVertexList;
 
             // normals are already locked, find the ones that need to be
@@ -1468,6 +1472,8 @@ OutputGeometryPart::computeMesh(
                     intArray
                     )))
         {
+            markAttributeUsed("maya_hard_edge");
+
             Util::reverseWindingOrder(intArray, polygonCounts);
 
             size_t polygonVertexOffset = 0;

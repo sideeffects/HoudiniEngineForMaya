@@ -1482,16 +1482,18 @@ OutputGeometryPart::computeMesh(
             {
                 MIntArray edges;
                 itMeshPolygon.getEdges(edges);
+                int numVertices = edges.length();
 
-                for(ArrayIterator<MIntArray> itEdge = arrayBegin(edges);
-                        itEdge != arrayEnd(edges);
-                        ++itEdge,
-                        ++polygonVertexOffset)
+                for(int i = 0; i < numVertices; i++)
                 {
-                    CHECK_MSTATUS(meshFn.setEdgeSmoothing(*itEdge,
-                                !intArray[polygonVertexOffset]
+                    // first vertex in the Houdini winding order
+                    int polygonVertexIndex = polygonVertexOffset + (i + 1) % numVertices;
+                    CHECK_MSTATUS(meshFn.setEdgeSmoothing(
+                                edges[i],
+                                !intArray[polygonVertexIndex]
                                 ));
                 }
+                polygonVertexOffset += numVertices;
             }
             assert(polygonVertexOffset == intArray.size());
         }

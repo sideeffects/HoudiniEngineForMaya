@@ -222,21 +222,22 @@ InputMesh::processNormals(
         {
             MIntArray edges;
             itMeshPolygon.getEdges(edges);
+            int numVertices = edges.length();
 
-            for(ArrayIterator<MIntArray> itEdge = arrayBegin(edges);
-                    itEdge != arrayEnd(edges);
-                    ++itEdge,
-                    ++polygonVertexOffset)
+            for(int i = 0; i < numVertices; i++)
             {
-                if(!meshFn.isEdgeSmooth(*itEdge))
+                if(!meshFn.isEdgeSmooth(edges[i]))
                 {
-                    hardEdges[polygonVertexOffset] = 1;
+                    // first vertex in the Houdini winding order
+                    int polygonVertexIndex = polygonVertexOffset + (i + 1) % numVertices;
+                    hardEdges[polygonVertexIndex] = 1;
                 }
                 else
                 {
                     // default is already 0
                 }
             }
+            polygonVertexOffset += edges.length();
         }
         assert(polygonVertexOffset == meshFn.numFaceVertices());
 

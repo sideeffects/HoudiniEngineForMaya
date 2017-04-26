@@ -111,7 +111,7 @@ OutputInstancerObject::update()
         // fill array of size pointCount of instanced names
         HAPI_AttributeInfo attrInfo;
         MStringArray instanceAttrs;
-        hapiGetPointAttribute(myNodeId, 0, "instance", attrInfo, instanceAttrs);
+        hapiGetPointAttribute(mySopNodeInfo.id, 0, "instance", attrInfo, instanceAttrs);
         for(unsigned int i=0; i<instanceAttrs.length(); i++)
         {
             MStringArray splitObjName;
@@ -121,7 +121,7 @@ OutputInstancerObject::update()
         }
 
         MStringArray nameAttrs;
-        hapiGetPointAttribute(myNodeId, 0, "name", attrInfo, nameAttrs);
+        hapiGetPointAttribute(mySopNodeInfo.id, 0, "name", attrInfo, nameAttrs);
         for(unsigned int ii = 0; ii < nameAttrs.length(); ii++)
         {
             myHoudiniNameAttribute.append(nameAttrs[ii]);

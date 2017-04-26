@@ -36,6 +36,8 @@ OutputGeometryObject::compute(
         const MTime &time,
         MDataBlock& data,
         MDataHandle& objectHandle,
+        const MIntArray &instancedObjIds,
+        const MStringArray &instancedObjNames,
         bool &needToSyncOutputs
         )
 {
@@ -51,10 +53,6 @@ OutputGeometryObject::compute(
     MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
     visibilityHandle.setBool(isVisible());
 
-    // outputIsInstanced
-    MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
-    isInstancedHandle.setBool(isInstanced());
-
     // outputObjectName
     MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
     MString objectName;
@@ -63,6 +61,27 @@ OutputGeometryObject::compute(
         objectName = Util::HAPIString(myObjectInfo.nameSH);
     }
     objectNameHandle.setString(objectName);
+
+    // outputIsInstanced
+    MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
+    bool isInstanced = false;
+    {
+        for(unsigned int i = 0; !isInstanced && i < instancedObjIds.length(); i++)
+        {
+            if(instancedObjIds[i] == myNodeInfo.id)
+            {
+                isInstanced = true;
+            }
+        }
+        for(unsigned int i = 0; !isInstanced && i < instancedObjNames.length(); i++)
+        {
+            if(instancedObjNames[i] == objectName)
+            {
+                isInstanced = true;
+            }
+        }
+    }
+    isInstancedHandle.setBool(isInstanced);
 
     // compute geometry
     {

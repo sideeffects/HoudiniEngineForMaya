@@ -20,6 +20,8 @@ class OutputGeometryObject: public OutputObject
                 const MTime &time,
                 MDataBlock& data,
                 MDataHandle& handle,
+                const MIntArray &instancedObjIds,
+                const MStringArray &instancedObjNames,
                 bool &needToSyncOutputs
                 );
 

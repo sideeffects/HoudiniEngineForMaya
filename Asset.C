@@ -21,6 +21,7 @@
 #include "util.h"
 
 #include <cassert>
+#include <algorithm>
 
 class AttrOperation : public Util::WalkParmOperation
 {
@@ -731,6 +732,8 @@ void
 Asset::computeInstancerObjects(
         const MPlug& plug,
         MDataBlock& data,
+        MIntArray &instancedObjIds,
+        MStringArray &instancedObjNames,
         bool &needToSyncOutputs
         )
 {
@@ -741,7 +744,6 @@ Asset::computeInstancerObjects(
     int instancerIndex = 0;
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
     MArrayDataBuilder instancersBuilder = instancersHandle.builder();
-    MIntArray instancedObjIds;
     for(OutputObjects::const_iterator iter = myObjects.begin();
             iter != myObjects.end(); iter++)
     {
@@ -751,7 +753,7 @@ Asset::computeInstancerObjects(
         if(obj->type() == OutputObject::OBJECT_TYPE_INSTANCER)
         {
             MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
-            stat = obj->compute(
+            stat = dynamic_cast< OutputInstancerObject* >(obj)->compute(
                     myTime,
                     data,
                     instancerElemHandle,
@@ -761,15 +763,13 @@ Asset::computeInstancerObjects(
             {
                 instancerIndex++;
 
-                // get all the object ids that are instanced
-                MIntArray instIds = dynamic_cast< OutputInstancerObject* >(obj)->getInstancedObjIds();
+                // collect all the objects that are being instanced
                 MStringArray instNames = dynamic_cast< OutputInstancerObject* >(obj)->getUniqueInstObjNames();
                 for(unsigned int j = 0; j < instNames.length(); ++j)
                 {
-                    OutputObject* o = findObjectByName(instNames[j]);
-                    if(o != NULL)
-                        instancedObjIds.append(o->getId());
+                    instancedObjNames.append(instNames[j]);
                 }
+                MIntArray instIds = dynamic_cast< OutputInstancerObject* >(obj)->getInstancedObjIds();
                 for(unsigned int j = 0; j < instIds.length(); ++j)
                 {
                     instancedObjIds.append(instIds[j]);
@@ -788,24 +788,6 @@ Asset::computeInstancerObjects(
     }
     instancersHandle.set(instancersBuilder);
 
-    // mark instanced objects
-    for(unsigned int i = 0; i < instancedObjIds.length(); ++i)
-    {
-        // find OutputObject with the id
-        OutputObject* obj = NULL;
-        for(size_t j = 0; j < myObjects.size(); j++)
-        {
-            if(myObjects[j]->getId() == instancedObjIds[i])
-            {
-                obj = myObjects[j];
-                break;
-            }
-        }
-
-        if(obj)
-            obj->myIsInstanced = true;
-    }
-
     instancersHandle.setAllClean();
     data.setClean(instancersPlug);
 }
@@ -814,6 +796,8 @@ void
 Asset::computeGeometryObjects(
         const MPlug& plug,
         MDataBlock& data,
+        const MIntArray &instancedObjIds,
+        const MStringArray &instancedObjNames,
         bool &needToSyncOutputs
         )
 {
@@ -836,10 +820,12 @@ Asset::computeGeometryObjects(
 
         if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
-            obj->compute(
+            dynamic_cast< OutputGeometryObject* >(obj)->compute(
                     myTime,
                     data,
                     objectHandle,
+                    instancedObjIds,
+                    instancedObjNames,
                     needToSyncOutputs
                     );
         }
@@ -1058,16 +1044,20 @@ Asset::compute(
         }
     }
 
-    // first pass - instancers
-    // There is a reason that instancers are computed first.
-    // computeInstancerObjects will mark instanced geometry objects as
-    // instanced.  In computeGeometryObjects, each object will check
-    // if it is instanced or not, and will compute an output or not
-    // depending on whether it is instanced and whether it is visible
-    computeInstancerObjects(plug, data, needToSyncOutputs);
+    // computeInstancerObjects() needs to collect all the objects being
+    // instanced, and then computeGeometryObjects() needs to mark the objects
+    // being instanced accordingly.
+    MIntArray instancedObjIds;
+    MStringArray instancedObjNames;
+    computeInstancerObjects(plug, data,
+            instancedObjIds,
+            instancedObjNames,
+            needToSyncOutputs);
 
-    // second pass - geometry objects
-    computeGeometryObjects(plug, data, needToSyncOutputs);
+    computeGeometryObjects(plug, data,
+            instancedObjIds,
+            instancedObjNames,
+            needToSyncOutputs);
 
     computeMaterial(plug, data, needToSyncOutputs);
 

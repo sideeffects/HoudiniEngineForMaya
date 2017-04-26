@@ -36,14 +36,6 @@ class OutputObject {
 
         void setObjectInfo(const HAPI_ObjectInfo &objectInfo);
 
-        //virtual MStatus compute(const MPlug& plug, MDataBlock& data);
-        virtual MStatus compute(
-                const MTime &time,
-                MDataBlock& data,
-                MDataHandle& handle,
-                bool &needToSyncOutputs
-                ) = 0;
-
         virtual ObjectType type() = 0;
 
         bool        isVisible() const;

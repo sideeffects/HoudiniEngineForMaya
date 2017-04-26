@@ -76,11 +76,15 @@ class Asset {
         void computeInstancerObjects(
                 const MPlug& plug,
                 MDataBlock& data,
+                MIntArray &instancedObjIds,
+                MStringArray &instancedObjNames,
                 bool &needToSyncOutputs
                 );
         void computeGeometryObjects(
                 const MPlug& plug,
                 MDataBlock& data,
+                const MIntArray &instancedObjIds,
+                const MStringArray &instancedObjNames,
                 bool &needToSyncOutputs
                 );
         void computeMaterial(

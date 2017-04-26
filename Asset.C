@@ -598,26 +598,6 @@ Asset::getAssetName() const
     return Util::HAPIString(myAssetInfo.fullOpNameSH);
 }
 
-OutputObject*
-Asset::findObjectByName(MString name)
-{
-    assert(myNodeInfo.id >= 0);
-
-    for(size_t i = 0; i < myObjects.size(); i++)
-    {
-        if(myObjects[i]->getName() == name)
-            return myObjects[i];
-    }
-
-    return NULL;
-}
-
-OutputObject*
-Asset::findObjectById(int id)
-{
-    return myObjects[id];
-}
-
 MString
 Asset::getRelativePath(HAPI_NodeId id)
 {

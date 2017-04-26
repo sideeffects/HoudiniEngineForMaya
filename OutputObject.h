@@ -31,18 +31,11 @@ class OutputObject {
         OutputObject(HAPI_NodeId nodeId);
         virtual ~OutputObject();
 
-        int getId();
-        MString getName();
-
         void setObjectInfo(const HAPI_ObjectInfo &objectInfo);
 
         virtual ObjectType type() = 0;
 
         bool        isVisible() const;
-        bool        isInstanced() const;
-
-    public:
-        bool myIsInstanced;
 
     protected:
         HAPI_NodeId myNodeId;

@@ -41,16 +41,10 @@ OutputObject::~OutputObject() {}
 OutputObject::OutputObject(
         HAPI_NodeId nodeId
         ) :
-    myIsInstanced(false),
     myNodeId(nodeId),
     myLastCookCount(0)
 {
 }
-
-// Getters ----------------------------------------------------
-
-int OutputObject::getId() { return myNodeInfo.id; }
-MString OutputObject::getName() { return Util::HAPIString(myObjectInfo.nameSH); }
 
 void
 OutputObject::setObjectInfo(const HAPI_ObjectInfo &objectInfo)
@@ -62,10 +56,4 @@ bool
 OutputObject::isVisible() const
 {
     return myObjectInfo.isVisible;
-}
-
-bool
-OutputObject::isInstanced() const
-{
-    return myIsInstanced;
 }

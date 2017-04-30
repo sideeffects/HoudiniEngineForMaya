@@ -1103,9 +1103,9 @@ SyncOutputGeometryPart::createOutputGroups(
 
         if(hasMaterials && setObj.hasFn(MFn::kShadingEngine))
         {
-            for(unsigned int i = 0; i < componentArray.length(); i++)
+            for(unsigned int j = 0; j < componentArray.length(); j++)
             {
-                (*hasMaterials)[componentArray[i]] = true;
+                (*hasMaterials)[componentArray[j]] = true;
             }
         }
 
@@ -1116,9 +1116,9 @@ SyncOutputGeometryPart::createOutputGroups(
         MStringArray selectionStrings;
         selectionList.add(dagPath, componentObj);
         selectionList.getSelectionStrings(selectionStrings);
-        for(unsigned int i = 0; i < selectionStrings.length(); i++)
+        for(unsigned int j = 0; j < selectionStrings.length(); j++)
         {
-            assignCommand += " " + selectionStrings[i];
+            assignCommand += " " + selectionStrings[j];
         }
 
         myDagModifier.commandToExecute(assignCommand);

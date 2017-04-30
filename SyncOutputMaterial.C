@@ -158,7 +158,7 @@ SyncOutputMaterial::createOutputMaterialPlug(
 
     // find the material plug that matches the node id
     MPlug materialPlug;
-    size_t lastLogicalElement = -1;
+    size_t lastLogicalElement = (size_t) -1;
     {
         for(size_t i = 0; i < materialsPlug.numElements(); i++)
         {

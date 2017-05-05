@@ -16,6 +16,16 @@ Maya mesh is input into a Houdini asset as polygons. When inputting a Maya mesh,
 
 Stores the normals of all the vertices.
 
+- `maya_locked_normal` - vertex int
+
+Stores whether the normal of the vertex is locked. If the value is non-zero, then the normal is locked. If the value is 0, then the normal is unlocked.
+
+- `maya_hard_edge` - vertex int
+
+Stores whether the edge represented by the vertex is a hard edge. In Maya, this is a property on the edge. However, since Houdini doesn't have the concept of edge attribute, the property is stored on the first vertex of the edge. If the value is non-zero, then the edge is a hard edge. If the value is 0, then the edge is smooth.
+
+When building an asset, the "Maya Hard Edge" SOP can be used to convert the `maya_hard_edge` vertex attribute into the `maya_hard_edge` edge group. This allows the rest of the asset to work with hard edges as an edge group representation, which is often simpler to work with.
+
 @subsection Maya_Mesh_Input_UVs UVs
 
 - `uv`, `uv2`, `uv3`, ... - vertex float3
@@ -71,6 +81,16 @@ Polygons output from a Houdini asset are output as a Maya mesh. When the polygon
 - `N` - vertex float3
 
 Used to set the normals of all the vertices.
+
+- `maya_locked_normal` - vertex int
+
+Used to set whether the normal of the vertex is locked. If the value is non-zero, then the normal is locked. If the value is 0, then the normal is unlocked.
+
+- `maya_hard_edge` - vertex int
+
+Used to set whether the edge represented by the vertex is a hard edge. In Maya, this is a property on the edge. However, since Houdini doesn't have the concept of edge attribute, the property is stored on the first vertex of the edge. If the value is non-zero, then the edge is a hard edge. If the value is 0, then the edge is smooth.
+
+When building an asset, the "Maya Hard Edge" SOP can be used to convert the `maya_hard_edge` edge group into the `maya_hard_edge` vertex attribute. This allows the rest of the asset to work with hard edges as an edge group representation, which is often simpler to work with.
 
 @subsection Maya_Mesh_Output_UVs UVs
 

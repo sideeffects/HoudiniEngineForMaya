@@ -243,6 +243,15 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
                 &cvCounts.front(),
                 0, cvCounts.size()
                 ));
+    if(curveInfo.order == HAPI_CURVE_ORDER_VARYING)
+    {
+        CHECK_HAPI(HAPI_SetCurveOrders(
+                    Util::theHAPISession.get(),
+                    myNodeId, 0,
+                    &orders.front(),
+                    0, orders.size()
+                    ));
+    }
 
     HAPI_AttributeInfo attrInfo = HAPI_AttributeInfo_Create();
     attrInfo.count = partInfo.pointCount;

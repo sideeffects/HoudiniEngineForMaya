@@ -218,11 +218,6 @@ getInputNodeForMultiple(int $type, string $objects[])
             if(!size($objects))
                 return "";
 
-            if(size($objects) == 1)
-            {
-                return getInputNodeForSingle($objects[0]);
-            }
-
             $inputNode = `createNode -skipSelect "houdiniInputCurve"`;
 
             for($i = 0; $i < size($objects); $i++)

@@ -358,6 +358,14 @@ T convert(const U &src)
     return src;
 }
 
+// std::string owns the returned char*
+template<>
+inline const char*
+convert(const std::string &src)
+{
+    return src.c_str();
+}
+
 // MString owns the returned char*
 template<>
 inline const char*

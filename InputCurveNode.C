@@ -6,6 +6,7 @@
 
 #include "InputCurveNode.h"
 #include "MayaTypeID.h"
+#include "hapiutil.h"
 #include "util.h"
 
 #include <cassert>
@@ -115,7 +116,7 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
     std::vector<int>    cvCounts;
     std::vector<float>  knots;
     std::vector<int>    orders;
-    MStringArray name;
+    std::vector<std::string> names;
 
     for ( int iCurve = 0; iCurve < nInputCurves; ++iCurve )
     {
@@ -214,8 +215,8 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
 
         ++curveInfo.curveCount;
 
-        name.append(
-                Util::getNodeName(Util::plugSource(inputCurvePlug))
+        names.push_back(
+                Util::getNodeName(Util::plugSource(inputCurvePlug).node()).asChar()
                 );
     }
 
@@ -295,6 +296,13 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
                     0, static_cast<int>(knots.size())
                     ));
     }
+
+    CHECK_HAPI(hapiSetPrimAttribute(
+                myNodeId, 0,
+                1,
+                "name",
+                names
+                ));
 
     CHECK_HAPI(HAPI_CommitGeo(
                 Util::theHAPISession.get(),

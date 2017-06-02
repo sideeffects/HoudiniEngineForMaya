@@ -986,7 +986,7 @@ Asset::compute(
         MDataHandle assetScaleHandle = data.outputValue(
                 assetTransformPlug .child(AssetNode::outputAssetScale));
 
-        if(myIsObjSubnet)
+        if(myNodeInfo.type == HAPI_NODETYPE_OBJ && myIsObjSubnet)
         {
             HAPI_Transform trans;
             HAPI_GetObjectTransform(

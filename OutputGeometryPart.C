@@ -1333,8 +1333,61 @@ OutputGeometryPart::computeMesh(
         }
     }
 
+    // find locked normals
+    HAPI_AttributeOwner lockedNormalOwner = HAPI_ATTROWNER_MAX;
+    std::vector<int> lockedNormal;
+    if(hasMesh)
+    {
+        if(!HAPI_FAIL(hapiGetVertexAttribute(
+                        myNodeId, myPartId,
+                        "maya_locked_normal",
+                        attrInfo,
+                        lockedNormal
+                        )))
+        {
+            markAttributeUsed("maya_locked_normal");
+
+            // ignore it if none of the normals are locked
+            for(size_t i = 0; i < lockedNormal.size(); i++)
+            {
+                if(lockedNormal[i])
+                {
+                    lockedNormalOwner = HAPI_ATTROWNER_VERTEX;
+                    Util::reverseWindingOrder(lockedNormal, polygonCounts);
+                    break;
+                }
+            }
+            if(lockedNormalOwner == HAPI_ATTROWNER_MAX)
+            {
+                lockedNormal.clear();
+            }
+        }
+        else if(!HAPI_FAIL(hapiGetPointAttribute(
+                        myNodeId, myPartId,
+                        "maya_locked_normal",
+                        attrInfo,
+                        lockedNormal
+                        )))
+        {
+            markAttributeUsed("maya_locked_normal");
+
+            // ignore it if none of the normals are locked
+            for(size_t i = 0; i < lockedNormal.size(); i++)
+            {
+                if(lockedNormal[i])
+                {
+                    lockedNormalOwner = HAPI_ATTROWNER_POINT;
+                    break;
+                }
+            }
+            if(lockedNormalOwner == HAPI_ATTROWNER_MAX)
+            {
+                lockedNormal.clear();
+            }
+        }
+    }
+
     // normal array
-    bool hasNormal = false;
     if(hasMesh)
     {
         HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
@@ -1360,7 +1413,6 @@ OutputGeometryPart::computeMesh(
         if(owner != HAPI_ATTROWNER_MAX)
         {
             markAttributeUsed("N");
-            hasNormal = true;
 
             // assume 3 tuple
             MVectorArray normals(
@@ -1396,69 +1448,6 @@ OutputGeometryPart::computeMesh(
 
                 meshFn.setVertexNormals(normals, vertexList);
             }
-        }
-    }
-
-    // unlock/lock normals
-    if(hasMesh && hasNormal)
-    {
-        if(!HAPI_FAIL(hapiGetVertexAttribute(
-                        myNodeId, myPartId,
-                        "maya_locked_normal",
-                        attrInfo,
-                        intArray
-                        )))
-        {
-            markAttributeUsed("maya_locked_normal");
-
-            Util::reverseWindingOrder(intArray, polygonCounts);
-
-            MIntArray unlockFaceList;
-            MIntArray unlockVertexList;
-
-            // normals are already locked, find the ones that need to be
-            // unlocked
-            for(unsigned int i = 0, j = 0, length = polygonCounts.length();
-                    i < length; ++i)
-            {
-                for(int k = 0; k < polygonCounts[i]; ++j, ++k)
-                {
-                    if(!(intArray[j] == 0))
-                    {
-                        continue;
-                    }
-
-                    unlockFaceList.append(i);
-                    unlockVertexList.append(polygonConnects[j]);
-                }
-            }
-
-            meshFn.unlockFaceVertexNormals(unlockFaceList, unlockVertexList);
-        }
-        else if(!HAPI_FAIL(hapiGetPointAttribute(
-                        myNodeId, myPartId,
-                        "maya_locked_normal",
-                        attrInfo,
-                        intArray
-                        )))
-        {
-            markAttributeUsed("maya_locked_normal");
-
-            MIntArray unlockVertexList;
-
-            // normals are already locked, find the ones that need to be
-            // unlocked
-            for(size_t i = 0; i < intArray.size(); i++)
-            {
-                if(!(intArray[i] == 0))
-                {
-                    continue;
-                }
-
-                unlockVertexList.append(i);
-            }
-
-            meshFn.unlockVertexNormals(unlockVertexList);
         }
     }
 

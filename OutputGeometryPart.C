@@ -1387,10 +1387,13 @@ OutputGeometryPart::computeMesh(
         }
     }
 
+    // store the vertex locked normal, if it is ever promoted to vertex
+    std::vector<int> vertexLockedNormalBuffer;
+
     // normal array
-    if(hasMesh)
+    if(hasMesh && lockedNormalOwner != HAPI_ATTROWNER_MAX)
     {
-        HAPI_AttributeOwner owner = HAPI_ATTROWNER_MAX;
+        HAPI_AttributeOwner normalOwner = HAPI_ATTROWNER_MAX;
         if(!HAPI_FAIL(hapiGetVertexAttribute(
                         myNodeId, myPartId,
                         "N",
@@ -1398,7 +1401,7 @@ OutputGeometryPart::computeMesh(
                         floatArray
                         )))
         {
-            owner = HAPI_ATTROWNER_VERTEX;
+            normalOwner = HAPI_ATTROWNER_VERTEX;
         }
         else if(!HAPI_FAIL(hapiGetPointAttribute(
                         myNodeId, myPartId,
@@ -1407,46 +1410,110 @@ OutputGeometryPart::computeMesh(
                         floatArray
                         )))
         {
-            owner = HAPI_ATTROWNER_POINT;
+            normalOwner = HAPI_ATTROWNER_POINT;
         }
 
-        if(owner != HAPI_ATTROWNER_MAX)
+        MVectorArray normal(
+                reinterpret_cast<float(*)[3]>(&floatArray.front()),
+                floatArray.size() / 3);
+        if(normalOwner == HAPI_ATTROWNER_VERTEX)
+        {
+            Util::reverseWindingOrder(normal, polygonCounts);
+        }
+
+        HAPI_AttributeOwner promotedOwner = HAPI_ATTROWNER_MAX;
+        if(normalOwner != HAPI_ATTROWNER_MAX)
         {
             markAttributeUsed("N");
 
-            // assume 3 tuple
-            MVectorArray normals(
-                    reinterpret_cast<float(*)[3]>(&floatArray.front()),
-                    floatArray.size() / 3);
-
-            if(owner == HAPI_ATTROWNER_VERTEX)
+            // promote the normals and locked normals to matching class
+            MVectorArray *promotedNormal = NULL;
+            std::vector<int> *promotedLockedNormal = NULL;
+            MVectorArray vertexNormalBuffer;
+            if((normalOwner == HAPI_ATTROWNER_POINT
+                        && lockedNormalOwner == HAPI_ATTROWNER_POINT)
+                    || (normalOwner == HAPI_ATTROWNER_VERTEX
+                        && lockedNormalOwner == HAPI_ATTROWNER_VERTEX))
             {
-                Util::reverseWindingOrder(normals, polygonCounts);
+                promotedOwner = normalOwner;
+                promotedNormal = &normal;
+                promotedLockedNormal = &lockedNormal;
+            }
+            else if(normalOwner == HAPI_ATTROWNER_POINT
+                    && lockedNormalOwner == HAPI_ATTROWNER_VERTEX)
+            {
+                Util::promoteAttributeData<3, 0, 0>(
+                        HAPI_ATTROWNER_VERTEX,
+                        vertexNormalBuffer,
+                        HAPI_ATTROWNER_POINT,
+                        normal,
+                        normal.length(),
+                        &polygonCounts,
+                        &polygonConnects
+                        );
 
+                promotedOwner = HAPI_ATTROWNER_VERTEX;
+                promotedNormal = &vertexNormalBuffer;
+                promotedLockedNormal = &lockedNormal;
+            }
+            else if(normalOwner == HAPI_ATTROWNER_VERTEX
+                    && lockedNormalOwner == HAPI_ATTROWNER_POINT)
+            {
+                if(!vertexLockedNormalBuffer.size())
+                {
+                    Util::promoteAttributeData<1, 0, 0>(
+                            HAPI_ATTROWNER_VERTEX,
+                            vertexLockedNormalBuffer,
+                            HAPI_ATTROWNER_POINT,
+                            lockedNormal,
+                            lockedNormal.size(),
+                            &polygonCounts,
+                            &polygonConnects
+                            );
+                }
+
+                promotedOwner = HAPI_ATTROWNER_VERTEX;
+                promotedNormal = &normal;
+                promotedLockedNormal = &vertexLockedNormalBuffer;
+            }
+
+            // set the normals only if it's locked
+            if(promotedOwner == HAPI_ATTROWNER_VERTEX)
+            {
+                MVectorArray setNormalList;
                 MIntArray faceList;
-                faceList.setLength(polygonConnects.length());
+                MIntArray vertexList;
                 for(unsigned int i = 0, j = 0, length = polygonCounts.length();
                         i < length; ++i)
                 {
                     for(int k = 0; k < polygonCounts[i]; ++j, ++k)
                     {
-                        faceList[j] = i;
+                        if((*promotedLockedNormal)[j])
+                        {
+                            setNormalList.append((*promotedNormal)[j]);
+                            faceList.append(i);
+                            vertexList.append(polygonConnects[j]);
+                        }
                     }
                 }
 
-                meshFn.setFaceVertexNormals(normals, faceList, polygonConnects);
+                meshFn.setFaceVertexNormals(setNormalList, faceList, vertexList);
             }
-            else if(owner == HAPI_ATTROWNER_POINT)
+            else if(promotedOwner == HAPI_ATTROWNER_POINT)
             {
+                MVectorArray setNormalList;
                 MIntArray vertexList;
-                vertexList.setLength(vertexArray.length());
                 for(unsigned int i = 0, length = vertexList.length();
                         i < length; ++i)
                 {
-                    vertexList[i] = i;
+                    if((*promotedLockedNormal)[i])
+                    {
+                        setNormalList.append((*promotedNormal)[i]);
+                        vertexList.append(i);
+                    }
                 }
 
-                meshFn.setVertexNormals(normals, vertexList);
+                meshFn.setVertexNormals(setNormalList, vertexList);
             }
         }
     }

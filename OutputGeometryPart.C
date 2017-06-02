@@ -1532,6 +1532,30 @@ OutputGeometryPart::computeMesh(
 
             Util::reverseWindingOrder(intArray, polygonCounts);
 
+            // promote the locked normals to vertex
+            std::vector<int> *vertexLockedNormal = NULL;
+            if(lockedNormalOwner == HAPI_ATTROWNER_POINT)
+            {
+                if(!vertexLockedNormalBuffer.size())
+                {
+                    Util::promoteAttributeData<1, 0, 0>(
+                            HAPI_ATTROWNER_VERTEX,
+                            vertexLockedNormalBuffer,
+                            HAPI_ATTROWNER_POINT,
+                            lockedNormal,
+                            lockedNormal.size(),
+                            &polygonCounts,
+                            &polygonConnects
+                            );
+                }
+
+                vertexLockedNormal = &vertexLockedNormalBuffer;
+            }
+            else if(lockedNormalOwner == HAPI_ATTROWNER_VERTEX)
+            {
+                vertexLockedNormal = &lockedNormal;
+            }
+
             size_t polygonVertexOffset = 0;
             for(MItMeshPolygon itMeshPolygon(meshDataObj);
                     !itMeshPolygon.isDone(); itMeshPolygon.next())
@@ -1543,11 +1567,28 @@ OutputGeometryPart::computeMesh(
                 for(int i = 0; i < numVertices; i++)
                 {
                     // first vertex in the Houdini winding order
-                    int polygonVertexIndex = polygonVertexOffset + (i + 1) % numVertices;
-                    CHECK_MSTATUS(meshFn.setEdgeSmoothing(
-                                edges[i],
-                                !intArray[polygonVertexIndex]
-                                ));
+                    int polygonVertexIndex1 = polygonVertexOffset + (i + 1) % numVertices;
+                    // second vertex in the Houdini winding order
+                    int polygonVertexIndex2 = polygonVertexOffset + i;
+
+                    // If there is even one locked normal, calling
+                    // setEdgeSmoothing becomes very expensive for some reasons.
+                    // So call it only when necessary. An edge is default to
+                    // smooth, so we can normally skip the smooth edges.
+                    // However, there is an exception. If a locked normal is
+                    // set, then the edge seems to become hard. So we need to
+                    // explicitly set those to smooth.
+                    if(intArray[polygonVertexIndex1]
+                            || (vertexLockedNormal
+                                && ((*vertexLockedNormal)[polygonVertexIndex1]
+                                    || (*vertexLockedNormal)[polygonVertexIndex2]))
+                      )
+                    {
+                        CHECK_MSTATUS(meshFn.setEdgeSmoothing(
+                                    edges[i],
+                                    !intArray[polygonVertexIndex1]
+                                    ));
+                    }
                 }
                 polygonVertexOffset += numVertices;
             }

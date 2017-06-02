@@ -34,6 +34,19 @@ struct TypeTrait
 #define TYPETRAIT(T) TypeTrait<typename RemoveConst<T>::type>
 
 template<>
+struct TypeTrait<int>
+{
+    typedef int Type;
+    typedef int ComponentType;
+
+    static const int numComponents = 1;
+    static const ComponentType &getComponent(const Type &o, size_t i)
+    { return o; }
+    static ComponentType &getComponent(Type &o, size_t i)
+    { return o; }
+};
+
+template<>
 struct TypeTrait<float>
 {
     typedef float Type;

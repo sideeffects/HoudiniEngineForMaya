@@ -1668,8 +1668,6 @@ OutputGeometryPart::computeMesh(
         {
             const MString uvAttributeName
                 = Util::getAttrLayerName("uv", layerIndex);
-            const MString uvNumberAttributeName
-                = Util::getAttrLayerName("uvNumber", layerIndex);
 
             HAPI_AttributeInfo uvAttrInfo;
             bool found = false;
@@ -1699,25 +1697,18 @@ OutputGeometryPart::computeMesh(
 
             markAttributeUsed(uvAttributeName.asChar());
 
-            HAPI_AttributeInfo uvNumberAttrInfo;
-            std::vector<int> uvNumbers;
-            HAPI_FAIL(hapiGetVertexAttribute(
-                        myNodeId, myPartId,
-                        uvNumberAttributeName.asChar(),
-                        uvNumberAttrInfo,
-                        uvNumbers
-                        ));
-            markAttributeUsed(uvNumberAttributeName.asChar());
-
             MFloatArray uArray(polygonConnects.length());
             MFloatArray vArray(polygonConnects.length());
             MIntArray vertexList(polygonConnects.length());
-            if(uvAttrInfo.owner == HAPI_ATTROWNER_VERTEX && uvNumbers.size())
+            if(uvAttrInfo.owner == HAPI_ATTROWNER_VERTEX)
             {
                 // attempt to restore the shared UVs
 
-                // uvNumber -> uvIndex
-                std::map<int, int> uvNumberMap;
+                // pointNumber -> uvIndex
+                std::vector<int> uvIndexMap(
+                        vertexArray.length(),
+                        -1
+                        );
                 // uvIndex -> alternate uvIndex
                 std::vector<int> uvAlternateIndexMap(
                         polygonConnects.length(),
@@ -1727,18 +1718,16 @@ OutputGeometryPart::computeMesh(
                 int uvCount = 0;
                 for(unsigned int i = 0; i < polygonConnects.length(); ++i)
                 {
-                    int uvNumber = uvNumbers[i];
+                    int &uvIndex = uvIndexMap[polygonConnects[i]];
+
                     float u = floatArray[i * uvAttrInfo.tupleSize + 0];
                     float v = floatArray[i * uvAttrInfo.tupleSize + 1];
 
-                    std::map<int, int>::iterator iter
-                        = uvNumberMap.find(uvNumber);
-
                     int lastMappedUVIndex = -1;
                     int mappedUVIndex = -1;
-                    if(iter != uvNumberMap.end())
+                    if(uvIndex != -1)
                     {
-                        int currMappedUVIndex = iter->second;
+                        int currMappedUVIndex = uvIndex;
                         while(currMappedUVIndex != -1)
                         {
                             // check that the UV coordinates are the same
@@ -1768,7 +1757,7 @@ OutputGeometryPart::computeMesh(
                         }
                         else
                         {
-                            uvNumberMap[uvNumber] = mappedUVIndex;
+                            uvIndex = mappedUVIndex;
                         }
                     }
 
@@ -1779,28 +1768,6 @@ OutputGeometryPart::computeMesh(
                 vArray.setLength(uvCount);
 
                 Util::reverseWindingOrder(vertexList, polygonCounts);
-            }
-            else if(uvAttrInfo.owner == HAPI_ATTROWNER_VERTEX)
-            {
-                // assign the UVs without any sharing
-
-                uArray.setLength(uvAttrInfo.count);
-                vArray.setLength(uvAttrInfo.count);
-                for(unsigned int i = 0, length = uArray.length();
-                        i < length; ++i)
-                {
-                    uArray[i] = floatArray[i * uvAttrInfo.tupleSize + 0];
-                    vArray[i] = floatArray[i * uvAttrInfo.tupleSize + 1];
-                }
-
-                Util::reverseWindingOrder(uArray, polygonCounts);
-                Util::reverseWindingOrder(vArray, polygonCounts);
-
-                for(unsigned int i = 0, length = polygonConnects.length();
-                        i < length; ++i)
-                {
-                    vertexList[i] = i;
-                }
             }
             else if(uvAttrInfo.owner == HAPI_ATTROWNER_POINT)
             {

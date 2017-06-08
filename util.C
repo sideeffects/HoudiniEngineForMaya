@@ -13,6 +13,7 @@
 #include <unistd.h>
 #endif
 
+#include <errno.h>
 #include <memory>
 
 #include "util.h"

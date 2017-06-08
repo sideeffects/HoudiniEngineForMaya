@@ -12,7 +12,8 @@
 #else
 #include <unistd.h>
 #endif
-
+#include <iosfwd>
+#include <stdio.h>
 #include <errno.h>
 #include <memory>
 

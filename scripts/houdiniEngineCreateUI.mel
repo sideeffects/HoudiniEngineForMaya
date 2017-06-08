@@ -322,16 +322,7 @@ houdiniEngine_viewInHoudini()
     int $isWindows = `about -win`;
     int $isMac = `about -mac`;
 
-    string $hipFile;
-    if($isWindows || $isMac)
-    {
-        $hipFile = getenv("TMPDIR");
-    }
-    else if($isLinux)
-    {
-        $hipFile = "/tmp";
-    }
-
+    string $hipFile = `houdiniEngine -makeTempDir`;
     $hipFile += "/houdiniEngineForMaya_" + `getpid` + ".hip";
     $hipFile = toNativePath($hipFile);
 

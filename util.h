@@ -12,6 +12,10 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <iosfwd>
+#include <stdio.h>
+#include <errno.h>
+#include <memory>
 
 #include <HAPI/HAPI.h>
 

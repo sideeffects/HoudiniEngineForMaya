@@ -287,7 +287,11 @@ initializeSession(const OptionVars& optionVars)
                 serverOptions.autoClose = true;
                 serverOptions.timeoutMs = 10 * 1000;
 
-                pipeName = "hapi";
+                pipeName = Util::getTempDir().c_str();
+                Util::mkpath(pipeName.asChar());
+
+                pipeName += Util::pathSeparator;
+                pipeName += "hapi";
                 pipeName += getpid();
 
                 MGlobal::displayInfo(

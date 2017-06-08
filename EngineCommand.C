@@ -19,6 +19,8 @@
 #define kBuildHoudiniVersionFlagLong "-buildHoudiniVersion"
 #define kBuildHoudiniEngineVersionFlag "-bev"
 #define kBuildHoudiniEngineVersionFlagLong "-buildHoudiniEngineVersion"
+#define kTempDirFlag "-mtp"
+#define kTempDirFlagLong "-makeTempDir"
 #define kSaveHIPFlag "-sh"
 #define kSaveHIPFlagLong "-saveHIP"
 
@@ -206,6 +208,24 @@ class EngineSubCommandBuildHoudiniEngineVersion : public SubCommand
         }
 };
 
+class EngineSubCommandTempDir : public SubCommand
+{
+    public:
+        virtual MStatus doIt()
+        {
+            std::string tempdir = Util::getTempDir();
+
+            if(!Util::mkpath(tempdir))
+            {
+                DISPLAY_ERROR("Error creating temporary directory: ^1s", tempdir.c_str());
+            }
+
+            MPxCommand::setResult(tempdir.c_str());
+
+            return MStatus::kSuccess;
+        }
+};
+
 void* EngineCommand::creator()
 {
     return new EngineCommand();
@@ -237,6 +257,11 @@ EngineCommand::newSyntax()
     CHECK_MSTATUS(syntax.addFlag(
                 kBuildHoudiniEngineVersionFlag,
                 kBuildHoudiniEngineVersionFlagLong
+                ));
+
+    CHECK_MSTATUS(syntax.addFlag(
+                kTempDirFlag,
+                kTempDirFlagLong
                 ));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file
@@ -272,6 +297,7 @@ EngineCommand::parseArgs(const MArgList &args)
                 ^ argData.isFlagSet(kHoudiniEngineVersionFlag)
                 ^ argData.isFlagSet(kBuildHoudiniVersionFlag)
                 ^ argData.isFlagSet(kBuildHoudiniEngineVersionFlag)
+                ^ argData.isFlagSet(kTempDirFlag)
                 ^ argData.isFlagSet(kSaveHIPFlag)
         ))
     {
@@ -304,6 +330,11 @@ EngineCommand::parseArgs(const MArgList &args)
     if(argData.isFlagSet(kBuildHoudiniEngineVersionFlag))
     {
         mySubCommand = new EngineSubCommandBuildHoudiniEngineVersion();
+    }
+
+    if(argData.isFlagSet(kTempDirFlag))
+    {
+        mySubCommand = new EngineSubCommandTempDir();
     }
 
     if(argData.isFlagSet(kSaveHIPFlag))

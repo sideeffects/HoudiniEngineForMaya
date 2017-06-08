@@ -21,6 +21,43 @@ namespace Util
 {
 std::auto_ptr<HAPISession> theHAPISession;
 
+const char* pathSeparator = PATH_SEPARATOR;
+
+std::string
+getTempDir()
+{
+    std::string tempDir;
+
+    if(tempDir.empty())
+    {
+        const char* env = getenv("HOUDINI_TEMP_DIR");
+        if(env)
+            tempDir = env;
+    }
+
+    if(tempDir.empty())
+    {
+        const char* env = getenv("TMPDIR");
+        if(env)
+            tempDir = env;
+
+        // not a Houdini-specific directory, so append a sub-directory to make
+        // it Houdini-specific
+        tempDir += PATH_SEPARATOR "houdini_temp";
+    }
+
+    if(tempDir.empty())
+    {
+#ifdef _WIN32
+        tempDir = "C:\\Temp\\houdini_temp";
+#else
+        tempDir = "/tmp/houdini_temp";
+#endif
+    }
+
+    return tempDir;
+}
+
 void
 displayInfoForNode(
         const MString &typeName,

@@ -104,6 +104,12 @@ class MFnDagNode;
     } \
 }
 
+#ifdef _WIN32
+#define PATH_SEPARATOR "\\"
+#else
+#define PATH_SEPARATOR "/"
+#endif
+
 namespace Util
 {
 class HAPISession : public HAPI_Session
@@ -125,6 +131,10 @@ public:
 };
 
 extern std::auto_ptr<HAPISession> theHAPISession;
+
+extern const char* pathSeparator;
+
+std::string getTempDir();
 
 void displayInfoForNode(
         const MString &typeName,

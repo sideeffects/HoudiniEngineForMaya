@@ -132,6 +132,8 @@ public:
 
 extern std::auto_ptr<HAPISession> theHAPISession;
 
+bool mkpath(const std::string &path, mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+
 extern const char* pathSeparator;
 
 std::string getTempDir();

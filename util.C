@@ -21,6 +21,59 @@ namespace Util
 {
 std::auto_ptr<HAPISession> theHAPISession;
 
+bool
+mkpath(const std::string &path, mode_t mode)
+{
+    std::string buffer = path;
+
+    // if absolute path, skip first component
+    char* cur = &buffer[0];
+#ifdef _WIN32
+    // absolute drive path
+    if(buffer.length() > 3 && buffer[1] == ':'
+            && (buffer[2] == '/'
+                || buffer[2] == '\\'))
+    {
+        cur = &buffer[3];
+    }
+    // absolute network path
+    else if(buffer.length() > 2 && (buffer[0] == '/'
+                || buffer[0] == '\\')
+            && (buffer[1] == '/'
+                || buffer[1] == '\\'))
+    {
+        cur = &buffer[2];
+    }
+#else
+    if(buffer.length() > 1 && buffer[0] == '/')
+    {
+        cur = &buffer[1];
+    }
+#endif
+
+    while(*cur != '\0')
+    {
+        while(*cur!= '\0' && *cur != '/' && *cur != '\\')
+        {
+            cur++;
+        }
+
+        char temp = *cur;
+        *cur = '\0';
+        int ret = mkdir(buffer.c_str(), mode);
+        *cur = temp;
+
+        if(ret && errno != EEXIST)
+        {
+            return false;
+        }
+
+        cur++;
+    }
+
+    return true;
+}
+
 const char* pathSeparator = PATH_SEPARATOR;
 
 std::string

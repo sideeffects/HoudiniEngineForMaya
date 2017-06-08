@@ -16,6 +16,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <memory>
+#ifdef _WIN32
+#include <direct.h>
+#endif
 
 #include <HAPI/HAPI.h>
 
@@ -136,7 +139,11 @@ public:
 
 extern std::auto_ptr<HAPISession> theHAPISession;
 
+#ifdef _WIN32
+bool mkpath(const std::string &path);
+#else
 bool mkpath(const std::string &path, mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+#endif
 
 extern const char* pathSeparator;
 

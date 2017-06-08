@@ -20,7 +20,11 @@ namespace Util
 std::auto_ptr<HAPISession> theHAPISession;
 
 bool
+#ifdef _WIN32
+mkpath(const std::string &path)
+#else
 mkpath(const std::string &path, mode_t mode)
+#endif
 {
     std::string buffer = path;
 
@@ -58,7 +62,11 @@ mkpath(const std::string &path, mode_t mode)
 
         char temp = *cur;
         *cur = '\0';
+#ifdef _WIN32
+        int ret = mkdir(buffer.c_str());
+#else
         int ret = mkdir(buffer.c_str(), mode);
+#endif
         *cur = temp;
 
         if(ret && errno != EEXIST)

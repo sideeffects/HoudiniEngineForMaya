@@ -1250,19 +1250,20 @@ OutputGeometryPart::computeMesh(
     }
 
     // polygon connects
+    std::vector<int> polygonConnectsReversed;
     MIntArray polygonConnects;
     if(hasMesh)
     {
-        intArray.resize(myPartInfo.vertexCount);
+        polygonConnectsReversed.resize(myPartInfo.vertexCount);
 
         HAPI_GetVertexList(
                 Util::theHAPISession.get(),
                 myNodeId, myPartId,
-                &intArray.front(),
+                &polygonConnectsReversed.front(),
                 0, myPartInfo.vertexCount
                 );
 
-        polygonConnects = MIntArray(&intArray.front(), intArray.size());
+        polygonConnects = MIntArray(&polygonConnectsReversed.front(), polygonConnectsReversed.size());
 
         Util::reverseWindingOrder(polygonConnects, polygonCounts);
     }
@@ -1718,7 +1719,10 @@ OutputGeometryPart::computeMesh(
                 int uvCount = 0;
                 for(unsigned int i = 0; i < polygonConnects.length(); ++i)
                 {
-                    int &uvIndex = uvIndexMap[polygonConnects[i]];
+                    // Since floatArray is in the reversed winding order, we
+                    // need to get point number in the revered winding order as
+                    // well.
+                    int &uvIndex = uvIndexMap[polygonConnectsReversed[i]];
 
                     float u = floatArray[i * uvAttrInfo.tupleSize + 0];
                     float v = floatArray[i * uvAttrInfo.tupleSize + 1];

@@ -1384,8 +1384,6 @@ AssetNode::AssetNode() :
     mySetAllParms = MFileIO::isOpeningFile()
         || MFileIO::isImportingFile()
         || MFileIO::isReferencingFile();
-
-    myResultsClean = false;
 }
 
 AssetNode::~AssetNode()
@@ -1430,8 +1428,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
     }
-
-    myResultsClean = false;
 
     if(isParameter)
     {
@@ -1519,8 +1515,6 @@ AssetNode::preEvaluation(
             !nodeIt.isDone();
             nodeIt.next())
     {
-        myResultsClean = false;
-
         if(Util::isPlugBelow(nodeIt.plug(), parmAttrObj))
         {
             myDirtyParmAttributes.push_back(nodeIt.plug().attribute());
@@ -1549,8 +1543,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
     MStatus status;
 
-    if(Util::isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output))
-            && !myResultsClean)
+    if(Util::isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output)))
     {
         // make sure asset was created properly
         if(!isAssetValid())
@@ -1563,8 +1556,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
             return MStatus::kFailure;
         }
-
-        myResultsClean = true;
 
         // Set the time
         MDataHandle inTimeHandle = data.inputValue(AssetNode::inTime);
@@ -1765,8 +1756,6 @@ AssetNode::createAsset()
     }
 
     myNeedToMarshalInput = true;
-
-    myResultsClean = false;
 }
 
 void

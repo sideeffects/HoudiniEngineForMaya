@@ -97,7 +97,6 @@ class AssetNode: public MPxTransform
         MString myAssetName;
 
         bool mySetAllParms;
-        bool myResultsClean;
         bool myNeedToMarshalInput;
 
         typedef std::vector<MObject> MObjectVector;

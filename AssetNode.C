@@ -1628,38 +1628,9 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             myAsset->setInputs(inputPlug, data);
         }
 
-        MFnDagNode assetNodeFn(thisMObject());
-        MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+        setParmValues(data);
 
-        //push parms into Houdini
-        if(!parmAttrObj.isNull())
-        {
-            MObjectVector* attrs = &myDirtyParmAttributes;
-
-            if(mySetAllParms)
-            {
-                mySetAllParms = false;
-
-                attrs = NULL;
-            }
-
-            myAsset->setParmValues(
-                    data,
-                    assetNodeFn,
-                    attrs
-                    );
-            myDirtyParmAttributes.clear();
-        }
-
-        //updates Maya attrs from Houdini
-        if(!parmAttrObj.isNull())
-        {
-            myAsset->getParmValues(
-                    data,
-                    assetNodeFn,
-                    NULL
-                    );
-        }
+        getParmValues(data);
 
         bool autoSyncOutputs = data
             .inputValue(AssetNode::autoSyncOutputs).asBool();
@@ -1689,7 +1660,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         if(autoSyncOutputs && needToSyncOutputs)
         {
-            MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.fullPathName());
+            MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput "
+                    + MFnDagNode(thisMObject()).fullPathName());
         }
 
         data.setClean(plug);
@@ -1782,19 +1754,9 @@ AssetNode::copyInternalData(MPxNode* node)
 
     rebuildAsset();
 
-    MFnDependencyNode assetNodeFn(thisMObject());
-    MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
-
-    // Push all the parameter values to Houdini.
-    if(!parmAttrObj.isNull() && isAssetValid())
     {
-        MDataBlock dataBlock = forceCache();
-
-        getAsset()->setParmValues(
-                dataBlock,
-                assetNodeFn,
-                NULL
-                );
+        MDataBlock data = forceCache();
+        setParmValues(data, false);
     }
 
     MPxTransform::copyInternalData(node);
@@ -1855,4 +1817,69 @@ AssetNode::destroyAsset()
         delete myAsset;
         myAsset = NULL;
     }
+}
+
+void
+AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
+{
+    MStatus status;
+
+    if(!isAssetValid())
+    {
+        return;
+    }
+
+    MFnDagNode assetNodeFn(thisMObject(), &status);
+    CHECK_MSTATUS(status);
+
+    MObject parmAttrObj = assetNodeFn.attribute(
+            Util::getParmAttrPrefix(), &status);
+    if(parmAttrObj.isNull())
+    {
+        return;
+    }
+
+    MObjectVector* attrs = &myDirtyParmAttributes;
+
+    if(!onlyDirtyParms || mySetAllParms)
+    {
+        mySetAllParms = false;
+
+        attrs = NULL;
+    }
+
+    myAsset->setParmValues(
+            data,
+            assetNodeFn,
+            attrs
+            );
+
+    myDirtyParmAttributes.clear();
+}
+
+void
+AssetNode::getParmValues(MDataBlock &data)
+{
+    MStatus status;
+
+    if(!isAssetValid())
+    {
+        return;
+    }
+
+    MFnDagNode assetNodeFn(thisMObject(), &status);
+    CHECK_MSTATUS(status);
+
+    MObject parmAttrObj = assetNodeFn.attribute(
+            Util::getParmAttrPrefix(), &status);
+    if(parmAttrObj.isNull())
+    {
+        return;
+    }
+
+    myAsset->getParmValues(
+            data,
+            assetNodeFn,
+            NULL
+            );
 }

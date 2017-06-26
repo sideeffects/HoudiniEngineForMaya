@@ -84,6 +84,9 @@ class AssetNode: public MPxTransform
         void createAsset();
         void destroyAsset();
 
+        void setParmValues(MDataBlock& data, bool onlyDirtyParms = true);
+        void getParmValues(MDataBlock& data);
+
         MString myOTLFilePath;
         MString myAssetName;
 

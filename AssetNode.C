@@ -1422,11 +1422,18 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 {
     MStatus status;
 
+    bool isTime = plugBeingDirtied == inTime;
+    bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
+    bool isParameter = false; 
+    {
+        MFnDependencyNode assetNodeFn(thisMObject());
+        MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+        isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
+    }
+
     myResultsClean = false;
 
-    MFnDependencyNode assetNodeFn(thisMObject());
-    MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
-    if(Util::isPlugBelow(plugBeingDirtied, parmAttrObj))
+    if(isParameter)
     {
         myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
 
@@ -1477,15 +1484,19 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         }
     }
 
-    if(Util::isPlugBelow(plugBeingDirtied, AssetNode::input))
+    if(isInput)
     {
         myNeedToMarshalInput = true;
     }
 
-    Util::getChildPlugs(
-            affectedPlugs,
-            MPlug(thisMObject(), AssetNode::output)
-            );
+    // Changing time or parameters will dirty the output
+    if(isTime || isInput || isParameter)
+    {
+        Util::getChildPlugs(
+                affectedPlugs,
+                MPlug(thisMObject(), AssetNode::output)
+                );
+    }
 
     return MS::kSuccess;
 }

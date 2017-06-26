@@ -4,6 +4,8 @@
 #include <maya/MComputation.h>
 #include <maya/MGlobal.h>
 #include <maya/MObject.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
 #include <maya/MString.h>
 #include <maya/MTimer.h>
 #include <maya/MIntArray.h>
@@ -26,8 +28,6 @@
 #include "types.h"
 
 class MDGModifier;
-class MPlug;
-class MPlugArray;
 class MFnDagNode;
 
 #define DISPLAY_MSG(displayMethod, ...) \
@@ -748,6 +748,39 @@ plugSource(const MPlug &plug);
 
 MPlugArray
 plugDestination(const MPlug &plug);
+
+template <typename T>
+bool
+isPlugBelow(const MPlug &plug, const T &upper)
+{
+    MPlug currentPlug = plug;
+
+    for(;;)
+    {
+        if(currentPlug == upper)
+        {
+            return true;
+        }
+
+        if(currentPlug.isChild())
+        {
+            currentPlug = currentPlug.parent();
+        }
+        else if(currentPlug.isElement())
+        {
+            currentPlug = currentPlug.array();
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return false;
+}
+
+void
+getChildPlugs(MPlugArray &plugArray, const MPlug &plug);
 
 bool
 assetLockingEnabled();

@@ -195,66 +195,6 @@ MObject AssetNode::outputMaterialAlphaColor;
 
 MObject AssetNode::useInstancerNode;
 
-template <typename T>
-static bool
-isPlugBelow(const MPlug &plug, const T &upper)
-{
-    MPlug currentPlug = plug;
-
-    for(;;)
-    {
-        if(currentPlug == upper)
-        {
-            return true;
-        }
-
-        if(currentPlug.isChild())
-        {
-            currentPlug = currentPlug.parent();
-        }
-        else if(currentPlug.isElement())
-        {
-            currentPlug = currentPlug.array();
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    return false;
-}
-
-static void
-getChildPlugs(MPlugArray &plugArray, const MPlug &plug)
-{
-    std::vector<MPlug> plugsToTraverse;
-    plugsToTraverse.push_back(plug);
-
-    while(plugsToTraverse.size())
-    {
-        const MPlug currentPlug = plugsToTraverse.back();
-        plugsToTraverse.pop_back();
-
-        plugArray.append(currentPlug);
-
-        if(currentPlug.isArray())
-        {
-            for(unsigned int i = 0; i < currentPlug.numElements(); i++)
-            {
-                plugsToTraverse.push_back(currentPlug.elementByPhysicalIndex(i));
-            }
-        }
-        else if(currentPlug.isCompound())
-        {
-            for(unsigned int i = 0; i < currentPlug.numChildren(); i++)
-            {
-                plugsToTraverse.push_back(currentPlug.child(i));
-            }
-        }
-    }
-}
-
 void*
 AssetNode::creator()
 {
@@ -1488,7 +1428,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
     MFnDependencyNode assetNodeFn(thisMObject());
     MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
-    if(isPlugBelow(plugBeingDirtied, parmAttrObj))
+    if(Util::isPlugBelow(plugBeingDirtied, parmAttrObj))
     {
         myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
 
@@ -1539,12 +1479,12 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         }
     }
 
-    if(isPlugBelow(plugBeingDirtied, AssetNode::input))
+    if(Util::isPlugBelow(plugBeingDirtied, AssetNode::input))
     {
         myNeedToMarshalInput = true;
     }
 
-    getChildPlugs(
+    Util::getChildPlugs(
             affectedPlugs,
             MPlug(thisMObject(), AssetNode::output)
             );
@@ -1572,12 +1512,12 @@ AssetNode::preEvaluation(
     {
         myResultsClean = false;
 
-        if(isPlugBelow(nodeIt.plug(), parmAttrObj))
+        if(Util::isPlugBelow(nodeIt.plug(), parmAttrObj))
         {
             myDirtyParmAttributes.push_back(nodeIt.plug().attribute());
         }
 
-        if(isPlugBelow(nodeIt.plug(), AssetNode::input))
+        if(Util::isPlugBelow(nodeIt.plug(), AssetNode::input))
         {
             myNeedToMarshalInput = true;
         }
@@ -1600,7 +1540,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
     MStatus status;
 
-    if(isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output))
+    if(Util::isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output))
             && !myResultsClean)
     {
         // make sure asset was created properly

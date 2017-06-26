@@ -1,6 +1,4 @@
 #include <maya/MDGModifier.h>
-#include <maya/MPlug.h>
-#include <maya/MPlugArray.h>
 #include <maya/MStringArray.h>
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
@@ -1041,5 +1039,35 @@ plugDestination(const MPlug &plug)
     }
 
     return connectedPlugs;
+}
+
+void
+getChildPlugs(MPlugArray &plugArray, const MPlug &plug)
+{
+    std::vector<MPlug> plugsToTraverse;
+    plugsToTraverse.push_back(plug);
+
+    while(plugsToTraverse.size())
+    {
+        const MPlug currentPlug = plugsToTraverse.back();
+        plugsToTraverse.pop_back();
+
+        plugArray.append(currentPlug);
+
+        if(currentPlug.isArray())
+        {
+            for(unsigned int i = 0; i < currentPlug.numElements(); i++)
+            {
+                plugsToTraverse.push_back(currentPlug.elementByPhysicalIndex(i));
+            }
+        }
+        else if(currentPlug.isCompound())
+        {
+            for(unsigned int i = 0; i < currentPlug.numChildren(); i++)
+            {
+                plugsToTraverse.push_back(currentPlug.child(i));
+            }
+        }
+    }
 }
 }

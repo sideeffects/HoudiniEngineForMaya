@@ -16,8 +16,6 @@
 #include <maya/MModelMessage.h>
 #include <maya/MPlugArray.h>
 
-#include <algorithm>
-
 #include "Asset.h"
 #include "Input.h"
 #include "AssetNode.h"

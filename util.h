@@ -8,7 +8,6 @@
 #include <maya/MPlugArray.h>
 #include <maya/MString.h>
 #include <maya/MTimer.h>
-#include <maya/MIntArray.h>
 
 #include <cassert>
 #include <vector>

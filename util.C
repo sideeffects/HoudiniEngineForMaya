@@ -1,5 +1,4 @@
 #include <maya/MDGModifier.h>
-#include <maya/MStringArray.h>
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
 

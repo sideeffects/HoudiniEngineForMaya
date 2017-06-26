@@ -81,6 +81,8 @@ OutputGeometry::compute(
 {
     MStatus stat;
 
+    data.setClean(geoPlug);
+
     update();
 
     MDataHandle geoNameHandle = geoHandle.child(AssetNode::outputGeoName);
@@ -90,15 +92,12 @@ OutputGeometry::compute(
         geoName = Util::HAPIString(myGeoInfo.nameSH);
     }
     geoNameHandle.setString(geoName);
-    geoNameHandle.setClean();
 
     MDataHandle isTemplatedHandle = geoHandle.child(AssetNode::outputGeoIsTemplated);
     isTemplatedHandle.setBool(myGeoInfo.isTemplated);
-    isTemplatedHandle.setClean();
 
     MDataHandle isDisplayGeoHandle = geoHandle.child(AssetNode::outputGeoIsDisplayGeo);
     isDisplayGeoHandle.setBool(myGeoInfo.isDisplayGeo);
-    isDisplayGeoHandle.setClean();
 
     MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
     MDataHandle partsHandle = geoHandle.child(AssetNode::outputParts);
@@ -109,37 +108,54 @@ OutputGeometry::compute(
         needToSyncOutputs = true;
     }
 
-    if(myNodeInfo.totalCookCount > myLastCookCount
-            && (myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
-                myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
-                myGeoInfo.type == HAPI_GEOTYPE_CURVE))
+    partsArrayHandle.set(partsBuilder);
+
+    if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
+            myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
+            myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
-        // Compute the OutputGeometryPart
-        for(int i = 0; i < myGeoInfo.partCount; i++)
+        if(myNodeInfo.totalCookCount > myLastCookCount)
         {
-            MPlug partPlug = partsPlug.elementByLogicalIndex(i);
-            MDataHandle partHandle = partsBuilder.addElement(i);
+            // Compute the OutputGeometryPart
+            for(int i = 0; i < myGeoInfo.partCount; i++)
+            {
+                MPlug partPlug = partsPlug.elementByLogicalIndex(i);
+                MDataHandle partHandle = partsBuilder.addElement(i);
 
-            stat = myParts[i]->compute(
-                    time,
-                    partPlug,
-                    data,
-                    partHandle,
-                    myGeoInfo.hasMaterialChanged,
-                    needToSyncOutputs
-                    );
-            CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
+                stat = myParts[i]->compute(
+                        time,
+                        partPlug,
+                        data,
+                        partHandle,
+                        myGeoInfo.hasMaterialChanged,
+                        needToSyncOutputs
+                        );
+                CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
+            }
+
+            // Remove the element of the array attribute
+            for(int i = partsBuilder.elementCount(); i-- > myGeoInfo.partCount;)
+            {
+                stat = partsBuilder.removeElement(i);
+                CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
+            }
         }
-
-        // Remove the element of the array attribute
-        for(int i = partsBuilder.elementCount(); i-- > myGeoInfo.partCount;)
+        else
         {
-            stat = partsBuilder.removeElement(i);
-            CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
+            // even if nothing changed, clean the plugs
+            for(int i = 0; i < myGeoInfo.partCount; i++)
+            {
+                MPlug partPlug = partsPlug.elementByLogicalIndex(i);
+
+                MPlugArray childPlugs;
+                Util::getChildPlugs(childPlugs, partPlug);
+                for(unsigned int j = 0; j < childPlugs.length(); j++)
+                {
+                    data.setClean(childPlugs[j]);
+                }
+            }
         }
     }
-
-    partsArrayHandle.set(partsBuilder);
 
     myLastCookCount = myNodeInfo.totalCookCount;
 

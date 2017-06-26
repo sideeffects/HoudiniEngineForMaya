@@ -1428,6 +1428,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
     }
+    bool isMaterialPath = plugBeingDirtied == outputMaterialPath;
 
     if(isParameter)
     {
@@ -1494,6 +1495,15 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                 );
     }
 
+    // Changing outputMaterialPath will dirty outputMaterials[i]
+    if(isMaterialPath)
+    {
+        Util::getChildPlugs(
+                affectedPlugs,
+                plugBeingDirtied.parent()
+                );
+    }
+
     return MS::kSuccess;
 }
 
@@ -1542,6 +1552,14 @@ MStatus
 AssetNode::compute(const MPlug& plug, MDataBlock& data)
 {
     MStatus status;
+
+    // We don't want to compute outputMaterialPath. This could be triggered
+    // from SyncOutputMaterial::createOutputMaterialPlug() when trying to set
+    // the value through MDGModifier.
+    if(plug == outputMaterialPath)
+    {
+        return MPxTransform::compute(plug, data);
+    }
 
     if(Util::isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output)))
     {

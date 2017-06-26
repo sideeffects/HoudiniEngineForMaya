@@ -793,6 +793,8 @@ Asset::computeGeometryObjects(
         needToSyncOutputs = true;
     }
 
+    objectsHandle.set(objectsBuilder);
+
     for(unsigned int i = 0; i < myObjects.size(); i++)
     {
         OutputObject * obj = myObjects[i];
@@ -825,7 +827,6 @@ Asset::computeGeometryObjects(
             CHECK_MSTATUS(stat);
         }
     }
-    objectsHandle.set(objectsBuilder);
 
     objectsHandle.setAllClean();
 

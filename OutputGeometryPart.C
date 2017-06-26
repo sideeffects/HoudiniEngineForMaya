@@ -108,11 +108,6 @@ OutputGeometryPart::computeVolumeTransform(
     translateHandle.set(matrix.getTranslation(MSpace::kTransform));
     rotateHandle.set3Double(final_rotate[0], final_rotate[1], final_rotate[2]);
     scaleHandle.set3Double(final_scale[0], final_scale[1], final_scale[2]);
-
-    translateHandle.setClean();
-    rotateHandle.setClean();
-    scaleHandle.setClean();
-    volumeTransformHandle.setClean();
 }
 #endif
 
@@ -160,6 +155,8 @@ OutputGeometryPart::compute(
         bool &needToSyncOutputs
         )
 {
+    data.setClean(partPlug);
+
     update();
 
     // compute geometry
@@ -452,6 +449,7 @@ OutputGeometryPart::computeCurves(
     }
 
     curvesArrayHandle.set(curvesBuilder);
+    curvesArrayHandle.setAllClean();
 }
 
 template<typename T>
@@ -816,6 +814,9 @@ OutputGeometryPart::computeParticle(
         MDataHandle &particleHandle
         )
 {
+    data.setClean(hasParticlePlug);
+    data.setClean(particlePlug);
+
     bool hasParticles = myPartInfo.pointCount != 0
         && myPartInfo.vertexCount == 0
         && myPartInfo.faceCount == 0;
@@ -1051,10 +1052,6 @@ OutputGeometryPart::computeParticle(
                     );
         }
     }
-
-    currentTimeHandle.setClean();
-    positionsHandle.setClean();
-    arrayDataHandle.setClean();
 }
 
 #if MAYA_API_VERSION >= 201400
@@ -1183,6 +1180,9 @@ OutputGeometryPart::computeMesh(
         )
 {
     MStatus status;
+
+    data.setClean(hasMeshPlug);
+    data.setClean(meshPlug);
 
     bool hasMesh = myPartInfo.type == HAPI_PARTTYPE_MESH
         && myPartInfo.faceCount != 0;
@@ -2170,6 +2170,9 @@ OutputGeometryPart::computeInstancer(
         MDataHandle &instanceHandle
         )
 {
+    data.setClean(hasInstancerPlug);
+    data.setClean(instancerPlug);
+
     bool hasInstancer = myPartInfo.type == HAPI_PARTTYPE_INSTANCER;
 
     if(!hasInstancerHandle.asBool() && !hasInstancer)
@@ -2380,6 +2383,7 @@ OutputGeometryPart::computeExtraAttributes(
     }
 
     extraAttributesArrayHandle.set(extraAttributesBuilder);
+    extraAttributesArrayHandle.setAllClean();
 }
 
 void

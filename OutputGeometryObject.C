@@ -95,6 +95,8 @@ OutputGeometryObject::compute(
             needToSyncOutputs = true;
         }
 
+        geoArrayHandle.set(geosBuilder);
+
         for(size_t i = 0; i < myGeos.size(); i++)
         {
             MPlug geoPlug = geosPlug.elementByLogicalIndex(i);
@@ -114,8 +116,6 @@ OutputGeometryObject::compute(
         {
             geosBuilder.removeElement(i);
         }
-
-        geoArrayHandle.set(geosBuilder);
     }
 
     // compute transform
@@ -225,10 +225,5 @@ void OutputGeometryObject::updateTransform(MDataHandle& handle)
             trans.scale[0],
             trans.scale[1],
             trans.scale[2]);
-
-    translateHandle.setClean();
-    rotateHandle.setClean();
-    scaleHandle.setClean();
-    handle.setClean();
 }
 

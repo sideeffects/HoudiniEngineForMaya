@@ -363,8 +363,6 @@ OutputInstancerObject::compute(
         instancedObjectNamesHandle.set(builder);
         instancedObjectNamesHandle.setAllClean();
 
-        handle.setClean();
-        instancerDataHandle.setClean();
         //data.setClean(plug);
         //data.setClean(instancerDataPlug);
 

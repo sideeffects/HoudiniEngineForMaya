@@ -23,6 +23,8 @@ OutputMaterial::compute(
 {
     HAPI_Result hapiResult;
 
+    data.setClean(materialPlug);
+
     update(materialHandle);
 
     MDataHandle nodeIdHandle
@@ -203,13 +205,6 @@ OutputMaterial::compute(
 
         myMaterialLastCookCount = myNodeInfo.totalCookCount;
     }
-
-    materialHandle.setClean();
-    ambientHandle.setClean();
-    diffuseHandle.setClean();
-    specularHandle.setClean();
-    alphaHandle.setClean();
-    texturePathHandle.setClean();
 
     return MStatus::kSuccess;
 }

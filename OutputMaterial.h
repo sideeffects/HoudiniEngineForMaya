@@ -6,7 +6,9 @@
 #include <string>
 
 class MTime;
+class MDataBlock;
 class MDataHandle;
+class MPlug;
 class MStatus;
 
 class OutputMaterial
@@ -16,6 +18,8 @@ public:
 
     MStatus compute(
             const MTime &time,
+            const MPlug &materialPlug,
+            MDataBlock &data,
             MDataHandle &materialHandle
             );
 private:

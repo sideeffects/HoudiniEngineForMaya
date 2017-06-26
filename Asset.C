@@ -728,13 +728,14 @@ Asset::computeInstancerObjects(
             iter != myObjects.end(); iter++)
     {
         OutputObject* obj = *iter;
-        //MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
 
         if(obj->type() == OutputObject::OBJECT_TYPE_INSTANCER)
         {
+            MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
             MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
             stat = dynamic_cast< OutputInstancerObject* >(obj)->compute(
                     myTime,
+                    instancerElemPlug,
                     data,
                     instancerElemHandle,
                     needToSyncOutputs
@@ -796,12 +797,14 @@ Asset::computeGeometryObjects(
     {
         OutputObject * obj = myObjects[i];
 
+        MPlug objectPlug = objectsPlug.elementByLogicalIndex(i);
         MDataHandle objectHandle = objectsBuilder.addElement(i);
 
         if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
             dynamic_cast< OutputGeometryObject* >(obj)->compute(
                     myTime,
+                    objectPlug,
                     data,
                     objectHandle,
                     instancedObjIds,
@@ -851,11 +854,10 @@ Asset::computeMaterial(
 
     for(size_t i = 0; i < numElements; i++)
     {
-        MPlug childPlug = materialsPlug.elementByPhysicalIndex(i, &status);
-        CHECK_MSTATUS(status);
+        MPlug materialPlug = materialsPlug.elementByLogicalIndex(i);
+        MDataHandle materialHandle = data.outputValue(materialPlug);
 
-        MDataHandle materialHandle = data.outputValue(childPlug);
-        myMaterials[i]->compute(myTime, materialHandle);
+        myMaterials[i]->compute(myTime, materialPlug, data, materialHandle);
     }
 }
 

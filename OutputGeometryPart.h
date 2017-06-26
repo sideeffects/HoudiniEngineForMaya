@@ -22,6 +22,8 @@ class OutputGeometryPart
 
         MStatus compute(
                 const MTime &time,
+                const MPlug &partPlug,
+                MDataBlock& data,
                 MDataHandle& handle,
                 bool hasMaterialChanged,
                 bool &needToSyncOutputs
@@ -33,26 +35,39 @@ class OutputGeometryPart
     private:
         void computeMaterial(
                 const MTime &time,
+                const MPlug &materialPlug,
+                MDataBlock& data,
                 MDataHandle &materialHandle
                 );
 
         void computeMesh(
                 const MTime &time,
+                const MPlug &hasMeshPlug,
+                const MPlug &meshPlug,
+                MDataBlock& data,
                 MDataHandle &hasMeshHandle,
                 MDataHandle &meshHandle
                 );
         void computeParticle(
                 const MTime &time,
+                const MPlug &hasParticlePlug,
+                const MPlug &particlePlug,
+                MDataBlock& data,
                 MDataHandle &hasParticlesHandle,
                 MDataHandle &particleHandle
                 );
         void computeCurves(
                 const MTime &time,
+                const MPlug &curvesPlug,
+                const MPlug &curvesIsBezierPlug,
+                MDataBlock& data,
                 MDataHandle &curvesHandle,
                 MDataHandle &curvesIsBezierHandle
                 );
         void computeVolume(
                 const MTime &time,
+                const MPlug &volumePlug,
+                MDataBlock& data,
                 MDataHandle &volumeHandle
                 );
         void computeVolumeTransform(
@@ -61,16 +76,23 @@ class OutputGeometryPart
                 );
         void computeInstancer(
                 const MTime &time,
+                const MPlug &hasInstancerPlug,
+                const MPlug &instancePlug,
+                MDataBlock& data,
                 MDataHandle &hasInstancerHandle,
                 MDataHandle &instanceHandle
                 );
         void computeExtraAttributes(
                 const MTime &time,
+                const MPlug &extraAttributesPlug,
+                MDataBlock& data,
                 MDataHandle &extraAttributesHandle
                 );
         void computeGroups(
                 const MTime &time,
-                MDataHandle &extraAttributesHandle
+                const MPlug &groupsPlug,
+                MDataBlock& data,
+                MDataHandle &groupsHandle
                 );
 
         template<typename T>
@@ -87,7 +109,9 @@ class OutputGeometryPart
                 );
 
         bool computeExtraAttribute(
-                MDataHandle &dataHandle,
+                const MPlug &extraAttributePlug,
+                MDataBlock& data,
+                MDataHandle &extraAttributeHandle,
                 HAPI_AttributeOwner attributeOwner,
                 const char* attributeName
                 );

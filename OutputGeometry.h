@@ -18,6 +18,8 @@ class OutputGeometry {
 
         MStatus compute(
                 const MTime &time,
+                const MPlug &geoPlug,
+                MDataBlock &data,
                 MDataHandle &geoHandle,
                 bool &needToSyncOutputs
                 );

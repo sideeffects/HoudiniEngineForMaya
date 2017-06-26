@@ -18,6 +18,7 @@ class OutputInstancerObject: public OutputObject
 
         virtual MStatus compute(
                 const MTime &time,
+                const MPlug &plug,
                 MDataBlock& data,
                 MDataHandle& handle,
                 bool &needToSyncOutputs

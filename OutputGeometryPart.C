@@ -182,7 +182,9 @@ OutputGeometryPart::update()
 MStatus
 OutputGeometryPart::compute(
         const MTime &time,
-        MDataHandle& handle,
+        const MPlug &partPlug,
+        MDataBlock& data,
+        MDataHandle& partHandle,
         bool hasMaterialChanged,
         bool &needToSyncOutputs
         )
@@ -194,7 +196,7 @@ OutputGeometryPart::compute(
         clearAttributesUsed();
 
         // Name
-        MDataHandle nameHandle = handle.child(AssetNode::outputPartName);
+        MDataHandle nameHandle = partHandle.child(AssetNode::outputPartName);
         MString partName;
         if(myPartInfo.nameSH != 0)
         {
@@ -203,34 +205,49 @@ OutputGeometryPart::compute(
         nameHandle.set(partName);
 
         // Mesh
-        MDataHandle hasMeshHandle = handle.child(AssetNode::outputPartHasMesh);
-        MDataHandle meshHandle = handle.child(AssetNode::outputPartMesh);
-        computeMesh(time, hasMeshHandle, meshHandle);
+        MDataHandle hasMeshHandle = partHandle.child(AssetNode::outputPartHasMesh);
+        MDataHandle meshHandle = partHandle.child(AssetNode::outputPartMesh);
+        computeMesh(time,
+                partPlug.child(AssetNode::outputPartHasMesh),
+                partPlug.child(AssetNode::outputPartMesh),
+                data,
+                hasMeshHandle, meshHandle);
 
         // Particle
         MDataHandle hasParticlesHandle =
-            handle.child(AssetNode::outputPartHasParticles);
+            partHandle.child(AssetNode::outputPartHasParticles);
         MDataHandle particleHandle =
-            handle.child(AssetNode::outputPartParticle);
-        computeParticle(time, hasParticlesHandle, particleHandle);
+            partHandle.child(AssetNode::outputPartParticle);
+        computeParticle(time,
+                partPlug.child(AssetNode::outputPartHasParticles),
+                partPlug.child(AssetNode::outputPartParticle),
+                data,
+                hasParticlesHandle, particleHandle);
 
 #if MAYA_API_VERSION >= 201400
         // Volume
-        MDataHandle volumeHandle = handle.child(AssetNode::outputPartVolume);
+        MDataHandle volumeHandle = partHandle.child(AssetNode::outputPartVolume);
         if(myPartInfo.type == HAPI_PARTTYPE_VOLUME)
         {
-            computeVolume(time, volumeHandle);
+            computeVolume(time,
+                    partPlug.child(AssetNode::outputPartVolume),
+                    data,
+                    volumeHandle);
         }
 #endif
 
         // Curve
-        MDataHandle curvesHandle = handle.child(AssetNode::outputPartCurves);
+        MDataHandle curvesHandle = partHandle.child(AssetNode::outputPartCurves);
         MDataHandle curvesIsBezierHandle =
-            handle.child(AssetNode::outputPartCurvesIsBezier);
+            partHandle.child(AssetNode::outputPartCurvesIsBezier);
         if(myPartInfo.type == HAPI_PARTTYPE_CURVE
                 && myCurveInfo.curveCount)
         {
-            computeCurves(time, curvesHandle, curvesIsBezierHandle);
+            computeCurves(time,
+                    partPlug.child(AssetNode::outputPartCurves),
+                    partPlug.child(AssetNode::outputPartCurvesIsBezier),
+                    data,
+                    curvesHandle, curvesIsBezierHandle);
         }
         else
         {
@@ -238,26 +255,39 @@ OutputGeometryPart::compute(
         }
 
         // Instancer
-        MDataHandle hasInstancerHandle = handle.child(AssetNode::outputPartHasInstancer);
-        MDataHandle instanceHandle = handle.child(AssetNode::outputPartInstancer);
-        computeInstancer(time, hasInstancerHandle, instanceHandle);
+        MDataHandle hasInstancerHandle = partHandle.child(AssetNode::outputPartHasInstancer);
+        MDataHandle instanceHandle = partHandle.child(AssetNode::outputPartInstancer);
+        computeInstancer(time,
+                partPlug.child(AssetNode::outputPartHasInstancer),
+                partPlug.child(AssetNode::outputPartInstancer),
+                data,
+                hasInstancerHandle, instanceHandle);
 
         // Groups
-        MDataHandle groupsHandle = handle.child(
+        MDataHandle groupsHandle = partHandle.child(
                 AssetNode::outputPartGroups
                 );
-        computeGroups(time, groupsHandle);
+        computeGroups(time,
+                partPlug.child(AssetNode::outputPartGroups),
+                data,
+                groupsHandle);
 
         // compute material
         MDataHandle materialHandle =
-            handle.child(AssetNode::outputPartMaterialIds);
-        computeMaterial(time, materialHandle);
+            partHandle.child(AssetNode::outputPartMaterialIds);
+        computeMaterial(time,
+                partPlug.child(AssetNode::outputPartMaterialIds),
+                data,
+                materialHandle);
 
         // Extra attributes
-        MDataHandle extraAttributesHandle = handle.child(
+        MDataHandle extraAttributesHandle = partHandle.child(
                 AssetNode::outputPartExtraAttributes
                 );
-        computeExtraAttributes(time, extraAttributesHandle);
+        computeExtraAttributes(time,
+                partPlug.child(AssetNode::outputPartExtraAttributes),
+                data,
+                extraAttributesHandle);
     }
 
     return MS::kSuccess;
@@ -266,6 +296,9 @@ OutputGeometryPart::compute(
 void
 OutputGeometryPart::computeCurves(
         const MTime &time,
+        const MPlug &curvesPlug,
+        const MPlug &curvesIsBezierPlug,
+        MDataBlock& data,
         MDataHandle &curvesHandle,
         MDataHandle &curvesIsBezierHandle
         )
@@ -297,6 +330,7 @@ OutputGeometryPart::computeCurves(
     int knotOffset = 0;
     for(int iCurve = 0; iCurve < myCurveInfo.curveCount; iCurve++)
     {
+        MPlug curvePlug = curvesPlug.elementByPhysicalIndex(iCurve);
         MDataHandle curve = curvesBuilder.addElement(iCurve );
         MObject curveDataObj = curve.data();
         MFnNurbsCurveData curveDataFn(curveDataObj);
@@ -477,6 +511,8 @@ OutputGeometryPart::convertParticleAttribute(
 
 bool
 OutputGeometryPart::computeExtraAttribute(
+        const MPlug &extraAttributePlug,
+        MDataBlock& data,
         MDataHandle &extraAttributeHandle,
         HAPI_AttributeOwner attributeOwner,
         const char* attributeName
@@ -799,6 +835,9 @@ OutputGeometryPart::computeExtraAttribute(
 void
 OutputGeometryPart::computeParticle(
         const MTime &time,
+        const MPlug &hasParticlePlug,
+        const MPlug &particlePlug,
+        MDataBlock& data,
         MDataHandle &hasParticlesHandle,
         MDataHandle &particleHandle
         )
@@ -1048,6 +1087,8 @@ OutputGeometryPart::computeParticle(
 void
 OutputGeometryPart::computeVolume(
         const MTime &time,
+        const MPlug &volumePlug,
+        MDataBlock& data,
         MDataHandle &volumeHandle
         )
 {
@@ -1160,6 +1201,9 @@ OutputGeometryPart::computeVolume(
 void
 OutputGeometryPart::computeMesh(
         const MTime &time,
+        const MPlug &hasMeshPlug,
+        const MPlug &meshPlug,
+        MDataBlock& data,
         MDataHandle &hasMeshHandle,
         MDataHandle &meshHandle
         )
@@ -2101,6 +2145,8 @@ OutputGeometryPart::computeMesh(
 void
 OutputGeometryPart::computeMaterial(
         const MTime &time,
+        const MPlug &materialPlug,
+        MDataBlock& data,
         MDataHandle& materialHandle
         )
 {
@@ -2143,6 +2189,9 @@ OutputGeometryPart::computeMaterial(
 void
 OutputGeometryPart::computeInstancer(
         const MTime &time,
+        const MPlug &hasInstancerPlug,
+        const MPlug &instancerPlug,
+        MDataBlock& data,
         MDataHandle &hasInstancerHandle,
         MDataHandle &instanceHandle
         )
@@ -2273,6 +2322,8 @@ OutputGeometryPart::computeInstancer(
 void
 OutputGeometryPart::computeExtraAttributes(
         const MTime &time,
+        const MPlug &extraAttributesPlug,
+        MDataBlock& data,
         MDataHandle &extraAttributesHandle
         )
 {
@@ -2326,11 +2377,15 @@ OutputGeometryPart::computeExtraAttributes(
                 continue;
             }
 
+            MPlug extraAttributePlug =
+                extraAttributesPlug.elementByLogicalIndex(elementIndex);
             MDataHandle extraAttributeHandle =
                 extraAttributesBuilder.addElement(elementIndex);
             elementIndex++;
 
             if(!computeExtraAttribute(
+                    extraAttributePlug,
+                    data,
                     extraAttributeHandle,
                     owner,
                     attributeName.asChar()
@@ -2356,6 +2411,8 @@ OutputGeometryPart::computeExtraAttributes(
 void
 OutputGeometryPart::computeGroups(
         const MTime &time,
+        const MPlug &groupsPlug,
+        MDataBlock& data,
         MDataHandle &groupsHandle
         )
 {

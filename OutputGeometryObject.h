@@ -18,8 +18,9 @@ class OutputGeometryObject: public OutputObject
 
         virtual MStatus compute(
                 const MTime &time,
+                const MPlug &objectPlug,
                 MDataBlock& data,
-                MDataHandle& handle,
+                MDataHandle& objectHandle,
                 const MIntArray &instancedObjIds,
                 const MStringArray &instancedObjNames,
                 bool &needToSyncOutputs

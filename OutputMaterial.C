@@ -16,6 +16,8 @@ OutputMaterial::OutputMaterial(HAPI_NodeId assetId) :
 MStatus
 OutputMaterial::compute(
         const MTime &time,
+        const MPlug &materialPlug,
+        MDataBlock &data,
         MDataHandle &materialHandle
         )
 {

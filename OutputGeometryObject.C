@@ -34,6 +34,7 @@ OutputGeometryObject::type()
 MStatus
 OutputGeometryObject::compute(
         const MTime &time,
+        const MPlug &objectPlug,
         MDataBlock& data,
         MDataHandle& objectHandle,
         const MIntArray &instancedObjIds,
@@ -85,6 +86,7 @@ OutputGeometryObject::compute(
 
     // compute geometry
     {
+        MPlug geosPlug = objectPlug.child(AssetNode::outputGeos);
         MDataHandle geosHandle = objectHandle.child(AssetNode::outputGeos);
         MArrayDataHandle geoArrayHandle(geosHandle);
         MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
@@ -95,13 +97,22 @@ OutputGeometryObject::compute(
 
         for(size_t i = 0; i < myGeos.size(); i++)
         {
+            MPlug geoPlug = geosPlug.elementByLogicalIndex(i);
             MDataHandle geoHandle = geosBuilder.addElement(i);
+
             stat = myGeos[i]->compute(
                     time,
+                    geoPlug,
+                    data,
                     geoHandle,
                     needToSyncOutputs
                     );
             CHECK_MSTATUS_AND_RETURN_IT(stat);
+        }
+
+        for(size_t i = geosBuilder.elementCount(); i-- > myGeos.size();)
+        {
+            geosBuilder.removeElement(i);
         }
 
         geoArrayHandle.set(geosBuilder);

@@ -173,6 +173,7 @@ MStatus
 //OutputInstancerObject::compute(const MPlug& plug, MDataBlock& data)
 OutputInstancerObject::compute(
         const MTime &time,
+        const MPlug &plug,
         MDataBlock& data,
         MDataHandle& handle,
         bool &needToSyncOutputs

@@ -73,6 +73,8 @@ OutputGeometry::update()
 MStatus
 OutputGeometry::compute(
         const MTime &time,
+        const MPlug &geoPlug,
+        MDataBlock &data,
         MDataHandle &geoHandle,
         bool &needToSyncOutputs
         )
@@ -98,6 +100,7 @@ OutputGeometry::compute(
     isDisplayGeoHandle.setBool(myGeoInfo.isDisplayGeo);
     isDisplayGeoHandle.setClean();
 
+    MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
     MDataHandle partsHandle = geoHandle.child(AssetNode::outputParts);
     MArrayDataHandle partsArrayHandle(partsHandle);
     MArrayDataBuilder partsBuilder = partsArrayHandle.builder();
@@ -112,12 +115,16 @@ OutputGeometry::compute(
                 myGeoInfo.type == HAPI_GEOTYPE_CURVE))
     {
         // Compute the OutputGeometryPart
-        for(int i=0; i< myGeoInfo.partCount; i++)
+        for(int i = 0; i < myGeoInfo.partCount; i++)
         {
-            MDataHandle h = partsBuilder.addElement(i);
+            MPlug partPlug = partsPlug.elementByLogicalIndex(i);
+            MDataHandle partHandle = partsBuilder.addElement(i);
+
             stat = myParts[i]->compute(
                     time,
-                    h,
+                    partPlug,
+                    data,
+                    partHandle,
                     myGeoInfo.hasMaterialChanged,
                     needToSyncOutputs
                     );

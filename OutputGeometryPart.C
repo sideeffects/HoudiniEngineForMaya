@@ -32,35 +32,6 @@
 #include "types.h"
 #include "util.h"
 
-static void
-clearCurvesBuilder(
-        MArrayDataBuilder &curvesBuilder,
-        int count
-        )
-{
-    for(int i = (int) curvesBuilder.elementCount();
-            i-- > count;)
-    {
-        curvesBuilder.removeElement(i);
-    }
-}
-
-static void
-clearCurves(
-        MDataHandle &curvesHandle,
-        MDataHandle &curvesIsBezier
-        )
-{
-    MArrayDataHandle curvesArrayHandle(curvesHandle);
-    MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
-
-    clearCurvesBuilder(curvesBuilder, 0);
-
-    curvesArrayHandle.set(curvesBuilder);
-
-    curvesIsBezier.setBool(false);
-}
-
 OutputGeometryPart::OutputGeometryPart(
         HAPI_NodeId nodeId,
         HAPI_PartId partId
@@ -240,19 +211,11 @@ OutputGeometryPart::compute(
         MDataHandle curvesHandle = partHandle.child(AssetNode::outputPartCurves);
         MDataHandle curvesIsBezierHandle =
             partHandle.child(AssetNode::outputPartCurvesIsBezier);
-        if(myPartInfo.type == HAPI_PARTTYPE_CURVE
-                && myCurveInfo.curveCount)
-        {
-            computeCurves(time,
-                    partPlug.child(AssetNode::outputPartCurves),
-                    partPlug.child(AssetNode::outputPartCurvesIsBezier),
-                    data,
-                    curvesHandle, curvesIsBezierHandle);
-        }
-        else
-        {
-            clearCurves(curvesHandle, curvesIsBezierHandle);
-        }
+        computeCurves(time,
+                partPlug.child(AssetNode::outputPartCurves),
+                partPlug.child(AssetNode::outputPartCurvesIsBezier),
+                data,
+                curvesHandle, curvesIsBezierHandle);
 
         // Instancer
         MDataHandle hasInstancerHandle = partHandle.child(AssetNode::outputPartHasInstancer);
@@ -308,176 +271,187 @@ OutputGeometryPart::computeCurves(
     MArrayDataHandle curvesArrayHandle(curvesHandle);
     MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
 
-    HAPI_AttributeInfo attrInfo;
-
-    std::vector<float> pArray, pwArray;
-    hapiGetPointAttribute(
-            myNodeId, myPartId,
-            "P",
-            attrInfo,
-            pArray
-            );
-    hapiGetPointAttribute(
-            myNodeId, myPartId,
-            "Pw",
-            attrInfo,
-            pwArray
-            );
-    markAttributeUsed("P");
-    markAttributeUsed("Pw");
-
-    int vertexOffset = 0;
-    int knotOffset = 0;
-    for(int iCurve = 0; iCurve < myCurveInfo.curveCount; iCurve++)
+    int curveCount = 0;
+    if(myPartInfo.type == HAPI_PARTTYPE_CURVE
+            && myCurveInfo.curveCount)
     {
-        MPlug curvePlug = curvesPlug.elementByPhysicalIndex(iCurve);
-        MDataHandle curve = curvesBuilder.addElement(iCurve );
-        MObject curveDataObj = curve.data();
-        MFnNurbsCurveData curveDataFn(curveDataObj);
-        if(curve.data().isNull())
-        {
-            // set the MDataHandle
-            curveDataObj = curveDataFn.create();
-            curve.setMObject(curveDataObj);
+        HAPI_AttributeInfo attrInfo;
 
-            // then get the copy from MDataHandle
-            curveDataObj = curve.data();
-            curveDataFn.setObject(curveDataObj);
-        }
+        curveCount = myCurveInfo.curveCount;
 
-        // Number of CVs
-        int numVertices = 0;
-        HAPI_GetCurveCounts(
-                Util::theHAPISession.get(),
+        std::vector<float> pArray, pwArray;
+        hapiGetPointAttribute(
                 myNodeId, myPartId,
-                &numVertices,
-                iCurve, 1
+                "P",
+                attrInfo,
+                pArray
                 );
+        hapiGetPointAttribute(
+                myNodeId, myPartId,
+                "Pw",
+                attrInfo,
+                pwArray
+                );
+        markAttributeUsed("P");
+        markAttributeUsed("Pw");
 
-        const int nextVertexOffset = vertexOffset + numVertices;
-        if ( nextVertexOffset > static_cast<int>( pArray.size() ) * 3
-            || (!pwArray.empty()
-                && nextVertexOffset > static_cast<int>( pwArray.size() ) )
-        )
+        int vertexOffset = 0;
+        int knotOffset = 0;
+        for(int iCurve = 0; iCurve < myCurveInfo.curveCount; iCurve++)
         {
-            MGlobal::displayError( "Not enough points to create a curve" );
-            break;
-        }
+            MPlug curvePlug = curvesPlug.elementByPhysicalIndex(iCurve);
+            MDataHandle curve = curvesBuilder.addElement(iCurve );
+            MObject curveDataObj = curve.data();
+            MFnNurbsCurveData curveDataFn(curveDataObj);
+            if(curve.data().isNull())
+            {
+                // set the MDataHandle
+                curveDataObj = curveDataFn.create();
+                curve.setMObject(curveDataObj);
 
-        // Order of this particular curve
-        int order;
-        if ( myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
-            && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID )
-        {
-            order = myCurveInfo.order;
-        }
-        else
-        {
-            HAPI_GetCurveOrders(
+                // then get the copy from MDataHandle
+                curveDataObj = curve.data();
+                curveDataFn.setObject(curveDataObj);
+            }
+
+            // Number of CVs
+            int numVertices = 0;
+            HAPI_GetCurveCounts(
                     Util::theHAPISession.get(),
                     myNodeId, myPartId,
-                    &order,
+                    &numVertices,
                     iCurve, 1
                     );
-        }
 
-        // If there's not enough vertices, then don't try to create the curve.
-        if(numVertices < order)
-        {
-            // Need to make sure we clear out the curve that was created
-            // previously.
-            curve.setMObject(curveDataFn.create());
+            const int nextVertexOffset = vertexOffset + numVertices;
+            if ( nextVertexOffset > static_cast<int>( pArray.size() ) * 3
+                    || (!pwArray.empty()
+                        && nextVertexOffset > static_cast<int>( pwArray.size() ) )
+               )
+            {
+                MGlobal::displayError( "Not enough points to create a curve" );
+                break;
+            }
+
+            // Order of this particular curve
+            int order;
+            if ( myCurveInfo.order != HAPI_CURVE_ORDER_VARYING
+                    && myCurveInfo.order != HAPI_CURVE_ORDER_INVALID )
+            {
+                order = myCurveInfo.order;
+            }
+            else
+            {
+                HAPI_GetCurveOrders(
+                        Util::theHAPISession.get(),
+                        myNodeId, myPartId,
+                        &order,
+                        iCurve, 1
+                        );
+            }
+
+            // If there's not enough vertices, then don't try to create the curve.
+            if(numVertices < order)
+            {
+                // Need to make sure we clear out the curve that was created
+                // previously.
+                curve.setMObject(curveDataFn.create());
+
+                // The curve at i will have numVertices vertices, and may have
+                // some knots. The knot count will be numVertices + order for
+                // nurbs curves
+                vertexOffset = nextVertexOffset;
+                knotOffset += numVertices + order;
+
+                continue;
+            }
+
+            MPointArray controlVertices( numVertices );
+            for(int iDst = 0, iSrc = vertexOffset;
+                    iDst < numVertices;
+                    ++iDst, ++iSrc)
+            {
+                controlVertices[iDst] = MPoint(
+                        pArray[iSrc * 3],
+                        pArray[iSrc * 3 + 1],
+                        pArray[iSrc * 3 + 2],
+                        pwArray.empty() ? 1.0f : pwArray[iSrc]
+                        );
+            }
+
+            MDoubleArray knotSequences;
+            if(myCurveInfo.hasKnots)
+            {
+                std::vector<float> knots;
+                knots.resize(numVertices + order);
+                // The Maya knot vector has two fewer knots;
+                // the first and last houdini knot are excluded
+                knotSequences.setLength(numVertices + order - 2);
+                HAPI_GetCurveKnots(
+                        Util::theHAPISession.get(),
+                        myNodeId, myPartId,
+                        &knots.front(),
+                        knotOffset, numVertices + order
+                        );
+                // Maya doesn't need the first and last knots
+                for(int j=0; j<numVertices + order - 2; j++)
+                    knotSequences[j] = knots[j+1];
+            }
+            else if(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
+            {
+                // Bezier knot vector needs to still be passed in
+                knotSequences.setLength(numVertices + order - 2);
+                for(int j=0; j<numVertices + order - 2; j++)
+                    knotSequences[j] = j / (order - 1);
+            }
+            else
+            {
+                knotSequences.setLength(numVertices + order - 2);
+                int j = 0;
+                for(; j < order - 1; j++)
+                    knotSequences[j] = 0.0;
+
+                for(int k = 1; j < numVertices - 1; k++, j++)
+                    knotSequences[j] = (double) k / (numVertices - order + 1);
+
+                for(; j < numVertices + order - 2; j++)
+                    knotSequences[j] = 1.0;
+            }
+
+            // NOTE: Periodicity is always constant, so periodic and
+            //           non-periodic curve meshes will have different parts.
+            MFnNurbsCurve curveFn;
+            MObject nurbsCurve =
+                curveFn.create(controlVertices, knotSequences, order-1,
+                        myCurveInfo.isPeriodic ?
+                        MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
+                        false /* 2d? */,
+                        myCurveInfo.isRational /* rational? */,
+                        curveDataObj, &status);
+            CHECK_MSTATUS(status);
 
             // The curve at i will have numVertices vertices, and may have
             // some knots. The knot count will be numVertices + order for
             // nurbs curves
             vertexOffset = nextVertexOffset;
             knotOffset += numVertices + order;
-
-            continue;
         }
 
-        MPointArray controlVertices( numVertices );
-        for(int iDst = 0, iSrc = vertexOffset;
-            iDst < numVertices;
-            ++iDst, ++iSrc)
-        {
-            controlVertices[iDst] = MPoint(
-                pArray[iSrc * 3],
-                pArray[iSrc * 3 + 1],
-                pArray[iSrc * 3 + 2],
-                pwArray.empty() ? 1.0f : pwArray[iSrc]
-            );
-        }
-
-        MDoubleArray knotSequences;
-        if(myCurveInfo.hasKnots)
-        {
-            std::vector<float> knots;
-            knots.resize(numVertices + order);
-            // The Maya knot vector has two fewer knots;
-            // the first and last houdini knot are excluded
-            knotSequences.setLength(numVertices + order - 2);
-            HAPI_GetCurveKnots(
-                    Util::theHAPISession.get(),
-                    myNodeId, myPartId,
-                    &knots.front(),
-                    knotOffset, numVertices + order
-                    );
-            // Maya doesn't need the first and last knots
-            for(int j=0; j<numVertices + order - 2; j++)
-                knotSequences[j] = knots[j+1];
-        }
-        else if(myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER)
-        {
-            // Bezier knot vector needs to still be passed in
-            knotSequences.setLength(numVertices + order - 2);
-            for(int j=0; j<numVertices + order - 2; j++)
-                knotSequences[j] = j / (order - 1);
-        }
-        else
-        {
-            knotSequences.setLength(numVertices + order - 2);
-            int j = 0;
-            for(; j < order - 1; j++)
-                knotSequences[j] = 0.0;
-
-            for(int k = 1; j < numVertices - 1; k++, j++)
-                knotSequences[j] = (double) k / (numVertices - order + 1);
-
-            for(; j < numVertices + order - 2; j++)
-                knotSequences[j] = 1.0;
-        }
-
-        // NOTE: Periodicity is always constant, so periodic and
-        //           non-periodic curve meshes will have different parts.
-        MFnNurbsCurve curveFn;
-        MObject nurbsCurve =
-            curveFn.create(controlVertices, knotSequences, order-1,
-                           myCurveInfo.isPeriodic ?
-                               MFnNurbsCurve::kPeriodic : MFnNurbsCurve::kOpen,
-                           false /* 2d? */,
-                           myCurveInfo.isRational /* rational? */,
-                           curveDataObj, &status);
-        CHECK_MSTATUS(status);
-
-        // The curve at i will have numVertices vertices, and may have
-        // some knots. The knot count will be numVertices + order for
-        // nurbs curves
-        vertexOffset = nextVertexOffset;
-        knotOffset += numVertices + order;
+        curvesIsBezierHandle.setBool(
+                myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER
+                );
     }
 
     // There may be curves created in the previous cook. So we need to clear
     // the output attributes to remove any curves that may have been created
     // previously.
-    clearCurvesBuilder(curvesBuilder, myCurveInfo.curveCount);
+    for(int i = (int) curvesBuilder.elementCount();
+            i-- > curveCount;)
+    {
+        curvesBuilder.removeElement(i);
+    }
 
     curvesArrayHandle.set(curvesBuilder);
-
-    curvesIsBezierHandle.setBool(
-            myCurveInfo.curveType == HAPI_CURVETYPE_BEZIER
-            );
 }
 
 template<typename T>

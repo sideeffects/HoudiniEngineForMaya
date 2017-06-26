@@ -1407,10 +1407,6 @@ AssetNode::nodeAdded(MObject& node,void *clientData)
     {
         AssetNode* assetNode = static_cast<AssetNode*>(clientData);
         assetNode->createAsset();
-
-        // If a node was removed from the scene, all the parms need to be set
-        // again.
-        assetNode->mySetAllParms = true;
     }
 }
 
@@ -1419,6 +1415,22 @@ AssetNode::nodeRemoved(MObject& node,void *clientData)
 {
     AssetNode* assetNode = static_cast<AssetNode*>(clientData);
     assetNode->destroyAsset();
+}
+
+void
+AssetNode::attributeAddedOrRemoved(
+        MNodeMessage::AttributeMessage msg,
+        MPlug& plug,
+        void* clientData)
+{
+    if(msg == MNodeMessage::kAttributeAdded
+            && plug.partialName() == Util::getParmAttrPrefix())
+    {
+        AssetNode* assetNode = static_cast<AssetNode*>(clientData);
+
+        MDataBlock data = assetNode->forceCache();
+        assetNode->getParmValues(data);
+    }
 }
 
 AssetNode::AssetNode() :
@@ -1446,14 +1458,22 @@ AssetNode::~AssetNode()
 void
 AssetNode::postConstructor()
 {
+    MObject object = thisMObject();
+
     MModelMessage::addNodeAddedToModelCallback(
-            thisMObject(),
+            object,
             AssetNode::nodeAdded,
             this
             );
     MModelMessage::addNodeRemovedFromModelCallback(
-            thisMObject(),
+            object,
             AssetNode::nodeRemoved,
+            this
+            );
+
+    MNodeMessage::addAttributeAddedOrRemovedCallback(
+            object,
+            AssetNode::attributeAddedOrRemoved,
             this
             );
 }
@@ -1463,23 +1483,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlugArray& affectedPlugs)
 {
     MStatus status;
-
-    if(plugBeingDirtied == AssetNode::otlFilePath
-        || plugBeingDirtied == AssetNode::assetName)
-    {
-        // When the otl path or the asset name is changed, we need to push all
-        // the parameter values. Otherwise, the current values on the node
-        // would be replaced by the asset's default. This is similar to the
-        // case where the asset was just loaded back from file.
-        // Also, we need to check isAssetValid(). Otherwise, when an asset node
-        // is newly created, we would clobber the default parameter values.
-        if(isAssetValid())
-        {
-            mySetAllParms = true;
-        }
-
-        return MS::kSuccess;
-    }
 
     myResultsClean = false;
 
@@ -1754,11 +1757,6 @@ AssetNode::copyInternalData(MPxNode* node)
 
     rebuildAsset();
 
-    {
-        MDataBlock data = forceCache();
-        setParmValues(data, false);
-    }
-
     MPxTransform::copyInternalData(node);
 }
 
@@ -1801,8 +1799,21 @@ AssetNode::createAsset()
         return;
     }
 
-    // When createAsset() is called during file load, parameter values aren't
-    // loaded yet. So we can't restore the parameter values here.
+    // We want to setParmValues() here because the state of the asset should be
+    // restored to what it was before rebuildAsset() was called. This is
+    // particularly important during a sync, because we rely on getParmValues()
+    // to take care of restoring the parameters onto the newly created
+    // houdiniAssetParm.
+    // However, during a file load, setInternalValueInContext() calls
+    // rebuildAsset(), and we must not setParmValues(), because the parameter
+    // values haven't been restored form the file yet.
+    if(!(MFileIO::isOpeningFile()
+                || MFileIO::isImportingFile()
+                || MFileIO::isReferencingFile()))
+    {
+        MDataBlock data = forceCache();
+        setParmValues(data, false);
+    }
 
     myNeedToMarshalInput = true;
 

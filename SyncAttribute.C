@@ -570,9 +570,6 @@ SyncAttribute::doIt()
         MPlug houdiniAssetParmPlug = assetNodeFn.findPlug(Util::getParmAttrPrefix(), &status);
         if(status)
         {
-            // Save the parameter values
-            houdiniAssetParmPlug.getSetAttrCmds(setAttrCmds, MPlug::kAll, true);
-
             // Save the connections
             {
                 MPlugArray connections;
@@ -631,14 +628,6 @@ SyncAttribute::doIt()
         {
             myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
         }
-    }
-
-    // Restore the parameter values
-    status = myDGModifier.commandToExecute("select " + assetNodeFn.fullPathName());
-    for(unsigned int i = 0; i< setAttrCmds.length(); i++)
-    {
-        status = myDGModifier.commandToExecute(setAttrCmds[i]);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // Restore the connections

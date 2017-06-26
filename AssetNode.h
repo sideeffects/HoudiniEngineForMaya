@@ -4,6 +4,7 @@
 #include <maya/MPxTransform.h>
 
 #include <maya/MTypeId.h>
+#include <maya/MNodeMessage.h>
 
 class MPlugArray;
 
@@ -43,6 +44,11 @@ class AssetNode: public MPxTransform
 
         static void nodeAdded(MObject& node,void *clientData);
         static void nodeRemoved(MObject& node,void *clientData);
+
+        static void attributeAddedOrRemoved(
+                MNodeMessage::AttributeMessage msg,
+                MPlug& plug,
+                void* clientData);
 
     public:
         AssetNode();

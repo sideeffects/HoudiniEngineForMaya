@@ -4,12 +4,11 @@
 #include <maya/MIntArray.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MFloatArray.h>
+#include <maya/MFnArrayAttrsData.h>
 #include <maya/MVectorArray.h>
 #include <maya/MString.h>
 
 class Asset;
-
-class MFnArrayAttrsData;
 
 class OutputGeometryPart
 {

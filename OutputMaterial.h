@@ -5,9 +5,9 @@
 
 #include <string>
 
-class MTime;
-class MDataHandle;
-class MStatus;
+#include <maya/MTime.h>
+#include <maya/MDataHandle.h>
+#include <maya/MStatus.h>
 
 class OutputMaterial
 {

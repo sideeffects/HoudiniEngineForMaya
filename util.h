@@ -2,8 +2,12 @@
 #define __util_h__
 
 #include <maya/MComputation.h>
+#include <maya/MDGModifier.h>
+#include <maya/MFnDagNode.h>
 #include <maya/MGlobal.h>
 #include <maya/MObject.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
 #include <maya/MString.h>
 #include <maya/MTimer.h>
 #include <maya/MIntArray.h>
@@ -25,10 +29,6 @@
 #include "traits.h"
 #include "types.h"
 
-class MDGModifier;
-class MPlug;
-class MPlugArray;
-class MFnDagNode;
 
 #define DISPLAY_MSG(displayMethod, ...) \
     { \

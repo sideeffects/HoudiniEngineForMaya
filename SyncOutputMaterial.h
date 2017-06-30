@@ -1,10 +1,10 @@
 #ifndef __SyncOutputMaterial_h__
 #define __SyncOutputMaterial_h__
 
-class MDGModifier;
-class MPlug;
-class MObject;
-class MFnDependencyNode;
+#include <maya/MDGModifier.h>
+#include <maya/MPlug.h>
+#include <maya/MObject.h>
+#include <maya/MFnDependencyNode.h>
 
 class SyncOutputMaterial
 {

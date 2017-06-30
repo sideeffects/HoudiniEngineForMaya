@@ -137,7 +137,7 @@ public:
     }
 };
 
-extern std::auto_ptr<HAPISession> theHAPISession;
+extern std::unique_ptr<HAPISession> theHAPISession;
 
 #ifdef _WIN32
 bool mkpath(const std::string &path);

@@ -1828,7 +1828,7 @@ AssetNode::internalArrayCount(const MPlug &plug) const
 
     return MPxTransform::internalArrayCount(plug);
 }
-#endif
+#else
 
 int
 AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
@@ -1843,8 +1843,9 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
         return getAsset()->getAssetInfo().geoInputCount;
     }
 
-    return MPxTransform::internalArrayCount(plug);
+    return MPxTransform::internalArrayCount(plug, ctx);
 }
+#endif
 
 void
 AssetNode::copyInternalData(MPxNode* node)

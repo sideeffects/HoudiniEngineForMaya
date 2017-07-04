@@ -5,6 +5,7 @@
 #include <maya/MObject.h>
 #include <maya/MString.h>
 #include <maya/MTime.h>
+#include <maya/MFnDependencyNode.h>
 
 #include <HAPI/HAPI.h>
 
@@ -14,7 +15,6 @@
 
 class Inputs;
 class OutputMaterial;
-class MFnDependencyNode;
 
 class Asset {
     public:

@@ -5,8 +5,6 @@
 
 #include <maya/MTypeId.h>
 
-class MPlugArray;
-
 #include <vector>
 
 class Asset;

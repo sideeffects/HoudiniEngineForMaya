@@ -5,8 +5,6 @@
 #include <maya/MTypeId.h>
 #include <HAPI/HAPI.h>
 
-class MPlugArray;
-
 #include <vector>
 
 class InputCurveNode: public MPxNode

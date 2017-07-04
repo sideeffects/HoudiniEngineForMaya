@@ -8,9 +8,6 @@
 
 #if MAYA_API_VERSION >= 201400
 
-class MDataBlock;
-class MPlug;
-
 class FluidGridConvert : public MPxNode
 {
 public:

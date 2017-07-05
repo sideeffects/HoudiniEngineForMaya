@@ -1828,7 +1828,7 @@ AssetNode::internalArrayCount(const MPlug &plug) const
 
     return MPxTransform::internalArrayCount(plug);
 }
-#else
+#endif
 
 int
 AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
@@ -1843,9 +1843,12 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
         return getAsset()->getAssetInfo().geoInputCount;
     }
 
+#if MAYA_API_VERSION >= 201800
+    return MPxTransform::internalArrayCount(plug);
+#else
     return MPxTransform::internalArrayCount(plug, ctx);
-}
 #endif
+}
 
 void
 AssetNode::copyInternalData(MPxNode* node)

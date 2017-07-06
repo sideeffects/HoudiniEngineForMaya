@@ -1632,6 +1632,63 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
     return MPxTransform::compute(plug, data);
 }
 
+#if MAYA_API_VERSION >= 201800
+bool
+AssetNode::getInternalValue(
+        const MPlug &plug,
+        MDataHandle &dataHandle
+        )
+{
+    MStatus status;
+
+    if(plug == AssetNode::otlFilePath)
+    {
+        dataHandle.setString(myOTLFilePath);
+
+        return true;
+    }
+    else if(plug == AssetNode::assetName)
+    {
+        dataHandle.setString(myAssetName);
+
+        return true;
+    }
+
+    return MPxTransform::getInternalValue(plug, dataHandle);
+}
+
+bool
+AssetNode::setInternalValue(
+        const MPlug &plug,
+        const MDataHandle &dataHandle
+        )
+{
+    MStatus status;
+
+    if(plug == AssetNode::otlFilePath
+            || plug == AssetNode::assetName)
+    {
+        if(plug == AssetNode::otlFilePath)
+        {
+            myOTLFilePath = dataHandle.asString();
+        }
+        else if(plug == AssetNode::assetName)
+        {
+            myAssetName = dataHandle.asString();
+        }
+
+        // Create the Asset object as early as possible. We may need it before
+        // the first compute. For example, Maya may call internalArrayCount.
+        rebuildAsset();
+
+        return true;
+    }
+
+    return MPxTransform::setInternalValue(plug, dataHandle);
+}
+
+#else
+
 bool
 AssetNode::getInternalValueInContext(
         const MPlug &plug,
@@ -1686,6 +1743,25 @@ AssetNode::setInternalValueInContext(
 
     return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);
 }
+#endif
+
+#if MAYA_API_VERSION >= 201800
+int
+AssetNode::internalArrayCount(const MPlug &plug) const
+{
+    if(plug == AssetNode::input)
+    {
+        if(!isAssetValid())
+        {
+            return 0;
+        }
+
+        return getAsset()->getAssetInfo().geoInputCount;
+    }
+
+    return MPxTransform::internalArrayCount(plug);
+}
+#endif
 
 int
 AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
@@ -1700,7 +1776,11 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
         return getAsset()->getAssetInfo().geoInputCount;
     }
 
+#if MAYA_API_VERSION >= 201800
+    return MPxTransform::internalArrayCount(plug);
+#else
     return MPxTransform::internalArrayCount(plug, ctx);
+#endif
 }
 
 void

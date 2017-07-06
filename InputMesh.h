@@ -5,9 +5,7 @@
 
 #include <HAPI/HAPI.h>
 
-class MFnMesh;
-class MObjectArray;
-class MStringArray;
+#include <maya/MFnMesh.h>
 
 class InputMesh : public Input
 {

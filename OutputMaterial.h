@@ -5,11 +5,10 @@
 
 #include <string>
 
-class MTime;
-class MDataBlock;
-class MDataHandle;
-class MPlug;
-class MStatus;
+#include <maya/MTime.h>
+#include <maya/MDataBlock.h>
+#include <maya/MDataHandle.h>
+#include <maya/MStatus.h>
 
 class OutputMaterial
 {

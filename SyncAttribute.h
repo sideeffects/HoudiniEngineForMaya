@@ -8,8 +8,6 @@
 
 #include <HAPI/HAPI.h>
 
-class MFnCompoundAttribute;
-
 class SyncAttribute : public SubCommandAsset
 {
     public:

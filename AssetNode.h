@@ -6,8 +6,6 @@
 #include <maya/MTypeId.h>
 #include <maya/MNodeMessage.h>
 
-class MPlugArray;
-
 #include <vector>
 
 class Asset;
@@ -58,6 +56,15 @@ class AssetNode: public MPxTransform
 
         virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 
+#if MAYA_API_VERSION >= 201800
+        virtual bool getInternalValue(
+                const MPlug &plug,
+                MDataHandle &dataHandle);
+        virtual bool setInternalValue(
+                const MPlug &plug,
+                const MDataHandle &dataHandle
+                );
+#else
         virtual bool getInternalValueInContext(
                 const MPlug &plug,
                 MDataHandle &dataHandle,
@@ -67,6 +74,10 @@ class AssetNode: public MPxTransform
                 const MDataHandle &dataHandle,
                 MDGContext &ctx
                 );
+#endif
+#if MAYA_API_VERSION >= 201800
+        virtual int internalArrayCount(const MPlug &plug) const;
+#endif
         virtual int internalArrayCount(const MPlug &plug, const MDGContext &ctx) const;
         virtual void copyInternalData(MPxNode* node);
 

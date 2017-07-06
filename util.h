@@ -2,6 +2,8 @@
 #define __util_h__
 
 #include <maya/MComputation.h>
+#include <maya/MDGModifier.h>
+#include <maya/MFnDagNode.h>
 #include <maya/MGlobal.h>
 #include <maya/MObject.h>
 #include <maya/MPlug.h>
@@ -25,9 +27,6 @@
 
 #include "traits.h"
 #include "types.h"
-
-class MDGModifier;
-class MFnDagNode;
 
 #define DISPLAY_MSG(displayMethod, ...) \
     { \
@@ -136,7 +135,7 @@ public:
     }
 };
 
-extern std::auto_ptr<HAPISession> theHAPISession;
+extern std::unique_ptr<HAPISession> theHAPISession;
 
 #ifdef _WIN32
 bool mkpath(const std::string &path);

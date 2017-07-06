@@ -6,8 +6,6 @@
 
 #include "SubCommand.h"
 
-class MDagPath;
-
 class SyncOutputInstance : public SubCommand
 {
     public:

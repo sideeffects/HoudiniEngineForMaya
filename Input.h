@@ -3,12 +3,12 @@
 
 #include <vector>
 
+#include <maya/MDataBlock.h>
 #include <maya/MDataHandle.h>
 
 #include <HAPI/HAPI_Common.h>
 
 class Input;
-class MDataBlock;
 
 class Inputs
 {

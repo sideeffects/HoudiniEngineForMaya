@@ -14,7 +14,7 @@
 
 namespace Util
 {
-std::auto_ptr<HAPISession> theHAPISession;
+std::unique_ptr<HAPISession> theHAPISession;
 
 bool
 #ifdef _WIN32
@@ -601,15 +601,15 @@ statusCheckLoop(bool wantMainProgressBar)
     int currCookCount = -1;
     int totalCookCount = -1;
 
-    std::auto_ptr<ProgressBar> progressBar;
+    std::unique_ptr<ProgressBar> progressBar;
     if(MGlobal::mayaState() == MGlobal::kInteractive
             && wantMainProgressBar)
     {
-        progressBar = std::auto_ptr<ProgressBar>(new MainProgressBar());
+        progressBar = std::unique_ptr<ProgressBar>(new MainProgressBar());
     }
     else
     {
-        progressBar = std::auto_ptr<ProgressBar>(new LogProgressBar());
+        progressBar = std::unique_ptr<ProgressBar>(new LogProgressBar());
     }
 
     progressBar->beginProgress();

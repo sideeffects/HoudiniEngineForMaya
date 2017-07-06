@@ -1,6 +1,3 @@
-# For help with CMake, see: $S/cmake/Help/H_Help.cmake
-# Please copy this header in all new CMakeLists.txt files.
-
 cmake_minimum_required( VERSION 2.8.12 )
 
 project( Maya )

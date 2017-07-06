@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 2.8.12 )
+cmake_minimum_required( VERSION 3.1 )
 
 project( Maya )
 
@@ -95,6 +95,12 @@ set_target_properties(
     OUTPUT_NAME houdiniEngine
     PREFIX ""
     SUFFIX "${plugin_suffix}"
+    )
+
+set_target_properties(
+    plugin
+    PROPERTIES
+    CXX_STANDARD 11
     )
 
 # Compile definitions

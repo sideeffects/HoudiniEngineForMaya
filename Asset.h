@@ -92,7 +92,6 @@ class Asset {
                 );
 
     private:
-        typedef std::vector<HAPI_ObjectInfo> ObjectInfos;
         typedef std::vector<OutputObject*> OutputObjects;
         typedef std::vector<OutputMaterial*> OutputMaterials;
 
@@ -103,7 +102,6 @@ class Asset {
 
         HAPI_NodeInfo        myNodeInfo;
 
-        ObjectInfos myObjectInfos;
         MObject myNode;                    //The Maya asset node
 
         Inputs* myAssetInputs;

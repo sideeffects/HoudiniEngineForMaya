@@ -57,9 +57,9 @@ OutputGeometryObject::compute(
     // outputObjectName
     MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
     MString objectName;
-    if(myObjectInfo.nameSH != 0)
+    if(myNodeInfo.nameSH != 0)
     {
-        objectName = Util::HAPIString(myObjectInfo.nameSH);
+        objectName = Util::HAPIString(myNodeInfo.nameSH);
     }
     objectNameHandle.setString(objectName);
 
@@ -90,7 +90,7 @@ OutputGeometryObject::compute(
         MDataHandle geosHandle = objectHandle.child(AssetNode::outputGeos);
         MArrayDataHandle geoArrayHandle(geosHandle);
         MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
-        if(geosBuilder.elementCount() != (unsigned int)(myObjectInfo.geoCount))
+        if(geosBuilder.elementCount() != myGeos.size())
         {
             needToSyncOutputs = true;
         }

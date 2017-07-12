@@ -551,7 +551,6 @@ Asset::~Asset()
         delete *iter;
     }
     myObjects.clear();
-    myObjectInfos.clear();
     delete myAssetInputs;
 
     for(OutputMaterials::const_iterator iter = myMaterials.begin();

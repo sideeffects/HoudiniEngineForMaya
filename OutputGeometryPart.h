@@ -24,7 +24,6 @@ class OutputGeometryPart
                 const MPlug &partPlug,
                 MDataBlock& data,
                 MDataHandle& handle,
-                bool hasMaterialChanged,
                 bool &needToSyncOutputs
                 );
 

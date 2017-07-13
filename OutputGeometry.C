@@ -127,7 +127,6 @@ OutputGeometry::compute(
                         partPlug,
                         data,
                         partHandle,
-                        myGeoInfo.hasMaterialChanged,
                         needToSyncOutputs
                         );
                 CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);

@@ -151,7 +151,6 @@ OutputGeometryPart::compute(
         const MPlug &partPlug,
         MDataBlock& data,
         MDataHandle& partHandle,
-        bool hasMaterialChanged,
         bool &needToSyncOutputs
         )
 {

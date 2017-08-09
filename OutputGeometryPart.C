@@ -1664,6 +1664,11 @@ OutputGeometryPart::computeMesh(
             }
         }
 
+        bool hasDefaultUVSet = std::find(
+                arrayBegin(uvSetNames),
+                arrayEnd(uvSetNames),
+                "map1") != arrayEnd(uvSetNames);
+
         int layerIndex = 0;
         for(;;)
         {
@@ -1831,7 +1836,7 @@ OutputGeometryPart::computeMesh(
 
             // Copy the current UVs to "map1", so that the viewport uses the
             // correct UVs for textures
-            if(uvSetName != "map1" && uvSetName == currentUVSetName)
+            if(!hasDefaultUVSet && uvSetName != "map1" && uvSetName == currentUVSetName)
             {
                 MString defaultUVSet = "map1";
                 CHECK_MSTATUS(meshFn.setUVs(uArray, vArray, &defaultUVSet));

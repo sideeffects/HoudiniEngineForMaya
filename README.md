@@ -76,20 +76,27 @@ cmake \
 make && make install
 ```
 
-## HoudiniUI-dependent DSO Plugins
+## UI-dependent DSOs
 
-HoudiniEngine disables certain plugins by setting the
+The Maya plug-in disables certain Houdini DSOs by setting the
 `HOUDINI_DSO_EXCLUDE_PATTERN` environment variable (see `CMakeLists.txt`).
+These Houdini DSOs depend on Houdini's UI libraries, namely:
+- `HoudiniUI`
+- `HoudiniAPPS1`
+- `HoudiniAPPS2`
+- `HoudiniAPPS3`
 
-Plugins that are dependent on `HoudiniUI` are implicitly dependent on Qt, and
-thus conflict with Maya's Qt libraries.  These plugins are excluded to avoid
-pulling in the UI dependencies.
+These Houdini UI libraries use Qt, and thus conflict with Maya's Qt libraries.
+These Houdini DSOs are excluded to avoid pulling in the Houdini's UI
+dependencies.
 
 This same mechanism can be used to exclude your own UI-dependent DSO plugins.
 
-This should only be an issue when using the in-process backend, though.
-If the backend is loaded with out-of-process backends (named pipe or socket),
-then it should be possible to load those excluded DSOs, and load in the UI
-libraries.
+This should only be an issue when using the in-process backend.  If the backend
+is loaded with out-of-process backends (named pipe or socket), then it should
+be possible to load the UI-dependent DSOs, and load in the UI libraries.
 
-`initializePlugin()` in `plugin.C` can be modified to use a different backend.
+The backend can be set through the Houdini Engine's preferences in Maya. The
+following MEL command could also be used to change the preference before
+loading the Maya plug-in:
+```optionVar -iv "houdiniEngineSessionType" 2 -iv "houdiniEngineSessionPipeCustom" 0;```

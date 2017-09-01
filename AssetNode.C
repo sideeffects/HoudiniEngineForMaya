@@ -1776,11 +1776,12 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
         return getAsset()->getAssetInfo().geoInputCount;
     }
 
-#if MAYA_API_VERSION >= 201800
-    return MPxTransform::internalArrayCount(plug);
-#else
+    /*
+     * Maya's headers may warn about calling a deprecated method here, but we
+     * cannot call MPxTransform::internalArrayCount(plug) instead because it
+     * will end up calling back internally into this method!
+     */
     return MPxTransform::internalArrayCount(plug, ctx);
-#endif
 }
 
 void

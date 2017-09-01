@@ -1636,64 +1636,14 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 bool
 AssetNode::getInternalValue(
         const MPlug &plug,
-        MDataHandle &dataHandle
-        )
-{
-    MStatus status;
-
-    if(plug == AssetNode::otlFilePath)
-    {
-        dataHandle.setString(myOTLFilePath);
-
-        return true;
-    }
-    else if(plug == AssetNode::assetName)
-    {
-        dataHandle.setString(myAssetName);
-
-        return true;
-    }
-
-    return MPxTransform::getInternalValue(plug, dataHandle);
-}
-
-bool
-AssetNode::setInternalValue(
-        const MPlug &plug,
-        const MDataHandle &dataHandle
-        )
-{
-    MStatus status;
-
-    if(plug == AssetNode::otlFilePath
-            || plug == AssetNode::assetName)
-    {
-        if(plug == AssetNode::otlFilePath)
-        {
-            myOTLFilePath = dataHandle.asString();
-        }
-        else if(plug == AssetNode::assetName)
-        {
-            myAssetName = dataHandle.asString();
-        }
-
-        // Create the Asset object as early as possible. We may need it before
-        // the first compute. For example, Maya may call internalArrayCount.
-        rebuildAsset();
-
-        return true;
-    }
-
-    return MPxTransform::setInternalValue(plug, dataHandle);
-}
-
+        MDataHandle &dataHandle)
 #else
-
 bool
 AssetNode::getInternalValueInContext(
         const MPlug &plug,
         MDataHandle &dataHandle,
         MDGContext &ctx)
+#endif
 {
     MStatus status;
 
@@ -1710,15 +1660,26 @@ AssetNode::getInternalValueInContext(
         return true;
     }
 
+#if MAYA_API_VERSION >= 201800
+    return MPxTransform::getInternalValue(plug, dataHandle);
+#else
     return MPxTransform::getInternalValueInContext(plug, dataHandle, ctx);
+#endif
 }
 
+#if MAYA_API_VERSION >= 201800
+bool
+AssetNode::setInternalValue(
+        const MPlug &plug,
+        const MDataHandle &dataHandle)
+#else
 bool
 AssetNode::setInternalValueInContext(
         const MPlug &plug,
         const MDataHandle &dataHandle,
         MDGContext &ctx
         )
+#endif
 {
     MStatus status;
 
@@ -1741,30 +1702,20 @@ AssetNode::setInternalValueInContext(
         return true;
     }
 
+#if MAYA_API_VERSION >= 201800
+    return MPxTransform::setInternalValue(plug, dataHandle);
+#else
     return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);
-}
 #endif
+}
 
 #if MAYA_API_VERSION >= 201800
 int
 AssetNode::internalArrayCount(const MPlug &plug) const
-{
-    if(plug == AssetNode::input)
-    {
-        if(!isAssetValid())
-        {
-            return 0;
-        }
-
-        return getAsset()->getAssetInfo().geoInputCount;
-    }
-
-    return MPxTransform::internalArrayCount(plug);
-}
-#endif
-
+#else
 int
 AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
+#endif
 {
     if(plug == AssetNode::input)
     {
@@ -1776,12 +1727,11 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
         return getAsset()->getAssetInfo().geoInputCount;
     }
 
-    /*
-     * Maya's headers may warn about calling a deprecated method here, but we
-     * cannot call MPxTransform::internalArrayCount(plug) instead because it
-     * will end up calling back internally into this method!
-     */
+#if MAYA_API_VERSION >= 201800
+    return MPxTransform::internalArrayCount(plug);
+#else
     return MPxTransform::internalArrayCount(plug, ctx);
+#endif
 }
 
 void

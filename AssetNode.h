@@ -42,8 +42,8 @@ class AssetNode: public MPxTransform
                 MDataHandle &dataHandle);
         virtual bool setInternalValue(
                 const MPlug &plug,
-                const MDataHandle &dataHandle
-                );
+                const MDataHandle &dataHandle);
+        virtual int internalArrayCount(const MPlug &plug) const;
 #else
         virtual bool getInternalValueInContext(
                 const MPlug &plug,
@@ -54,11 +54,9 @@ class AssetNode: public MPxTransform
                 const MDataHandle &dataHandle,
                 MDGContext &ctx
                 );
-#endif
-#if MAYA_API_VERSION >= 201800
-        virtual int internalArrayCount(const MPlug &plug) const;
-#endif
         virtual int internalArrayCount(const MPlug &plug, const MDGContext &ctx) const;
+#endif
+
         virtual void copyInternalData(MPxNode* node);
 
         virtual MStatus setDependentsDirty(const MPlug& plugBeingDirtied,

@@ -31,6 +31,7 @@ For support and reporting bugs:
 ## Supported Maya versions
 Currently, the supported Maya versions are:
 
+* 2018
 * 2017
 * 2016.5
 * 2016
@@ -58,20 +59,20 @@ The main CMake variables for configuration are:
 * `CMAKE_INSTALL_PREFIX` - Specifies the destination directory to create the module directory and files.
 * `HoudiniEngine_ROOT` - Specifies the directory of the Houdini installation. (e.g. `$HFS`)
 * `Maya_ROOT` - Specifies the directory of the Maya installation. (e.g. `$MAYA_LOCATION`)
-* `MAYA_VERSION` - Specifies the Maya version to compile for. (e.g. `2017`, `2016.5`, `2016`,...).
+* `MAYA_VERSION` - Specifies the Maya version to compile for. (e.g. `2018`, `2017`, `2016.5`, `2016`,...).
 
 The CMake install step will create a module directory and file.
 
 For example, on Linux:
 ```
 cd ~/HoudiniEngineForMaya
-mkdir build-maya2017
-cd build-maya2017
+mkdir build-maya2018
+cd build-maya2018
 cmake \
           -DHoudiniEngine_ROOT=/opt/hfs16.0.633 \
-          -DMaya_ROOT=/usr/autodesk/maya2017 \
-          -DCMAKE_INSTALL_PREFIX=../install-maya2017 \
-          -DMAYA_VERSION=2017 \
+          -DMaya_ROOT=/usr/autodesk/maya2018 \
+          -DCMAKE_INSTALL_PREFIX=../install-maya2018 \
+          -DMAYA_VERSION=2018 \
           ..
 make && make install
 ```

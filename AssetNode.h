@@ -57,6 +57,7 @@ class AssetNode: public MPxTransform
         virtual bool setInternalValue(
                 const MPlug &plug,
                 const MDataHandle &dataHandle);
+        using MPxTransform::internalArrayCount;
         virtual int internalArrayCount(const MPlug &plug) const;
 #else
         virtual bool getInternalValueInContext(

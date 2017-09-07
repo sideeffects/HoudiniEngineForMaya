@@ -10,6 +10,11 @@
 
 class Asset;
 
+#ifdef WIN32
+// Workaround the deprecation warning for MPxNode::internalArrayCount()
+#pragma warning( push )
+#pragma warning( disable: 4266 )
+#endif
 class AssetNode: public MPxTransform
 {
     public:
@@ -43,7 +48,6 @@ class AssetNode: public MPxTransform
         virtual bool setInternalValue(
                 const MPlug &plug,
                 const MDataHandle &dataHandle);
-        using MPxTransform::internalArrayCount;
         virtual int internalArrayCount(const MPlug &plug) const;
 #else
         virtual bool getInternalValueInContext(
@@ -261,5 +265,8 @@ class AssetNode: public MPxTransform
 
         static MObject useInstancerNode;
 };
+#ifdef WIN32
+#pragma warning( pop )
+#endif
 
 #endif

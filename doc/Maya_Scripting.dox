@@ -1,0 +1,53 @@
+/*!
+
+@page Maya_Scripting Scripting
+
+@section Maya_Scripting_Python Python
+
+    import maya.cmds as cmds
+    import maya.mel as mel
+    
+    # load the plugin
+    cmds.loadPlugin("houdiniEngine")
+    
+    # load the Maya scene
+    cmds.file("/tmp/test_sphere.mb", open=True, force=True)
+    
+    # load the Houdini asset
+    asset = cmds.houdiniAsset(loadAsset=["/tmp/test_asset.hda", "Sop/test_asset"])
+    
+    # speicfy the input geometries to be connectd to the asset
+    input_geos = [ "|pSphere1" ]
+    
+    # construct a single string that represent a MEL string array
+    # wrap with { }
+    mel_string_array = "{{ {} }}".format(
+        # separate by comma
+        ", ".join(
+            # quote each string
+            ["\"{}\"".format(s) for s in input_geos]
+            )
+        )
+    
+    # call MEL function to connect input geometry
+    # connect to an actual node input
+    mel.eval("houdiniEngine_setAssetInput {} {}".format(
+        asset + ".input[0].inputNodeId",
+        mel_string_array
+        ))
+    
+    # connect to an oppath parameter that accepts geometry
+    mel.eval("houdiniEngine_setAssetInput {} {}".format(
+        asset + ".houdiniAssetParm.houdiniAssetParm_objpath1__node",
+        mel_string_array
+        ))
+    
+    # call setAttr to set some attribute
+    cmds.setAttr("{}.houdiniAssetParm.houdiniAssetParm_height".format(asset), 2)
+    
+    # to "click" a button that does not affect output geometry, use setAttr
+    cmds.setAttr("{}.houdiniAssetParm.houdiniAssetParm_some_button__button".format(asset), 1)
+    # may need to call dgeval() to force the click to be processed
+    cmds.dgeval("{}.output".format(asset))
+
+*/

@@ -28,5 +28,6 @@ Other topics
   - @subpage Maya_Debugging "Debugging"
   - @subpage Maya_Time "Time"
   - @subpage Maya_Material "Material"
+  - @subpage Maya_Scripting "Scripting"
 
 */

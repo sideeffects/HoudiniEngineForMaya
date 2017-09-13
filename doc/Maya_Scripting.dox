@@ -9,7 +9,7 @@
     
     # load the plugin
     cmds.loadPlugin("houdiniEngine")
-    
+
     # load the Maya scene
     cmds.file("/tmp/test_sphere.mb", open=True, force=True)
     
@@ -28,6 +28,9 @@
             ["\"{}\"".format(s) for s in input_geos]
             )
         )
+    
+    # source MEL script for houdiniEngine_setAssetInput
+    cmds.eval("source houdiniEngineAssetInput")
     
     # call MEL function to connect input geometry
     # connect to an actual node input
@@ -50,4 +53,9 @@
     # may need to call dgeval() to force the click to be processed
     cmds.dgeval("{}.output".format(asset))
 
+    # source MEL script for houdiniEngine_syncAssetOutput
+    cmds.eval("source houdiniEngineAssetSync")
+
+    # sync the asset if needed
+    cmds.eval("houdiniEngine_syncAssetOutput {}".format(asset))
 */

@@ -1,4 +1,4 @@
-source houdiniEngineAssetSync
+source houdiniEngineAssetSync;
 
 proc int
 stringArrayReverseAppend(string $to[], int $end, string $from[])

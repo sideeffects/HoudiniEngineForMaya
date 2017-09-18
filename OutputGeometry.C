@@ -108,8 +108,6 @@ OutputGeometry::compute(
         needToSyncOutputs = true;
     }
 
-    partsArrayHandle.set(partsBuilder);
-
     if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
             myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
             myGeoInfo.type == HAPI_GEOTYPE_CURVE)
@@ -155,6 +153,8 @@ OutputGeometry::compute(
             }
         }
     }
+
+    partsArrayHandle.set(partsBuilder);
 
     myLastCookCount = myNodeInfo.totalCookCount;
 

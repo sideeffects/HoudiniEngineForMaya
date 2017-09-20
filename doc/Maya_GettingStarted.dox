@@ -4,33 +4,6 @@
 
 @tableofcontents
 
-@section Maya_GettingStarted_Install Install
-
-Houdini Engine for Maya is bundled together with the Houdini installer. Once the Houdini installer is started, simply select the Houdini Engine for Maya component, and the installer will handle the rest. The plug-in will be available inside Maya, when the installation finished.
-
-@subsection Maya_GettingStarted_Installing_More More on installing
-The installer performs the following steps:
-
--# Extracts the Maya plug-in for all supported Maya versions. This includes the plug-in binary, and various scripts. Files for all the supported Maya versions are extracted, regardless of which Maya versions are actually installed on the system. The extracted files can be found under the `$HFS/engine/maya directory`.
-
--# Registers the newly installed Maya plug-in with Maya. This step is only done for Maya versions that the installer is able to detect.
-
-This means that if another Maya version is later installed, the plug-in will not be registered with that Maya version. Although this can be done by running the installer again, it could be a bit time consuming. Since the files were already extracted by the installer, the missing step is to register the plug-in with Maya. You can manually register the Maya plug-in by copying the file:
-
-    $HFS/engine/maya/maya<version>/houdiniEngine-maya<version>
-
-to the directory:
-
-    $MAYA_LOCATION/modules
-
-For example, copy the file:
-
-    C:\Program Files\Side Effects Software\Houdini 15.0.244\engine\maya\maya2016\houdiniEngine-maya2016
-
-into:
-
-    C:\Program Files\Autodesk\Maya2016\modules
-
 @section Maya_GettingStarted_Load Load the plug-in
 
 Once the Maya plug-in has been installed, the `houdiniEngine` plugin can be loaded through Maya's plug-in manager. Once the plug-in has been loaded, the `Houdini Engine` menu appears at the main menu.

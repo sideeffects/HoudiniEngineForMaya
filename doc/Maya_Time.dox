@@ -27,4 +27,14 @@ Another less obvious example is using ROP nodes, like `rop_geometry` and `rop_al
 
 It is also important to note that this limitation only applies to accessing time-dependent input from Maya. If the time-dependent data is generated from inside the asset, then nodes and expressions are still able to access the time-dependent data freely without limitation.
 
+@subsection Maya_Time_Cache_SOP_Workaround Workaround using a Cache SOP
+
+It's possible to workaround the issue by using a `Cache SOP`. A `Cache SOP` could be added in the asset to cache the input geometry at multiple frames. Note that the "Clear Cache When Change Upstream" option needs to be disabled for the caching to work correctly through Houdini Engine.
+
+The Maya frames also needs to be played sequentially in order for `Cache SOP` to output the correct geometry from other frames. Scrubbing the timeline could lead to incorrect results, since some frames may not be evaluated while scrubbing.
+
+It's also possible to enable the "Cache Any Frame" option to allow the entire animation to be cached. This will allow scrubbing frames to work after all the frames have been cached (by playing through animation once).
+
+Since the input geometry from Maya is cached in the asset, geometry updates may not be available to the rest of the asset until the cache is cleared. The "Clear Cache" button can be promoted to the asset, so that the cache can be cleared explicitly when needed.
+
 */

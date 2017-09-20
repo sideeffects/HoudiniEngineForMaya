@@ -3,6 +3,7 @@
 @mainpage
 
 @section Maya Overview
+  - @subpage Maya_Install "Install"
   - @subpage Maya_GettingStarted "Getting Started"
   - @subpage Maya_Session "Session"
   - @subpage Maya_Assets "Assets"

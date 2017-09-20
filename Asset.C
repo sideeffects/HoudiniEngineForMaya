@@ -1976,6 +1976,8 @@ Asset::setParmValues(
                 0, parmInfos.size()
                 );
 
+        Util::PythonInterpreterLock pythonInterpreterLock;
+
         SetAttrOperation operation(
                 dataBlock,
                 nodeFn,

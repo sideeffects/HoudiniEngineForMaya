@@ -1837,7 +1837,9 @@ AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
         return;
     }
 
-    MObjectVector* attrs = &myDirtyParmAttributes;
+    MObjectVector cache = myDirtyParmAttributes;
+    MObjectVector* attrs = &cache;
+    myDirtyParmAttributes.clear();
 
     if(!onlyDirtyParms || mySetAllParms)
     {
@@ -1851,8 +1853,6 @@ AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
             assetNodeFn,
             attrs
             );
-
-    myDirtyParmAttributes.clear();
 }
 
 void

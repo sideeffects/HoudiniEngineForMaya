@@ -20,8 +20,7 @@ class Asset {
     public:
         Asset(
                 const MString &otlFilePath,
-                const MString &assetName,
-                const MObject &node
+                const MString &assetName
              );
         ~Asset();
 
@@ -101,8 +100,6 @@ class Asset {
         bool myIsObjSubnet;
 
         HAPI_NodeInfo        myNodeInfo;
-
-        MObject myNode;                    //The Maya asset node
 
         Inputs* myAssetInputs;
         OutputObjects myObjects;            //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.

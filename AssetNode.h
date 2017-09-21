@@ -107,7 +107,6 @@ class AssetNode: public MPxTransform
         static MObject splitGeosByGroup;
         static MObject outputHiddenObjects;
         static MObject outputTemplatedGeometries;
-        static MObject lockAsset;
 
         static MObject useAssetObjectTransform;
 

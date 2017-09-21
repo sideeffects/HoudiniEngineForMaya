@@ -1780,7 +1780,7 @@ AssetNode::createAsset()
         return;
     }
 
-    myAsset = new Asset(myOTLFilePath, myAssetName, thisMObject());
+    myAsset = new Asset(myOTLFilePath, myAssetName);
 
     if(!myAsset->isValid())
     {

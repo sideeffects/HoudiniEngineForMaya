@@ -1,8 +1,6 @@
 #ifndef __OutputInstancerObject_h__
 #define __OutputInstancerObject_h__
 
-//#include <Maya/MIntArray.h>
-
 #include "OutputObject.h"
 
 class OutputInstancerObject: public OutputObject

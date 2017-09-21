@@ -400,11 +400,9 @@ AttrOperation::containsParm(
 
 Asset::Asset(
         const MString &otlFilePath,
-        const MString &assetName,
-        const MObject &node
+        const MString &assetName
         ) :
     // initialize values here because instantiating the asset could error out
-    myNode(node),
     myAssetInputs(NULL)
 {
     HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;

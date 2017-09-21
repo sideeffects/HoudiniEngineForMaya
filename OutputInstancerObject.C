@@ -20,7 +20,6 @@ OutputInstancerObject::OutputInstancerObject(
     myGeoInfo(HAPI_GeoInfo_Create()),
     myLastSopCookCount(0)
 {
-    //update();
 }
 
 OutputInstancerObject::~OutputInstancerObject() {}
@@ -170,7 +169,6 @@ OutputInstancerObject::getUniqueInstObjNames()
 }
 
 MStatus
-//OutputInstancerObject::compute(const MPlug& plug, MDataBlock& data)
 OutputInstancerObject::compute(
         const MTime &time,
         const MPlug &plug,
@@ -196,7 +194,6 @@ OutputInstancerObject::compute(
         MArrayDataHandle houdiniNameAttributeHandle = handle.child(AssetNode::outputHoudiniNameAttribute);
         MArrayDataHandle instanceTransformHandle = handle.child(AssetNode::outputInstanceTransform);
 
-        //MDataHandle instHandle = data.outputValue(instancerDataPlug);
         MObject arrayDataObj = instancerDataHandle.data();
         MFnArrayAttrsData arrayDataFn(arrayDataObj);
         if(arrayDataObj.isNull())
@@ -362,9 +359,6 @@ OutputInstancerObject::compute(
         }
         instancedObjectNamesHandle.set(builder);
         instancedObjectNamesHandle.setAllClean();
-
-        //data.setClean(plug);
-        //data.setClean(instancerDataPlug);
 
         myLastSopCookCount = mySopNodeInfo.totalCookCount;
     }

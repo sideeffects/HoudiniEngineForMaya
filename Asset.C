@@ -778,6 +778,7 @@ Asset::computeGeometryObjects(
         MDataBlock& data,
         const MIntArray &instancedObjIds,
         const MStringArray &instancedObjNames,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -808,6 +809,7 @@ Asset::computeGeometryObjects(
                     objectHandle,
                     instancedObjIds,
                     instancedObjNames,
+                    options,
                     needToSyncOutputs
                     );
         }
@@ -1038,6 +1040,7 @@ Asset::compute(
     computeGeometryObjects(plug, data,
             instancedObjIds,
             instancedObjNames,
+            options,
             needToSyncOutputs);
 
     computeMaterial(plug, data, needToSyncOutputs);

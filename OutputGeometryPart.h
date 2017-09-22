@@ -24,6 +24,7 @@ class OutputGeometryPart
                 const MPlug &partPlug,
                 MDataBlock& data,
                 MDataHandle& handle,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
 
@@ -44,7 +45,8 @@ class OutputGeometryPart
                 const MPlug &meshPlug,
                 MDataBlock& data,
                 MDataHandle &hasMeshHandle,
-                MDataHandle &meshHandle
+                MDataHandle &meshHandle,
+                AssetNodeOptions::AccessorDataBlock &options
                 );
         void computeParticle(
                 const MTime &time,

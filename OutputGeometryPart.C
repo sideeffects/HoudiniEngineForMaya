@@ -151,6 +151,7 @@ OutputGeometryPart::compute(
         const MPlug &partPlug,
         MDataBlock& data,
         MDataHandle& partHandle,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -178,7 +179,8 @@ OutputGeometryPart::compute(
                 partPlug.child(AssetNode::outputPartHasMesh),
                 partPlug.child(AssetNode::outputPartMesh),
                 data,
-                hasMeshHandle, meshHandle);
+                hasMeshHandle, meshHandle,
+                options);
 
         // Particle
         MDataHandle hasParticlesHandle =
@@ -1175,7 +1177,8 @@ OutputGeometryPart::computeMesh(
         const MPlug &meshPlug,
         MDataBlock& data,
         MDataHandle &hasMeshHandle,
-        MDataHandle &meshHandle
+        MDataHandle &meshHandle,
+        AssetNodeOptions::AccessorDataBlock &options
         )
 {
     MStatus status;
@@ -1409,7 +1412,8 @@ OutputGeometryPart::computeMesh(
     std::vector<int> vertexLockedNormalBuffer;
 
     // normal array
-    if(hasMesh && lockedNormalOwner != HAPI_ATTROWNER_MAX)
+    if(hasMesh && lockedNormalOwner != HAPI_ATTROWNER_MAX
+            && options.outputMeshPreserveLockedNormals())
     {
         HAPI_AttributeOwner normalOwner = HAPI_ATTROWNER_MAX;
         if(!HAPI_FAIL(hapiGetVertexAttribute(
@@ -1537,7 +1541,8 @@ OutputGeometryPart::computeMesh(
     }
 
     // hard/soft edge
-    if(hasMesh)
+    if(hasMesh
+            && options.outputMeshPreserveHardEdges())
     {
         if(!HAPI_FAIL(hapiGetVertexAttribute(
                     myNodeId, myPartId,

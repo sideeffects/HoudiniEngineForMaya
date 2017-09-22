@@ -82,6 +82,7 @@ class Asset {
                 MDataBlock& data,
                 const MIntArray &instancedObjIds,
                 const MStringArray &instancedObjNames,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
         void computeMaterial(

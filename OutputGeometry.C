@@ -76,6 +76,7 @@ OutputGeometry::compute(
         const MPlug &geoPlug,
         MDataBlock &data,
         MDataHandle &geoHandle,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -125,6 +126,7 @@ OutputGeometry::compute(
                         partPlug,
                         data,
                         partHandle,
+                        options,
                         needToSyncOutputs
                         );
                 CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);

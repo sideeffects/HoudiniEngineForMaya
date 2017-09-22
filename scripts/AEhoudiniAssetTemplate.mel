@@ -700,6 +700,18 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 "Output templated geometries."
                 );
 
+        createAttrCheckBox(
+                "outputMeshPreserveHardEdges",
+                "Preserve mesh hard edges (possibly slow)",
+                "Preserve hard edges when outputting mesh"
+                );
+
+        createAttrCheckBox(
+                "outputMeshPreserveLockedNormals",
+                "Preserve mesh locked normals (possibly slow)",
+                "Preserve locked normals when outputting mesh"
+                );
+
         createAttrCheckBox("useInstancerNode", "Use Instancer Node",
                 "Use particle instancer node to output instances.");
 
@@ -754,6 +766,14 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
             $optionsLayoutFull + "|outputLayout|outputTemplatedGeometries",
             $nodeName + ".outputTemplatedGeometries",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|outputMeshPreserveHardEdges",
+            $nodeName + ".outputMeshPreserveHardEdges",
+            "");
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|outputMeshPreserveLockedNormals",
+            $nodeName + ".outputMeshPreserveLockedNormals",
+            "");
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
@@ -803,6 +823,8 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "splitGeosByGroup";
         editorTemplate -suppress "outputHiddenObjects";
         editorTemplate -suppress "outputTemplatedGeometries";
+        editorTemplate -suppress "outputMeshPreserveHardEdges";
+        editorTemplate -suppress "outputMeshPreserveLockedNormals";
 
         editorTemplate -suppress "useInstancerNode";
 

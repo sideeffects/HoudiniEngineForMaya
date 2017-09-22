@@ -1,10 +1,11 @@
 #ifndef __OutputGeometryObject_h__
 #define __OutputGeometryObject_h__
 
-#include "OutputGeometryPart.h"
 #include "OutputObject.h"
 
 #include <vector>
+
+#include "AssetNodeOptions.h"
 
 class OutputGeometry;
 
@@ -23,6 +24,7 @@ class OutputGeometryObject: public OutputObject
                 MDataHandle& objectHandle,
                 const MIntArray &instancedObjIds,
                 const MStringArray &instancedObjNames,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
 

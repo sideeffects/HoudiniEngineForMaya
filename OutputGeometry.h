@@ -8,6 +8,8 @@
 
 #include <HAPI/HAPI.h>
 
+#include "AssetNodeOptions.h"
+
 class OutputObject;
 class OutputGeometryPart;
 
@@ -21,6 +23,7 @@ class OutputGeometry {
                 const MPlug &geoPlug,
                 MDataBlock &data,
                 MDataHandle &geoHandle,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
 

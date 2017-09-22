@@ -4,6 +4,7 @@
 #include "Asset.h"
 #include "AssetNode.h"
 #include "OutputGeometryObject.h"
+#include "OutputGeometryPart.h"
 #include "util.h"
 #include "OutputGeometry.h"
 
@@ -39,6 +40,7 @@ OutputGeometryObject::compute(
         MDataHandle& objectHandle,
         const MIntArray &instancedObjIds,
         const MStringArray &instancedObjNames,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -105,6 +107,7 @@ OutputGeometryObject::compute(
                     geoPlug,
                     data,
                     geoHandle,
+                    options,
                     needToSyncOutputs
                     );
             CHECK_MSTATUS_AND_RETURN_IT(stat);

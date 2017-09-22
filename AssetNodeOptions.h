@@ -12,6 +12,8 @@ NODE_OPTION(useAssetObjectTransform, bool, false)
 NODE_OPTION(splitGeosByGroup, bool, false)
 NODE_OPTION(outputHiddenObjects, bool, false)
 NODE_OPTION(outputTemplatedGeometries, bool, false)
+NODE_OPTION(outputMeshPreserveHardEdges, bool, true)
+NODE_OPTION(outputMeshPreserveLockedNormals, bool, true)
 
 NODE_OPTION(useInstancerNode, bool, true)
 

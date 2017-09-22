@@ -7,6 +7,7 @@
 
 #include "Asset.h"
 #include "AssetNode.h"
+#include "AssetNodeOptions.h"
 #include "OutputInstancerObject.h"
 #include "hapiutil.h"
 #include "util.h"
@@ -174,6 +175,7 @@ OutputInstancerObject::compute(
         const MPlug &plug,
         MDataBlock& data,
         MDataHandle& handle,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -184,10 +186,6 @@ OutputInstancerObject::compute(
 
     if(mySopNodeInfo.totalCookCount > myLastSopCookCount)
     {
-        MDataHandle useInstancerHandle = data.inputValue(AssetNode::useInstancerNode);
-
-        bool useInstancer = useInstancerHandle.asBool();
-
         MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);
         MArrayDataHandle houdiniInstanceAttributeHandle = handle.child(AssetNode::outputHoudiniInstanceAttribute);
@@ -224,7 +222,7 @@ OutputInstancerObject::compute(
         MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
         MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
 
-        if(positions.length() != size && !useInstancer)
+        if(positions.length() != size && !options.useInstancerNode())
         {
             needToSyncOutputs = true;
         }

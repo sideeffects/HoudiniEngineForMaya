@@ -12,6 +12,7 @@
 #include <maya/MFnTypedAttribute.h>
 
 #include "AssetNode.h"
+#include "AssetNodeOptions.h"
 #include "SyncOutputMaterial.h"
 #include "util.h"
 
@@ -641,15 +642,14 @@ SyncOutputGeometryPart::createOutputInstancer(
 
     MFnDependencyNode assetNodeFn(instancerPlug.node());
 
-    MPlug useInstancerNodePlug = assetNodeFn.findPlug(AssetNode::useInstancerNode);
-    bool useInstancerNode = useInstancerNodePlug.asBool();
+    AssetNodeOptions::AccessorFn options(assetNodeOptionsDefinition, assetNodeFn);
 
     MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
     MFnIntArrayData partsData(partsPlug.asMObject());
     MIntArray parts = partsData.array();
 
     // Particle instancer
-    if(useInstancerNode)
+    if(options.useInstancerNode())
     {
         myPartShapes.setLength(parts.length());
 
@@ -736,15 +736,14 @@ SyncOutputGeometryPart::createOutputInstancerPost(
 
     MFnDependencyNode assetNodeFn(instancerPlug.node());
 
-    MPlug useInstancerNodePlug = assetNodeFn.findPlug(AssetNode::useInstancerNode);
-    bool useInstancerNode = useInstancerNodePlug.asBool();
+    AssetNodeOptions::AccessorFn options(assetNodeOptionsDefinition, assetNodeFn);
 
     MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
     MFnIntArrayData partsData(partsPlug.asMObject());
     MIntArray parts = partsData.array();
 
     // Particle instancer
-    if(useInstancerNode)
+    if(options.useInstancerNode())
     {
         for(unsigned int i = 0; i < parts.length(); i++)
         {

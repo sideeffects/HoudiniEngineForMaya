@@ -7,6 +7,7 @@ set( MAYA_VERSION 2014 CACHE STRING "" )
 set(
     SRCS
     AssetNode.C
+    AssetNodeOptions.C
     AssetCommand.C
     SubCommand.C
     AssetSubCommandLoadAsset.C

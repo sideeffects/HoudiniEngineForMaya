@@ -102,14 +102,6 @@ class AssetNode: public MPxTransform
         static MObject otlFilePath;
         static MObject assetName;
 
-        static MObject syncWhenInputConnects;
-        static MObject autoSyncOutputs;
-        static MObject splitGeosByGroup;
-        static MObject outputHiddenObjects;
-        static MObject outputTemplatedGeometries;
-
-        static MObject useAssetObjectTransform;
-
         static MObject input;
         static MObject inputName;
         static MObject inputNodeId;
@@ -261,8 +253,6 @@ class AssetNode: public MPxTransform
         static MObject outputMaterialSpecularColor;
         static MObject outputMaterialAlphaColor;
         static MObject outputMaterialTexturePath;
-
-        static MObject useInstancerNode;
 };
 #ifdef WIN32
 #pragma warning( pop )

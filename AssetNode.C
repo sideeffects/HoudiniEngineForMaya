@@ -32,13 +32,6 @@ MObject AssetNode::inTime;
 MObject AssetNode::otlFilePath;
 MObject AssetNode::assetName;
 
-MObject AssetNode::syncWhenInputConnects;
-MObject AssetNode::autoSyncOutputs;
-MObject AssetNode::splitGeosByGroup;
-MObject AssetNode::outputHiddenObjects;
-MObject AssetNode::outputTemplatedGeometries;
-MObject AssetNode::useAssetObjectTransform;
-
 MObject AssetNode::input;
 MObject AssetNode::inputName;
 MObject AssetNode::inputNodeId;
@@ -191,8 +184,6 @@ MObject AssetNode::outputMaterialDiffuseColor;
 MObject AssetNode::outputMaterialSpecularColor;
 MObject AssetNode::outputMaterialAlphaColor;
 
-MObject AssetNode::useInstancerNode;
-
 void*
 AssetNode::creator()
 {
@@ -234,33 +225,6 @@ AssetNode::initialize()
             MFnData::kString
             );
     tAttr.setInternal(true);
-
-    AssetNode::syncWhenInputConnects = nAttr.create(
-            "syncWhenInputConnects", "syncWhenInputConnects",
-            MFnNumericData::kBoolean,
-            true
-            );
-    AssetNode::autoSyncOutputs = nAttr.create(
-            "autoSyncOutputs", "autoSyncOutputs",
-            MFnNumericData::kBoolean
-            );
-    AssetNode::splitGeosByGroup = nAttr.create(
-            "splitGeosByGroup", "splitGeosByGroup",
-            MFnNumericData::kBoolean
-            );
-    AssetNode::outputHiddenObjects = nAttr.create(
-            "outputHiddenObjects", "outputHiddenObjects",
-            MFnNumericData::kBoolean
-            );
-    AssetNode::outputTemplatedGeometries = nAttr.create(
-            "outputTemplatedGeometries", "outputTemplatedGeometries",
-            MFnNumericData::kBoolean
-            );
-
-    AssetNode::useAssetObjectTransform = nAttr.create(
-            "useAssetObjectTransform", "useAssetObjectTransform",
-            MFnNumericData::kBoolean
-            );
 
     // input
     AssetNode::inputName = tAttr.create(
@@ -1306,27 +1270,14 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputInstancers);
     cAttr.addChild(AssetNode::outputMaterials);
 
-    AssetNode::useInstancerNode = nAttr.create(
-            "useInstancerNode", "useInstancerNode",
-            MFnNumericData::kBoolean,
-            1
-            );
-    nAttr.setStorable(true);
-    nAttr.setWritable(true);
+    assetNodeOptionsDefinition.addAttributes();
 
     // add the static attributes to the node
-    addAttribute(AssetNode::syncWhenInputConnects);
-    addAttribute(AssetNode::autoSyncOutputs);
-    addAttribute(AssetNode::splitGeosByGroup);
-    addAttribute(AssetNode::outputHiddenObjects);
-    addAttribute(AssetNode::outputTemplatedGeometries);
-    addAttribute(AssetNode::useAssetObjectTransform);
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);
     addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
-    addAttribute(AssetNode::useInstancerNode);
 
     //most of the dependencies between attrs are set via the AssetNode::setDependentsDirty() call
     //this call may not even be necessary.
@@ -1593,23 +1544,14 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         getParmValues(data);
 
-        bool autoSyncOutputs = data
-            .inputValue(AssetNode::autoSyncOutputs).asBool();
-        bool splitGeosByGroup = data
-            .inputValue(AssetNode::splitGeosByGroup).asBool();
-        bool outputTemplatedGeometries = data
-            .inputValue(AssetNode::outputTemplatedGeometries).asBool();
-        bool useInstancerNode = data
-            .inputValue(AssetNode::useInstancerNode).asBool();
+        AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
         status = myAsset->compute(
                 outputPlug,
                 data,
-                splitGeosByGroup,
-                outputTemplatedGeometries,
-                useInstancerNode,
+                options,
                 needToSyncOutputs
                 );
         // No need to print error messages from Asset::compute(). It should
@@ -1619,7 +1561,7 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
             return status;
         }
 
-        if(autoSyncOutputs && needToSyncOutputs)
+        if(options.autoSyncOutputs() && needToSyncOutputs)
         {
             MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput "
                     + MFnDagNode(thisMObject()).fullPathName());

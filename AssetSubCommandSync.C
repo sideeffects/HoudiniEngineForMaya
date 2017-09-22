@@ -8,6 +8,7 @@
 #include <maya/MFnDagNode.h>
 
 #include "AssetNode.h"
+#include "AssetNodeOptions.h"
 #include "SyncAttribute.h"
 #include "SyncOutputObject.h"
 #include "SyncOutputMaterial.h"
@@ -139,7 +140,8 @@ AssetSubCommandSync::doIt()
             MPlug transformRotate = assetNodeFn.findPlug(MPxTransform::rotate);
             MPlug transformScale = assetNodeFn.findPlug(MPxTransform::scale);
 
-            if(assetNodeFn.findPlug(AssetNode::useAssetObjectTransform).asBool())
+            AssetNodeOptions::AccessorFn options(assetNodeOptionsDefinition, assetNodeFn);
+            if(options.useAssetObjectTransform())
             {
                 if(Util::plugSource(transformTranslate).isNull())
                     myDagModifier.connect(assetTranslate, transformTranslate);

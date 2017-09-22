@@ -9,6 +9,7 @@
 
 #include <HAPI/HAPI.h>
 
+#include "AssetNodeOptions.h"
 #include "OutputObject.h"
 
 #include <vector>
@@ -48,9 +49,7 @@ class Asset {
         MStatus compute(
                 const MPlug& plug,
                 MDataBlock& data,
-                bool splitGeosByGroup,
-                bool cookTemplatedGeos,
-                bool useInstancerNode,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
 
@@ -75,6 +74,7 @@ class Asset {
                 MDataBlock& data,
                 MIntArray &instancedObjIds,
                 MStringArray &instancedObjNames,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
         void computeGeometryObjects(

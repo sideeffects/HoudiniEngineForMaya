@@ -1,6 +1,7 @@
 #ifndef __OutputInstancerObject_h__
 #define __OutputInstancerObject_h__
 
+#include "AssetNodeOptions.h"
 #include "OutputObject.h"
 
 class OutputInstancerObject: public OutputObject
@@ -19,6 +20,7 @@ class OutputInstancerObject: public OutputObject
                 const MPlug &plug,
                 MDataBlock& data,
                 MDataHandle& handle,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
 

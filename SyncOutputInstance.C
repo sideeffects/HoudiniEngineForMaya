@@ -8,6 +8,7 @@
 #include <maya/MItDag.h>
 
 #include "AssetNode.h"
+#include "AssetNodeOptions.h"
 #include "util.h"
 
 SyncOutputInstance::SyncOutputInstance(
@@ -166,10 +167,9 @@ SyncOutputInstance::createOutput()
 
     MFnDagNode assetNodeFn(myAssetNodeObj);
 
-    MPlug useInstanceNodePlug = assetNodeFn.findPlug(AssetNode::useInstancerNode);
-    bool useInstanceNode = useInstanceNodePlug.asBool();
+    AssetNodeOptions::AccessorFn options(assetNodeOptionsDefinition, assetNodeFn);
 
-    if(useInstanceNode)
+    if(options.useInstancerNode())
     {
         // create the instancer node
         MObject instancer = myDagModifier.createNode("instancer", myAssetNodeObj, &status);

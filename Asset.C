@@ -711,6 +711,7 @@ Asset::computeInstancerObjects(
         MDataBlock& data,
         MIntArray &instancedObjIds,
         MStringArray &instancedObjNames,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -735,6 +736,7 @@ Asset::computeInstancerObjects(
                     instancerElemPlug,
                     data,
                     instancerElemHandle,
+                    options,
                     needToSyncOutputs
                     );
             if(MS::kSuccess == stat)
@@ -925,9 +927,7 @@ MStatus
 Asset::compute(
         const MPlug& plug,
         MDataBlock& data,
-        bool splitGeosByGroup,
-        bool cookTemplatedGeos,
-        bool useInstancerNode,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -942,10 +942,10 @@ Asset::compute(
 
         HAPI_CookOptions cookOptions;
         HAPI_CookOptions_Init(&cookOptions);
-        cookOptions.splitGeosByGroup = splitGeosByGroup;
-        cookOptions.cookTemplatedGeos = cookTemplatedGeos;
+        cookOptions.splitGeosByGroup = options.splitGeosByGroup();
+        cookOptions.cookTemplatedGeos = options.outputTemplatedGeometries();
 
-        if(useInstancerNode)
+        if(options.useInstancerNode())
         {
             // Particle instancer cannot instance other particle instancer. So
             // we can only do flatten.
@@ -1032,6 +1032,7 @@ Asset::compute(
     computeInstancerObjects(plug, data,
             instancedObjIds,
             instancedObjNames,
+            options,
             needToSyncOutputs);
 
     computeGeometryObjects(plug, data,

@@ -1,6 +1,7 @@
 #include <maya/MAnimControl.h>
 #include <maya/MCallbackIdArray.h>
 #include <maya/MEventMessage.h>
+#include <maya/MSceneMessage.h>
 #include <maya/MGlobal.h>
 
 #include <maya/MFnPlugin.h>
@@ -446,6 +447,13 @@ cleanupSession()
     return true;
 }
 
+void
+mayaExiting(void* clientData)
+{
+    cleanupHAPI();
+    cleanupSession();
+}
+
 void updateTimelineCallback(void* clientData)
 {
     HAPI_TimelineOptions timelineOptions;
@@ -476,6 +484,21 @@ initializeMessageCallbacks()
     MStatus status;
 
     MCallbackId callbackId;
+
+    callbackId = MSceneMessage::addCallback(
+            MSceneMessage::kMayaExiting,
+            mayaExiting,
+            NULL,
+            &status
+            );
+    if(status)
+    {
+        messageCallbacks.append(callbackId);
+    }
+    else
+    {
+        CHECK_MSTATUS(status);
+    }
 
     callbackId = MEventMessage::addEventCallback(
             "playbackRangeSliderChanged",

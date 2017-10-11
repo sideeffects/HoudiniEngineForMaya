@@ -430,6 +430,22 @@ cleanupHAPI()
     return true;
 }
 
+bool
+cleanupSession()
+{
+    if ( !Util::theHAPISession.get() )
+    {
+        return true;
+    }
+
+    // If session is not initialize, then don't try to close it.
+    CHECK_HAPI_AND_RETURN( HAPI_IsSessionValid( Util::theHAPISession.get() ), true );
+
+    CHECK_HAPI_AND_RETURN( HAPI_CloseSession( Util::theHAPISession.get() ), false );
+
+    return true;
+}
+
 void updateTimelineCallback(void* clientData)
 {
     HAPI_TimelineOptions timelineOptions;
@@ -640,7 +656,7 @@ uninitializePlugin(MObject obj)
     status = plugin.deregisterCommand("houdiniAsset");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    if(cleanupHAPI())
+    if(cleanupHAPI() && cleanupSession())
     {
 	MGlobal::displayInfo("Houdini Engine cleaned up successfully.");
     }

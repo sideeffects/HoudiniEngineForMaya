@@ -474,16 +474,89 @@ convert(const int &src)
 }
 
 template<typename T, typename U>
+class ConversionTrait
+{
+public:
+    static const bool useCache = false;
+};
+
+template<>
+class ConversionTrait<int, std::string>
+{
+public:
+    static const bool useCache = true;
+};
+
+template<>
+class ConversionTrait<int, MString>
+{
+public:
+    static const bool useCache = true;
+};
+
+template<typename T, typename U,
+    bool Enabled = ConversionTrait<T, U>::useCache>
+class ConversionCache
+{
+public:
+    typedef struct{} Iterator;
+
+    static void getIteratorValue(Iterator& iter, U &value)
+    { }
+
+    bool find(Iterator &iter, const T &key) const
+    { return false; }
+
+    void insert(const Iterator &iter, const T &key, const U &value)
+    { }
+};
+
+template<typename T, typename U>
+class ConversionCache<T, U, true>
+{
+public:
+    typedef typename Cache<T, U>::Iterator Iterator;
+
+    static void getIteratorValue(Iterator& iter, U &value)
+    { value = iter->value; }
+
+    bool find(Iterator &iter, const T &key) const
+    { return myCache.find(iter, key); }
+
+    void insert(const Iterator &iter, const T &key, const U &value)
+    { myCache.insert(iter, key, value); }
+private:
+    Cache<T, U> myCache;
+};
+
+template<typename T, typename U>
 void convertArray(T &dstArray, const U &srcArray)
 {
     typedef ARRAYTRAIT(T) DstTrait;
     typedef ELEMENTTYPE(T) DstElementType;
     typedef ARRAYTRAIT(U) SrcTrait;
+    typedef ELEMENTTYPE(U) SrcElementType;
+
+    ConversionCache<SrcElementType, DstElementType> conversionCache;
+
     DstTrait::resize(dstArray, SrcTrait::size(srcArray));
     for(size_t i = 0; i < DstTrait::size(dstArray); i++)
     {
+        typename ConversionCache<SrcElementType, DstElementType>::Iterator iter;
+        if(conversionCache.find(iter, SrcTrait::getElement(srcArray, i)))
+        {
+            ConversionCache<SrcElementType, DstElementType>::getIteratorValue(
+                    iter, DstTrait::getElement(dstArray, i)
+                    );
+            continue;
+        }
+
         DstTrait::getElement(dstArray, i)
             = convert<DstElementType>(SrcTrait::getElement(srcArray, i));
+
+        conversionCache.insert(iter,
+                SrcTrait::getElement(srcArray, i),
+                DstTrait::getElement(dstArray, i));
     }
 }
 

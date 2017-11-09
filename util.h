@@ -177,7 +177,7 @@ private:
     typedef std::vector<CacheEntry> CacheEntries;
 
 public:
-    typedef typename CacheEntries::const_iterator Iterator;
+    typedef typename CacheEntries::iterator Iterator;
 
     Cache() :
         myAccessCount(0)
@@ -185,27 +185,27 @@ public:
         myCache.reserve(Size);
     }
 
-    bool find(Iterator &iter, const Key &key) const
+    bool find(Iterator &iter, const Key &key)
     {
         CacheEntry key_entry;
         key_entry.key = key;
-        iter = std::lower_bound(myCache.cbegin(), myCache.cend(),
+        iter = std::lower_bound(myCache.begin(), myCache.end(),
                 key_entry);
 
-        if(iter == myCache.cend() || iter->key != key)
+        if(iter == myCache.end() || iter->key != key)
             return false;
 
         iter->access = myAccessCount++;
         return true;
     }
 
-    void insert(const Iterator &iter, const Key &key, const Value &value)
+    void insert(Iterator &iter, const Key &key, const Value &value)
     {
         auto insert_iter = iter;
         if(MaxSize && myCache.size() >= MaxSize)
         {
-            auto min_iter = std::min_element(
-                    myCache.cbegin(), myCache.cend(),
+            Iterator min_iter = std::min_element(
+                    myCache.begin(), myCache.end(),
                     [](const CacheEntry &a, const CacheEntry &b)
                     { return a.access < b.access; }
                     );
@@ -504,10 +504,10 @@ public:
     static void getIteratorValue(Iterator& iter, U &value)
     { }
 
-    bool find(Iterator &iter, const T &key) const
+    bool find(Iterator &iter, const T &key)
     { return false; }
 
-    void insert(const Iterator &iter, const T &key, const U &value)
+    void insert(Iterator &iter, const T &key, const U &value)
     { }
 };
 
@@ -520,10 +520,10 @@ public:
     static void getIteratorValue(Iterator& iter, U &value)
     { value = iter->value; }
 
-    bool find(Iterator &iter, const T &key) const
+    bool find(Iterator &iter, const T &key)
     { return myCache.find(iter, key); }
 
-    void insert(const Iterator &iter, const T &key, const U &value)
+    void insert(Iterator &iter, const T &key, const U &value)
     { myCache.insert(iter, key, value); }
 private:
     Cache<T, U> myCache;

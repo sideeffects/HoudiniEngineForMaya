@@ -11,6 +11,7 @@
 #include <maya/MString.h>
 #include <maya/MTimer.h>
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 #include <memory>
@@ -159,6 +160,67 @@ void displayErrorForNode(
         const MString &typeName,
         const MString &message
         );
+
+template<typename Key, typename Value, size_t Size = 50, size_t MaxSize = 0>
+class Cache
+{
+private:
+    struct CacheEntry
+    {
+        Key key;
+        Value value;
+        mutable int access;
+
+        bool operator <(const CacheEntry &o) const
+        { return key < o.key; }
+    };
+    typedef std::vector<CacheEntry> CacheEntries;
+
+public:
+    typedef typename CacheEntries::const_iterator Iterator;
+
+    Cache() :
+        myAccessCount(0)
+    {
+        myCache.reserve(Size);
+    }
+
+    bool find(Iterator &iter, const Key &key) const
+    {
+        CacheEntry key_entry;
+        key_entry.key = key;
+        iter = std::lower_bound(myCache.cbegin(), myCache.cend(),
+                key_entry);
+
+        if(iter == myCache.cend() || iter->key != key)
+            return false;
+
+        iter->access = myAccessCount++;
+        return true;
+    }
+
+    void insert(const Iterator &iter, const Key &key, const Value &value)
+    {
+        auto insert_iter = iter;
+        if(MaxSize && myCache.size() >= MaxSize)
+        {
+            auto min_iter = std::min_element(
+                    myCache.cbegin(), myCache.cend(),
+                    [](const CacheEntry &a, const CacheEntry &b)
+                    { return a.access < b.access; }
+                    );
+            if(min_iter < insert_iter)
+                insert_iter--;
+            myCache.erase(min_iter);
+        }
+
+        myCache.insert(insert_iter, CacheEntry {key, value, 0});
+    }
+
+private:
+    CacheEntries myCache;
+    mutable int myAccessCount;
+};
 
 class HAPIString
 {

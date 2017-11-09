@@ -216,7 +216,11 @@ public:
             myCache.erase(min_iter);
         }
 
-        myCache.insert(insert_iter, CacheEntry {key, value, 0});
+        CacheEntry entry;
+        entry.key = key;
+        entry.value = value;
+        entry.access = 0;
+        myCache.insert(insert_iter, entry);
     }
 
 private:

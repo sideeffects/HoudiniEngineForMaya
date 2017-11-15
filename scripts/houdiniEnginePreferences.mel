@@ -55,11 +55,11 @@ houdiniEnginePreferences_refresh()
 global proc
 houdiniEnginePreferences_save()
 {
-    global int $houdiniEngineAsynchronousMode;
+    setParent houdiniEnginePreferences;
 
     optionVar
         -intValue "houdiniEngineAsynchronousMode"
-        $houdiniEngineAsynchronousMode;
+        `checkBoxGrp -q -value1 asynchronousModeCheck`;
         
     if (`radioButton -query -select sessionTypeInProcess`)
     {    

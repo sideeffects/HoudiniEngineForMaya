@@ -30,6 +30,8 @@
 #define kSyncHiddenFlagLong "-syncHidden"
 #define kSyncTemplatedGeosFlag "-stm"
 #define kSyncTemplatedGeosFlagLong "-syncTemplatedGeos"
+#define kAutoSyncIdFlag "-asi"
+#define kAutoSyncIdFlagLong "-autoSyncId"
 
 const char* AssetCommand::commandName = "houdiniAsset";
 
@@ -125,6 +127,22 @@ class AssetSubCommandListAssets : public SubCommand
         MString myOTLFilePath;
 };
 
+class AssetSubCommandAutoSyncId : public SubCommandAsset
+{
+    public:
+        AssetSubCommandAutoSyncId(const MObject &assetNodeObj) :
+            SubCommandAsset(assetNodeObj)
+        {
+        }
+
+        virtual MStatus doIt()
+        {
+            MPxCommand::setResult(getAssetNode()->autoSyncId());
+
+            return MStatus::kSuccess;
+        }
+};
+
 void* AssetCommand::creator()
 {
     return new AssetCommand();
@@ -183,6 +201,10 @@ AssetCommand::newSyntax()
                                  kSyncTemplatedGeosFlagLong,
                                  MSyntax::kNoArg));
 
+    CHECK_MSTATUS(syntax.addFlag(kAutoSyncIdFlag,
+                                 kAutoSyncIdFlagLong,
+                                 MSyntax::kSelectionItem));
+
     return syntax;
 }
 
@@ -234,7 +256,8 @@ AssetCommand::parseArgs(const MArgList &args)
                 ^ argData.isFlagSet(kSyncFlag)
                 ^ argData.isFlagSet(kResetSimulationFlag)
                 ^ argData.isFlagSet(kCookMessagesFlag)
-                ^ argData.isFlagSet(kReloadAssetFlag)))
+                ^ argData.isFlagSet(kReloadAssetFlag)
+                ^ argData.isFlagSet(kAutoSyncIdFlag)))
     {
         displayError("Exactly one of these flags must be specified:\n"
                 kLoadAssetFlagLong "\n"
@@ -334,6 +357,15 @@ AssetCommand::parseArgs(const MArgList &args)
         }
 
         mySubCommand = subCommand;
+    }
+
+    if(argData.isFlagSet(kAutoSyncIdFlag))
+    {
+        MObject assetNodeObj;
+        if(!getMObjectFromFlag(argData, kAutoSyncIdFlagLong, assetNodeObj, status))
+            return status;
+
+        mySubCommand = new AssetSubCommandAutoSyncId(assetNodeObj);
     }
 
     if(argData.isFlagSet(kResetSimulationFlag))

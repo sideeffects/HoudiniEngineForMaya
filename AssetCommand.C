@@ -1,4 +1,3 @@
-#include <maya/MArgDatabase.h>
 #include <maya/MArgList.h>
 #include <maya/MSelectionList.h>
 #include <maya/MStatus.h>
@@ -169,7 +168,7 @@ AssetCommand::newSyntax()
         // running this, with refreshEditorTemplates
     CHECK_MSTATUS(syntax.addFlag(kReloadAssetFlag,
                                  kReloadAssetFlagLong,
-                                 MSyntax::kString));
+                                 MSyntax::kSelectionItem));
 
     CHECK_MSTATUS(syntax.addFlag(kSyncAttributesFlag, kSyncAttributesFlagLong));
     CHECK_MSTATUS(syntax.addFlag(kSyncOutputsFlag, kSyncOutputsFlagLong));
@@ -185,6 +184,29 @@ AssetCommand::newSyntax()
                                  MSyntax::kNoArg));
 
     return syntax;
+}
+
+bool
+AssetCommand::getMObjectFromFlag(
+        const MArgDatabase &argData,
+        const char* flag,
+        MObject &obj,
+        MStatus &status)
+{
+    MSelectionList selection;
+    status = argData.getFlagArgument(flag, 0, selection);
+    if(!status)
+    {
+        MString error_message;
+        error_message.format("Invalid argument for \"^1s\".", flag);
+        displayError(error_message);
+        return false;
+    }
+
+    status = selection.getDependNode(0, obj);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    return true;
 }
 
 AssetCommand::AssetCommand() :
@@ -270,22 +292,9 @@ AssetCommand::parseArgs(const MArgList &args)
 
     if(argData.isFlagSet(kReloadAssetFlag))
     {
-        MString assetPath;
-        {
-            status = argData.getFlagArgument(kReloadAssetFlag, 0, assetPath);
-            if(!status)
-            {
-                displayError("Invalid argument for \"" kReloadAssetFlagLong "\".");
-                return status;
-            }
-        }
-
-        MSelectionList selList;
         MObject assetNodeObj;
-
-        selList.add(assetPath);
-        selList.getDependNode(0, assetNodeObj);
-        CHECK_MSTATUS_AND_RETURN_IT(status);
+        if(!getMObjectFromFlag(argData, kReloadAssetFlagLong, assetNodeObj, status))
+            return status;
 
         MFnDependencyNode assetNodeFn(assetNodeObj);
         AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
@@ -297,19 +306,8 @@ AssetCommand::parseArgs(const MArgList &args)
     if(argData.isFlagSet(kSyncFlag))
     {
         MObject assetNodeObj;
-        {
-            MSelectionList selection;
-
-            status = argData.getFlagArgument(kSyncFlag, 0, selection);
-            if(!status)
-            {
-                displayError("Invalid first argument for \"" kSyncFlagLong "\".");
-                return status;
-            }
-
-            selection.getDependNode(0, assetNodeObj);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-        }
+        if(!getMObjectFromFlag(argData, kSyncFlagLong, assetNodeObj, status))
+            return status;
 
         AssetSubCommandSync* subCommand = new AssetSubCommandSync(
                 assetNodeObj
@@ -341,19 +339,8 @@ AssetCommand::parseArgs(const MArgList &args)
     if(argData.isFlagSet(kResetSimulationFlag))
     {
         MObject assetNodeObj;
-        {
-            MSelectionList selection;
-
-            status = argData.getFlagArgument(kResetSimulationFlag, 0, selection);
-            if(!status)
-            {
-                displayError("Invalid first argument for \"" kResetSimulationFlagLong "\".");
-                return status;
-            }
-
-            selection.getDependNode(0, assetNodeObj);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-        }
+        if(!getMObjectFromFlag(argData, kResetSimulationFlagLong, assetNodeObj, status))
+            return status;
 
         mySubCommand = new AssetSubCommandResetSimulation(assetNodeObj);
     }
@@ -361,19 +348,8 @@ AssetCommand::parseArgs(const MArgList &args)
     if(argData.isFlagSet(kCookMessagesFlag))
     {
         MObject assetNodeObj;
-        {
-            MSelectionList selection;
-
-            status = argData.getFlagArgument(kCookMessagesFlag, 0, selection);
-            if(!status)
-            {
-                displayError("Invalid first argument for \"" kCookMessagesFlagLong "\".");
-                return status;
-            }
-
-            selection.getDependNode(0, assetNodeObj);
-            CHECK_MSTATUS_AND_RETURN_IT(status);
-        }
+        if(!getMObjectFromFlag(argData, kCookMessagesFlagLong, assetNodeObj, status))
+            return status;
 
         mySubCommand = new AssetSubCommandCookMessages(assetNodeObj);
     }

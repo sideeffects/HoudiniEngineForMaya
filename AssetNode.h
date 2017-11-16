@@ -78,6 +78,9 @@ class AssetNode: public MPxTransform
 
         void rebuildAsset();
 
+        int autoSyncId() const
+        { return myAutoSyncId; }
+
     private:
         Asset* myAsset;
         bool isAssetValid() const;
@@ -92,6 +95,8 @@ class AssetNode: public MPxTransform
 
         bool mySetAllParms;
         bool myNeedToMarshalInput;
+
+        int myAutoSyncId;
 
         typedef std::vector<MObject> MObjectVector;
         MObjectVector myDirtyParmAttributes;

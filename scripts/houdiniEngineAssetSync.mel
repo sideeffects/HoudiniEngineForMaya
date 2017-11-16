@@ -48,6 +48,17 @@ syncAsset(string $assetNode, int $syncAttributes, int $syncOutputs)
 }
 
 global proc
+houdiniEngine_autoSyncAssetOutput(string $assetNode, int $autoSyncId)
+{
+    if($autoSyncId != `houdiniAsset -autoSyncId $assetNode`)
+    {
+        return;
+    }
+
+    houdiniEngine_syncAssetOutput($assetNode);
+}
+
+global proc
 houdiniEngine_syncAssetOutput(string $assetNode)
 {
     syncAsset($assetNode, 0, 1);

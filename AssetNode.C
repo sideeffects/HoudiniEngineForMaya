@@ -1422,7 +1422,8 @@ AssetNode::nodeRemoved(MObject& node,void *clientData)
 }
 
 AssetNode::AssetNode() :
-    myNeedToMarshalInput(false)
+    myNeedToMarshalInput(false),
+    myAutoSyncId(-1)
 {
     myAsset = NULL;
 
@@ -1689,7 +1690,10 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         if(autoSyncOutputs && needToSyncOutputs)
         {
-            MGlobal::executeCommandOnIdle("houdiniEngine_syncAssetOutput " + assetNodeFn.fullPathName());
+            myAutoSyncId++;
+            MGlobal::executeCommandOnIdle("houdiniEngine_autoSyncAssetOutput "
+                    + assetNodeFn.fullPathName() + " "
+                    + myAutoSyncId);
         }
 
         data.setClean(plug);

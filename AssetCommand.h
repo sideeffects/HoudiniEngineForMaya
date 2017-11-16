@@ -3,6 +3,7 @@
 
 #include <maya/MPxCommand.h>
 
+#include <maya/MArgDatabase.h>
 #include <maya/MSyntax.h>
 
 class SubCommand;
@@ -15,6 +16,13 @@ class AssetCommand: public MPxCommand
     public:
         static void* creator();
         static MSyntax newSyntax();
+
+    private:
+        static bool getMObjectFromFlag(
+                const MArgDatabase &argData,
+                const char* flag,
+                MObject &obj,
+                MStatus &status);
 
     public:
         AssetCommand();

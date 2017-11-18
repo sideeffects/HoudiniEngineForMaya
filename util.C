@@ -1086,7 +1086,7 @@ resizeArrayDataHandle(MArrayDataHandle &arrayDataHandle, const int newSize)
         CHECK_MSTATUS(arrayDataHandle.jumpToArrayElement(i));
         int index = arrayDataHandle.elementIndex();
         auto found = std::lower_bound(
-                elementsSeen.cbegin(), elementsSeen.cend(),
+                elementsSeen.begin(), elementsSeen.end(),
                 index);
 
         // remove duplicate

@@ -914,10 +914,6 @@ isPlugBelow(const MPlug &plug, const T &upper)
 
 void
 getChildPlugs(MPlugArray &plugArray, const MPlug &plug);
-
-bool
-assetLockingEnabled();
-
 }
 
 #endif

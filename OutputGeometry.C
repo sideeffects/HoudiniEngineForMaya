@@ -1,5 +1,3 @@
-#include <maya/MArrayDataBuilder.h>
-
 #include "OutputGeometry.h"
 #include "OutputGeometryPart.h"
 #include "OutputObject.h"
@@ -103,9 +101,11 @@ OutputGeometry::compute(
     MPlug partsPlug = geoPlug.child(AssetNode::outputParts);
     MDataHandle partsHandle = geoHandle.child(AssetNode::outputParts);
     MArrayDataHandle partsArrayHandle(partsHandle);
-    MArrayDataBuilder partsBuilder = partsArrayHandle.builder();
-    if(partsBuilder.elementCount() != (unsigned int)(myGeoInfo.partCount))
+
+    bool partCountChanged = partsArrayHandle.elementCount() != (unsigned int)myGeoInfo.partCount;
+    if(partCountChanged)
     {
+        Util::resizeArrayDataHandle(partsArrayHandle, myGeoInfo.partCount);
         needToSyncOutputs = true;
     }
 
@@ -113,13 +113,17 @@ OutputGeometry::compute(
             myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
             myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
-        if(myNodeInfo.totalCookCount > myLastCookCount)
+        if(myNodeInfo.totalCookCount > myLastCookCount
+                || partCountChanged)
         {
             // Compute the OutputGeometryPart
             for(int i = 0; i < myGeoInfo.partCount; i++)
             {
                 MPlug partPlug = partsPlug.elementByLogicalIndex(i);
-                MDataHandle partHandle = partsBuilder.addElement(i);
+
+                CHECK_MSTATUS(partsArrayHandle.jumpToArrayElement(i));
+                printf("compute part array handle: %d, %d\n", i, partsArrayHandle.elementIndex());
+                MDataHandle partHandle = partsArrayHandle.outputValue();
 
                 stat = myParts[i]->compute(
                         time,
@@ -129,13 +133,6 @@ OutputGeometry::compute(
                         options,
                         needToSyncOutputs
                         );
-                CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
-            }
-
-            // Remove the element of the array attribute
-            for(int i = partsBuilder.elementCount(); i-- > myGeoInfo.partCount;)
-            {
-                stat = partsBuilder.removeElement(i);
                 CHECK_MSTATUS_AND_RETURN(stat, MS::kFailure);
             }
         }
@@ -155,8 +152,6 @@ OutputGeometry::compute(
             }
         }
     }
-
-    partsArrayHandle.set(partsBuilder);
 
     myLastCookCount = myNodeInfo.totalCookCount;
 

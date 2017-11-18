@@ -91,16 +91,17 @@ OutputGeometryObject::compute(
         MPlug geosPlug = objectPlug.child(AssetNode::outputGeos);
         MDataHandle geosHandle = objectHandle.child(AssetNode::outputGeos);
         MArrayDataHandle geoArrayHandle(geosHandle);
-        MArrayDataBuilder geosBuilder = geoArrayHandle.builder();
-        if(geosBuilder.elementCount() != myGeos.size())
+        if(geoArrayHandle.elementCount() != myGeos.size())
         {
+            Util::resizeArrayDataHandle(geoArrayHandle, myGeos.size());
             needToSyncOutputs = true;
         }
 
         for(size_t i = 0; i < myGeos.size(); i++)
         {
             MPlug geoPlug = geosPlug.elementByLogicalIndex(i);
-            MDataHandle geoHandle = geosBuilder.addElement(i);
+            CHECK_MSTATUS(geoArrayHandle.jumpToArrayElement(i));
+            MDataHandle geoHandle = geoArrayHandle.outputValue();
 
             stat = myGeos[i]->compute(
                     time,
@@ -112,13 +113,6 @@ OutputGeometryObject::compute(
                     );
             CHECK_MSTATUS_AND_RETURN_IT(stat);
         }
-
-        for(size_t i = geosBuilder.elementCount(); i-- > myGeos.size();)
-        {
-            geosBuilder.removeElement(i);
-        }
-
-        geoArrayHandle.set(geosBuilder);
     }
 
     // compute transform

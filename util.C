@@ -1,3 +1,5 @@
+#include <maya/MArrayDataBuilder.h>
+#include <maya/MDataHandle.h>
 #include <maya/MDGModifier.h>
 #include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
@@ -1068,5 +1070,59 @@ getChildPlugs(MPlugArray &plugArray, const MPlug &plug)
             }
         }
     }
+}
+
+void
+resizeArrayDataHandle(MArrayDataHandle &arrayDataHandle, const int newSize)
+{
+    MArrayDataBuilder arrayDataBuilder = arrayDataHandle.builder();
+
+    std::vector<int> elementsSeen;
+    std::vector<int> elementsToRemove;
+    elementsSeen.reserve(arrayDataHandle.elementCount());
+    elementsToRemove.reserve(arrayDataHandle.elementCount());
+    for(unsigned int i = 0; i < arrayDataHandle.elementCount(); i++)
+    {
+        CHECK_MSTATUS(arrayDataHandle.jumpToArrayElement(i));
+        int index = arrayDataHandle.elementIndex();
+        auto found = std::lower_bound(
+                elementsSeen.cbegin(), elementsSeen.cend(),
+                index);
+
+        // remove duplicate
+        if(found != elementsSeen.cend() && *found == index)
+        {
+            elementsToRemove.push_back(index);
+            continue;
+        }
+
+        // remove indices bigger than the new size
+        if(newSize <= index)
+        {
+            elementsToRemove.push_back(index);
+            continue;
+        }
+
+        elementsSeen.insert(found, index);
+    }
+
+    // find missing indices
+    std::vector<int> elementsToAdd;
+    elementsToAdd.reserve(newSize);
+    auto last = elementsSeen.cbegin();
+    for(int i = 0; i < newSize; i++)
+    {
+        if(last == elementsSeen.cend() || i < *last)
+            elementsToAdd.push_back(i);
+        else
+            last++;
+    }
+
+    for(auto i : elementsToRemove)
+        arrayDataBuilder.removeElement(i);
+    for(auto i : elementsToAdd)
+        arrayDataBuilder.addElement(i);
+
+    arrayDataHandle.set(arrayDataBuilder);
 }
 }

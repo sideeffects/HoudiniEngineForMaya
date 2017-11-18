@@ -1,6 +1,7 @@
 #ifndef __util_h__
 #define __util_h__
 
+#include <maya/MArrayDataHandle.h>
 #include <maya/MComputation.h>
 #include <maya/MDGModifier.h>
 #include <maya/MFnDagNode.h>
@@ -914,6 +915,9 @@ isPlugBelow(const MPlug &plug, const T &upper)
 
 void
 getChildPlugs(MPlugArray &plugArray, const MPlug &plug);
+
+void
+resizeArrayDataHandle(MArrayDataHandle &arrayDataHandle, const int count);
 }
 
 #endif

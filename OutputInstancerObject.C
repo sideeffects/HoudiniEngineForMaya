@@ -3,7 +3,6 @@
 #include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
 #include <maya/MFnArrayAttrsData.h>
-#include <maya/MArrayDataBuilder.h>
 
 #include "Asset.h"
 #include "AssetNode.h"
@@ -218,9 +217,9 @@ OutputInstancerObject::compute(
                 0, size
                 ));
 
-        MArrayDataBuilder houdiniInstanceAttributeBuilder = houdiniInstanceAttributeHandle.builder();
-        MArrayDataBuilder houdiniNameAttributeBuilder = houdiniNameAttributeHandle.builder();
-        MArrayDataBuilder instanceTransformBuilder = instanceTransformHandle.builder();
+        Util::resizeArrayDataHandle(houdiniInstanceAttributeHandle, size);
+        Util::resizeArrayDataHandle(houdiniNameAttributeHandle, size);
+        Util::resizeArrayDataHandle(instanceTransformHandle, size);
 
         if(positions.length() != size && !options.useInstancerNode())
         {
@@ -248,19 +247,17 @@ OutputInstancerObject::compute(
             scales[j] = s;
             objectIndices[j] = objIndex;
 
-            if(myHoudiniInstanceAttribute.length() == size)
-            {
-                MDataHandle intanceAttributeHandle = houdiniInstanceAttributeBuilder.addElement(j);
-                intanceAttributeHandle.set(myHoudiniInstanceAttribute[j]);
-            }
+            CHECK_MSTATUS(houdiniInstanceAttributeHandle.jumpToArrayElement(j));
+            MDataHandle intanceAttributeHandle = houdiniInstanceAttributeHandle.outputValue();
+            intanceAttributeHandle .set(myHoudiniInstanceAttribute[j]);
 
-            if(myHoudiniNameAttribute.length() == size)
-            {
-                MDataHandle nameAttributeHandle = houdiniNameAttributeBuilder.addElement(j);
-                nameAttributeHandle.set(myHoudiniNameAttribute[j]);
-            }
+            CHECK_MSTATUS(houdiniNameAttributeHandle.jumpToArrayElement(j));
+            MDataHandle nameAttributeHandle = houdiniNameAttributeHandle.outputValue();
+            nameAttributeHandle.set(myHoudiniNameAttribute[j]);
 
-            MDataHandle transformHandle = instanceTransformBuilder.addElement(j);
+            CHECK_MSTATUS(instanceTransformHandle.jumpToArrayElement(j));
+            MDataHandle transformHandle  = instanceTransformHandle.outputValue();
+
             MDataHandle translateHandle = transformHandle.child(AssetNode::outputInstanceTranslate);
             MDataHandle rotateHandle = transformHandle.child(AssetNode::outputInstanceRotate);
             MDataHandle scaleHandle = transformHandle.child(AssetNode::outputInstanceScale);
@@ -287,42 +284,17 @@ OutputInstancerObject::compute(
             szHandle.set(s.z);
         }
 
-        // clean up extra elements
-        for(unsigned int i = houdiniInstanceAttributeBuilder.elementCount();
-                i-- > size;)
-        {
-            houdiniInstanceAttributeBuilder.removeElement(i);
-        }
-
-        // clean up extra elements
-        for(unsigned int i = houdiniNameAttributeBuilder.elementCount();
-                i-- > size;)
-        {
-            houdiniNameAttributeBuilder.removeElement(i);
-        }
-
-        // clean up extra elements
-        for(unsigned int i = instanceTransformBuilder.elementCount();
-                i-- > size;)
-        {
-            instanceTransformBuilder.removeElement(i);
-        }
-
-        houdiniInstanceAttributeHandle.set(houdiniInstanceAttributeBuilder);
         houdiniInstanceAttributeHandle.setAllClean();
-
-        houdiniNameAttributeHandle.set(houdiniNameAttributeBuilder);
         houdiniNameAttributeHandle.setAllClean();
-
-        instanceTransformHandle.set(instanceTransformBuilder);
         instanceTransformHandle.setAllClean();
 
         delete[] instTransforms;
 
-        MArrayDataBuilder builder = instancedObjectNamesHandle.builder();
         if(myObjectInfo.objectToInstanceId >= 0)
         {
             // instancing a single object
+            Util::resizeArrayDataHandle(instancedObjectNamesHandle, 1);
+
             HAPI_ObjectInfo instanceObjectInfo;
             CHECK_HAPI(HAPI_GetObjectInfo(
                     Util::theHAPISession.get(),
@@ -331,31 +303,22 @@ OutputInstancerObject::compute(
                     ));
             MString name = Util::HAPIString(instanceObjectInfo.nameSH);
 
-            MDataHandle h = builder.addElement(0);
+            CHECK_MSTATUS(instancedObjectNamesHandle.jumpToArrayElement(0));
+            MDataHandle h = instancedObjectNamesHandle.outputValue();
             h.set(name);
-
-            // clean up extra elements
-            for(unsigned int i= builder.elementCount(); i-- > 1;)
-            {
-                builder.removeElement(i);
-            }
         } else
         {
             // instancing multiple objects
+            Util::resizeArrayDataHandle(instancedObjectNamesHandle,
+                    myUniqueInstObjNames.length());
+
             for(unsigned int i=0; i< myUniqueInstObjNames.length(); i++)
             {
-                MDataHandle h = builder.addElement(i);
+                CHECK_MSTATUS(instancedObjectNamesHandle.jumpToArrayElement(i));
+                MDataHandle h = instancedObjectNamesHandle.outputValue();
                 h.set(myUniqueInstObjNames[i]);
             }
-
-            // clean up extra elements
-            for(unsigned int i= builder.elementCount();
-                    i-- > myUniqueInstObjNames.length();)
-            {
-                builder.removeElement(i);
-            }
         }
-        instancedObjectNamesHandle.set(builder);
         instancedObjectNamesHandle.setAllClean();
 
         myLastSopCookCount = mySopNodeInfo.totalCookCount;

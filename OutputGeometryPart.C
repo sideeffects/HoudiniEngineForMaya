@@ -267,15 +267,17 @@ OutputGeometryPart::computeCurves(
     MStatus status;
 
     MArrayDataHandle curvesArrayHandle(curvesHandle);
-    MArrayDataBuilder curvesBuilder = curvesArrayHandle.builder();
 
     int curveCount = 0;
-    if(myPartInfo.type == HAPI_PARTTYPE_CURVE
-            && myCurveInfo.curveCount)
+    if(myPartInfo.type == HAPI_PARTTYPE_CURVE)
+        curveCount = myCurveInfo.curveCount;
+
+    if(curvesArrayHandle.elementCount() != (unsigned int) curveCount)
+        Util::resizeArrayDataHandle(curvesArrayHandle, curveCount);
+
+    if(curveCount)
     {
         HAPI_AttributeInfo attrInfo;
-
-        curveCount = myCurveInfo.curveCount;
 
         std::vector<float> pArray, pwArray;
         hapiGetPointAttribute(
@@ -297,8 +299,8 @@ OutputGeometryPart::computeCurves(
         int knotOffset = 0;
         for(int iCurve = 0; iCurve < myCurveInfo.curveCount; iCurve++)
         {
-            MPlug curvePlug = curvesPlug.elementByPhysicalIndex(iCurve);
-            MDataHandle curve = curvesBuilder.addElement(iCurve );
+            CHECK_MSTATUS(curvesArrayHandle.jumpToArrayElement(iCurve));
+            MDataHandle curve = curvesArrayHandle.outputValue();
             MObject curveDataObj = curve.data();
             MFnNurbsCurveData curveDataFn(curveDataObj);
             if(curve.data().isNull())
@@ -440,16 +442,6 @@ OutputGeometryPart::computeCurves(
                 );
     }
 
-    // There may be curves created in the previous cook. So we need to clear
-    // the output attributes to remove any curves that may have been created
-    // previously.
-    for(int i = (int) curvesBuilder.elementCount();
-            i-- > curveCount;)
-    {
-        curvesBuilder.removeElement(i);
-    }
-
-    curvesArrayHandle.set(curvesBuilder);
     curvesArrayHandle.setAllClean();
 }
 
@@ -2197,7 +2189,6 @@ OutputGeometryPart::computeInstancer(
             AssetNode::outputPartInstancerParts);
     MArrayDataHandle instancerTransformHandle = instanceHandle.child(
             AssetNode::outputPartInstancerTransform);
-    MArrayDataBuilder instancerTransformBuilder = instancerTransformHandle.builder();
 
     // outputPartInstancerArrayData
     {
@@ -2233,6 +2224,7 @@ OutputGeometryPart::computeInstancer(
         rotations.setLength(instanceCount);
         scales.setLength(instanceCount);
         objectIndices.setLength(instanceCount);
+        Util::resizeArrayDataHandle(instancerTransformHandle, instanceCount);
 
         for(int i = 0; i < instanceCount; i++)
         {
@@ -2257,8 +2249,9 @@ OutputGeometryPart::computeInstancer(
             objectIndices[i] = 0;
 
             // Transform Instancing
+            CHECK_MSTATUS(instancerTransformHandle.jumpToArrayElement(i));
             MDataHandle transformHandle =
-                instancerTransformBuilder.addElement(i);
+                instancerTransformHandle.outputValue();
             MDataHandle translateHandle =
                 transformHandle.child(AssetNode::outputPartInstancerTranslate);
             translateHandle.set(p);
@@ -2269,14 +2262,6 @@ OutputGeometryPart::computeInstancer(
                 transformHandle.child(AssetNode::outputPartInstancerScale);
             scaleHandle.set(s);
         }
-
-        for(int i = instancerTransformBuilder.elementCount();
-                i-- > instanceCount;)
-        {
-            instancerTransformBuilder.removeElement(i);
-        }
-
-        instancerTransformHandle.set(instancerTransformBuilder);
     }
 
     // outputPartInstancerParts
@@ -2386,12 +2371,6 @@ OutputGeometryPart::computeExtraAttributes(
         }
     }
 
-    for(size_t i = extraAttributesBuilder.elementCount(); i-- > elementIndex;)
-    {
-        extraAttributesBuilder.removeElement(i);
-    }
-
-    extraAttributesArrayHandle.set(extraAttributesBuilder);
     extraAttributesArrayHandle.setAllClean();
 }
 

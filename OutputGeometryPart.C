@@ -2371,6 +2371,12 @@ OutputGeometryPart::computeExtraAttributes(
         }
     }
 
+    for(size_t i = extraAttributesBuilder.elementCount(); i-- > elementIndex;)
+    {
+        extraAttributesBuilder.removeElement(i);
+    }
+
+    extraAttributesArrayHandle.set(extraAttributesBuilder);
     extraAttributesArrayHandle.setAllClean();
 }
 

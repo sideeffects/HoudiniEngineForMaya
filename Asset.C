@@ -719,9 +719,19 @@ Asset::computeInstancerObjects(
 
     MPlug instancersPlug = plug.child(AssetNode::outputInstancers);
 
-    int instancerIndex = 0;
+    int newSize = std::count_if(myObjects.begin(), myObjects.end(),
+            [](OutputObject* obj){
+                return obj->type() == OutputObject::OBJECT_TYPE_INSTANCER;
+            });
+
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
-    MArrayDataBuilder instancersBuilder = instancersHandle.builder();
+    if(instancersHandle .elementCount() != newSize)
+    {
+        Util::resizeArrayDataHandle(instancersHandle , newSize);
+        needToSyncOutputs = true;
+    }
+
+    int instancerIndex = 0;
     for(OutputObjects::const_iterator iter = myObjects.begin();
             iter != myObjects.end(); iter++)
     {
@@ -730,19 +740,18 @@ Asset::computeInstancerObjects(
         if(obj->type() == OutputObject::OBJECT_TYPE_INSTANCER)
         {
             MPlug instancerElemPlug = instancersPlug.elementByLogicalIndex(instancerIndex);
-            MDataHandle instancerElemHandle = instancersBuilder.addElement(instancerIndex);
+            CHECK_MSTATUS(instancersHandle .jumpToArrayElement(instancerIndex));
+            MDataHandle instancerHandle = instancersHandle .outputValue();
             stat = dynamic_cast< OutputInstancerObject* >(obj)->compute(
                     myTime,
                     instancerElemPlug,
                     data,
-                    instancerElemHandle,
+                    instancerHandle,
                     options,
                     needToSyncOutputs
                     );
             if(MS::kSuccess == stat)
             {
-                instancerIndex++;
-
                 // collect all the objects that are being instanced
                 MStringArray instNames = dynamic_cast< OutputInstancerObject* >(obj)->getUniqueInstObjNames();
                 for(unsigned int j = 0; j < instNames.length(); ++j)
@@ -755,18 +764,10 @@ Asset::computeInstancerObjects(
                     instancedObjIds.append(instIds[j]);
                 }
             }
+
+            instancerIndex++;
         }
     }
-    // clean up extra elements
-    int instBuilderSizeCheck = instancersBuilder.elementCount();
-    if(instBuilderSizeCheck > instancerIndex)
-    {
-        for(int i=instancerIndex; i<instBuilderSizeCheck; i++)
-        {
-            instancersBuilder.removeElement(i);
-        }
-    }
-    instancersHandle.set(instancersBuilder);
 
     instancersHandle.setAllClean();
     data.setClean(instancersPlug);

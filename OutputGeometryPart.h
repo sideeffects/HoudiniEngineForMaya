@@ -86,7 +86,8 @@ class OutputGeometryPart
                 const MTime &time,
                 const MPlug &extraAttributesPlug,
                 MDataBlock& data,
-                MDataHandle &extraAttributesHandle
+                MDataHandle &extraAttributesHandle,
+                bool &needToSyncOutputs
                 );
         void computeGroups(
                 const MTime &time,

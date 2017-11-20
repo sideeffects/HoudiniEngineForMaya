@@ -248,7 +248,8 @@ OutputGeometryPart::compute(
         computeExtraAttributes(time,
                 partPlug.child(AssetNode::outputPartExtraAttributes),
                 data,
-                extraAttributesHandle);
+                extraAttributesHandle,
+                needToSyncOutputs);
     }
 
     return MS::kSuccess;
@@ -2295,12 +2296,11 @@ OutputGeometryPart::computeExtraAttributes(
         const MTime &time,
         const MPlug &extraAttributesPlug,
         MDataBlock& data,
-        MDataHandle &extraAttributesHandle
+        MDataHandle &extraAttributesHandle,
+        bool &needToSyncOutputs
         )
 {
     MArrayDataHandle extraAttributesArrayHandle(extraAttributesHandle);
-    MArrayDataBuilder extraAttributesBuilder =
-        extraAttributesArrayHandle.builder();
 
     const HAPI_AttributeOwner attributeOwners[] = {
         HAPI_ATTROWNER_DETAIL,
@@ -2314,6 +2314,43 @@ OutputGeometryPart::computeExtraAttributes(
         myPartInfo.attributeCounts[HAPI_ATTROWNER_POINT],
         myPartInfo.attributeCounts[HAPI_ATTROWNER_VERTEX],
     };
+
+    int newSize = 0;
+    for(size_t i = 0; i < HAPI_ATTROWNER_MAX; i++)
+    {
+        const HAPI_AttributeOwner &owner = attributeOwners[i];
+        const int &attributeCount = attributeCounts[i];
+
+        std::vector<HAPI_StringHandle> attributeNames(
+                attributeCount
+                );
+        HAPI_GetAttributeNames(
+                Util::theHAPISession.get(),
+                myNodeId, myPartId,
+                owner,
+                &attributeNames[0],
+                attributeNames.size()
+                );
+
+        for(size_t j = 0; j < attributeNames.size(); j++)
+        {
+            const MString attributeName = Util::HAPIString(attributeNames[j]);
+
+            if(isAttributeUsed(attributeName.asChar())
+                    || Util::startsWith(attributeName, "__"))
+            {
+                continue;
+            }
+
+            newSize++;
+        }
+    }
+
+    if(extraAttributesArrayHandle.elementCount() != newSize)
+    {
+        Util::resizeArrayDataHandle(extraAttributesArrayHandle, newSize);
+        needToSyncOutputs = true;
+    }
 
     size_t elementIndex = 0;
 
@@ -2350,8 +2387,10 @@ OutputGeometryPart::computeExtraAttributes(
 
             MPlug extraAttributePlug =
                 extraAttributesPlug.elementByLogicalIndex(elementIndex);
-            MDataHandle extraAttributeHandle =
-                extraAttributesBuilder.addElement(elementIndex);
+
+            CHECK_MSTATUS(extraAttributesArrayHandle.jumpToArrayElement(elementIndex));
+            printf("compute part array handle: %d, %d\n", elementIndex, extraAttributesArrayHandle.elementIndex());
+            MDataHandle extraAttributeHandle = extraAttributesArrayHandle.outputValue();
             elementIndex++;
 
             if(!computeExtraAttribute(
@@ -2371,12 +2410,11 @@ OutputGeometryPart::computeExtraAttributes(
         }
     }
 
-    for(size_t i = extraAttributesBuilder.elementCount(); i-- > elementIndex;)
+    for(int i = 0; i < extraAttributesArrayHandle.elementCount(); i++)
     {
-        extraAttributesBuilder.removeElement(i);
+        extraAttributesArrayHandle.jumpToElement(i);
+        printf("after: %d, %d\n", i, extraAttributesArrayHandle.elementIndex());
     }
-
-    extraAttributesArrayHandle.set(extraAttributesBuilder);
     extraAttributesArrayHandle.setAllClean();
 }
 

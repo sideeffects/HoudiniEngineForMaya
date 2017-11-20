@@ -1,4 +1,3 @@
-#include <maya/MArrayDataBuilder.h>
 #include <maya/MFnIntArrayData.h>
 
 #include "Asset.h"

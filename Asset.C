@@ -787,9 +787,9 @@ Asset::computeGeometryObjects(
     MPlug objectsPlug = plug.child(AssetNode::outputObjects);
 
     MArrayDataHandle objectsHandle = data.outputArrayValue(objectsPlug);
-    MArrayDataBuilder objectsBuilder = objectsHandle.builder();
-    if(objectsBuilder.elementCount() != myObjects.size())
+    if(objectsHandle.elementCount() != myObjects.size())
     {
+        Util::resizeArrayDataHandle(objectsHandle, myObjects.size());
         needToSyncOutputs = true;
     }
 
@@ -798,7 +798,8 @@ Asset::computeGeometryObjects(
         OutputObject * obj = myObjects[i];
 
         MPlug objectPlug = objectsPlug.elementByLogicalIndex(i);
-        MDataHandle objectHandle = objectsBuilder.addElement(i);
+        CHECK_MSTATUS(objectsHandle.jumpToArrayElement(i));
+        MDataHandle objectHandle = objectsHandle.outputValue();
 
         if(obj->type() == OutputObject::OBJECT_TYPE_GEOMETRY)
         {
@@ -814,20 +815,6 @@ Asset::computeGeometryObjects(
                     );
         }
     }
-
-    // clean up extra elements
-    // in case the number of objects shrinks
-    unsigned int objBuilderSizeCheck = objectsBuilder.elementCount();
-    if(objBuilderSizeCheck > myObjects.size())
-    {
-        for(unsigned int i = myObjects.size(); i < objBuilderSizeCheck; i++)
-        {
-            stat = objectsBuilder.removeElement(i);
-            CHECK_MSTATUS(stat);
-        }
-    }
-
-    objectsHandle.set(objectsBuilder);
 
     objectsHandle.setAllClean();
 

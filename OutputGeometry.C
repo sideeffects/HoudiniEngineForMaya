@@ -122,7 +122,6 @@ OutputGeometry::compute(
                 MPlug partPlug = partsPlug.elementByLogicalIndex(i);
 
                 CHECK_MSTATUS(partsArrayHandle.jumpToArrayElement(i));
-                printf("compute part array handle: %d, %d\n", i, partsArrayHandle.elementIndex());
                 MDataHandle partHandle = partsArrayHandle.outputValue();
 
                 stat = myParts[i]->compute(

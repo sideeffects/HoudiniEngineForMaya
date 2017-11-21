@@ -2389,7 +2389,6 @@ OutputGeometryPart::computeExtraAttributes(
                 extraAttributesPlug.elementByLogicalIndex(elementIndex);
 
             CHECK_MSTATUS(extraAttributesArrayHandle.jumpToArrayElement(elementIndex));
-            printf("compute part array handle: %d, %d\n", elementIndex, extraAttributesArrayHandle.elementIndex());
             MDataHandle extraAttributeHandle = extraAttributesArrayHandle.outputValue();
             elementIndex++;
 
@@ -2410,11 +2409,6 @@ OutputGeometryPart::computeExtraAttributes(
         }
     }
 
-    for(int i = 0; i < extraAttributesArrayHandle.elementCount(); i++)
-    {
-        extraAttributesArrayHandle.jumpToElement(i);
-        printf("after: %d, %d\n", i, extraAttributesArrayHandle.elementIndex());
-    }
     extraAttributesArrayHandle.setAllClean();
 }
 

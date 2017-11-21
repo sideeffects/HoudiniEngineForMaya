@@ -11,6 +11,7 @@
 #include <maya/MEvaluationNodeIterator.h>
 #endif
 #include <maya/MFileIO.h>
+#include <maya/MFileObject.h>
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 #include <maya/MModelMessage.h>
@@ -1725,7 +1726,9 @@ AssetNode::createAsset()
         return;
     }
 
-    myAsset = new Asset(myOTLFilePath, myAssetName);
+    MFileObject file;
+    file.setRawFullName(myOTLFilePath);
+    myAsset = new Asset(file.resolvedFullName(), myAssetName);
 
     if(!myAsset->isValid())
     {

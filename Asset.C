@@ -725,7 +725,7 @@ Asset::computeInstancerObjects(
             });
 
     MArrayDataHandle instancersHandle = data.outputArrayValue(instancersPlug);
-    if(instancersHandle .elementCount() != newSize)
+    if(instancersHandle.elementCount() != (unsigned int) newSize)
     {
         Util::resizeArrayDataHandle(instancersHandle , newSize);
         needToSyncOutputs = true;

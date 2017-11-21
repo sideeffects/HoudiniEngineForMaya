@@ -1,6 +1,5 @@
 #include "AssetSubCommandLoadAsset.h"
 
-#include <maya/MFileObject.h>
 #include <maya/MGlobal.h>
 #include <maya/MPlug.h>
 #include <maya/MPxCommand.h>

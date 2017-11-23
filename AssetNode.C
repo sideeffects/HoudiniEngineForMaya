@@ -1307,22 +1307,6 @@ AssetNode::nodeRemoved(MObject& node,void *clientData)
     assetNode->destroyAsset();
 }
 
-void
-AssetNode::attributeAddedOrRemoved(
-        MNodeMessage::AttributeMessage msg,
-        MPlug& plug,
-        void* clientData)
-{
-    if(msg == MNodeMessage::kAttributeAdded
-            && plug.partialName() == Util::getParmAttrPrefix())
-    {
-        AssetNode* assetNode = static_cast<AssetNode*>(clientData);
-
-        MDataBlock data = assetNode->forceCache();
-        assetNode->getParmValues(data);
-    }
-}
-
 AssetNode::AssetNode() :
     myNeedToMarshalInput(false),
     myAutoSyncId(-1)
@@ -1357,12 +1341,6 @@ AssetNode::postConstructor()
     MModelMessage::addNodeRemovedFromModelCallback(
             object,
             AssetNode::nodeRemoved,
-            this
-            );
-
-    MNodeMessage::addAttributeAddedOrRemovedCallback(
-            object,
-            AssetNode::attributeAddedOrRemoved,
             this
             );
 }
@@ -1499,6 +1477,20 @@ AssetNode::rebuildAsset()
     destroyAsset();
 
     createAsset();
+}
+
+void
+AssetNode::setParmValues(bool onlyDirtyParms)
+{
+    MDataBlock data = forceCache();
+    setParmValues(data, onlyDirtyParms);
+}
+
+void
+AssetNode::getParmValues()
+{
+    MDataBlock data = forceCache();
+    getParmValues(data);
 }
 
 MStatus

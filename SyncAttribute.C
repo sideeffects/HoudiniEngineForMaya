@@ -562,37 +562,34 @@ SyncAttribute::doIt()
     GET_COMMAND_ASSET_OR_RETURN_FAIL();
 
     MFnDagNode assetNodeFn(myAssetNodeObj);
+    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
 
-    // Save the current state of the parameters
-    MStringArray setAttrCmds;
+    MObject houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+
+    // Save the values
+    assetNode->setParmValues();
+
+    // Save the connections
     MStringArray connectAttrCmds;
+    if(!houdiniAssetParmObj.isNull())
     {
-        MPlug houdiniAssetParmPlug = assetNodeFn.findPlug(Util::getParmAttrPrefix(), &status);
-        if(status)
-        {
-            // Save the connections
-            {
-                MPlugArray connections;
-                getConnectedChildrenPlugs(connections, houdiniAssetParmPlug);
+        MPlugArray connections;
+        getConnectedChildrenPlugs(connections,
+                assetNodeFn.findPlug(houdiniAssetParmObj, &status));
 
-                MString connectAttrFormat = "connectAttr ^1s ^2s;";
-                unsigned int connectionsLength = connections.length();
-                for(unsigned int i = 0; i < connectionsLength; i += 2)
-                {
-                    MString connectAttrCmd;
-                    connectAttrCmd.format(connectAttrFormat,
-                            connections[i].name(),
-                            connections[i+1].name());
-                    connectAttrCmds.append(connectAttrCmd);
-                }
-            }
+        MString connectAttrFormat = "connectAttr ^1s ^2s;";
+        unsigned int connectionsLength = connections.length();
+        for(unsigned int i = 0; i < connectionsLength; i += 2)
+        {
+            MString connectAttrCmd;
+            connectAttrCmd.format(connectAttrFormat,
+                    connections[i].name(),
+                    connections[i+1].name());
+            connectAttrCmds.append(connectAttrCmd);
         }
     }
 
-    MObject houdiniAssetParmObj;
-
     // delete existing attribute
-    houdiniAssetParmObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
     if(!houdiniAssetParmObj.isNull())
     {
         myDGModifier.removeAttribute(myAssetNodeObj, houdiniAssetParmObj);
@@ -629,6 +626,9 @@ SyncAttribute::doIt()
             myDGModifier.addAttribute(myAssetNodeObj, houdiniAssetParmObj);
         }
     }
+
+    // Restore the values
+    assetNode->getParmValues();
 
     // Restore the connections
     unsigned int connectAttrCmdsLength = connectAttrCmds.length();

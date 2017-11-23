@@ -4,7 +4,6 @@
 #include <maya/MPxTransform.h>
 
 #include <maya/MTypeId.h>
-#include <maya/MNodeMessage.h>
 
 #include <vector>
 
@@ -27,11 +26,6 @@ class AssetNode: public MPxTransform
 
         static void nodeAdded(MObject& node,void *clientData);
         static void nodeRemoved(MObject& node,void *clientData);
-
-        static void attributeAddedOrRemoved(
-                MNodeMessage::AttributeMessage msg,
-                MPlug& plug,
-                void* clientData);
 
     public:
         AssetNode();
@@ -77,6 +71,9 @@ class AssetNode: public MPxTransform
         Asset* getAsset() const;
 
         void rebuildAsset();
+
+        void setParmValues(bool onlyDirtyParms = true);
+        void getParmValues();
 
         int autoSyncId() const
         { return myAutoSyncId; }

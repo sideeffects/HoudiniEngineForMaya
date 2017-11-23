@@ -2315,7 +2315,7 @@ OutputGeometryPart::computeExtraAttributes(
         myPartInfo.attributeCounts[HAPI_ATTROWNER_VERTEX],
     };
 
-    int newSize = 0;
+    size_t newSize = 0;
     for(size_t i = 0; i < HAPI_ATTROWNER_MAX; i++)
     {
         const HAPI_AttributeOwner &owner = attributeOwners[i];

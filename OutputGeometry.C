@@ -109,12 +109,18 @@ OutputGeometry::compute(
         needToSyncOutputs = true;
     }
 
+    bool forceCompute = false;
+    for(int i = 0; i < myGeoInfo.partCount; i++)
+    {
+        forceCompute |= myParts[i]->needCompute(options);
+    }
+
     if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
             myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
             myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
         if(myNodeInfo.totalCookCount > myLastCookCount
-                || partCountChanged)
+                || partCountChanged || forceCompute)
         {
             // Compute the OutputGeometryPart
             for(int i = 0; i < myGeoInfo.partCount; i++)

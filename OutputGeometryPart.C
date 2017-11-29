@@ -37,7 +37,9 @@ OutputGeometryPart::OutputGeometryPart(
         HAPI_PartId partId
         ) :
     myNodeId(nodeId),
-    myPartId(partId)
+    myPartId(partId),
+    myLastOutputGeometryGroups(true),
+    myLastOutputCustomAttributes(true)
 {
     update();
 }
@@ -145,6 +147,15 @@ OutputGeometryPart::update()
     }
 }
 
+bool
+OutputGeometryPart::needCompute(
+        AssetNodeOptions::AccessorDataBlock &options
+        ) const
+{
+    return myLastOutputGeometryGroups != options.outputGeometryGroups()
+        || myLastOutputCustomAttributes != options.outputCustomAttributes();
+}
+
 MStatus
 OutputGeometryPart::compute(
         const MTime &time,
@@ -231,7 +242,9 @@ OutputGeometryPart::compute(
         computeGroups(time,
                 partPlug.child(AssetNode::outputPartGroups),
                 data,
-                groupsHandle);
+                groupsHandle,
+                options,
+                needToSyncOutputs);
 
         // compute material
         MDataHandle materialHandle =
@@ -249,6 +262,7 @@ OutputGeometryPart::compute(
                 partPlug.child(AssetNode::outputPartExtraAttributes),
                 data,
                 extraAttributesHandle,
+                options,
                 needToSyncOutputs);
     }
 
@@ -2297,10 +2311,23 @@ OutputGeometryPart::computeExtraAttributes(
         const MPlug &extraAttributesPlug,
         MDataBlock& data,
         MDataHandle &extraAttributesHandle,
+        AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
+    if(myLastOutputCustomAttributes != options.outputCustomAttributes())
+    {
+        myLastOutputCustomAttributes = options.outputCustomAttributes();
+        needToSyncOutputs = true;
+    }
+
     MArrayDataHandle extraAttributesArrayHandle(extraAttributesHandle);
+
+    if(!options.outputCustomAttributes())
+    {
+        Util::resizeArrayDataHandle(extraAttributesArrayHandle, 0);
+        return;
+    }
 
     const HAPI_AttributeOwner attributeOwners[] = {
         HAPI_ATTROWNER_DETAIL,
@@ -2417,10 +2444,25 @@ OutputGeometryPart::computeGroups(
         const MTime &time,
         const MPlug &groupsPlug,
         MDataBlock& data,
-        MDataHandle &groupsHandle
+        MDataHandle &groupsHandle,
+        AssetNodeOptions::AccessorDataBlock &options,
+        bool &needToSyncOutputs
         )
 {
+    if(myLastOutputGeometryGroups != options.outputGeometryGroups())
+    {
+        myLastOutputGeometryGroups = options.outputGeometryGroups();
+        needToSyncOutputs = true;
+    }
+
     MArrayDataHandle groupsArrayHandle(groupsHandle);
+
+    if(!options.outputGeometryGroups())
+    {
+        Util::resizeArrayDataHandle(groupsArrayHandle, 0);
+        return;
+    }
+
     MArrayDataBuilder groupsBuilder =
        groupsArrayHandle.builder();
 

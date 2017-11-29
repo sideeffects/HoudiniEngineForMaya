@@ -19,6 +19,10 @@ class OutputGeometryPart
                 );
         ~OutputGeometryPart();
 
+        bool needCompute(
+                AssetNodeOptions::AccessorDataBlock &options
+                ) const;
+
         MStatus compute(
                 const MTime &time,
                 const MPlug &partPlug,
@@ -87,13 +91,16 @@ class OutputGeometryPart
                 const MPlug &extraAttributesPlug,
                 MDataBlock& data,
                 MDataHandle &extraAttributesHandle,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
         void computeGroups(
                 const MTime &time,
                 const MPlug &groupsPlug,
                 MDataBlock& data,
-                MDataHandle &groupsHandle
+                MDataHandle &groupsHandle,
+                AssetNodeOptions::AccessorDataBlock &options,
+                bool &needToSyncOutputs
                 );
 
         template<typename T>
@@ -131,6 +138,9 @@ class OutputGeometryPart
         HAPI_PartInfo myPartInfo;
         HAPI_VolumeInfo myVolumeInfo;
         HAPI_CurveInfo myCurveInfo;
+
+        bool myLastOutputGeometryGroups;
+        bool myLastOutputCustomAttributes;
 };
 
 #endif

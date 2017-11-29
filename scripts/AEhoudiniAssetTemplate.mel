@@ -701,6 +701,18 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 );
 
         createAttrCheckBox(
+                "outputGeometryGroups",
+                "Output Geometry Groups",
+                "Output geometry groups."
+                );
+
+        createAttrCheckBox(
+                "outputCustomAttributes",
+                "Output Custom Attributes",
+                "Output custom attributes."
+                );
+
+        createAttrCheckBox(
                 "outputMeshPreserveHardEdges",
                 "Preserve mesh hard edges (possibly slow)",
                 "Preserve hard edges when outputting mesh"
@@ -767,6 +779,14 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
             $nodeName + ".outputTemplatedGeometries",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
     replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|outputGeometryGroups",
+            $nodeName + ".outputGeometryGroups",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|outputCustomAttributes",
+            $nodeName + ".outputCustomAttributes",
+            "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    replaceAttrCheckBox(
             $optionsLayoutFull + "|outputLayout|outputMeshPreserveHardEdges",
             $nodeName + ".outputMeshPreserveHardEdges",
             "");
@@ -823,6 +843,8 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "splitGeosByGroup";
         editorTemplate -suppress "outputHiddenObjects";
         editorTemplate -suppress "outputTemplatedGeometries";
+        editorTemplate -suppress "outputGeometryGroups";
+        editorTemplate -suppress "outputCustomAttributes";
         editorTemplate -suppress "outputMeshPreserveHardEdges";
         editorTemplate -suppress "outputMeshPreserveLockedNormals";
 

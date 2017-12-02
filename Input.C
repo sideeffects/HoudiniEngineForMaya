@@ -10,6 +10,7 @@
 #include <maya/MArrayDataBuilder.h>
 #include <maya/MDataBlock.h>
 #include <maya/MMatrix.h>
+#include <maya/MNodeMessage.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
 #include <maya/MString.h>
@@ -97,6 +98,7 @@ Input::Input() :
 
 Input::~Input()
 {
+    removeNameChangedCallback();
 }
 
 Input*
@@ -121,13 +123,72 @@ Input::createAssetInput(AssetInputType assetInputType)
 }
 
 void
+Input::addNameChangedCallback(MObject &node)
+{
+    MStatus status;
+
+    if(myNameChangedCallbackNode == node)
+        return;
+
+    removeNameChangedCallback();
+
+    MObject curNode = node;
+    while(true)
+    {
+        MCallbackId callback = MNodeMessage::addNameChangedCallback(
+                curNode,
+                nameChangedCallback,
+                this,
+                &status
+                );
+        CHECK_MSTATUS(status);
+        myNameChangedCallbackIds.append(callback);
+
+        if(!curNode.hasFn(MFn::kDagNode))
+            break;
+
+        MFnDagNode nodeFn(curNode);
+        if(nodeFn.parentCount() != 1)
+            break;
+
+        curNode = nodeFn.parent(0);
+    }
+
+    myNameChangedCallbackNode = node;
+}
+
+void
+Input::removeNameChangedCallback()
+{
+    for(unsigned int i = 0; i < myNameChangedCallbackIds.length(); i++)
+    {
+        CHECK_MSTATUS(MMessage::removeCallback(myNameChangedCallbackIds[i]));
+    }
+    myNameChangedCallbackIds.clear();
+}
+
+void
+Input::nameChangedCallback(
+        MObject &node, const MString &str, void *clientData
+        )
+{
+    Input* input = (Input*)clientData;
+    MString cmd;
+    cmd.format("dgdirty ^1s", input->myGeoPlug.name());
+    MGlobal::executeCommand(cmd);
+}
+
+void
 Input::setInputName(
         HAPI_AttributeOwner owner, int count,
         const MPlug &plug
         )
 {
-    MPlug sourcePlug = Util::plugSource(plug);
+    myGeoPlug = plug;
+    MPlug sourcePlug = Util::plugSource(myGeoPlug);
     MObject sourceNodeObj = sourcePlug.node();
+
+    addNameChangedCallback(sourceNodeObj);
 
     MString name = Util::getNodeName(sourceNodeObj);
 

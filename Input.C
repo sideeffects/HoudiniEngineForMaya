@@ -122,8 +122,6 @@ Input::createAssetInput(AssetInputType assetInputType)
 
 void
 Input::setInputName(
-        HAPI_NodeId inputNodeId,
-        HAPI_PartId inputPartId,
         HAPI_AttributeOwner owner, int count,
         const MPlug &plug
         )
@@ -136,7 +134,7 @@ Input::setInputName(
     if(owner == HAPI_ATTROWNER_PRIM)
     {
         CHECK_HAPI(hapiSetPrimAttribute(
-                    inputNodeId, inputPartId,
+                    myGeometryNodeId, 0,
                     1,
                     "name",
                     std::vector<const char*>(count, name.asChar())
@@ -145,7 +143,7 @@ Input::setInputName(
     else if(owner == HAPI_ATTROWNER_POINT)
     {
         CHECK_HAPI(hapiSetPointAttribute(
-                    inputNodeId, inputPartId,
+                    myGeometryNodeId, 0,
                     1,
                     "name",
                     std::vector<const char*>(count, name.asChar())

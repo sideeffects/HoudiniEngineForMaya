@@ -3,8 +3,11 @@
 
 #include <vector>
 
+#include <maya/MCallbackIdArray.h>
 #include <maya/MDataBlock.h>
 #include <maya/MDataHandle.h>
+#include <maya/MMessage.h>
+#include <maya/MPlug.h>
 
 #include <HAPI/HAPI_Common.h>
 
@@ -72,8 +75,20 @@ class Input
         };
 
     private:
+        static void nameChangedCallback(
+                MObject &node, const MString &str, void *clientData
+                );
+        void addNameChangedCallback(MObject &node);
+        void removeNameChangedCallback();
+
+    private:
         HAPI_NodeId myTransformNodeId;
         HAPI_NodeId myGeometryNodeId;
+
+        MPlug myGeoPlug;
+
+        MCallbackIdArray myNameChangedCallbackIds;
+        MObject myNameChangedCallbackNode;
 };
 
 #endif

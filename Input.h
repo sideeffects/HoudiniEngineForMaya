@@ -40,13 +40,6 @@ class Input
 
         static Input* createAssetInput(AssetInputType assetInputType);
 
-        static void setInputName(
-                HAPI_NodeId inputNodeId,
-                HAPI_PartId inputPartId,
-                HAPI_AttributeOwner owner, int count,
-                const MPlug &plug
-                );
-
     public:
         Input();
         virtual ~Input();
@@ -55,6 +48,11 @@ class Input
 
         HAPI_NodeId transformNodeId() const { return myTransformNodeId; };
         HAPI_NodeId geometryNodeId() const { return myGeometryNodeId; };
+
+        void setInputName(
+                HAPI_AttributeOwner owner, int count,
+                const MPlug &plug
+                );
 
         void setInputTransform(MDataHandle &dataHandle);
 

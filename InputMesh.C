@@ -128,8 +128,7 @@ InputMesh::setInputGeo(
 
     processSets(plug, meshFn);
 
-    Input::setInputName(
-            geometryNodeId(), 0,
+    setInputName(
             HAPI_ATTROWNER_PRIM, partInfo.faceCount,
             plug
             );

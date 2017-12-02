@@ -339,8 +339,7 @@ InputParticle::setInputGeo(
         }
     }
 
-    Input::setInputName(
-            geometryNodeId(), 0,
+    setInputName(
             HAPI_ATTROWNER_POINT, partInfo.pointCount,
             plug
             );

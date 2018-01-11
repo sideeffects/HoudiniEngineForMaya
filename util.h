@@ -162,6 +162,9 @@ void displayErrorForNode(
         const MString &message
         );
 
+template <size_t N>
+struct CacheImpl;
+
 template<typename Key, typename Value, size_t Size = 50, size_t MaxSize = 0>
 class Cache
 {
@@ -202,48 +205,56 @@ public:
 
     void insert(Iterator &iter, const Key &key, const Value &value)
     {
-	Impl<MaxSize>::insert(myCache, iter, key, value);
+	CacheImpl<MaxSize>::insert(myCache, iter, key, value);
     }
-
-private:
-
-    template <size_t N>
-    struct Impl
-    {
-	static void insert(CacheEntries &cache,
-		           Iterator &iter, const Key &key, const Value &value)
-	{
-	    auto insert_iter = iter;
-	    if(cache.size() >= MaxSize)
-	    {
-		Iterator min_iter = std::min_element(
-			cache.begin(), cache.end(),
-			[](const CacheEntry &a, const CacheEntry &b)
-			{ return a.access < b.access; }
-			);
-		if(min_iter < insert_iter)
-		    insert_iter--;
-		cache.erase(min_iter);
-	    }
-
-	    cache.insert(insert_iter, CacheEntry {key, value, 0});
-	}
-    };
-
-    template <>
-    struct Impl<0>
-    {
-	static void insert(CacheEntries &cache,
-		           Iterator &iter, const Key &key, const Value &value)
-	{
-	    auto insert_iter = iter;
-	    cache.insert(insert_iter, CacheEntry {key, value, 0});
-	}
-    };
 
 private:
     CacheEntries myCache;
     mutable int myAccessCount;
+
+    template <size_t N> friend struct CacheImpl;
+};
+
+template <size_t N>
+struct CacheImpl
+{
+    template <typename CacheEntry,
+	      typename Iterator,
+	      typename Key,
+	      typename Value>
+    void insert(std::vector<CacheEntry> &cache,
+	        Iterator &iter, const Key &key, const Value &value)
+    {
+	auto insert_iter = iter;
+	if(cache.size() >= N)
+	{
+	    Iterator min_iter = std::min_element(
+		    cache.begin(), cache.end(),
+		    [](const CacheEntry &a, const CacheEntry &b)
+		    { return a.access < b.access; }
+		    );
+	    if(min_iter < insert_iter)
+		insert_iter--;
+	    cache.erase(min_iter);
+	}
+
+	cache.insert(insert_iter, CacheEntry {key, value, 0});
+    }
+};
+
+template<>
+struct CacheImpl<0>
+{
+    template <typename CacheEntry,
+	      typename Iterator,
+	      typename Key,
+	      typename Value>
+    static void insert(std::vector<CacheEntry> &cache,
+		       Iterator &iter, const Key &key, const Value &value)
+    {
+	auto insert_iter = iter;
+	cache.insert(insert_iter, CacheEntry {key, value, 0});
+    }
 };
 
 class HAPIString

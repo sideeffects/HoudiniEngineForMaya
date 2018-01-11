@@ -202,21 +202,44 @@ public:
 
     void insert(Iterator &iter, const Key &key, const Value &value)
     {
-        auto insert_iter = iter;
-        if(MaxSize && myCache.size() >= MaxSize)
-        {
-            Iterator min_iter = std::min_element(
-                    myCache.begin(), myCache.end(),
-                    [](const CacheEntry &a, const CacheEntry &b)
-                    { return a.access < b.access; }
-                    );
-            if(min_iter < insert_iter)
-                insert_iter--;
-            myCache.erase(min_iter);
-        }
-
-        myCache.insert(insert_iter, CacheEntry {key, value, 0});
+	Impl<MaxSize>::insert(myCache, iter, key, value);
     }
+
+private:
+
+    template <size_t N>
+    struct Impl
+    {
+	static void insert(CacheEntries &cache,
+		           Iterator &iter, const Key &key, const Value &value)
+	{
+	    auto insert_iter = iter;
+	    if(cache.size() >= MaxSize)
+	    {
+		Iterator min_iter = std::min_element(
+			cache.begin(), cache.end(),
+			[](const CacheEntry &a, const CacheEntry &b)
+			{ return a.access < b.access; }
+			);
+		if(min_iter < insert_iter)
+		    insert_iter--;
+		cache.erase(min_iter);
+	    }
+
+	    cache.insert(insert_iter, CacheEntry {key, value, 0});
+	}
+    };
+
+    template <>
+    struct Impl<0>
+    {
+	static void insert(CacheEntries &cache,
+		           Iterator &iter, const Key &key, const Value &value)
+	{
+	    auto insert_iter = iter;
+	    cache.insert(insert_iter, CacheEntry {key, value, 0});
+	}
+    };
 
 private:
     CacheEntries myCache;

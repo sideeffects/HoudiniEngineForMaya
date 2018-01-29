@@ -10,7 +10,7 @@ In order to use Houdini Engine, a Houdini Engine session needs to be created. Cr
 
 @section Maya_Session_InProcess Within Maya Process
 
-Before thin client was added to Houdini Engine, creating a Houdini Engine session within the Maya process is how Houdini Engine is initialized. All the Houdini libraries and necessary files are loaded directly within Maya's process. This requires the libraries of Houdini, its plug-ins, and their library dependencies to be compatible with the libraries of Maya and its plug-ins. Otherwise, there could be dynamic library conflicts, library symbol conflicts, or even obscure crashes. Since the introduction of Houdini Engine, a lot of effort have gone into resolving and working around these issues and conflicts, so it should work in most cases. However, in some rare situations, there may still be issues that have yet been discovered.
+Before thin client was added to Houdini Engine, creating a Houdini Engine session within the Maya process is how Houdini Engine is initialized. All the Houdini libraries and necessary files are loaded directly within Maya's process. This requires the libraries of Houdini, its plug-ins, and their library dependencies to be compatible with the libraries of Maya and its plug-ins. Otherwise, there could be dynamic library conflicts, library symbol conflicts, or even obscure crashes. Since the introduction of Houdini Engine, a lot of effort have gone into resolving and working around these issues and conflicts, so it should work in most cases. However, in some rare situations, there may still be issues that have yet been discovered. Running houdiniEngine outside the Maya process can help you avoid these conflicts.
 
 @section Maya_Session_Socket Socket
 
@@ -25,5 +25,25 @@ Named pipe session was added when thin client was introduced in Houdini Engine. 
 The named pipe session support auto-starting the Houdini Engine server. When the plug-in initializes, the Houdini Engine server will be automatically started, and a named pipe is automatically chosen.
 
 The Houdini Engine server can also be manually started with a known named pipe. Then, the named pipe information is entered into the plug-in.
+
+@section Maya_Session_Server Server
+
+In order to use a socket session on the client side, you need to start the server executable HARS, included in Houdini installation. HARS is a console application with simple command-line arguments:
+
+@verbatim
+$ HARS -h
+Allowed options:
+  -h [ --help ]             Produce this help message
+  -s [ --socket-port ] arg  The server port, if using a TCP socket session
+  -n [ --named-pipe ] arg   The name of the pipe, if using a named pipe session
+  -a [ --auto-close ]       Close the server automatically when all client
+                            connections are closed
+  -r [ --ready-handle ] arg Event to signal when the server is ready to serve
+                            (for automated server startup)
+@endverbatim
+
+HARS links directly to libHAPI and to core Houdini libraries and their dependencies. Since Thrift IPC is cross-platform, the server process (HARS) may be run on different platforms. The HARS server may also be used for a named pipe session when autostart is not specified. The port or pipe should match the one specified in the Houdini Engine preferences. Please see the Session section in the Houdini Engine Documentation for more details.
+
+Please note that the HARS server currently only supports a single client connection. If a client is connected to the server and another client tries to connect, then the second client will block until the first connection is closed.
 
 */

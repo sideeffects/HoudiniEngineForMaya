@@ -1532,7 +1532,7 @@ OutputGeometryPart::computeMesh(
             {
                 MVectorArray setNormalList;
                 MIntArray vertexList;
-                for(unsigned int i = 0, length = vertexList.length();
+                for(unsigned int i = 0, length = normal.length();
                         i < length; ++i)
                 {
                     if((*promotedLockedNormal)[i])

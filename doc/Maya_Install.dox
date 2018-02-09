@@ -12,9 +12,9 @@ The installer performs the following steps:
 
 -# Registers the newly installed Maya plug-in with Maya. This step is only done for Maya versions that the installer is able to detect.
 
-Normally, the installer would perform the necessary steps to register the plug-in with with Maya. However, if another Maya version is later installed, or in a custom software deployment scenario, the plug-in may not be registered with Maya automatically. In these cases, extra steps may be needed to register the plug-in with Maya.
+Normally, the installer would perform the necessary steps to register the plug-in with with Maya, if Maya is installed locally in the default location. However, if another Maya version is later installed, or in a custom software deployment scenario, the plug-in may not be registered with Maya automatically. In these cases, extra steps may be needed to register the plug-in with Maya.
 
-The plug-in uses the Maya module description file to register with Maya. This also sets up the correct environment variables that are needed to run the plug-in. A common installation problem is that users would attempt to manually set the `MAYA_PLUG_IN_PATH` and `MAYA_SCRIPT_PATH` environment variables. However, this may not lead to a correct environment to run the plug-in. Using Maya's module description file is the recommended way to register the plug-in.
+The plug-in uses the Maya module description file to register with Maya. This also sets up the correct environment variables that are needed to run the plug-in. A common installation problem is that users would attempt to manually set the `MAYA_PLUG_IN_PATH` and `MAYA_SCRIPT_PATH` environment variables. However, this may not lead to a correct environment to run the plug-in. The module description file also contains additional information used to resolve library conflicts; without access to this information crashes may result. Using Maya's module description file is the recommended way to register the plug-in.
 
 # Copying the module description file to an existing module directory
 
@@ -26,13 +26,21 @@ and is designed to be copied to one of the directories that Maya searches, such 
 
     $MAYA_LOCATION/modules
 
-To register the plug-in, For example, copy the file:
+To register the plug-in, for example on Windows, copy the file:
 
     C:\Program Files\Side Effects Software\Houdini 15.0.244\engine\maya\maya2016\houdiniEngine-maya2016
 
 into:
 
     C:\Program Files\Autodesk\Maya2016\modules
+
+Or for example on Linux, copy the file:
+
+    /opt/hfs16.5.364/engine/maya/maya2018/houdiniEngine-maya2018
+
+into:
+
+    /usr/autodesk/maya2018/modules
 
 This is exactly what the installer would do to register the plug-in with Maya.
 
@@ -45,6 +53,10 @@ Setting the `MAYA_MODULE_PATH` environment variable is a more flexible way to re
 and is designed to be used with the `MAYA_MODULE_PATH` environment variable. For example, insert the following path into `MAYA_MODULE_PATH`:
 
     C:\Program Files\Side Effects Software\Houdini 15.0.244\engine\maya
+
+Or on Linux, you can add something like:
+
+    /opt/hfs16.5.364/engine/maya
 
 Note that the path does not contain the `maya<version` directory. The module description files are created such that Maya is able to select correct module depending on the running Maya version.
 

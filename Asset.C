@@ -1214,6 +1214,13 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
         if(exists)
         {
+	    if(parmInfo.disabled) {
+	        plug.setLocked(true);
+	    } else {
+	        if(plug.isLocked()) {
+		    plug.setLocked(false);
+	        }
+	    }
             dataHandle = parentDataHandle.child(attrObj);
 
             // The HAPI_ParmInfo::choiceCount could change between cooks because

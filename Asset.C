@@ -1214,13 +1214,21 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
         if(exists)
         {
-	    if(parmInfo.disabled) {
-	        plug.setLocked(true);
-	    } else {
-	        if(plug.isLocked()) {
-		    plug.setLocked(false);
+	    // if it's not a ramp, go ahead and lock based on disable
+	    // leave the ramps alone cause there are other UI issues that complicate things
+	    if(!(parmInfo.isChildOfMultiParm
+              && parentParmInfo
+	      && parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)) {
+
+	        if(parmInfo.disabled) {
+	            plug.setLocked(true);
+	        } else {
+	            if(plug.isLocked()) {
+		        plug.setLocked(false);
+	            }
 	        }
 	    }
+
             dataHandle = parentDataHandle.child(attrObj);
 
             // The HAPI_ParmInfo::choiceCount could change between cooks because

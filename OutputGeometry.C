@@ -46,6 +46,7 @@ OutputGeometry::update()
 
     if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT
             || myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE
+            || myGeoInfo.type == HAPI_GEOTYPE_INPUT
             || myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
         // Create any new OutputGeometryPart
@@ -115,8 +116,10 @@ OutputGeometry::compute(
         forceCompute |= myParts[i]->needCompute(options);
     }
 
+    // if we got here it's an output, even if HAPI thinks it's an input too
     if(myGeoInfo.type == HAPI_GEOTYPE_DEFAULT ||
             myGeoInfo.type == HAPI_GEOTYPE_INTERMEDIATE ||
+            myGeoInfo.type == HAPI_GEOTYPE_INPUT ||
             myGeoInfo.type == HAPI_GEOTYPE_CURVE)
     {
         if(myNodeInfo.totalCookCount > myLastCookCount

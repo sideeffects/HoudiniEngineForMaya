@@ -32,12 +32,12 @@ When building an asset, the "Convert Maya Hard Edge to Group" shelf can be used 
 
 Stores the UVs of the vertices. Each UV set is stored as a different attribute.
 
-- `maya_uv_name` - detail string array
-- `maya_uv_mapped_uv` - detail string array
+- `maya_uv_name` - detail string tuple (size is the number of UV sets)
+- `maya_uv_mapped_uv` - detail string tuple (size is the number of UV sets)
 
-This can be used by the asset to lookup the name of the original UV set from Maya. The `maya_uv_name` stores the original name of the UV sets in Maya, and the `maya_uv_mapped_uv` stores the name of corresponding vertex attribute in Houdini. The two string arrays have the same length.
+This can be used by the asset to lookup the name of the original UV set from Maya. The `maya_uv_name` stores the original name of the UV sets in Maya, and the `maya_uv_mapped_uv` stores the name of corresponding vertex attribute in Houdini. The two strings should have the same number of elements.
 
-For example, if the asset expects a Maya UV set named "dirt". First, the asset would search the `maya_uv_name` array for "dirt", which might be the second element. Then, the asset would access the second element of the `maya_uv_mapped_uv` array for the corresponding name of the Houdini attribute, which might be `uv2`.
+For example, if the asset expects a Maya UV set named "dirt". First, the asset would search the `maya_uv_name` string for "dirt", which might be the second element. Then, the asset would access the second element of the `maya_uv_mapped_uv` string for the corresponding name of the Houdini attribute, which might be `uv2`.
 
 - `maya_uv_current` - detail string
 
@@ -50,13 +50,13 @@ Stores the name of the current UV set.
 
 Stores the vertex color and alpha of each color set. The colors and alphas of each color set are stored as separate attributes. The Alpha attribute is only present if the Maya color set contains alpha.
 
-- `maya_colorset_name` - detail string array
-- `maya_colorset_mapped_Cd` - detail string array
-- `maya_colorset_mapped_Alpha` - detail string array
+- `maya_colorset_name` - detail string tuple (size is the number of color sets)
+- `maya_colorset_mapped_Cd` - detail string tuple (size is the number of color sets)
+- `maya_colorset_mapped_Alpha` - detail string tuple (size is the number of color sets)
 
 This set of attributes can be used by the asset to lookup the name of the original color set from Maya. The `maya_colorset_name` stores the original name of the color sets in Maya, and the `maya_colorset_mapped_Cd` and `maya_colorset_mapped_Alpha` stores the name of corresponding vertex attribute in Houdini.
 
-For example, if the asset expects a Maya color set named "diffuse". First, the asset would search the `maya_colorset_name` array for "diffuse", which might be the second element. Then, the asset would access the second element of the `maya_colorset_mapped_Cd` array for the corresponding name of the Houdini attribute, which might be `Cd2`.
+For example, if the asset expects a Maya color set named "diffuse". First, the asset would search `maya_colorset_name` for "diffuse", which might be the second element. Then, the asset would access the second element of `maya_colorset_mapped_Cd` for the corresponding name of the Houdini attribute, which might be `Cd2`.
 
 - `maya_colorset_current` - detail string
 
@@ -98,10 +98,12 @@ When building an asset, the "Convert Maya Hard Edge to Attribute" shelf can be u
 
 Used to assign UVs of the vertices. Each UV attribute is used for assigning a different UV set.
 
-- `maya_uv_name` - detail string array
-- `maya_uv_mapped_uv` - detail string array
+- `maya_uv_name` - detail string tuple (size is the number of UV sets)
+- `maya_uv_mapped_uv` - detail string tuple (size is the number of UV sets)
 
-This set of attributes is used to map the names of the Houdini UV attributes into the names of the UV set in Maya. The `maya_uv_name` is used to set the name of the UV set in Maya, and the `maya_uv_mapped_uv` is the name of the corresponding UV attribute in Houdini. The two string arrays must have the same length.
+This set of attributes is used to map the names of the Houdini UV attributes into the names of the UV set in Maya. The `maya_uv_name` is used to set the name of the UV set in Maya, and the `maya_uv_mapped_uv` is the name of the corresponding UV attribute in Houdini. The two strings must have the same number of elements.
+
+If you are adding mapping information to a mesh created in houdini, or adding new UVsets to output on a mesh created in maya, you can use a python sop to create or set the size of the string attributes.
 
 - `maya_uv_current` - detail string
 
@@ -114,11 +116,13 @@ Used to set the current UV set.
 
 Used to set the vertex color and alpha of each color set. The Alpha attribute is optional.
 
-- `maya_colorset_name` - detail string array
-- `maya_colorset_mapped_Cd` - detail string array
-- `maya_colorset_mapped_Alpha` - detail string array
+- `maya_colorset_name` - detail string tuple (size is the number of color sets)
+- `maya_colorset_mapped_Cd` - detail string tuple (size is the number of color sets)
+- `maya_colorset_mapped_Alpha` - detail string tuple (size is the number of color sets)
 
-This set of attributes is used to map the names of the Houdini Color and Alpha attributes into color sets in Maya. The `maya_colorset_name` sets the name of the color sets in Maya, and the `maya_colorset_mapped_Cd` and `maya_colorset_mapped_Alpha` are used to map the color and alpha attributes in Houdini to the corresponding color set in Maya.
+This set of attributes is used to map the names of the Houdini Color and Alpha attributes into color sets in Maya. The `maya_colorset_name` sets the name of the color sets in Maya, and `maya_colorset_mapped_Cd` and `maya_colorset_mapped_Alpha` are used to map the color and alpha attributes in Houdini to the corresponding color set in Maya.
+
+If you are adding mapping information to a mesh created in houdini, or adding new color sets to output on a mesh created in maya, you can use a python sop to create or set the size of the string attributes.
 
 - `maya_colorset_current` - detail string
 

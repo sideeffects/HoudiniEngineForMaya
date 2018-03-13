@@ -26,6 +26,25 @@ The named pipe session support auto-starting the Houdini Engine server. When the
 
 The Houdini Engine server can also be manually started with a known named pipe. Then, the named pipe information is entered into the plug-in.
 
+@section Maya_Session_OptionVars OptionVars
+
+If loading the houdini plugin is not possible with the default settings due to library conflicts, the optionVars controlling the session type can be set manually before loading the plugin.
+
+For a socket session, with the default port and host:
+@verbatim
+optionVar -iv "houdiniEngineSessionType" 1;
+optionVar -iv "houdiniEngineThriftPort" 9090;
+optionVar -sv "houdiniEngineThriftServer" "localhost";
+@endverbatim
+
+For a named pipe session with autostart:
+
+@verbatim
+optionVar -iv "houdiniEngineSessionType" 2;
+optionVar -sv "houdiniEngineThriftPipe" "hapi";
+optionVar -iv "houdiniEngineSessionPipeCustom" 0;
+@endverbatim
+
 @section Maya_Session_Server Server
 
 In order to use a socket session on the client side, you need to start the server executable HARS, included in Houdini installation. HARS is a console application with simple command-line arguments:

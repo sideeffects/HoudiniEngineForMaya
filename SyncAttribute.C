@@ -241,6 +241,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     || parmInfo.type == HAPI_PARMTYPE_BUTTON
                     || parmInfo.type == HAPI_PARMTYPE_STRING
                     || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                    || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_DIR
                     || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
                     || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                 && parmInfo.choiceCount > 0)
@@ -276,6 +277,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     break;
                 case HAPI_PARMTYPE_STRING:
                 case HAPI_PARMTYPE_PATH_FILE:
+                case HAPI_PARMTYPE_PATH_FILE_DIR:
                 case HAPI_PARMTYPE_PATH_FILE_GEO:
                 case HAPI_PARMTYPE_PATH_FILE_IMAGE:
                     attrObj = createStringAttr(parmInfo);
@@ -307,7 +309,6 @@ configureStringAttribute(
                 tAttr.addToCategory("hapiParmFile_filter" + filterString);
             }
         }
-
         switch(parm.permissions)
         {
             case HAPI_PERMISSIONS_READ_WRITE:
@@ -320,6 +321,10 @@ configureStringAttribute(
             default:
                 break;
         }
+	if(parm.type == HAPI_PARMTYPE_PATH_FILE_DIR)
+	{
+	    tAttr.addToCategory("hapiParmFile_directory");
+	}
     }
 }
 

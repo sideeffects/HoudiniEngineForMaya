@@ -1240,6 +1240,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON
                         || parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+			|| parmInfo.type == HAPI_PARMTYPE_PATH_FILE_DIR
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                     && parmInfo.choiceCount > 0)
@@ -1255,6 +1256,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 }
                 else if(parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_DIR
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                 {
@@ -1420,6 +1422,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         break;
                     case HAPI_PARMTYPE_STRING:
                     case HAPI_PARMTYPE_PATH_FILE:
+                    case HAPI_PARMTYPE_PATH_FILE_DIR:
                     case HAPI_PARMTYPE_PATH_FILE_GEO:
                     case HAPI_PARMTYPE_PATH_FILE_IMAGE:
                         {
@@ -1684,6 +1687,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON
                         || parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_DIR
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                     && parmInfo.choiceCount > 0)
@@ -1706,6 +1710,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 }
                 else if(parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_DIR
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                 {
@@ -1871,6 +1876,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         break;
                     case HAPI_PARMTYPE_STRING:
                     case HAPI_PARMTYPE_PATH_FILE:
+                    case HAPI_PARMTYPE_PATH_FILE_DIR:
                     case HAPI_PARMTYPE_PATH_FILE_GEO:
                     case HAPI_PARMTYPE_PATH_FILE_IMAGE:
                         {

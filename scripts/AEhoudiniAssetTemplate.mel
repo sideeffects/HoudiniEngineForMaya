@@ -22,6 +22,10 @@ AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
         $fileMode = 4;
     else if(stringArrayFind("hapiParmFile_write", 0, $categories) != -1)
         $fileMode = 0;
+    if(stringArrayFind("hapiParmFile_directory", 0, $categories) != -1) {
+        $fileMode = 3;
+	$fileFilter = "";
+    }
 
     string $fileDialogResults[] = `fileDialog2
         -caption $plug

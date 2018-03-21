@@ -1536,8 +1536,6 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         setParmValues(data);
 
-        getParmValues(data);
-
         AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
@@ -1548,6 +1546,12 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
                 options,
                 needToSyncOutputs
                 );
+
+	// this gets parm properties as well as values
+	// do this after the compute in case stuff like disable has changed
+	// or expressions have been evaulated
+	getParmValues(data);
+	
         // No need to print error messages from Asset::compute(). It should
         // have been printed already.
         if(MFAIL(status))
@@ -1620,7 +1624,6 @@ AssetNode::setInternalValueInContext(
 #endif
 {
     MStatus status;
-
     if(plug == AssetNode::otlFilePath
             || plug == AssetNode::assetName)
     {

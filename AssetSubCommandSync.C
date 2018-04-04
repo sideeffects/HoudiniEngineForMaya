@@ -73,7 +73,6 @@ AssetSubCommandSync::doIt()
     // save selection
     MSelectionList oldSelection;
     MGlobal::getActiveSelectionList(oldSelection);
-
     // attributes
     if(mySyncAll || mySyncAttributes)
     {
@@ -169,6 +168,8 @@ AssetSubCommandSync::doIt()
         unsigned int objCount = objectsPlug.evaluateNumElements(&status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
+	int numGeosOutput = 0;
+
         for(unsigned int i=0; i < objCount; i++)
         {
             MPlug elemPlug = objectsPlug[i];
@@ -183,7 +184,8 @@ AssetSubCommandSync::doIt()
             {
                 SubCommand* syncOutput = new SyncOutputObject(elemPlug,
                         myAssetNodeObj, visible, mySyncOutputTemplatedGeos);
-                syncOutput->doIt();
+                if(syncOutput->doIt() == MS::kSuccess)
+		    numGeosOutput++;
 
                 myAssetSyncs.push_back(syncOutput);
             }
@@ -199,10 +201,16 @@ AssetSubCommandSync::doIt()
             MPlug elemPlug = instancersPlug[i];
 
             SubCommand* syncOutput = new SyncOutputInstance(elemPlug, i, myAssetNodeObj);
-            syncOutput->doIt();
+            if(syncOutput->doIt() == MS::kSuccess)
+	        numGeosOutput++;
 
             myAssetSyncs.push_back(syncOutput);
         }
+	if(numGeosOutput == 0)
+	    DISPLAY_WARNING("AutoSyncOutputs and update of attributes and outputs "
+			" unavailable for ^1s because it has no outputs.\n"
+			"A manual Sync will be required to instantiate new outputs "
+			    "and resume updates\n", assetNodeFn.name());
     }
 
     // restore old selection

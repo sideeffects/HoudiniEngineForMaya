@@ -84,11 +84,13 @@ MStatus
 SyncOutputGeometryPart::doIt()
 {
     MStatus status;
-
+    
+    int numGeosOutput = 0;
     MString partName = myOutputPlug.child(AssetNode::outputPartName).asString();
     if(partName.length())
     {
         partName = Util::sanitizeStringForNodeName(partName);
+	numGeosOutput = 1;
     }
     else
     {
@@ -114,7 +116,13 @@ SyncOutputGeometryPart::doIt()
             partName
             );
 
-    return redoIt();
+    redoIt();
+    
+
+    if(numGeosOutput > 0)
+        return MStatus::kSuccess;
+    else
+        return MStatus::kFailure;
 }
 
 MStatus

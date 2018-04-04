@@ -69,6 +69,7 @@ SyncOutputObject::doIt()
 
     MFnDependencyNode objectTransformFn(objectTransform);
 
+    int numGeosOutput = 0;
     // connect objectTransform attributes
     {
         MPlug transformPlug = myOutputPlug.child(AssetNode::outputObjectTransform);
@@ -146,7 +147,8 @@ SyncOutputObject::doIt()
             for(int jj=0; jj<partCount; jj++)
             {
                 SyncOutputGeometryPart* sync = new SyncOutputGeometryPart(partsPlug[jj], partParent);
-                sync->doIt();
+                if(sync->doIt() == MS::kSuccess)
+		    numGeosOutput++;
                 myAssetSyncs.push_back(sync);
             }
 
@@ -158,10 +160,15 @@ SyncOutputObject::doIt()
     }
 
 #if MAYA_API_VERSION >= 201400
-    createFluidShape(objectTransform);
+    if(createFluidShape(objectTransform) == MS::kSuccess)
+      numGeosOutput++;
 #endif
 
-    return MStatus::kSuccess;
+
+    if(numGeosOutput > 0)
+        return MStatus::kSuccess;
+    else
+        return MStatus::kFailure;
 }
 
 #if MAYA_API_VERSION >= 201400
@@ -173,6 +180,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
     MPlug geosPlug = myOutputPlug.child(AssetNode::outputGeos);
     int geoCount = geosPlug.evaluateNumElements(&status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
+    int numFluidsCreated = 0;
     for(int ii = 0; ii < geoCount; ii++)
     {
         MPlug geoPlug = geosPlug[ii];
@@ -415,6 +423,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
                 &status
                 );
         CHECK_MSTATUS_AND_RETURN_IT(status);
+	numFluidsCreated++;
 
         MFnDagNode partVolumeFn(fluidShapeObj, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -664,7 +673,10 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    return MStatus::kSuccess;
+    if(numFluidsCreated > 0)
+        return MStatus::kSuccess;
+    else
+      return MStatus::kFailure;
 }
 #endif
 
@@ -678,7 +690,6 @@ SyncOutputObject::undoIt()
         (*iter)->undoIt();
     }
     myDagModifier.undoIt();
-
     return MStatus::kSuccess;
 }
 

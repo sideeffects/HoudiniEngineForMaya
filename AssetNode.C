@@ -16,6 +16,7 @@
 #include <maya/MGlobal.h>
 #include <maya/MModelMessage.h>
 #include <maya/MPlugArray.h>
+#include <maya/MAnimControl.h>
 
 #include "Asset.h"
 #include "Input.h"
@@ -1309,7 +1310,8 @@ AssetNode::nodeRemoved(MObject& node,void *clientData)
 
 AssetNode::AssetNode() :
     myNeedToMarshalInput(false),
-    myAutoSyncId(-1)
+    myAutoSyncId(-1),
+    myExtraAutoSync(false)
 {
     myAsset = NULL;
 
@@ -1434,7 +1436,23 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
                 plugBeingDirtied.parent()
                 );
     }
-
+    // if autoSyncOutputs got into a bad no-output state
+    // and we're doing dirty propagation outside of playback
+    // and it's an attr that would affect the outputs
+    // sync to see if this change actually produces outputs
+    if((isInput || isParameter) && myExtraAutoSync) {
+        if(!MAnimControl::isPlaying() && !MAnimControl::isScrubbing()) {
+            MDataBlock data = forceCache();
+            AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
+	    if(options.autoSyncOutputs())
+            {
+	        myAutoSyncId++;
+	        MGlobal::executeCommandOnIdle("houdiniEngine_autoSyncAssetOutput "
+	            + MFnDagNode(thisMObject()).fullPathName() + " "
+	            + myAutoSyncId);
+            }
+        }
+    }
     return MS::kSuccess;
 }
 
@@ -1573,6 +1591,18 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
     return MPxTransform::compute(plug, data);
 }
+
+void
+AssetNode::setExtraAutoSync(bool needs)
+{
+    // when autoSyncOutputs has left your node in an outputless state
+    // indicate that if we change a param that affects outputs
+    // we should sync immediately if autoSyncOutputs is on
+    // If an output materializes, so much the better,
+    // otherwise, at least we won't have to delete or creates any nodes
+    myExtraAutoSync = needs;
+}
+
 
 #if MAYA_API_VERSION >= 201800
 bool

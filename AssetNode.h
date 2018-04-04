@@ -77,6 +77,7 @@ class AssetNode: public MPxTransform
 
         int autoSyncId() const
         { return myAutoSyncId; }
+	void setExtraAutoSync(bool needs);
 
     private:
         Asset* myAsset;
@@ -94,6 +95,7 @@ class AssetNode: public MPxTransform
         bool myNeedToMarshalInput;
 
         int myAutoSyncId;
+	int myExtraAutoSync;
 
         typedef std::vector<MObject> MObjectVector;
         MObjectVector myDirtyParmAttributes;

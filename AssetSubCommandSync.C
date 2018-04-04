@@ -206,11 +206,11 @@ AssetSubCommandSync::doIt()
 
             myAssetSyncs.push_back(syncOutput);
         }
-	if(numGeosOutput == 0)
-	    DISPLAY_WARNING("AutoSyncOutputs and update of attributes and outputs "
-			" unavailable for ^1s because it has no outputs.\n"
-			"A manual Sync will be required to instantiate new outputs "
-			    "and resume updates\n", assetNodeFn.name());
+	if(numGeosOutput == 0) {
+	    getAssetNode()->setExtraAutoSync(true);
+        } else {
+	    getAssetNode()->setExtraAutoSync(false);
+	}
     }
 
     // restore old selection

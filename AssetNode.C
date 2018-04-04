@@ -1441,7 +1441,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     // and it's an attr that would affect the outputs
     // sync to see if this change actually produces outputs
     if((isInput || isParameter) && myExtraAutoSync) {
-        if(!MAnimControl::isPlaying() && !MAnimControl::isScrubbing()) {
+        if(!MAnimControl::isPlaying()) {
             MDataBlock data = forceCache();
             AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
 	    if(options.autoSyncOutputs())

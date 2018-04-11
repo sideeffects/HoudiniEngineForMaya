@@ -1,0 +1,403 @@
+/*!
+
+@page Maya_Nodes Nodes
+
+@tableofcontents
+
+The Houdini Asset itself is encapsulated in the houdiniAsset node. Geometry inputs have their own wrapper nodes that convert maya geometry to houdini geometry and create corresponding nulls the engine side. Multiple maya shapes can be connected into an input by going though a houdiniInputMerge node
+
+The plugin nodes used by the houdiniEngine plugin for Maya are:
+- @ref Maya_Nodes_HoudiniAsset "houdiniAsset"
+- @ref Maya_Nodes_HoudiniInputGeometry "houdiniInputGeometry"
+- @ref Maya_Nodes_InputTransform "houdiniInputTransform"
+- @ref Maya_Nodes_InputCurve "houdiniInputCurve"
+- @ref Maya_Nodes_InputMerge "houdiniInputMerge"
+
+The houdiniAsset node outputs both the information needed for Sync to create the output maya geometry shapes, and the maya geometry data to connerct to those nodes once they are created.
+
+@section Maya_Nodes_HoudiniAsset houdiniAsset
+
+The houdiniAsset has three kinds of attributes:
+
+- static definition and option attributes
+- parameters
+- outputs
+
+All parameter related attributes are parented under the compound houdiniAttrParm parameter. See @ref Maya_Parameters for more information. For more information about asset option and definition attributes, see @ref Maya_Assets.
+
+While most of the parameters are directly exposed as attributes, Attribute Editor geometry inputs are special. The string field for the input is a space delimited list of the minimal unique dag paths of input geometry shapes. This list can be edited directly, or the  Set to Selection button can be used builds this list from the current selection list. Whichever way you chose to specify the inputs the actual relationship with the inputs is represented by and computed by the upstream input network - the AE fields are for input and visual feedback, there are no corresponding attributes on the node.
+
+@image html Maya_Nodes_AssetNode.png
+
+That brings us to the output attributes. All of the output attributes are parented under the compound attribute "output" This include both attributes with descriptive information for what output nodes and attributes to create at Sync time, and attributes with live data to connect from the houdini asset to the output geometry. Ideally, the user does not need to manage these connections, and Syncing the asset will keep them up to date, however there are times when autoSyncOutputs can lose a connection. Some of the non-connectable outputs can also provide useful information when debugging the asset's behavior in Maya.
+
+<table>
+<tr>
+    <th>Attribute</th>
+    <th>Usage</th>
+    <th>Description</th>       
+</tr>
+<tr>
+    <td>outputAssetTransform</td>
+    <td>Connect</td>
+    <td>For an object asset, its world transform TRS</td>
+</tr>
+<tr>
+    <td>outputAssetInstancers(Multi)</td>
+    <td></td>
+    <td>for each of the asset's output instancers </td>
+</tr>
+<tr>
+    <td>...outputInstancerTransform</td>
+    <td>Connect</td>
+    <td>instancers transform TRS</td>
+</tr>
+<tr>
+    <td>...outputHoudiniNameAttribute</td>
+    <td>Sync</td>
+    <td>attribute containing name</td>
+</tr>
+<tr>
+    <td>...outputHoudiniInstanceAttribute</td>
+    <td></td>
+    <td>attribute for instance matching</td>
+</tr>
+<tr>
+    <td>...outputInstancedObjectName</td>
+    <td>Sync</td>
+    <td>object to instance</td>
+</tr>
+<tr>
+    <td>...outputInstancerData</td>
+    <td>Connect</td>
+    <td>named per-instance data to drive the particle instancer</td>
+</tr>
+<tr>
+    <td>outputObjects(Multi)</td>
+    <td></td>
+    <td>all the output geometries from the asset</td>
+</tr>
+<tr>
+    <td>...outputObjectTransform</td>
+    <td>Connect</td>
+    <td>object transform TRS</td>
+</tr>
+<tr>
+    <td>...outputObjectMetaData</td>
+    <td>Connect</td>
+    <td>houdini object id, for connecting to other assets</td>
+</tr>
+<tr>
+    <td>...outputObjectFluidFromAsset</td>
+    <td>Connect</td>
+    <td>connect to fluids playFromCache to indicate data is available</td>
+</tr>
+<tr>
+    <td>...outputIsInstanced</td>
+    <td>Sync</td>
+    <td>is the output instanced?</td>
+</tr>
+<tr>
+    <td>...outputVisiblility</td>
+    <td>Sync</td>
+    <td>is the output visible?</td>
+</tr>
+<tr>
+    <td>...outputObjectName</td>
+    <td>Sync</td>
+    <td>name for output transform and shape</td>
+</tr>
+<tr>
+    <td>...outputGeos(Multi)</td>
+    <td></td>
+    <td>geos for this object</td>
+</tr>
+<tr>
+    <td>......outputGeoName</td>
+    <td>Sync</td>
+    <td>name for output xform and shape</td>
+</tr>
+<tr>
+    <td>......outputGeoIsTemplated</td>
+    <td>Sync</td>
+    <td>is this geo templated?</td>
+</tr>
+<tr>
+    <td>......outputGeoIsDisplayGeo</td>
+    <td>Sync</td>
+    <td>is this geo a display object?</td>
+</tr>
+<tr>
+    <td>......outputParts(Multi)</td>
+    <td></td>
+    <td>parts of geos to be output as separate shapes, e.g. for split geos by group</td>
+</tr>
+<tr>
+    <td>.........outputPartName</td>
+    <td>Sync</td>
+    <td>name for output shape</td>
+</tr>
+<tr>
+    <td>.........outputPartHasMesh</td>
+    <td>Sync</td>
+    <td>is this a mesh? i.e. does the output have primitives and vertices</td>
+</tr>
+<tr>
+    <td>.........outputPartHasParticles</td>
+    <td>Sync</td>
+    <td>is this part a particle? i.e. does the output have only points</td>
+</tr>
+<tr>
+    <td>.........outputPartHasInstancer</td>
+    <td>Sync</td>
+    <td>is this part an instancer? i.e. is the output a packed prim</td>
+</tr>
+<tr>
+    <td>.........outputPartMesh</td>
+    <td></td>
+    <td></td>
+</tr>
+<tr>
+    <td>............outputPartMeshCurrentColorSet</td>
+    <td>Sync</td>
+    <td>current colour set, passed through from maya</td>
+</tr>
+<tr>
+    <td>............outputPartMeshCurrentUV</td>
+    <td>Sync</td>
+    <td>current UV set, passed through from maya</td>
+</tr>
+<tr>
+    <td>............outputPartMeshData</td>
+    <td>Connect</td>
+    <td>mesh geometry Data</td>
+</tr>
+<tr>
+    <td>.........outputPartParticle</td>
+    <td></td>
+    <td></td>
+</tr>
+<tr>
+    <td>............outputPartParticleCurrentTime</td>
+    <td>Connect</td>
+    <td>pass though from input time connection</td>
+</tr>
+<tr>
+    <td>............outputPartParticlePositions</td>
+    <td>Connect</td>
+    <td>particle positions only</td>
+</tr>
+<tr>
+    <td>............outputPartParticleArrayData</td>
+    <td>Connect</td>
+    <td>all per-particle attributes</td>
+</tr>
+<tr>
+    <td>.........outputPartCurves(Multi)</td>
+    <td>Connect</td>
+    <td>curve data for each curve in this part</td>
+</tr>
+<tr>
+    <td>.........outputPartCurvesIsBezier</td>
+    <td>Sync</td>
+    <td>Bezier or Nurbs</td>
+</tr>
+<tr>
+    <td>.........outputPartVolume</td>
+    <td></td>
+    <td>output fluid</td>
+</tr>
+<tr>
+    <td>............outputPartVolumeName</td>
+    <td>Sync</td>
+    <td>name of the fluid grid being output</td>
+</tr>
+<tr>
+    <td>............outputPartVolumeGrid</td>
+    <td>Connect</td>
+    <td>fluid grid data (connects as cache data)</td>
+</tr>
+<tr>
+    <td>............outputPartVolumeRes</td>
+    <td>Connect</td>
+    <td>grid resolution, use autoresize if this is time dependent</td>
+</tr>
+<tr>
+    <td>............outputPartVolumeTransform</td>
+    <td>Connect</td>
+    <td>fluid transform (TRS) </td>
+</tr>
+<tr>
+    <td>.........outputPartInstancer(Multi)</td>
+    <td></td>
+    <td>output particle instancer</td>
+</tr>
+<tr>
+    <td>............outputPartInstancerArrayData</td>
+    <td>Connect</td>
+    <td>all the named per-instance attributes</td>
+</tr>
+<tr>
+    <td>............outputPartInstancerParts</td>
+    <td>Sync</td>
+    <td>ids of objects to instance</td>
+</tr>
+<tr>
+    <td>............outputPartInstancerTransform</td>
+    <td>Connect</td>
+    <td>instancer transform (TRS)</td>
+</tr>
+<tr>
+    <td>.........outputPartMaterialIds</td>
+    <td></td>
+    <td>mapping for groups to material nodes</td>
+</tr>
+<tr>
+    <td>.........outputPartExtraAttributes(Multi)</td>
+    <td></td>
+    <td></td>
+</tr>
+<tr>
+    <td>............outputPartExtraAttributeName</td>
+    <td>Sync</td>
+    <td>attribute name</td>
+</tr>
+<tr>
+    <td>............outputPartExtraAttributeOwner</td>
+    <td>Sync</td>
+    <td>detail, point or primitive</td>
+</tr>
+<tr>
+    <td>............outputPartExtraAttributeDataType</td>
+    <td>Sync</td>
+    <td>data type</td>
+</tr>
+<tr>
+    <td>...........outputPartExtraAttributeTuple</td>
+    <td>Sync</td>
+    <td>attribute tuple size</td>
+</tr>
+<tr>
+    <td>............outputPartExtraAttributeData</td>
+    <td>Connect</td>
+    <td>generic attr for attribute data</td>
+</tr>
+<tr>
+    <td>.........outputPartGroups</td>
+    <td>Multi</td>
+    <td></td>
+</tr>
+<tr>
+    <td>............outputPartGroupName</td>
+    <td>Sync</td>
+    <td>group name</td>
+</tr>
+<tr>
+    <td>............outputPartGroupType</td>
+    <td>Sync</td>
+    <td>component type</td>
+</tr>
+<tr>
+    <td>............outputPartGroupMembers</td>
+    <td>Sync</td>
+    <td>component id array</td>
+</tr>
+<tr>
+    <td>outputMaterials(Multi)</td>
+    <td></td>
+    <td></td>
+</tr>
+<tr>
+    <td>...outputMaterialPath</td>
+    <td>Sync</td>
+    <td>material to connect</td>
+</tr>
+<tr>
+    <td>...outputMaterialName</td>
+    <td>Sync</td>
+    <td>material to create</td>
+</tr>
+<tr>
+    <td>...outputMaterialNodeId</td>
+    <td>Sync</td>
+    <td>match material to node</td>
+</tr>
+<tr>
+    <td>...outputMaterialAmbientColor</td>
+    <td>Connect</td>
+    <td>ambient colour</td>
+</tr>
+<tr>
+    <td>...outputMaterialDiffuseColor</td>
+    <td>Connect</td>
+    <td>diffuse color</td>
+</tr>
+<tr>
+    <td>...outputMaterialSpecularColor</td>
+    <td>Connect</td>
+    <td>specular color</td>
+</tr>
+<tr>
+    <td>...outputMaterialAlphaColor</td>
+    <td>Connect</td>
+    <td>alpha</td>
+</tr>
+<tr>
+    <td>...outputMaterialTexturePath</td>
+    <td>Connect</td>
+    <td>file texture path</td>
+</tr>
+</table>
+
+
+@section Maya_Nodes_HoudiniInputGeometry houdiniInputGeometry
+
+The houdiniInputGeometry node converts a single maya mesh or nParticle system  into houdini geo.
+
+There are 2 input attributes:
+- inputGeometry (generic)
+- inputTransform (matrix)
+
+and one output:
+- outputNodeId (houdini node id)
+
+The geometry and the world transform are connected separately. On the engine side, an input null is created for the geometry. The input does not need to be an actual mesh shape - almost all the information we use is from the mesh data, so you could connect the output mesh from a mesh history node directly.
+
+@image html Maya_Nodes_InputGeometry.png
+
+The inputGeometry node is also used to connect several different geometry types. Since the inputGeometry attribute is generic, we rely on the type of the connected data to determine what kind of input object to create:
+- meshData: mesh
+- vectorArrayData: particle
+- curveData: curve (for backward compatability only)
+
+For particle inputs, we expect the actual particleNode to be connected, on the positions attribute. We follow that connection back and extract particle data from the upstream node directly in order to build the input object.
+
+@image html Maya_Nodes_InputParticle.png
+
+@section Maya_Nodes_InputTransform houdiniInputTransform
+
+The inputTransform node is used to input Maya locators. When you select a locator, and do SetToSelection, it connects the locator's xform's worldMatrix to the inputTransform node, and creates proxy particle geometry to represent the transform of the locator.  While the Attribute Editor UI only accepts locators, you can connect any  transform's worldMatrix through an inputTransform.
+
+@image html Maya_Nodes_InputTransform.png
+
+@section Maya_Nodes_InputCurve houdiniInputCurve
+
+The curve input node is similar to the geometry input node but does not include a transform connection. Multiple curves can be connected to one inputCurve node.
+
+@image html Maya_Nodes_InputCurve.png
+
+The curve input node can also be used to connect the curves from a maya hair hair system. When you select an nHair system with output curves, adding the hairSystems connects all the follicles outCurve attributes to the houdiniInputCurve. This is another case where a particular maya node type is not required for the input, only the specified data type.
+
+@image html Maya_Nodes_InputHair.png
+
+@section Maya_Nodes_InputMerge houdiniInputMerge
+If you select multiple maya objects to connect to a single input, we create one of the other 3 houdiniInput nodes for each object, and connect them all to a houdiniInputMerge node.  This creates an ObjectMerge Sop on the engine side, to merge the input geos.
+@image html Maya_Nodes_InputMerge.png
+
+@section Maya_Nodes_OutputNodes Output Nodes
+
+Syncing a houdiniAsset cooks the asset, and creates output maya geometry based on the cook results and asset options. Output dag objects are parented under the asset node itself, with the appropriate history, shading and transform connections where required. Output materials are connected on the outputMaterials attribute. Depending on the structure of your asset, empty output transforms may sometimes be created. Here's the output from a simple fluid sim.
+
+@image html Maya_Nodes_OutputFluid.png
+
+*/

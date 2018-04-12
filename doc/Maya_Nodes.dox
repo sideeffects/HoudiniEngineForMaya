@@ -255,7 +255,7 @@ That brings us to the output attributes. All of the output attributes are parent
 <tr>
     <td>.........outputPartExtraAttributes(Multi)</td>
     <td></td>
-    <td></td>
+    <td>includes attributes with information about how to reconstruct\n maya mesh material assignment and other mesh properties\n as well as purely user-defined attributes from the asset</td>
 </tr>
 <tr>
     <td>............outputPartExtraAttributeName</td>
@@ -305,7 +305,7 @@ That brings us to the output attributes. All of the output attributes are parent
 <tr>
     <td>outputMaterials(Multi)</td>
     <td></td>
-    <td></td>
+    <td>new materials exported from the asset</td>
 </tr>
 <tr>
     <td>...outputMaterialPath</td>

@@ -63,4 +63,10 @@ When the asset creates an `nParticle` node for outputting points/particles, the 
 
 One example is a Houdini asset that takes some input points, removes some points, and outputs the resulting points. If a simulated `nParticle` is used as the input, the output `nParticle` will be assigned to the same Nucleus Solver as the input `nParticle`. Since the output particles have the exact same positions as the input particles, this input particles would collide with the output particles, which affects the motion of the input particles. In this case, to prevent the collisions, one of the `nParticle` nodes should be assigned to a different Nucleus solver.
 
+@section Maya_Particle_StartFrame Start Frame
+
+In order to create the output nParticle node, the Houdini asset needs to be synced at (or after) the Houdini particle's start frame. If you have loaded your asset before the start frame, you will not initally see any output particles until you have set the time to the start frame and resynced.
+
+The output nParticle's start frame needs to be set at (or before) the Houdini particle's start frame in order to display the particles. If your start frame is before the default Nucleus start frame, you should set the start frame on the Nucleus node to match. If this would conflict with other objects attached to the same Nucleus solver, the output nParticle should be assigned to a different Nucleus solver.
+
 */

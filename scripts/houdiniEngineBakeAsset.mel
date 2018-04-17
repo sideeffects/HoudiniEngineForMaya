@@ -1,0 +1,57 @@
+source houdiniEngineAssetSync;
+
+global proc int
+houdiniEngine_bakeAsset(string $assetNode)
+{
+    // sync the asset to make sure all the outputs exist
+    houdiniEngine_syncAssetOutput $assetNode;
+
+    // disconnect output objects
+    string $children[] = `listRelatives -c -f $assetNode`;
+    string $outputObjCon[] = `listConnections -d true -p on ($assetNode + ".outputObjects")`;
+    for($con in $outputObjCon) {
+        string $src = `connectionInfo -sfd $con`;
+	disconnectAttr $src $con;
+    }
+
+    // disconnect output materials
+    string $outputMatCon[] = `listConnections -d true -p on ($assetNode + ".outputMaterials")`;
+
+    for($con in $outputMatCon) {
+        string $src = `connectionInfo -sfd $con`;
+	disconnectAttr $src $con;
+    }
+    
+    // disconnect output instancers
+    string $outputInstCon[] = `listConnections -d true -p on ($assetNode + ".outputInstancers")`;
+
+    for($con in $outputInstCon) {
+        string $src = `connectionInfo -sfd $con`;
+	disconnectAttr $src $con;
+    }
+    
+    // if an output was completely empty (only has transforms) delete it 
+    for($child in $children) {
+        string $allDescendents[] = `listRelatives -ad -f $child`;
+        int $hasShape = 0;
+        for($desc in $allDescendents) {
+	    if(`objectType -isAType "shape" $desc`) {
+	        $hasShape = 1;
+		break;
+	    }
+	    if(`objectType -isAType "instancer" $desc`) {
+	        $hasShape = 1;
+		break;
+	    }
+	}
+	if($hasShape)
+            parent -a -w  $child;
+	else
+	    delete $child;
+    }
+    // don't disconnect output transforms, because they connect back to the asset
+    // and that connection is determinded by the asset options, and not the existence ot 
+    
+    return 1;
+}
+

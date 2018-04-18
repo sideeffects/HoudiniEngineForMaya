@@ -1,5 +1,7 @@
 source AEaddRampControl;
 source houdiniEngineAssetInput;
+source houdiniEngineHistoryAsset;
+source houdiniEngineBakeAsset;
 
 global proc
 AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
@@ -461,7 +463,14 @@ AEhoudiniAssetOperationNew(string $attr)
         button -label "Sync Asset"
             -annotation "Recreates all the parameters and output nodes."
             syncButton;
-
+	    
+        button -label "Add Asset to History (prototype)"
+            -annotation "Connect this asset as history to the selected mesh"
+             historyButton;
+	     
+       button -label "Bake Asset (prototype)"
+            -annotation "Sync this asset, then unparent and disconnect outputs"
+             bakeButton;
     setParent ..;
 
     setUITemplate -popTemplate;
@@ -477,6 +486,15 @@ AEhoudiniAssetOperationReplace(string $attr)
     button -e
         -c ("houdiniEngine_syncAsset " + $nodeName)
         syncButton;
+	
+    button -e
+        -c ("houdiniEngine_addHistory " + $nodeName)
+        historyButton;
+	
+    button -e
+        -c ("houdiniEngine_bakeAsset " + $nodeName)
+        bakeButton;
+	
 }
 
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
@@ -803,6 +821,24 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
 }
 
+global proc AEhoudiniAssetConnectNew( string $attrName )
+{
+	setUITemplate -pst attributeEditorTemplate;	
+ 	attrEnumOptionMenuGrp -attribute $attrName 
+		-enumeratedItem 0 "Classic Asset"
+		-enumeratedItem 1 "History Asset"
+		-enumeratedItem 2 "Bake Asset"
+		-label "Connect Type" AEhoudiniAssetConnectEnum;
+    setUITemplate -ppt;
+
+	AEhoudiniAssetConnectReplace $attrName;
+}
+
+global proc AEhoudiniAssetConnectReplace( string $attrName )
+{
+ 	attrEnumOptionMenuGrp -e -attribute $attrName AEhoudiniAssetConnectEnum;
+}
+
 global proc AEhoudiniAssetTemplate(string $nodeName)
 {
     editorTemplate -beginScrollLayout;
@@ -833,6 +869,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate
             -label "File Path"
             -addControl "otlFilePath";
+        editorTemplate -callCustom "AEhoudiniAssetConnectNew" "AEhoudiniAssetConnectReplace" "assetConnectType";	    
 
     editorTemplate -endLayout;
 

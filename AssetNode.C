@@ -33,6 +33,7 @@ MObject AssetNode::inTime;
 
 MObject AssetNode::otlFilePath;
 MObject AssetNode::assetName;
+MObject AssetNode::assetConnectType;
 
 MObject AssetNode::input;
 MObject AssetNode::inputName;
@@ -227,6 +228,16 @@ AssetNode::initialize()
             MFnData::kString
             );
     tAttr.setInternal(true);
+    
+    // asset usage type: classic = 0, history = 1, bake = 2
+    AssetNode::assetConnectType = nAttr.create(
+            "assetConnectType", "assetConnectType",
+            MFnNumericData::kInt,
+            0
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    nAttr.setDisconnectBehavior(MFnAttribute::kReset);
 
     // input
     AssetNode::inputName = tAttr.create(
@@ -1278,6 +1289,7 @@ AssetNode::initialize()
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);
+    addAttribute(AssetNode::assetConnectType);
     addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
 

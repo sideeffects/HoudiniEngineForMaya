@@ -1,0 +1,371 @@
+source houdiniEngineAssetSync;
+
+proc int
+stringArrayReverseAppend(string $to[], int $end, string $from[])
+{
+    int $newEnd = $end + size($from);
+    for($i = $newEnd, $j = 0; $i-- > $end; $j++)
+    {
+        $to[$i] = $from[$j];
+    }
+    return $newEnd;
+}
+
+proc int
+validateInputObjects(string $objects[],
+        string $validObjects[],
+        string $multiObjects[],
+        string $invalidObjects[])
+{
+    string $objectsToProcess[];
+    int $objectsToProcessEnd = stringArrayReverseAppend(
+            $objectsToProcess, 0, $objects);
+
+    int $validObjectsCount = 0;
+
+    string $curveObjects[];
+    string $transformObjects[];
+
+    while($objectsToProcessEnd)
+    {
+        string $object = $objectsToProcess[$objectsToProcessEnd - 1];
+        $objectsToProcessEnd--;
+
+        if(!`objExists $object`)
+        {
+            $invalidObjects[size($invalidObjects)] = $object;
+            continue;
+        }
+
+        if(`objectType -isAType "houdiniAsset" $object`)
+        {
+            $validObjects[size($validObjects)] = $object;
+            $validObjectsCount++;
+        }
+        else if(`objectType -isAType "houdiniInputGeometry" $object`
+            || `objectType -isAType "houdiniInputCurve" $object`
+            || `objectType -isAType "houdiniInputTransform" $object`
+            || `objectType -isAType "houdiniInputMerge" $object`)
+        {
+            $validObjects[size($validObjects)] = $object;
+            $validObjectsCount++;
+        }
+        else if(`objectType -isAType "nurbsCurve" $object`)
+        {
+            $curveObjects[size($curveObjects)] = $object;
+        }
+        else if(`objectType -isAType "locator" $object`)
+        {
+            $transformObjects[size($transformObjects)] = $object;
+        }
+        else if(`objectType -isAType "mesh" $object`
+                || `objectType -isAType "particle" $object`
+                || `objectType -isAType "hairSystem" $object`
+               )
+        {
+            $validObjects[size($validObjects)] = $object;
+            $validObjectsCount++;
+        }
+        else if(`objectType -isAType "transform" $object`)
+        {
+            string $expandedObjects[] = `ls -long -objectsOnly -dagObjects -shapes -noIntermediate $object`;
+
+            $objectsToProcessEnd = stringArrayReverseAppend(
+                    $objectsToProcess, $objectsToProcessEnd, $expandedObjects);
+        }
+        else
+        {
+            $invalidObjects[size($invalidObjects)] = $object;
+        }
+    }
+
+    $validObjects = stringArrayRemoveDuplicates($validObjects);
+
+    if(size($curveObjects))
+    {
+        $curveObjects = stringArrayRemoveDuplicates($curveObjects);
+        $multiObjects[0] = stringArrayToString($curveObjects, " ");
+        $validObjectsCount++;
+    }
+
+    if(size($transformObjects))
+    {
+        $transformObjects = stringArrayRemoveDuplicates($transformObjects);
+        $multiObjects[1] = stringArrayToString($transformObjects, " ");
+        $validObjectsCount++;
+    }
+
+    return $validObjectsCount;
+}
+
+proc string
+createInputGeometryNode(string $transformAttr, string $geometryAttr)
+{
+    // if a houdiniInputGeometry already exists, reuse it
+    {
+        string $connections[] =
+            `listConnections -type houdiniInputGeometry -destination true
+            $geometryAttr`;
+        if(size($connections))
+        {
+            return (plugNode($connections[0]) + ".outputNodeId");
+        }
+    }
+
+    string $inputNode = `createNode -skipSelect houdiniInputGeometry`;
+
+    connectAttr $transformAttr ($inputNode + ".inputTransform");
+    connectAttr $geometryAttr ($inputNode + ".inputGeometry");
+
+    return ($inputNode + ".outputNodeId");
+}
+
+proc string
+getInputNodeForSingle(string $object)
+{
+    string $transformAttr;
+    {
+        string $parents[] = `listRelatives -fullPath -parent $object`;
+        $transformAttr = $parents[0] + ".worldMatrix";
+    }
+
+    if(`objectType -isAType "houdiniAsset" $object`)
+    {
+        // if we just got the houdiniAsset, just assume the first output
+        return ($object + ".output.outputObjects[0].outputObjectMetaData");
+    }
+    else if(`objectType -isAType "houdiniInputGeometry" $object`
+            || `objectType -isAType "houdiniInputCurve" $object`
+            || `objectType -isAType "houdiniInputTransform" $object`
+            || `objectType -isAType "houdiniInputMerge" $object`)
+    {
+        return ($object + ".outputNodeId");
+    }
+    else if(`objectType -isAType "mesh" $object`)
+    {
+        string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
+        string $histNode = plugNode($histPlug);
+
+        if($histNode != ""
+                && `nodeType $histNode` == "houdiniAsset")
+        {
+            // TODO: Assume that assets with inputs are SOPs
+            // *** A bit of a hack, plugNode just takes a substring of
+            // everything before the first '.', even if the substring is
+            // not a node.
+            string $obj = plugNode(plugAttr($histPlug));
+
+            return ($histNode + "." + $obj + ".outputObjectMetaData");
+        }
+        else
+        {
+            string $geometryAttr = $object + ".outMesh";
+
+            return createInputGeometryNode($transformAttr, $geometryAttr);
+        }
+    }
+    else if(`objectType -isAType "nurbsCurve" $object`)
+    {
+        string $geometryAttr = $object + ".local";
+
+        return createInputGeometryNode($transformAttr, $geometryAttr);
+    }
+    else if(`objectType -isAType "particle" $object`)
+    {
+        string $geometryAttr = $object + ".position";
+
+        return createInputGeometryNode($transformAttr, $geometryAttr);
+    }
+    else if(`objectType -isAType "hairSystem" $object`)
+    {
+        string $path[];
+        int $pathLen = `tokenize $object "|" $path`;
+        string $inputNode = $path[$pathLen - 1] + "_HoudiniInput";
+        $inputNode = `createNode "houdiniInputCurve" -name $inputNode`;
+
+        string $outputHairs[] = `listAttr -multi ($object + ".outputHair")`;
+
+        int $iInput = 0;
+        for ($outputHair in $outputHairs)
+        {
+            string $follicleShapes[] =
+                `listConnections ($object + "." + $outputHair)`;
+
+            for ($follicleShape in $follicleShapes)
+            {
+                string $inputPlug =
+                    `format -s $inputNode -s $iInput "^1s.inputCurve[^2s]"`;
+
+                connectAttr ($follicleShape + ".outCurve") $inputPlug;
+            }
+
+            $iInput += 1;
+        }
+
+        return $inputNode + ".outputNodeId";
+    }
+
+    print("Error: Unable to use object as input:" + $object + "\n");
+    return "";
+}
+
+
+proc string getFirstNodeInput(string $nodeName, string $attr, string $fullAttr)
+{
+    string $fullAttrName = $nodeName + "." + $fullAttr;
+
+    string $children[] = `attributeQuery -node $nodeName -listChildren $attr`;
+    for($child in $children)
+    {
+        string $type = `getAttr -type ($fullAttrName + "." + $child)`;
+        int $isCompound = ($type == "TdataCompound");
+        int $isMulti = `attributeQuery -node $nodeName -multi $child`;
+
+        if(endsWith($child, "__node"))
+        {
+	    return $child;
+        }
+        else if($isCompound && !$isMulti)
+        {
+            string $nodeInput = getFirstNodeInput($nodeName, $child, $fullAttr + "." + $child);
+	    if($nodeInput != "")
+	        return $nodeInput;
+        }
+    }
+    return "";
+}
+
+global proc int
+houdiniEngine_addHistory(string $assetNode)
+{
+    string $objects[] = `ls -selection -long -dag -shapes`;
+    string $firstNodeInput = "";
+    if(`getAttr -size ($assetNode + ".input")` > 0) {
+	$firstNodeInput = "input[0].inputNodeId";
+    }
+    
+    if($firstNodeInput == "") {
+        $firstNodeInput = getFirstNodeInput($assetNode, "houdiniAssetParm",  "houdiniAssetParm");
+        if($firstNodeInput == "")
+        {
+            // if there is no object input attr, adding this to history would be meaningless
+            // just sync the asset instead
+            print("Error: this asset has no inputs, adding it as history would be pointless ");
+            return 1;
+        }
+    }
+       
+    print "Currently it just finds the the first node or object input and connects the selected geo\n";
+    string $components[];
+    string $componentSet;
+    if(size($objects) > 0) {
+        // print "object selection\n";
+	// determine if we can insert into history or if we have to sync
+    } else {
+        // component selection
+	// print "component selection\n";
+        $objects = `listRelatives -parent`;
+	// for now, if you want to use component selection, your asset needs to use group "houdiniComponentSet"
+	$componentSet = `sets -name "houdiniComponentSet"`;
+    }
+
+    string $inputAttr =  $assetNode + "." + $firstNodeInput;
+
+    // need to previous input from this asset if it's not the same as the current one
+
+    houdiniEngine_setHistoryAttr($inputAttr, $objects);
+
+    // if we can insert into history
+    //     remove output geo, connect input geo's mesh input to inputGeometry
+    //     disconnect xform and set to identity? or not?
+    // if we cannot
+    //      disconnect input xform, ungroup output, parent with input geo
+    //      set input geo intermediate
+      
+    return 0;
+
+}
+
+global proc int
+houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[])
+{
+    // Make Sure we have exactly one valid input object
+    string $validObjects[];
+    string $multiObjects[];
+    string $invalidObjects[];
+    int $validObjectsCount = validateInputObjects($objects,
+            $validObjects, $multiObjects, $invalidObjects);
+
+    if(size($invalidObjects))
+    {
+        print("Error: Some objects are invalid for input: "
+                + stringArrayToString($invalidObjects, " ") + "\n");
+        return 0;
+    }
+    
+    if(size($multiObjects))
+    {
+        print("Error: Expecting one input, got too many: "
+                + stringArrayToString($invalidObjects, " ") + "\n");
+        return 0;
+    }
+
+    if($validObjectsCount == 0)
+    {
+        houdiniEngine_clearAssetInput($inputAttr);
+        return 1;
+    }
+    print "past validation\n";
+    string $sourceInputAttr[];
+    // there better have been exactly one
+    for($i = 0; $i < size($validObjects); $i++)
+    {
+        string $validObject = $validObjects[$i];
+        $sourceInputAttr[size($sourceInputAttr)] =
+            getInputNodeForSingle($validObject);
+    }
+
+    string $finalInputAttr;
+    if(!size($sourceInputAttr))
+    {
+        return 0;
+    }
+    else if(size($sourceInputAttr) == 1)
+    {
+        $finalInputAttr = $sourceInputAttr[0];
+    }
+    else
+    {
+        print("Error: Expecting one input, got too many: "
+              + stringArrayToString($invalidObjects, " ") + "\n");
+        return 0;
+    }
+
+    // make sure this node is not already an input OR AN OUTPUT
+    // if it was connected not-as-hsitory it's an inpuit
+    if(`isConnected $finalInputAttr $inputAttr`)
+    {
+        // if same input is already connected???
+        return 1;
+    }
+    
+    houdiniEngine_clearAssetInput($inputAttr);
+    print "final input attr = ";
+    print $finalInputAttr;
+
+    connectAttr $finalInputAttr $inputAttr;
+
+    // note: should not sync output if we connected upstream of the selected shape
+    string $assetNodeName = plugNode($inputAttr);
+    // if(`getAttr ($assetNodeName + ".assetConnectType")` != 1)
+        houdiniEngine_syncAssetOutput $assetNodeName;
+	
+    // only want to sync output at most once for history node.
+    setAttr ($assetNodeName + ".assetConnectType") 1;
+
+    // parent beside the input
+    // if the input was a shape, set it to intermediate
+
+    return 1;
+}
+

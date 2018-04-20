@@ -14,7 +14,6 @@ stringArrayReverseAppend(string $to[], int $end, string $from[])
 proc int
 validateInputObjects(string $objects[],
         string $validObjects[],
-        string $multiObjects[],
         string $invalidObjects[])
 {
     string $objectsToProcess[];
@@ -42,13 +41,6 @@ validateInputObjects(string $objects[],
         {
             $validObjects[size($validObjects)] = $object;
             $validObjectsCount++;
-        }
-        else if(`objectType -isAType "transform" $object`)
-        {
-            string $expandedObjects[] = `ls -long -objectsOnly -dagObjects -shapes -noIntermediate $object`;
-
-            $objectsToProcessEnd = stringArrayReverseAppend(
-                    $objectsToProcess, $objectsToProcessEnd, $expandedObjects);
         }
         else
         {
@@ -206,13 +198,14 @@ houdiniEngine_addHistory(string $assetNode)
     print "after validating that you have chosen a suitable mesh\n";
     print "soon it will do more, better\n";
 
+    // if a mesh is parented under an asset, it will be gone next sync, and any history downstream of
+    // the parent asset will be history, so to speak .
     string $assets[] = `ls -sl -exactType "houdiniAsset"`;
     if(size ($assets) > 0) {
         print("Error: adding an asset as history to the output of another asset is fraught with peril,\n bake the asset and select the detached output if you must ");
         return 1;
     }
     
-    string $objects[] = `ls -selection -long -dag -shapes`; 
     string $firstNodeInput = "";
     if(`getAttr -size ($assetNode + ".input")` > 0) {
 	$firstNodeInput = "input[0].inputNodeId";
@@ -231,6 +224,7 @@ houdiniEngine_addHistory(string $assetNode)
        
     string $components[];
     string $componentSet;
+    string $objects[] = `ls -selection -long -dag -shapes`;
     if(size($objects) > 0) {
         // print "object selection\n";
 	// determine if we can insert into history or if we have to sync
@@ -249,7 +243,7 @@ houdiniEngine_addHistory(string $assetNode)
 
     // need to previous input from this asset if it's not the same as the current one
 
-    houdiniEngine_setHistoryAttr($inputAttr, $objects);
+    houdiniEngine_setHistoryAttr($inputAttr, $objects, $componentSet);
 
     // if we can insert into history
     //     remove output geo, connect input geo's mesh input to inputGeometry
@@ -263,14 +257,13 @@ houdiniEngine_addHistory(string $assetNode)
 }
 
 global proc int
-houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[])
+houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $componentSet)
 {
     // Make Sure we have exactly one valid input object
     string $validObjects[];
-    string $multiObjects[];
     string $invalidObjects[];
     int $validObjectsCount = validateInputObjects($objects,
-            $validObjects, $multiObjects, $invalidObjects);
+            $validObjects,  $invalidObjects);
 
     if(size($invalidObjects))
     {
@@ -286,28 +279,50 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[])
               + stringArrayToString($validObjects, " ") + "\n");
         return 0;
     }
-
-    //string $upstreamNode = getUpstreamNodeForInput()
     
-    string $finalInputAttr = getInputNodeForSingle($validObjects[0]);
+    string $validObject = $validObjects[0];
+    string $upstreamAttr = `connectionInfo -sfd ($validObject + ".inMesh")`;
+    string $finalInputAttr = getInputNodeForSingle($validObject);
+    string $finalInputNode = plugNode($finalInputAttr);
 
-    // make sure this node is not already an input OR AN OUTPUT
-    // if it was connected not-as-hsitory it's an inpuit
-    if(`isConnected $finalInputAttr $inputAttr`)
-    {
-        // if same input is already connected???
-        //return 1;
-    } else {
-    
-    houdiniEngine_clearAssetInput($inputAttr);
-
-    connectAttr $finalInputAttr $inputAttr;
+    string $upstreamNode = plugNode($upstreamAttr);
+    string $assetNodeName = plugNode($inputAttr);
+    if($upstreamNode == $assetNodeName) {
+        print "This asset is already connected as history\n";
+	return 0;
     }
 
-    // note: should not sync output if we connected upstream of the selected shape
-    string $assetNodeName = plugNode($inputAttr);
-    // if(`getAttr ($assetNodeName + ".assetConnectType")` != 1)
-        houdiniEngine_syncAssetOutput $assetNodeName;
+    // if there is no upstream history, or if we are using sets
+    // then we need a copy of the original mesh upstream
+    int $copyShape = ($upstreamAttr == "") || ($componentSet != "");
+    
+    // if the selected mesh had history, connect the history rather than the shape
+    if(!$copyShape) {
+        print "connecting asset upstream like true construction history\n";
+        connectAttr -f $upstreamAttr ($finalInputNode + ".inputGeometry");
+    } else {
+        print "needed an upstream copy of the mesh, because of sets, or utter lack of history\n";
+        print "just syncing the asset to get a new output mesh for now, this will change shortlyu\n";
+    }
+
+    if(`isConnected $finalInputAttr $inputAttr`)
+    {
+        // if it was already connected as history, we never got here
+	// if the output is connected to something else, maybe that's OK too?
+	// if there is no output, but copyshape is on, maybe we should set the connectType back to default so it can sync again
+    } else {  
+        houdiniEngine_clearAssetInput($inputAttr);
+        connectAttr $finalInputAttr $inputAttr;
+    }
+
+    if($copyShape && `getAttr ($assetNodeName + ".assetConnectType")` != 1)
+       houdiniEngine_syncAssetOutput $assetNodeName;
+
+    // if the selected mesh had history, connect the asset output back to the shape
+    if(!$copyShape){
+         // NEED to disconnect it from the original output first
+         connectAttr -f ($assetNodeName + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData") ($validObject + ".inMesh");
+    }
 	
     // only want to sync output at most once for history node.
     setAttr ($assetNodeName + ".assetConnectType") 1;

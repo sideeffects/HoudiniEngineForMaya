@@ -49,8 +49,12 @@ houdiniEngine_bakeAsset(string $assetNode)
 	else
 	    delete $child;
     }
-    // don't disconnect output transforms, because they connect back to the asset
-    // and that connection is determinded by the asset options, and not the existence ot 
+    // don't disconnect output transforms, since they connect back to the asset
+    // connection is determinded by the asset options
+    // and not a particular output
+
+    // now sync it again - so there is a new output to provide feedback
+    houdiniEngine_syncAssetOutput $assetNode;
     
     return 1;
 }

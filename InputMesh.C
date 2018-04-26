@@ -2,6 +2,7 @@
 
 #include <maya/MFnMesh.h>
 #include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MFnDoubleIndexedComponent.h>
 #include <maya/MDagPath.h>
 #include <maya/MDataBlock.h>
 #include <maya/MFloatArray.h>
@@ -12,6 +13,7 @@
 #include <maya/MMatrix.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
+#include <maya/MFnComponentListData.h>
 
 #include "hapiutil.h"
 #include "types.h"
@@ -56,6 +58,120 @@ Input::AssetInputType
 InputMesh::assetInputType() const
 {
     return Input::AssetInputType_Mesh;
+}
+
+void
+InputMesh::setInputComponents(
+        MDataBlock &dataBlock,
+        const MPlug &geoPlug,
+        const MPlug &compPlug
+        )
+{
+    // extract mesh data from Maya
+    MDataHandle compHandle = dataBlock.inputValue(compPlug);
+    MObject compList = compHandle.data();
+    MFnComponentListData compListFn( compList );
+
+    // extract mesh data from Maya
+    MDataHandle meshHandle = dataBlock.inputValue(geoPlug);
+    MObject meshObj = meshHandle.asMesh();
+    MFnMesh meshFn(meshObj);
+
+    unsigned i;
+    int j;
+    MIntArray faceIds;
+    MIntArray vertIds;
+    MIntArray edgeIds;
+    for( i = 0; i < compListFn.length(); i++ )
+    {
+        MObject comp = compListFn[i];
+	if( comp.apiType() == MFn::kMeshPolygonComponent) {
+            MFnSingleIndexedComponent siComp( comp );
+            for( j = 0; j < siComp.elementCount(); j++ )
+                faceIds.append( siComp.element(j) );
+	}
+	if( comp.apiType() == MFn::kMeshVertComponent) {
+            MFnSingleIndexedComponent siComp( comp );
+            for( j = 0; j < siComp.elementCount(); j++ )
+                vertIds.append( siComp.element(j) );
+	}
+
+	if( comp.apiType() == MFn::kMeshEdgeComponent) {
+	    // should convert the edge component to a point group in some meaningful way
+            MFnSingleIndexedComponent siComp( comp );
+            for( j = 0; j < siComp.elementCount(); j++ )
+                edgeIds.append( siComp.element(j) );
+	}
+	if( comp.apiType() == MFn::kMeshVtxFaceComponent) {
+	    // unfortunately, setAttr doesn't support vertexFace components
+	    // for a componentList attr: may need a command to set these
+            // MFnDoubleIndexedComponent doComp( comp );
+	}
+    }
+    std::vector<int> groupMembership;
+    
+    if(faceIds.length() > 0) {
+          int numFaces = meshFn.numPolygons();
+	  HAPI_GroupType groupType = HAPI_GROUPTYPE_PRIM;
+
+	  groupMembership.resize(numFaces);
+	  std::fill(groupMembership.begin(), groupMembership.end(), 0);
+
+	  for( i = 0; i < faceIds.length(); i++)
+	  {
+	      groupMembership[faceIds[i]] = 1;
+          }
+	  
+	  MString primGroupName = "inputPrimitiveComponent";
+          CHECK_HAPI(HAPI_AddGroup(
+                    Util::theHAPISession.get(),
+                    geometryNodeId(), 0,
+                    groupType,
+                    primGroupName.asChar()
+                    ));
+
+          CHECK_HAPI(HAPI_SetGroupMembership(
+                    Util::theHAPISession.get(),
+                    geometryNodeId(), 0,
+                    groupType,
+                    primGroupName.asChar(),
+                    &groupMembership[0],
+                    0, groupMembership.size()
+                   ));
+    }
+    if(vertIds.length() > 0) {
+         int numVerts = meshFn.numVertices();
+	 HAPI_GroupType groupType = HAPI_GROUPTYPE_POINT;
+
+	 groupMembership.resize(numVerts);
+	 std::fill(groupMembership.begin(), groupMembership.end(), 0);
+
+	 for( i = 0; i < vertIds.length(); i++)
+	 {
+	     groupMembership[vertIds[i]] = 1;
+         }
+	  
+	 MString primGroupName = "inputPointComponent";
+         CHECK_HAPI(HAPI_AddGroup(
+                    Util::theHAPISession.get(),
+                    geometryNodeId(), 0,
+                    groupType,
+                    primGroupName.asChar()
+                    ));
+
+         CHECK_HAPI(HAPI_SetGroupMembership(
+                    Util::theHAPISession.get(),
+                    geometryNodeId(), 0,
+                    groupType,
+                    primGroupName.asChar(),
+                    &groupMembership[0],
+                    0, groupMembership.size()
+                    ));
+    }
+    HAPI_CommitGeo(
+        Util::theHAPISession.get(),
+        geometryNodeId()
+        );
 }
 
 void

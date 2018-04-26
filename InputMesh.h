@@ -20,6 +20,12 @@ class InputMesh : public Input
                 const MPlug &plug
                 );
 
+        virtual void setInputComponents(
+                MDataBlock &dataBlock,
+                const MPlug &geoPlug,
+                const MPlug &compPlug
+                );
+
     protected:
         bool processPoints(
                 const MFnMesh &meshFn

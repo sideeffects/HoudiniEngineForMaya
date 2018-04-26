@@ -235,3 +235,11 @@ Input::setInputTransform(MDataHandle &dataHandle)
             &transformEuler
             ));
 }
+void
+Input::setInputComponents(
+                MDataBlock &dataBlock,
+                const MPlug &geoPlug,
+                const MPlug &compPlug
+		)
+{
+}

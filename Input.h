@@ -63,6 +63,12 @@ class Input
                 MDataBlock &dataBlock,
                 const MPlug &plug
                 ) = 0;
+	
+        virtual void setInputComponents(
+                MDataBlock &dataBlock,
+                const MPlug &geoPlug,
+                const MPlug &compPlug
+		);
 
     protected:
         void setTransformNodeId( HAPI_NodeId nodeId )

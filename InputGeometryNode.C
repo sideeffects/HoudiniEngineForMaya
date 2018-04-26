@@ -3,6 +3,8 @@
 #include <maya/MFnGenericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnNumericAttribute.h>
+#include <maya/MFnComponentListData.h>
+#include <maya/MFnTypedAttribute.h>
 
 #include "MayaTypeID.h"
 #include "Input.h"
@@ -12,6 +14,7 @@ MTypeId InputGeometryNode::typeId(MayaTypeID_HoudiniInputGeometryNode);
 
 MObject InputGeometryNode::inputTransform;
 MObject InputGeometryNode::inputGeometry;
+MObject InputGeometryNode::inputComponents;
 MObject InputGeometryNode::outputNodeId;
 
 void*
@@ -26,6 +29,7 @@ InputGeometryNode::initialize()
     MFnGenericAttribute gAttr;
     MFnMatrixAttribute mAttr;
     MFnNumericAttribute nAttr;
+    MFnTypedAttribute tAttr;
 
     InputGeometryNode::inputTransform = mAttr.create(
             "inputTransform", "inputTransform"
@@ -43,6 +47,15 @@ InputGeometryNode::initialize()
     gAttr.setStorable(false);
     addAttribute(InputGeometryNode::inputGeometry);
 
+    InputGeometryNode::inputComponents = tAttr.create(
+            "inputComponents", "inputComponents",
+            MFnComponentListData::kComponentList
+            );
+    tAttr.setCached(false);
+    tAttr.setStorable(true);
+    tAttr.setDisconnectBehavior(MFnAttribute::kReset);
+    addAttribute(InputGeometryNode::inputComponents);
+    
     InputGeometryNode::outputNodeId = nAttr.create(
             "outputNodeId", "outputNodeId",
             MFnNumericData::kInt,
@@ -83,6 +96,10 @@ InputGeometryNode::compute(
         // set input geo
         MPlug geometryPlug(thisMObject(), InputGeometryNode::inputGeometry);
         myInput->setInputGeo(dataBlock, geometryPlug);
+
+        // set input component list
+        MPlug complistPlug(thisMObject(), InputGeometryNode::inputComponents);
+        myInput->setInputComponents(dataBlock, geometryPlug, complistPlug);	
 
         outputNodeIdHandle.setInt(myInput->geometryNodeId());
 

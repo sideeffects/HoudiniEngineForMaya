@@ -17,6 +17,7 @@ public:
 
     static MObject inputTransform;
     static MObject inputGeometry;
+    static MObject inputComponents;
 
     static MObject outputNodeId;
 

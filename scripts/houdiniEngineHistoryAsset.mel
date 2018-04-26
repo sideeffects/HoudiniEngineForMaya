@@ -226,24 +226,23 @@ houdiniEngine_addHistory(string $assetNode)
     string $componentSet;
     string $objects[] = `ls -selection -long -dag -shapes`;
     if(size($objects) > 0) {
-        // print "object selection\n";
-	// determine if we can insert into history or if we have to sync
+        // object selection
+	// determine if we can insert into history or if we need a copy of the mesh
     } else {
         // component selection
+	// the list relatives check seems to eliminate random stuff like attrs or non-dag objects
         $objects = `listRelatives -parent`;
 	if(size($objects) == 0) {
-	    // no components selected either, it would appear
 	    return 1;
 	}	
-	// for now, if you want to use component selection, your asset needs to use group "houdiniComponentSet"
-	$componentSet = `sets -name "houdiniComponentSet"`;
+	$components = `ls -sl`;
     }
 
     string $inputAttr =  $assetNode + "." + $firstNodeInput;
 
     // need to previous input from this asset if it's not the same as the current one
 
-    houdiniEngine_setHistoryAttr($inputAttr, $objects, $componentSet);
+    houdiniEngine_setHistoryAttr($inputAttr, $objects, $components);
 
     // if we can insert into history
     //     remove output geo, connect input geo's mesh input to inputGeometry
@@ -257,7 +256,7 @@ houdiniEngine_addHistory(string $assetNode)
 }
 
 global proc int
-houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $componentSet)
+houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $components[])
 {
     // Make Sure we have exactly one valid input object
     string $validObjects[];
@@ -285,6 +284,22 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $compo
     string $finalInputAttr = getInputNodeForSingle($validObject);
     string $finalInputNode = plugNode($finalInputAttr);
 
+    // Note: if we are selecting components, we need an inputGeometry node upstream, not another asset
+    // need to enforce that somewhere
+    
+    int $numComps = size($components);
+    if($numComps > 0) {
+        string $cmd = "setAttr " + $finalInputNode + ".inputComponents -type componentList ";
+	$cmd += $numComps;
+	for($comp in $components) {
+	    string $buffer[];
+	    int $numTokens = `tokenize $comp "." $buffer`;
+	    if($numTokens > 1)
+	        $cmd += " " + $buffer[1];	    
+	}
+	eval $cmd;
+    }
+
     string $upstreamNode = plugNode($upstreamAttr);
     string $assetNodeName = plugNode($inputAttr);
     if($upstreamNode == $assetNodeName) {
@@ -292,24 +307,25 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $compo
 	return 0;
     }
 
-    // if there is no upstream history, or if we are using sets
-    // then we need a copy of the original mesh upstream
-    int $copyShape = ($upstreamAttr == "") || ($componentSet != "");
+    // if there is no upstream history
+    // then we need a copy of the original mesh, so we sync
+    int $copyShape = ($upstreamAttr == "");
     
     // if the selected mesh had history, connect the history rather than the shape
     if(!$copyShape) {
         print "connecting asset upstream like true construction history\n";
         connectAttr -f $upstreamAttr ($finalInputNode + ".inputGeometry");
     } else {
-        print "needed an upstream copy of the mesh, because of sets, or utter lack of history\n";
-        print "just syncing the asset to get a new output mesh for now, this will change shortlyu\n";
+        print "needed an upstream copy of the mesh utter lack of history, or because of an upstream asset\n";
+        print "just syncing the asset to get a new output mesh for now\n";
     }
 
     if(`isConnected $finalInputAttr $inputAttr`)
     {
         // if it was already connected as history, we never got here
 	// if the output is connected to something else, maybe that's OK too?
-	// if there is no output, but copyshape is on, maybe we should set the connectType back to default so it can sync again
+	// if there is no output, but copyshape is on
+	// maybe we should set the connectType back to default so it can sync again?
     } else {  
         houdiniEngine_clearAssetInput($inputAttr);
         connectAttr $finalInputAttr $inputAttr;
@@ -327,8 +343,8 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $compo
     // only want to sync output at most once for history node.
     setAttr ($assetNodeName + ".assetConnectType") 1;
 
-    // parent beside the input
-    // if the input was a shape, set it to intermediate
+    // if copyshape was true, need to parent copy next to input
+    // and set the upstream shape to intermediate
 
     return 1;
 }

@@ -168,10 +168,7 @@ namespace
     {
         OptionVars()
             : asyncMode("AsynchronousMode", 1)
-            , sessionType(
-                "SessionType",
-                static_cast<int>(HAPI_SESSION_INPROCESS)
-            )
+            , sessionType( "SessionType", 2) // named pipe            
             , thriftServer("ThriftServer", "localhost")
             , thriftPort("ThriftPort", 9090)
             , sessionPipeCustom("SessionPipeCustom", 0)
@@ -213,11 +210,23 @@ initializeSession(const OptionVars& optionVars)
 
     const SessionType::Enum sessionType =
         static_cast<SessionType::Enum>( optionVars.sessionType.get() );
+    
+    // In Process is currently crashing due to library conflicts
+    // switch to named pipe with autostart, but leave existing prefs alone
+    // revert this if we can resolve the library conflicts
+    SessionType::Enum actualSessionType = sessionType;
+    bool overrideInProcess = false;
+    if( sessionType == SessionType::ST_INPROCESS) {
+        MGlobal::displayInfo(
+            "Houdini Engine In Process session not currently supported, switching to auto-start named pipe session");
+        actualSessionType = SessionType::ST_THRIFT_PIPE;
+	overrideInProcess = true;
+    }
 
     Util::theHAPISession.reset( new Util::HAPISession );
     HAPI_Result sessionResult = HAPI_RESULT_FAILURE;
 
-    switch (sessionType)
+    switch (actualSessionType)
     {
     case SessionType::ST_INPROCESS:
         MGlobal::displayInfo(
@@ -270,7 +279,7 @@ initializeSession(const OptionVars& optionVars)
 
             MString msgPipe;
 
-            if( !optionVars.sessionPipeCustom.get() )
+            if( !optionVars.sessionPipeCustom.get() || overrideInProcess)
             {
                 HAPI_ThriftServerOptions serverOptions;
                 serverOptions.autoClose = true;

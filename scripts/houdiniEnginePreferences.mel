@@ -77,10 +77,11 @@ houdiniEnginePreferences_save()
     optionVar
         -stringValue "houdiniEngineThriftServer"
         `textField -query -text sessionSocketHost`;
-        
+	
+    int $portVal = `textField -query -text sessionSocketPort`;
     optionVar
-        -stringValue "houdiniEngineThriftPort"
-        `textField -query -text sessionSocketPort`;
+        -intValue "houdiniEngineThriftPort"
+        $portVal;
         
     optionVar
         -intValue "houdiniEngineSessionPipeCustom"

@@ -1,6 +1,7 @@
 source houdiniEngineAssetLibraryManager;
 source houdiniEngineAssetSync;
 source houdiniEngineUtils;
+source houdiniEngineBakeAsset;
 
 proc string[] getHoudiniVersions()
 {
@@ -246,6 +247,25 @@ houdiniEngine_reloadSelectedAssets()
     for($assetNode in $assetNodes)
     {
         houdiniAsset -reloadAsset $assetNode;
+    }
+
+    catchQuiet(`select -replace $old_selection`);
+}
+
+global proc
+houdiniEngine_bakeSelectedAssets()
+{
+    string $old_selection[] = `ls -selection -long`;
+
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) < 1)
+    {
+        error("Please select at least one houdiniAsset node to bake");
+    }
+
+    for($assetNode in $assetNodes)
+    {
+        houdiniEngine_bakeAsset($assetNode);
     }
 
     catchQuiet(`select -replace $old_selection`);
@@ -524,6 +544,8 @@ houdiniEngineCreateUI()
 
     menuItem -label "Sync Asset"
         -command "houdiniEngine_syncSelectedAsset";
+    menuItem -label "Bake Asset"
+        -command "houdiniEngine_bakeSelectedAssets";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";
 

@@ -44,8 +44,12 @@ houdiniEngine_bakeAsset(string $assetNode)
 		break;
 	    }
 	}
-	if($hasShape)
-            parent -a -w  $child;
+	if($hasShape) {
+	    if( `getAttr ($assetNode + ".ungroupOnBake")`)
+	        ungroup -a -w $child;
+	    else
+                parent -a -w  $child;
+	}
 	else
 	    delete $child;
     }

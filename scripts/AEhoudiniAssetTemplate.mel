@@ -746,6 +746,12 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 "Preserve locked normals when outputting mesh"
                 );
 
+        createAttrCheckBox(
+                "ungroupOnBake",
+                "Ungroup On Bake",
+                "Ungroup baked items from mid-level transform"
+                );
+
         createAttrCheckBox("useInstancerNode", "Use Instancer Node",
                 "Use particle instancer node to output instances.");
 
@@ -815,6 +821,10 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     replaceAttrCheckBox(
             $optionsLayoutFull + "|outputLayout|outputMeshPreserveLockedNormals",
             $nodeName + ".outputMeshPreserveLockedNormals",
+            "");
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|ungroupOnBake",
+            $nodeName + ".ungroupOnBake",
             "");
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
@@ -888,6 +898,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "outputCustomAttributes";
         editorTemplate -suppress "outputMeshPreserveHardEdges";
         editorTemplate -suppress "outputMeshPreserveLockedNormals";
+        editorTemplate -suppress "ungroupOnBake";
 
         editorTemplate -suppress "useInstancerNode";
 

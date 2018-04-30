@@ -16,6 +16,7 @@ NODE_OPTION(outputGeometryGroups, bool, true)
 NODE_OPTION(outputCustomAttributes, bool, true)
 NODE_OPTION(outputMeshPreserveHardEdges, bool, true)
 NODE_OPTION(outputMeshPreserveLockedNormals, bool, true)
+NODE_OPTION(ungroupOnBake, bool, true)
 
 NODE_OPTION(useInstancerNode, bool, true)
 

@@ -2,6 +2,7 @@ source houdiniEngineAssetLibraryManager;
 source houdiniEngineAssetSync;
 source houdiniEngineUtils;
 source houdiniEngineBakeAsset;
+source houdiniEngineRemoveHistory;
 
 proc string[] getHoudiniVersions()
 {
@@ -266,6 +267,25 @@ houdiniEngine_bakeSelectedAssets()
     for($assetNode in $assetNodes)
     {
         houdiniEngine_bakeAsset($assetNode);
+    }
+
+    catchQuiet(`select -replace $old_selection`);
+}
+
+global proc
+houdiniEngine_removeSelectedHistory()
+{
+    string $old_selection[] = `ls -selection -long`;
+
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) < 1)
+    {
+        error("Please select at least one houdiniAsset node to bake");
+    }
+
+    for($assetNode in $assetNodes)
+    {
+        houdiniEngine_removeHistory($assetNode);
     }
 
     catchQuiet(`select -replace $old_selection`);
@@ -546,6 +566,8 @@ houdiniEngineCreateUI()
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Bake Asset"
         -command "houdiniEngine_bakeSelectedAssets";
+    menuItem -label "Remove Asset From History"
+        -command "houdiniEngine_removeSelectedHistory";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";
 

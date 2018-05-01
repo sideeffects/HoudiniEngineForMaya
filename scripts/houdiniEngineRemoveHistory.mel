@@ -1,0 +1,23 @@
+global proc int
+houdiniEngine_removeHistory(string $assetNode)
+{
+
+    if(`getAttr ($assetNode + ".assetConnectType\n")` != 1) {
+        print("Error: assetConnectType suggests that this is not  a history asset\n");
+        return 1;
+    }
+
+    string $outPlug =  $assetNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData";
+    string $dstPlugs[] = `listConnections -d true -p true $outPlug`;
+    print $dstPlugs;
+    disconnectAttr $outPlug $dstPlugs[0];
+    string $inputGeos[] = `listConnections -s true -type "houdiniInputGeometry" $assetNode`;
+    string $srcPlugs[] = `listConnections -s true -p true ($inputGeos[0]+".inputGeometry")`;
+    string $srcXformPlugs[] = `listConnections -s true -p true ($inputGeos[0]+".inputTransform")`;
+    disconnectAttr $srcPlugs[0]  ($inputGeos[0]+".inputGeometry");
+    disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");
+    connectAttr $srcPlugs[0]  $dstPlugs[0];
+    delete $inputGeos[0];
+    return 0;
+}
+

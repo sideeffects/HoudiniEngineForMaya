@@ -1,3 +1,4 @@
+
 global proc int
 houdiniEngine_removeHistory(string $assetNode)
 {
@@ -6,16 +7,28 @@ houdiniEngine_removeHistory(string $assetNode)
         print("Error: assetConnectType suggests that this is not  a history asset\n");
         return 1;
     }
-
+    
+    // find the outMesh connection on the asset and the inMesh connection on the inputGeometry
+    // reconnect those plugs, discard the inputGeometry but leave the asset and any other inputs it has
+    // in case you want to reuse it elsewhere
+    // we assume one mesh input and one mesh output, but there could be secondary inputs that
+    // are not part of the history chain
+    // this currently does not deal with:
+    //     2 assets directly connected to each other 
+    // does not yet collapse 2 contiguous shapes
+    //     previous non-history case (where we had shape->inputGeo->asset->shape)
+    
+    
     string $outPlug =  $assetNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData";
     string $dstPlugs[] = `listConnections -d true -p true $outPlug`;
-    print $dstPlugs;
     disconnectAttr $outPlug $dstPlugs[0];
+    
     string $inputGeos[] = `listConnections -s true -type "houdiniInputGeometry" $assetNode`;
     string $srcPlugs[] = `listConnections -s true -p true ($inputGeos[0]+".inputGeometry")`;
     string $srcXformPlugs[] = `listConnections -s true -p true ($inputGeos[0]+".inputTransform")`;
     disconnectAttr $srcPlugs[0]  ($inputGeos[0]+".inputGeometry");
     disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");
+    
     connectAttr $srcPlugs[0]  $dstPlugs[0];
     delete $inputGeos[0];
     return 0;

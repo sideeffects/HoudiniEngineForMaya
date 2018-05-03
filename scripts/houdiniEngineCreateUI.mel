@@ -290,6 +290,23 @@ houdiniEngine_removeSelectedHistory()
 
     catchQuiet(`select -replace $old_selection`);
 }
+global proc
+houdiniEngine_addSelectedHistory()
+{
+    if(!`exists houdiniEngine_addHistory`)
+         source houdiniEngineHistoryAsset.mel;
+    string $old_selection[] = `ls -selection -long`;
+
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) != 1)
+    {
+        error("Please select exactly one asset node to add to history");
+    }
+    select -tgl $assetNodes[0];
+    houdiniEngine_addHistory($assetNodes[0]);
+
+    catchQuiet(`select -replace $old_selection`);
+}
 
 global proc
 houdiniEngine_createInstance(string $assetNode,
@@ -568,6 +585,8 @@ houdiniEngineCreateUI()
         -command "houdiniEngine_bakeSelectedAssets";
     menuItem -label "Remove Asset From History"
         -command "houdiniEngine_removeSelectedHistory";
+    menuItem -label "Add Asset To History"
+        -command "houdiniEngine_addSelectedHistory";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";
 

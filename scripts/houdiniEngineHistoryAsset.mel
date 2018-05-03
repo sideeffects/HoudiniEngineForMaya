@@ -1,5 +1,3 @@
-source houdiniEngineAssetSync;
-
 proc int
 stringArrayReverseAppend(string $to[], int $end, string $from[])
 {
@@ -202,7 +200,7 @@ houdiniEngine_addHistory(string $assetNode)
     // the parent asset will be history, so to speak .
     string $assets[] = `ls -sl -exactType "houdiniAsset"`;
     if(size ($assets) > 0) {
-        print("Error: adding an asset as history to the output of another asset is fraught with peril,\n bake the asset and select the detached output if you must ");
+        print("Warning: adding an asset as history to the output of another asset is fraught with peril,\n bake the asset and select the detached output if you must ");
         return 1;
     }
     
@@ -223,7 +221,6 @@ houdiniEngine_addHistory(string $assetNode)
     }
        
     string $components[];
-    string $componentSet;
     string $objects[] = `ls -selection -long -dag -shapes`;
     if(size($objects) > 0) {
         // object selection
@@ -234,8 +231,9 @@ houdiniEngine_addHistory(string $assetNode)
         $objects = `listRelatives -parent`;
 	if(size($objects) == 0) {
 	    return 1;
-	}	
-	$components = `ls -sl`;
+	}
+	// this will separate vtx, face and edge components from non-shape dag objects
+	$components = `ls -sl -type float3`;
     }
 
     string $inputAttr =  $assetNode + "." + $firstNodeInput;
@@ -330,6 +328,9 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $compo
         houdiniEngine_clearAssetInput($inputAttr);
         connectAttr $finalInputAttr $inputAttr;
     }
+
+    if(!`exists houdiniEngine_syncSelectedAsset`)
+        source houdiniEngineAssetSync;
 
     if($copyShape && `getAttr ($assetNodeName + ".assetConnectType")` != 1)
        houdiniEngine_syncAssetOutput $assetNodeName;

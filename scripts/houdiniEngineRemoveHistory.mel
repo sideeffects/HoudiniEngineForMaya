@@ -11,26 +11,75 @@ houdiniEngine_removeHistory(string $assetNode)
     // find the outMesh connection on the asset and the inMesh connection on the inputGeometry
     // reconnect those plugs, discard the inputGeometry but leave the asset and any other inputs it has
     // in case you want to reuse it elsewhere
-    // we assume one mesh input and one mesh output, but there could be secondary inputs that
-    // are not part of the history chain
-    // this currently does not deal with:
-    //     2 assets directly connected to each other 
-    // does not yet collapse 2 contiguous shapes
+    // we assume one mesh history/mesh input and one historymesh output
+    // but there could be secondary inputs that are not part of the history chain
+    // 4 ways the asset to be removed could be connected (nodes to be removed in caps):
+    //     asset->ASSET->asset
+    //     asset->ASSET->mesh/hist
+    //     mesh/hist->inputGeo->ASSET->asset
+    //     mesh/hist->INPUTGEO->ASSET->mesh/hist
+    // we do not expect a merge or curve or transform, since history nodes apply to a single mesh
+    // does not yet collapse 2 contiguous shape:
     //     previous non-history case (where we had shape->inputGeo->asset->shape)
     
-    
+
+    // the node that is downstream from the asset determines the upstream attr to connect on
+    // and whether or not we need to delete the houdiniInputGeometry as well
+    string $dstNode = "";
     string $outPlug =  $assetNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData";
-    string $dstPlugs[] = `listConnections -d true -p true $outPlug`;
+    string $dstPlugs[] = `listConnections -s false -p true $outPlug`;
+    if(size($dstPlugs) == 0) {
+        $outPlug =  $assetNode + ".outputObjects[0].outputObjectMetaData";
+        $dstPlugs = `listConnections -s false -p true $outPlug`;
+    }
+    if(size($dstPlugs) > 0) {
+	$dstNode = plugNode($dstPlugs[0]);
+    } else {
+        print "Error, this asset's output  is not connected as construction history\n";
+	return 1;
+    }
+    
+    string $srcPlugs[];
+    string $inputGeos[] = `listConnections -d false -type "houdiniInputGeometry" $assetNode`;
+    if(size($inputGeos) > 0) {
+        // input is mesh
+        if(`nodeType $dstNode` == "houdiniAsset") {
+	    //output is asset
+	    string $dstNodeIdPlugs[] = `listConnections -s false -p true ($inputGeos[0]+".outputNodeId")`;
+	    $srcPlugs[0] = ($inputGeos[0]+".outputNodeId");
+	    disconnectAttr $srcPlugs[0]  $dstNodeIdPlugs[0];
+	} else {
+	    // output is mesh
+            $srcPlugs = `listConnections -s true -p true ($inputGeos[0]+".inputGeometry")`;
+            string $srcXformPlugs[] = `listConnections -d false -p true ($inputGeos[0]+".inputTransform")`;
+            disconnectAttr $srcPlugs[0]  ($inputGeos[0]+".inputGeometry");
+            disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");  
+            delete $inputGeos[0];
+	}
+    } else {
+         string $srcDataPlugs[] = `listConnections -d false -p true  -type "houdiniAsset" $assetNode`;
+	 if(size($srcDataPlugs) > 0) {
+	     // input is asset
+	     string $dstNodeIdPlugs[] = `listConnections -s false -p true $srcDataPlugs[0]`;
+	     if(`nodeType $dstNode` == "houdiniAsset") {	     
+	         // output is asset
+ 	         $srcPlugs[0] = $srcDataPlugs[0];
+	         disconnectAttr $srcDataPlugs[0] $dstNodeIdPlugs[0]; 
+
+	     } else {
+	         // output is mesh
+		 string $srcNode = plugNode($srcDataPlugs[0]);
+		 $srcPlugs[0] = $srcNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData";
+	         disconnectAttr $srcDataPlugs[0] $dstNodeIdPlugs[0]; 
+	     }	
+	 } else {
+	      print "Error, this asset's input is not connected as construction history\n";
+	      return 1;
+	 }
+    }
     disconnectAttr $outPlug $dstPlugs[0];
-    
-    string $inputGeos[] = `listConnections -s true -type "houdiniInputGeometry" $assetNode`;
-    string $srcPlugs[] = `listConnections -s true -p true ($inputGeos[0]+".inputGeometry")`;
-    string $srcXformPlugs[] = `listConnections -s true -p true ($inputGeos[0]+".inputTransform")`;
-    disconnectAttr $srcPlugs[0]  ($inputGeos[0]+".inputGeometry");
-    disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");
-    
     connectAttr $srcPlugs[0]  $dstPlugs[0];
-    delete $inputGeos[0];
+    setAttr ($assetNode + ".assetConnectType") 0;
     return 0;
 }
 

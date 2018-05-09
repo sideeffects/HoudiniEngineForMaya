@@ -585,7 +585,7 @@ houdiniEngineCreateUI()
         -command "houdiniEngine_bakeSelectedAssets";
     menuItem -label "Remove Asset From History"
         -command "houdiniEngine_removeSelectedHistory";
-    menuItem -label "Add Asset To History"
+    menuItem -label "Add Asset To Mesh History"
         -command "houdiniEngine_addSelectedHistory";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";

@@ -67,7 +67,8 @@ createInputGeometryNode(string $transformAttr, string $geometryAttr)
 
     string $inputNode = `createNode -skipSelect houdiniInputGeometry`;
 
-    connectAttr $transformAttr ($inputNode + ".inputTransform");
+    if($transformAttr != "")
+        connectAttr $transformAttr ($inputNode + ".inputTransform");
     connectAttr $geometryAttr ($inputNode + ".inputGeometry");
 
     return ($inputNode + ".outputNodeId");
@@ -186,24 +187,8 @@ proc string getFirstNodeInput(string $nodeName, string $attr, string $fullAttr)
     }
     return "";
 }
-
-global proc int
-houdiniEngine_addHistory(string $assetNode)
+proc string getHistoryInputAttr(string $assetNode)
 {
-
-    print "Thank you for choosing to try adding a mesh history asset\n";
-    print "Currently it just finds the the first node or object input and connects the selected geo\n";
-    print "after validating that you have chosen a suitable mesh\n";
-    print "soon it will do more, better\n";
-
-    // if a mesh is parented under an asset, it will be gone next sync, and any history downstream of
-    // the parent asset will be history, so to speak .
-    string $assets[] = `ls -sl -exactType "houdiniAsset"`;
-    if(size ($assets) > 0) {
-        print("Warning: adding an asset as history to the output of another asset is fraught with peril,\n bake the asset and select the detached output if you must ");
-        return 1;
-    }
-    
     string $firstNodeInput = "";
     if(`getAttr -size ($assetNode + ".input")` > 0) {
 	$firstNodeInput = "input[0].inputNodeId";
@@ -211,13 +196,32 @@ houdiniEngine_addHistory(string $assetNode)
     
     if($firstNodeInput == "") {
         $firstNodeInput = getFirstNodeInput($assetNode, "houdiniAssetParm",  "houdiniAssetParm");
-        if($firstNodeInput == "")
-        {
-            // if there is no object input attr, adding this to history would be meaningless
-            // just sync the asset instead
-            print("Error: this asset has no inputs, adding it as history would be pointless ");
-            return 1;
-        }
+    }
+    return $firstNodeInput;
+}
+
+global proc int
+houdiniEngine_addHistory(string $assetNode)
+{
+    // if we get here from the menu, we will have already unselected the asset and passed it as an argument
+    // selection should just be the mesh (or some componenets of the mesh) that is to have the asset applied to it
+    
+    string $assets[] = `ls -sl -exactType "houdiniAsset"`;
+    if(size ($assets) > 0) {
+        print("Error: cannot add an asset as history to another asset\n ");
+        return 1;
+    }
+
+    // NEED TO CHECK: if the mesh is a non-history asset output, adding history might just make a real mess
+    
+    string $firstNodeInput = getHistoryInputAttr($assetNode);
+    
+    if($firstNodeInput == "")
+    {
+        // if there is no object input attr, inserting this into history would be meaningless
+        // NEED TO CHECK: do we want to be able to add it to a mesh that has no history?
+        print("Error: this asset has no inputs, adding it as history would invalidate previous history\n");
+        return 1;
     }
        
     string $components[];
@@ -304,6 +308,47 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $compo
         print "This asset is already connected as history\n";
 	return 0;
     }
+    int $upstreamIsAsset = 0;
+    if(`nodeType $upstreamNode` == "houdiniAsset") {
+        print "ok, it's a different asset\n";
+	$upstreamIsAsset = 1;
+	int $numUpstreamComps = 0;
+	
+	string $upstreamInputGeo = "";
+	string $upstreamInputAttr = "";
+	while ($upstreamInputGeo == "") {
+	    $upstreamInputAttr = getHistoryInputAttr($upstreamNode);
+	    if( $upstreamInputAttr == "") {
+	        break;
+	    }
+	    string $nextAttr = `connectionInfo -sfd ($upstreamNode + "." + $upstreamInputAttr)`;
+ 	    string $nextNode =  plugNode($nextAttr);
+	    if($nextNode == "") {
+		print "sigh, nothing connected on the expected input, but hey, probably no componenet input then \n";
+		break;
+	    }
+	    if(`nodeType $nextNode` == "houdiniInputGeometry") {
+		$upstreamInputGeo = $nextNode;
+		$numUpstreamComps = size(`getAttr ($upstreamInputGeo + ".inputComponents")`);
+		break;
+	    }
+	    if(`nodeType $nextNode` != "houdiniAsset") {
+	        print "Unexpected input,  this does not look like a real history connection\n";
+		break;
+	    }
+	    $upstreamNode = $nextNode;
+        }
+	 
+	// actually, it's OK if both have no componenets, or if both have the same components
+	// but for now, only connect directly if both have no components
+	// component lists
+	if($numComps > 0 || $numUpstreamComps > 0) {
+	    print "there were components selected or upstream, cannot connect directly\n";
+	    // need to insert a new
+	} else {
+	    // the attrs to connect should be the ones for direct connection of node ids
+	}	    
+    }
 
     // if there is no upstream history
     // then we need a copy of the original mesh, so we sync
@@ -311,10 +356,11 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $compo
     
     // if the selected mesh had history, connect the history rather than the shape
     if(!$copyShape) {
-        print "connecting asset upstream like true construction history\n";
-        connectAttr -f $upstreamAttr ($finalInputNode + ".inputGeometry");
+        if(! $upstreamIsAsset) {	
+            connectAttr -f $upstreamAttr ($finalInputNode + ".inputGeometry");
+	}
     } else {
-        print "needed an upstream copy of the mesh utter lack of history, or because of an upstream asset\n";
+        print "needed an upstream copy of the mesh because there is no history\n";
         print "just syncing the asset to get a new output mesh for now\n";
     }
 

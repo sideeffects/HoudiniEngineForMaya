@@ -8,14 +8,14 @@ houdiniEngine_bakeAsset(string $assetNode)
 
     // disconnect output objects
     string $children[] = `listRelatives -c -f $assetNode`;
-    string $outputObjCon[] = `listConnections -d true -p on ($assetNode + ".outputObjects")`;
+    string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
     for($con in $outputObjCon) {
         string $src = `connectionInfo -sfd $con`;
 	disconnectAttr $src $con;
     }
 
     // disconnect output materials
-    string $outputMatCon[] = `listConnections -d true -p on ($assetNode + ".outputMaterials")`;
+    string $outputMatCon[] = `listConnections -p on ($assetNode + ".outputMaterials")`;
 
     for($con in $outputMatCon) {
         string $src = `connectionInfo -sfd $con`;
@@ -23,7 +23,7 @@ houdiniEngine_bakeAsset(string $assetNode)
     }
     
     // disconnect output instancers
-    string $outputInstCon[] = `listConnections -d true -p on ($assetNode + ".outputInstancers")`;
+    string $outputInstCon[] = `listConnections -p on ($assetNode + ".outputInstancers")`;
 
     for($con in $outputInstCon) {
         string $src = `connectionInfo -sfd $con`;

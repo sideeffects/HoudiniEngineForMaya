@@ -413,6 +413,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
     {
         result = nAttr.createColor(attrName, attrName);
         nAttr.setNiceNameOverride(niceName);
+        nAttr.setChannelBox(true);
         return result;
     }
 
@@ -430,6 +431,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
                     type
                     );
             nAttr.setNiceNameOverride(childNiceName);
+	    nAttr.setChannelBox(true);
             cAttr.addChild(child);
         }
         return result;
@@ -437,6 +439,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
 
     result = nAttr.create(attrName, attrName, type);
     nAttr.setNiceNameOverride(niceName);
+    nAttr.setChannelBox(true);
 
     if(parm.type == HAPI_PARMTYPE_NODE)
     {
@@ -492,7 +495,7 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
         MString field = Util::HAPIString(choiceInfos[i].labelSH);
         eAttr.addField(field, static_cast<short>(enumIndex++));
     }
-
+    eAttr.setChannelBox(true);
     delete[] choiceInfos;
     return result;
 }

@@ -582,10 +582,13 @@ houdiniEngineCreateUI()
     menuItem -label "Sync Asset"
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Bake Asset"
+        -version 2019
         -command "houdiniEngine_bakeSelectedAssets";
     menuItem -label "Remove Asset From History"
+    	-version 2019
         -command "houdiniEngine_removeSelectedHistory";
     menuItem -label "Add Asset To Mesh History"
+    	-version 2019
         -command "houdiniEngine_addSelectedHistory";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";

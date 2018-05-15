@@ -244,7 +244,7 @@ houdiniEngine_addHistory(string $assetNode)
 
     // need to previous input from this asset if it's not the same as the current one
 
-    houdiniEngine_setHistoryAttr($inputAttr, $objects, $components);
+    houdiniEngine_connectHistory($inputAttr, $objects, $components);
 
     // if we can insert into history
     //     remove output geo, connect input geo's mesh input to inputGeometry
@@ -258,7 +258,7 @@ houdiniEngine_addHistory(string $assetNode)
 }
 
 global proc int
-houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $components[])
+houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $components[])
 {
     // Make Sure we have exactly one valid input object
     string $validObjects[];
@@ -309,45 +309,47 @@ houdiniEngine_setHistoryAttr(string $inputAttr, string $objects[], string $compo
 	return 0;
     }
     int $upstreamIsAsset = 0;
-    if(`nodeType $upstreamNode` == "houdiniAsset") {
-        print "ok, it's a different asset\n";
-	$upstreamIsAsset = 1;
-	int $numUpstreamComps = 0;
+    if($upstreamNode != "") {
+        if(`nodeType $upstreamNode` == "houdiniAsset") {
+            print "ok, it's a different asset\n";
+	    $upstreamIsAsset = 1;
+	    int $numUpstreamComps = 0;
 	
-	string $upstreamInputGeo = "";
-	string $upstreamInputAttr = "";
-	while ($upstreamInputGeo == "") {
-	    $upstreamInputAttr = getHistoryInputAttr($upstreamNode);
-	    if( $upstreamInputAttr == "") {
-	        break;
-	    }
-	    string $nextAttr = `connectionInfo -sfd ($upstreamNode + "." + $upstreamInputAttr)`;
- 	    string $nextNode =  plugNode($nextAttr);
-	    if($nextNode == "") {
-		print "sigh, nothing connected on the expected input, but hey, probably no componenet input then \n";
-		break;
-	    }
-	    if(`nodeType $nextNode` == "houdiniInputGeometry") {
-		$upstreamInputGeo = $nextNode;
-		$numUpstreamComps = size(`getAttr ($upstreamInputGeo + ".inputComponents")`);
-		break;
-	    }
-	    if(`nodeType $nextNode` != "houdiniAsset") {
-	        print "Unexpected input,  this does not look like a real history connection\n";
-		break;
-	    }
-	    $upstreamNode = $nextNode;
-        }
+    	    string $upstreamInputGeo = "";
+	    string $upstreamInputAttr = "";
+	    while ($upstreamInputGeo == "") {
+	        $upstreamInputAttr = getHistoryInputAttr($upstreamNode);
+	        if( $upstreamInputAttr == "") {
+	            break;
+	        }
+	        string $nextAttr = `connectionInfo -sfd ($upstreamNode + "." + $upstreamInputAttr)`;
+ 	        string $nextNode =  plugNode($nextAttr);
+	        if($nextNode == "") {
+		    print "sigh, nothing connected on the expected input, but hey, probably no componenet input then \n";
+		    break;
+	        }
+	        if(`nodeType $nextNode` == "houdiniInputGeometry") {
+		    $upstreamInputGeo = $nextNode;
+		    $numUpstreamComps = size(`getAttr ($upstreamInputGeo + ".inputComponents")`);
+		    break;
+	        }
+	        if(`nodeType $nextNode` != "houdiniAsset") {
+	            print "Unexpected input,  this does not look like a real history connection\n";
+		    break;
+	        }
+	        $upstreamNode = $nextNode;
+            }
 	 
-	// actually, it's OK if both have no componenets, or if both have the same components
-	// but for now, only connect directly if both have no components
-	// component lists
-	if($numComps > 0 || $numUpstreamComps > 0) {
-	    print "there were components selected or upstream, cannot connect directly\n";
-	    // need to insert a new
-	} else {
+	    // actually, it's OK if both have no componenets, or if both have the same components
+	    // but for now, only connect directly if both have no components
+	    // component lists
+	    if($numComps > 0 || $numUpstreamComps > 0) {
+	        print "there were components selected or upstream, cannot connect directly\n";
+	        // need to insert a new
+    	    } else {
 	    // the attrs to connect should be the ones for direct connection of node ids
-	}	    
+	    }	    
+        }
     }
 
     // if there is no upstream history

@@ -281,51 +281,40 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
         return 0;
     }
     
-    string $validObject = $validObjects[0];
-    string $upstreamAttr = `connectionInfo -sfd ($validObject + ".inMesh")`;
-    string $finalInputAttr = getInputNodeForSingle($validObject);
-    string $finalInputNode = plugNode($finalInputAttr);
+    string $targetMesh = $validObjects[0];
+    string $upstreamAttr = `connectionInfo -sfd ($targetMesh + ".inMesh")`;
+    string $finalUpstreamAttr = getInputNodeForSingle($targetMesh);
+    string $finalUpstreamNode = plugNode($finalUpstreamAttr);
 
     // Note: if we are selecting components, we need an inputGeometry node upstream, not another asset
     // need to enforce that somewhere
     
     int $numComps = size($components);
-    if($numComps > 0) {
-        string $cmd = "setAttr " + $finalInputNode + ".inputComponents -type componentList ";
-	$cmd += $numComps;
-	for($comp in $components) {
-	    string $buffer[];
-	    int $numTokens = `tokenize $comp "." $buffer`;
-	    if($numTokens > 1)
-	        $cmd += " " + $buffer[1];	    
-	}
-	eval $cmd;
-    }
 
     string $upstreamNode = plugNode($upstreamAttr);
-    string $assetNodeName = plugNode($inputAttr);
-    if($upstreamNode == $assetNodeName) {
+    string $assetNode = plugNode($inputAttr);
+    if($upstreamNode == $assetNode) {
         print "This asset is already connected as history\n";
 	return 0;
     }
     int $upstreamIsAsset = 0;
     if($upstreamNode != "") {
         if(`nodeType $upstreamNode` == "houdiniAsset") {
-            print "ok, it's a different asset\n";
 	    $upstreamIsAsset = 1;
 	    int $numUpstreamComps = 0;
 	
     	    string $upstreamInputGeo = "";
 	    string $upstreamInputAttr = "";
+	    string $upstreamInputNode = $upstreamNode;
 	    while ($upstreamInputGeo == "") {
-	        $upstreamInputAttr = getHistoryInputAttr($upstreamNode);
+	        $upstreamInputAttr = getHistoryInputAttr($upstreamInputNode);
 	        if( $upstreamInputAttr == "") {
 	            break;
 	        }
-	        string $nextAttr = `connectionInfo -sfd ($upstreamNode + "." + $upstreamInputAttr)`;
+	        string $nextAttr = `connectionInfo -sfd ($upstreamInputNode + "." + $upstreamInputAttr)`;
  	        string $nextNode =  plugNode($nextAttr);
 	        if($nextNode == "") {
-		    print "sigh, nothing connected on the expected input, but hey, probably no componenet input then \n";
+		    // upstreammost node was asset, so no component selection applies
 		    break;
 	        }
 	        if(`nodeType $nextNode` == "houdiniInputGeometry") {
@@ -337,36 +326,47 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
 	            print "Unexpected input,  this does not look like a real history connection\n";
 		    break;
 	        }
-	        $upstreamNode = $nextNode;
+	        $upstreamInputNode = $nextNode;
             }
 	 
-	    // actually, it's OK if both have no componenets, or if both have the same components
-	    // but for now, only connect directly if both have no components
-	    // component lists
+	    // if there is no component selection here or upstream, connect the objects directly
+	    // ideally, if both had the same component selection they could be connected directly too
+	    // but if there is topo change in the history, just comparing component ids may not be sufficient
 	    if($numComps > 0 || $numUpstreamComps > 0) {
-	        print "there were components selected or upstream, cannot connect directly\n";
-	        // need to insert a new
-    	    } else {
-	    // the attrs to connect should be the ones for direct connection of node ids
-	    }	    
+		$finalUpstreamAttr = createInputGeometryNode("", ($upstreamNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData"));
+		$finalUpstreamNode = plugNode($finalUpstreamAttr);
+    	    }
         }
     }
 
+    // 
+    if($numComps > 0) {
+        string $cmd = "setAttr " + $finalUpstreamNode + ".inputComponents -type componentList ";
+	$cmd += $numComps;
+	for($comp in $components) {
+	    string $buffer[];
+	    int $numTokens = `tokenize $comp "." $buffer`;
+	    if($numTokens > 1)
+	        $cmd += " " + $buffer[1];	    
+	}
+	eval $cmd;
+    }
+    
     // if there is no upstream history
     // then we need a copy of the original mesh, so we sync
     int $copyShape = ($upstreamAttr == "");
-    
+
     // if the selected mesh had history, connect the history rather than the shape
     if(!$copyShape) {
         if(! $upstreamIsAsset) {	
-            connectAttr -f $upstreamAttr ($finalInputNode + ".inputGeometry");
+            connectAttr -f $upstreamAttr ($finalUpstreamNode + ".inputGeometry");
 	}
     } else {
         print "needed an upstream copy of the mesh because there is no history\n";
         print "just syncing the asset to get a new output mesh for now\n";
     }
 
-    if(`isConnected $finalInputAttr $inputAttr`)
+    if(`isConnected $finalUpstreamAttr $inputAttr`)
     {
         // if it was already connected as history, we never got here
 	// if the output is connected to something else, maybe that's OK too?
@@ -374,23 +374,23 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
 	// maybe we should set the connectType back to default so it can sync again?
     } else {  
         houdiniEngine_clearAssetInput($inputAttr);
-        connectAttr $finalInputAttr $inputAttr;
+        connectAttr $finalUpstreamAttr $inputAttr;
     }
 
     if(!`exists houdiniEngine_syncSelectedAsset`)
         source houdiniEngineAssetSync;
 
-    if($copyShape && `getAttr ($assetNodeName + ".assetConnectType")` != 1)
-       houdiniEngine_syncAssetOutput $assetNodeName;
+    if($copyShape && `getAttr ($assetNode + ".assetConnectType")` != 1)
+       houdiniEngine_syncAssetOutput $assetNode;
 
     // if the selected mesh had history, connect the asset output back to the shape
     if(!$copyShape){
          // NEED to disconnect it from the original output first
-         connectAttr -f ($assetNodeName + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData") ($validObject + ".inMesh");
+         connectAttr -f ($assetNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData") ($targetMesh + ".inMesh");
     }
 	
     // only want to sync output at most once for history node.
-    setAttr ($assetNodeName + ".assetConnectType") 1;
+    setAttr ($assetNode + ".assetConnectType") 1;
 
     // if copyshape was true, need to parent copy next to input
     // and set the upstream shape to intermediate

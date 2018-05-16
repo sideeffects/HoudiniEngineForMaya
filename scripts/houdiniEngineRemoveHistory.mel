@@ -53,7 +53,8 @@ houdiniEngine_removeHistory(string $assetNode)
             $srcPlugs = `listConnections -s true -p true ($inputGeos[0]+".inputGeometry")`;
             string $srcXformPlugs[] = `listConnections -d false -p true ($inputGeos[0]+".inputTransform")`;
             disconnectAttr $srcPlugs[0]  ($inputGeos[0]+".inputGeometry");
-            disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");  
+	    if(size($srcXformPlugs) > 0)
+                disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");  
             delete $inputGeos[0];
 	}
     } else {

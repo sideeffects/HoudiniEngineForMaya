@@ -83,13 +83,13 @@ houdiniEngine_loadAssetLibrary(string $assetLibraryFilePath)
     }
 }
 
-global proc
+global proc string
 houdiniEngine_loadAsset(string $assetLibraryFilePath, string $asset)
 {
     houdiniEngine_addRecentAsset $assetLibraryFilePath $asset;
     houdiniEngineAssetLibraryManager_addLoadedFile $assetLibraryFilePath;
 
-    houdiniAsset -loadAsset $assetLibraryFilePath $asset;
+    return `houdiniAsset -loadAsset $assetLibraryFilePath $asset`;
 }
 
 global proc

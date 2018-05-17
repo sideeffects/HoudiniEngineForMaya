@@ -68,3 +68,40 @@ houdiniEngine_run(string $cmds[])
 
     system($final_cmd);
 }
+global proc string
+houdiniEngine_findAsset(string $assetFileName)
+{
+    int $isLinux = `about -linux`;
+    int $isWindows = `about -win`;
+    int $isMac = `about -mac`;
+    string $assetPath = "";
+
+    string $pathenv = `getenv "HOUDINI_MAYA_ASSET_PATH"`;
+    if($isLinux || $isMac)
+    {
+	string $path[]; 
+	if($pathenv != "") {
+	     int $pathLen = `tokenize $pathenv ":" $path`;
+	     for ($dir in $path) {
+	         $assetPath = $dir + "/" + $assetFileName;
+		 if(`filetest -e $assetPath`) {
+		      return $assetPath;
+		 }
+	     }
+	} 
+    }
+    else if($isWindows)
+    {
+	string $path[]; 
+	if($pathenv != "") {
+	     int $pathLen = `tokenize $pathenv ";" $path`;
+	     for ($dir in $path) {
+	         $assetPath = $dir + "\\" + $assetFileName;
+		 if(`filetest -e $assetPath`) {
+		      return $assetPath;
+		 }
+	     }
+	} 
+    }
+}
+

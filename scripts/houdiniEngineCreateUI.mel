@@ -73,7 +73,7 @@ houdiniEngine_loadAssetLibrary(string $assetLibraryFilePath)
 
         if($asset == "dismiss")
         {
-            $asse = "";
+            $asset = "";
         }
     }
 

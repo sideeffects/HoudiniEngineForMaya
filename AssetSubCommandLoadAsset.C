@@ -98,7 +98,7 @@ AssetSubCommandLoadAsset::doIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    MFnDependencyNode assetNodeFn(assetNodeObj);
+    MFnTransform assetNodeFn(assetNodeObj);
 
     // The asset should have been instantiated by now. If we couldn't
     // instantiate the asset, then don't operate on the asset any further. This
@@ -124,7 +124,7 @@ AssetSubCommandLoadAsset::doIt()
     MGlobal::select(assetNodeObj);
 
     // set result
-    MPxCommand::setResult(assetNodeFn.name());
+    MPxCommand::setResult(assetNodeFn.partialPathName());
 
     return MStatus::kSuccess;
 }

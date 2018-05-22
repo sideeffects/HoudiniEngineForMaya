@@ -266,6 +266,9 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
     int $validObjectsCount = validateInputObjects($objects,
             $validObjects,  $invalidObjects);
 
+    if(!`exists houdiniEngine_clearAssetInput`)
+        source houdiniEngineAssetInput;
+	
     if(size($invalidObjects))
     {
         print("Error: Some selected objects are not even remotely close to meshes: "
@@ -398,3 +401,17 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
     return 1;
 }
 
+global proc 
+houdiniEngine_loadAndAddHistory(string $assetFile, string $assetName)
+{
+
+    // assume that geo to get history is selected
+    // but load asset selects the newly created asset node instead
+    string $old_selection[] = `ls -selection -long`;
+    string $assetLocation = `houdiniEngine_findAsset $assetFile`;
+    
+    string $assetNode = `houdiniEngine_loadAsset $assetLocation $assetName`;
+    catchQuiet(`select -replace $old_selection`);
+    houdiniEngine_addHistory( $assetNode);
+    
+}

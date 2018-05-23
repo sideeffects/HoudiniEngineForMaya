@@ -83,9 +83,12 @@ houdiniEngine_findAsset(string $assetFileName)
 	if($pathenv != "") {
 	     int $pathLen = `tokenize $pathenv ":" $path`;
 	     for ($dir in $path) {
-	         $assetPath = $dir + "/" + $assetFileName;
+	         $assetPath = $dir;
+	         if(!endsWith($dir, "/"))
+	             $assetPath += "/";
+	         $assetPath += $assetFileName;
 		 if(`filetest -e $assetPath`) {
-		      return $assetPath;
+		      break;
 		 }
 	     }
 	} 
@@ -96,12 +99,16 @@ houdiniEngine_findAsset(string $assetFileName)
 	if($pathenv != "") {
 	     int $pathLen = `tokenize $pathenv ";" $path`;
 	     for ($dir in $path) {
-	         $assetPath = $dir + "\\" + $assetFileName;
+	     	 $assetPath = $dir;
+	         if(!endsWith($dir, "\\"))
+		     $assetPath += "\\";
+	         $assetPath +=  $assetFileName;
 		 if(`filetest -e $assetPath`) {
-		      return $assetPath;
+		      break;
 		 }
 	     }
 	} 
     }
+    return $assetPath;
 }
 

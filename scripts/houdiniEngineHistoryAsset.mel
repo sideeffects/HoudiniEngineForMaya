@@ -410,6 +410,8 @@ houdiniEngine_loadAndAddHistory(string $assetFile, string $assetName)
     string $old_selection[] = `ls -selection -long`;
     string $assetLocation = `houdiniEngine_findAsset $assetFile`;
     
+    if(!`exists houdiniEngine_loadAsset`)
+        source houdiniEngineCreateUI;
     string $assetNode = `houdiniEngine_loadAsset $assetLocation $assetName`;
     catchQuiet(`select -replace $old_selection`);
     houdiniEngine_addHistory( $assetNode);

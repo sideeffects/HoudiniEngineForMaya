@@ -401,6 +401,22 @@ houdiniEngine_viewInHoudini()
 }
 
 global proc
+houdiniEngine_showOutliner(int $show, int $history)
+{
+    string $assets[] = `ls -type houdiniAsset`;
+    for ($asset in $assets) {
+        if($show) {
+	    setAttr ($asset + ".hiddenInOutliner") false;
+	} else {
+	    if(!$history || (`getAttr ($asset + ".assetConnectType")` == 1))
+	        setAttr ($asset + ".hiddenInOutliner") true;
+	}
+    }
+    AEdagNodeCommonRefreshOutliners();
+    
+}
+
+global proc
 houdiniEngine_launchOrboltPageClick()
 {
     launch -web "http://www.orbolt.com/maya";
@@ -612,6 +628,22 @@ houdiniEngineCreateUI()
 
     menuItem -label "Preferences..."
         -command "houdiniEnginePreferences";
+
+    menuItem
+        -label "Show/Hide"
+        -subMenu true
+        -tearOff true;
+
+        menuItem -label "Hide Assets in Outliner"
+            -command "houdiniEngine_showOutliner 0 0";
+
+        menuItem -label "Hide History Assets in Outliner"
+            -command "houdiniEngine_showOutliner 0 1";
+	    
+        menuItem -label "Show Assets in Outliner"
+            -command "houdiniEngine_showOutliner 1 0";
+
+    setParent -menu ..;
 
     menuItem -divider true;
 

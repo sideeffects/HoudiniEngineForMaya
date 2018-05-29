@@ -80,7 +80,9 @@ houdiniEngine_removeHistory(string $assetNode)
     }
     disconnectAttr $outPlug $dstPlugs[0];
     connectAttr $srcPlugs[0]  $dstPlugs[0];
-    setAttr ($assetNode + ".assetConnectType") 0;
+    
+    // setAttr ($assetNode + ".assetConnectType") 0;
+    delete $assetNode;
     return 0;
 }
 

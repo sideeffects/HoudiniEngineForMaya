@@ -283,6 +283,18 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
               + stringArrayToString($validObjects, " ") + "\n");
         return 0;
     }
+
+    string $assetNode = plugNode($inputAttr);
+
+    // get rid of the children from any previous syncs, and turn off any syncing options
+    setAttr ($assetNode + ".syncWhenInputConnects") 0;
+    setAttr ($assetNode + ".autoSyncOutputs") 0;
+    setAttr ($assetNode + ".outputGeometryGroups") 0;
+    string $children[] = `listRelatives -c -f $assetNode`;
+    for($child in $children) {
+	delete $child;
+    }
+
     
     string $targetMesh = $validObjects[0];
     string $upstreamAttr = `connectionInfo -sfd ($targetMesh + ".inMesh")`;
@@ -295,7 +307,6 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
     int $numComps = size($components);
 
     string $upstreamNode = plugNode($upstreamAttr);
-    string $assetNode = plugNode($inputAttr);
     if($upstreamNode == $assetNode) {
         print "This asset is already connected as history\n";
 	return 0;
@@ -385,8 +396,6 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
     {
         // if it was already connected as history, we never got here
 	// if the output is connected to something else, maybe that's OK too?
-	// if there is no output, but copyshape is on
-	// maybe we should set the connectType back to default so it can sync again?
     } else {  
         houdiniEngine_clearAssetInput($inputAttr);
         connectAttr $finalUpstreamAttr $inputAttr;

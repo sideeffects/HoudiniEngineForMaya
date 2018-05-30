@@ -567,7 +567,7 @@ houdiniEngineCreateUI()
 
     global string $gMainWindow;
     setParent $gMainWindow;
-
+    string $mayaVersion = `about -version`;
     menu -label "Houdini Engine"
         -tearOff true
         houdiniEngineMenu;
@@ -598,13 +598,13 @@ houdiniEngineCreateUI()
     menuItem -label "Sync Asset"
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Bake Asset"
-        -version 2019
+        -version $mayaVersion
         -command "houdiniEngine_bakeSelectedAssets";
     menuItem -label "Remove Asset From History"
-    	-version 2019
+    	-version $mayaVersion
         -command "houdiniEngine_removeSelectedHistory";
     menuItem -label "Add Asset To Mesh History"
-    	-version 2019
+    	-version $mayaVersion
         -command "houdiniEngine_addSelectedHistory";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";
@@ -631,17 +631,21 @@ houdiniEngineCreateUI()
 
     menuItem
         -label "Show/Hide"
+     	-version $mayaVersion
         -subMenu true
         -tearOff true;
 
         menuItem -label "Hide Assets in Outliner"
+    	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 0";
 
         menuItem -label "Hide History Assets in Outliner"
+     	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 1";
 	    
         menuItem -label "Show Assets in Outliner"
-            -command "houdiniEngine_showOutliner 1 0";
+     	   -version $mayaVersion
+           -command "houdiniEngine_showOutliner 1 0";
 
     setParent -menu ..;
 

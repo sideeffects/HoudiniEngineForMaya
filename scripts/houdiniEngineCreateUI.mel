@@ -492,6 +492,18 @@ houdiniEngineCreateUI()
     //cleanup UI
     houdiniEngineDeleteUI;
 
+    // engine on the Mac has conflicts with Maya-style file browser dialog
+    int $isMac = `about -mac`;
+    if($isMac) {
+        if(`optionVar -q houdiniEngineSessionType` == 0
+	    && `optionVar -q FileDialogStyle` == 2) {
+	    if(!`about -batch`)
+	        confirmDialog -title "Warning" -message "houdiniEngine will reset the File Dialog style to OS Native.\nThis is required when using in-process evaluation with houdiniEngine";
+            optionVar -iv FileDialogStyle 1;
+	}
+    }
+    
+
     global string $gMainWindow;
     setParent $gMainWindow;
 

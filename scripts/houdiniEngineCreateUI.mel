@@ -635,7 +635,7 @@ houdiniEngineCreateUI()
         -subMenu true
         -tearOff true;
 
-        menuItem -label "Hide Assets in Outliner"
+        menuItem -label "Hide All Assets in Outliner"
     	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 0";
 
@@ -643,7 +643,7 @@ houdiniEngineCreateUI()
      	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 1";
 	    
-        menuItem -label "Show Assets in Outliner"
+        menuItem -label "Show All Assets in Outliner"
      	   -version $mayaVersion
            -command "houdiniEngine_showOutliner 1 0";
 

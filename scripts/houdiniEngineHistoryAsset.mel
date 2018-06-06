@@ -410,7 +410,7 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
     return 1;
 }
 
-global proc 
+global proc string
 houdiniEngine_loadAndAddHistory(string $assetFile, string $assetName)
 {
 
@@ -422,7 +422,12 @@ houdiniEngine_loadAndAddHistory(string $assetFile, string $assetName)
     if(!`exists houdiniEngine_loadAsset`)
         source houdiniEngineCreateUI;
     string $assetNode = `houdiniEngine_loadAsset $assetLocation $assetName`;
+
     catchQuiet(`select -replace $old_selection`);
     houdiniEngine_addHistory( $assetNode);
-    
+    if(!`about -batch`) {
+        showEditor $assetNode;
+        copyAEWindow;
+    }
+    return $assetNode;
 }

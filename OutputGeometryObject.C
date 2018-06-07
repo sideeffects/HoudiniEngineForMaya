@@ -115,7 +115,10 @@ OutputGeometryObject::compute(
     }
 
     // compute transform
-    if(myNodeInfo.totalCookCount > myLastCookCount)
+    // When an asset is an OBJ subnet, calling HAPI_CookNode() on the asset
+    // doesn't cause a cook on the OBJ nodes in the asset. So the
+    // HAPI_NodeInfo.totalCookCount would never be incremented.
+    //if(myNodeInfo.totalCookCount > myLastCookCount)
     {
         MDataHandle transformHandle = objectHandle.child(AssetNode::outputObjectTransform);
         updateTransform(transformHandle);

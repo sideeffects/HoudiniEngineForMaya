@@ -111,7 +111,7 @@ class OutputGeometryPart
                 );
 
         template<typename T>
-        void convertParticleAttribute(
+        bool convertParticleAttribute(
                 T arrayDataFn,
                 const char* houdiniName
                 );

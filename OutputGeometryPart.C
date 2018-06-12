@@ -461,7 +461,7 @@ OutputGeometryPart::computeCurves(
 }
 
 template<typename T>
-void
+bool
 OutputGeometryPart::convertParticleAttribute(
         T particleArray,
         const char* houdiniName
@@ -481,11 +481,13 @@ OutputGeometryPart::convertParticleAttribute(
                     )))
     {
         particleArray = Util::reshapeArray<T>(dataArray);
+	return true;
     }
     else
     {
         Trait::resize(particleArray, myPartInfo.pointCount);
         Util::zeroArray(particleArray);
+	return false;
     }
 }
 
@@ -953,18 +955,31 @@ OutputGeometryPart::computeParticle(
     markAttributeUsed("mass");
 
     // birthTime
-    convertParticleAttribute(
+    bool birthTimeDefined = convertParticleAttribute(
             arrayDataFn.doubleArray("birthTime"),
             "birthTime"
             );
     markAttributeUsed("birthTime");
 
     // age
-    convertParticleAttribute(
+    bool ageDefined = convertParticleAttribute(
             arrayDataFn.doubleArray("age"),
             "age"
             );
     markAttributeUsed("age");
+
+    // in Maya, age is an output computed from birthTime
+    // so if the asset has explicitly defined birthTime, we use it
+    // if there is age but no birthTime, we compute it from age
+    // if there is neither age nor birthTime, we leave birthTime zeroed
+    if(ageDefined && !birthTimeDefined) {
+	double timeInSec = time.as(MTime::Unit::kSeconds);
+        MDoubleArray birthTimeArray = arrayDataFn.doubleArray("birthTime");
+        MDoubleArray ageArray = arrayDataFn.doubleArray("age");
+	for(int i=0; i<particleCount; i++) {
+	    birthTimeArray[i] = timeInSec - ageArray[i];
+	}
+    }
 
     // lifespanPP
     convertParticleAttribute(

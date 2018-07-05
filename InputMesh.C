@@ -286,8 +286,29 @@ InputMesh::processNormals(
     MIntArray normalIds;
     meshFn.getNormalIds(normalCounts, normalIds);
 
-    if(!normalIds.length())
+    if(myUnlockNormals || !normalIds.length())
     {
+        // if there are no normals being set on the input
+        // delete any left over from the previous input
+	HAPI_AttributeInfo attributeInfo;
+        attributeInfo.exists = true;
+        attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+        attributeInfo.storage = HAPI_STORAGETYPE_INT;
+        attributeInfo.count = 1;
+        attributeInfo.tupleSize = 1;
+
+	HAPI_DeleteAttribute(Util::theHAPISession.get(),
+			 geometryNodeId(), 0,
+                         "maya_locked_normal",
+                         &attributeInfo );
+        attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+        attributeInfo.count = 1;
+        attributeInfo.tupleSize = 3;
+	HAPI_DeleteAttribute(Util::theHAPISession.get(),
+		         geometryNodeId(), 0,
+                         "N",
+                         &attributeInfo);
+       
         return false;
     }
 

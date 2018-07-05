@@ -51,6 +51,7 @@ class Input
 
         HAPI_NodeId transformNodeId() const { return myTransformNodeId; };
         HAPI_NodeId geometryNodeId() const { return myGeometryNodeId; };
+	void setUnlockNormals(bool unlockNormals);
 
         void setInputName(
                 HAPI_AttributeOwner owner, int count,
@@ -80,6 +81,8 @@ class Input
             myGeometryNodeId = nodeId;
         };
 
+	bool myUnlockNormals;
+	
     private:
         static void nameChangedCallback(
                 MObject &node, const MString &str, void *clientData

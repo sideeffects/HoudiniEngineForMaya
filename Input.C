@@ -92,6 +92,7 @@ void Inputs::setNumInputs(int numInputs)
 }
 
 Input::Input() :
+    myUnlockNormals(0),
     myGeometryNodeId(-1)
 {
 }
@@ -210,6 +211,11 @@ Input::setInputName(
                     std::vector<const char*>(count, name.asChar())
                     ));
     }
+}
+
+void Input::setUnlockNormals(bool unlockNormals)
+{
+    myUnlockNormals = unlockNormals;
 }
 
 void

@@ -1,6 +1,6 @@
 global proc AEhoudiniInputGeometryTemplate(string $nodeName)
 {
-    editorTemplate -beginScrollLayour;
+    editorTemplate -beginScrollLayout;
     editorTemplate -beginLayout "Inputs" -collapse false;
 
         editorTemplate

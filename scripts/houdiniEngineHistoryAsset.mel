@@ -318,8 +318,8 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
     
     if($upstreamNode == "") {
         string $copyForUpstream[] = `duplicate -n "polySurface#" $targetMesh`;
-	string $newUpstreamShape[] = `listRelatives -shapes  $copyForUpstream[0]`;
-	string $targetXform[] = `listRelatives -parent $targetMesh`;
+	string $newUpstreamShape[] = `listRelatives -fullPath -shapes  $copyForUpstream[0]`;
+	string $targetXform[] = `listRelatives -fullPath -parent $targetMesh`;
 	string $upstreamNodes[] = `parent -add -shape $newUpstreamShape[0] $targetXform[0]`;
 	// reparenting can change name and/or partial path, so we re-get node name here
 	$upstreamNode = $upstreamNodes[0];

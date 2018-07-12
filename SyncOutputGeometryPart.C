@@ -249,14 +249,6 @@ SyncOutputGeometryPart::createOutputMesh(
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    // always assign a default material to the object level
-    // this ensures faces are always shaded, even when asset has changing number
-    // of faces
-    myDagModifier.commandToExecute(
-            MString("sets -e -forceElement initialShadingGroup ")
-            + partMeshFn.fullPathName()
-            );
-
     // set mesh.displayColors
     myDagModifier.newPlugValueBool(
             partMeshFn.findPlug("displayColors"),
@@ -383,6 +375,7 @@ SyncOutputGeometryPart::createOutputMesh(
         }
 
         // if there are maya_shading_group
+	bool objectShaderAssigned = false;
         if(!mayaSGAttributePlug.isNull())
         {
             MPlug mayaSGOwnerPlug = mayaSGAttributePlug.child(
@@ -397,31 +390,13 @@ SyncOutputGeometryPart::createOutputMesh(
             if(owner == "detail")
             {
                 MString mayaSG = mayaSGDataPlug.asString();
-
-                MIntArray* components = new MIntArray();
-                for(size_t i = 0; i < hasMaterials.size(); i++)
-                {
-                    if(hasMaterials[i])
-                    {
-                        continue;
-                    }
-
-                    hasMaterials[i] = true;
-
-                    components->append(i);
-                }
-
-                if(components->length())
-                {
-                    materialComponents.push_back(MaterialComponent(
-                                Util::findNodeByName(mayaSG.asChar(),
-                                    MFn::kShadingEngine),
-                                components));
-                }
-                else
-                {
-                    delete components;
-                }
+                myDagModifier.commandToExecute(
+                     MString("sets -e -forceElement ")
+		     + mayaSG
+		     + MString(" ")
+                     + partMeshFn.fullPathName()
+                );
+	        objectShaderAssigned = true;	
             }
             else if(owner == "primitive")
             {
@@ -470,6 +445,15 @@ SyncOutputGeometryPart::createOutputMesh(
                 }
             }
         }
+	if(!objectShaderAssigned) {
+	    // use default shader for object level shader if none was specified in the detail attrs
+	    // so that new, unassigned faces have a fallback shader assignment
+	    myDagModifier.commandToExecute(
+                MString("sets -e -forceElement initialShadingGroup ")
+                + partMeshFn.fullPathName()
+                );
+	}
+	  
 
         // assign materials
         MObject defaultMaterialObj = Util::findNodeByName("initialShadingGroup",

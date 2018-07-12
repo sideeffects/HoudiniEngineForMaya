@@ -30,12 +30,15 @@ houdiniEngine_bakeAsset(string $assetNode)
 	disconnectAttr $src $con;
     }
     
-    // if an output was completely empty (only has transforms) delete it 
+    // if an output was completely empty (only has transforms) delete it
+    // delete construction history on mesh shapes as well as disconnecting
+    // or we can end up with corrupt history with groupParts nodes and vanishing geo
     for($child in $children) {
         string $allDescendents[] = `listRelatives -ad -f $child`;
         int $hasShape = 0;
         for($desc in $allDescendents) {
 	    if(`objectType -isAType "shape" $desc`) {
+	        delete -ch $desc;
 	        $hasShape = 1;
 		break;
 	    }

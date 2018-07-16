@@ -8,31 +8,10 @@ houdiniEngine_bakeAsset(string $assetNode)
 
     // disconnect output objects
     string $children[] = `listRelatives -c -f $assetNode`;
-    string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
-    for($con in $outputObjCon) {
-        string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
-    }
-
-    // disconnect output materials
-    string $outputMatCon[] = `listConnections -p on ($assetNode + ".outputMaterials")`;
-
-    for($con in $outputMatCon) {
-        string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
-    }
-    
-    // disconnect output instancers
-    string $outputInstCon[] = `listConnections -p on ($assetNode + ".outputInstancers")`;
-
-    for($con in $outputInstCon) {
-        string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
-    }
-    
+       
     // if an output was completely empty (only has transforms) delete it
-    // delete construction history on mesh shapes as well as disconnecting
-    // or we can end up with corrupt history with groupParts nodes and vanishing geo
+    // delete construction history on mesh shapes: which doesn't delete plugin history
+    // but will deal with sets and groups (i.e. complex material assignement) 
     for($child in $children) {
         string $allDescendents[] = `listRelatives -ad -f $child`;
         int $hasShape = 0;
@@ -56,6 +35,28 @@ houdiniEngine_bakeAsset(string $assetNode)
 	else
 	    delete $child;
     }
+    string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
+    for($con in $outputObjCon) {
+        string $src = `connectionInfo -sfd $con`;
+	disconnectAttr $src $con;
+    }
+
+    // disconnect output materials
+    string $outputMatCon[] = `listConnections -p on ($assetNode + ".outputMaterials")`;
+
+    for($con in $outputMatCon) {
+        string $src = `connectionInfo -sfd $con`;
+	disconnectAttr $src $con;
+    }
+    
+    // disconnect output instancers
+    string $outputInstCon[] = `listConnections -p on ($assetNode + ".outputInstancers")`;
+
+    for($con in $outputInstCon) {
+        string $src = `connectionInfo -sfd $con`;
+	disconnectAttr $src $con;
+    }
+
     // don't disconnect output transforms, since they connect back to the asset
     // connection is determinded by the asset options
     // and not a particular output

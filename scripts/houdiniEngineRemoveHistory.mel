@@ -1,4 +1,39 @@
 
+proc int
+only_geo_upstream(string $dstNode) {
+    // is there non-trivial mesh history upstream, or just a copy of the mesh?
+    // and set/group membership
+    string $historyInput = "";
+    if(`nodeType $dstNode` == "mesh") {
+    	$historyInput = ($dstNode + ".inMesh");	    
+    } else if(`nodeType $dstNode` == "groupParts") {
+        $historyInput = ($dstNode + ".inputGeometry");
+    } else {
+        return 0;
+    }
+     string $srcNodes[] = `listConnections -sh true -d false $historyInput`;
+     if(size($srcNodes) > 0)
+         return(only_geo_upstream($srcNodes[0]));
+     else
+         return 1;
+}
+proc string
+skip_downstream_sets(string $node)
+{
+    // this should return the next non-trivial downstream history node
+    // in the unlikely event that the graph is bad
+    // and the chain ends in a groupParts node, we return it anyway
+    if(`nodeType $node` == "groupParts") {
+        string $dstNodes[] = `listConnections -sh true -s false ($node + ".outputGeometry")`;
+	if(size($dstNodes) > 0)
+	    return( skip_downstream_sets($dstNodes[0]));
+	else
+	    return $node;
+    }
+    else
+        return $node;
+}
+
 global proc int
 houdiniEngine_removeHistory(string $assetNode)
 {
@@ -80,9 +115,18 @@ houdiniEngine_removeHistory(string $assetNode)
     }
     disconnectAttr $outPlug $dstPlugs[0];
     connectAttr $srcPlugs[0]  $dstPlugs[0];
-    
-    // setAttr ($assetNode + ".assetConnectType") 0;
     delete $assetNode;
+
+    // if we removed the last Asset, and we are left with 2 shapes
+    // with possibly some groupParts nodes in between for component set/group membership
+    // we delete history, which will bake the set membership down on the remaining shape.
+    // Set membership that existed downstream from the asset may no longer be valid
+    // but leaving the set in place is consistent with regular maya history
+    
+    $dstNode = skip_downstream_sets($dstNode);	
+    if((`nodeType $dstNode` == "mesh") && only_geo_upstream($dstNode))
+        delete -ch $dstNode;
+    
     return 0;
 }
 

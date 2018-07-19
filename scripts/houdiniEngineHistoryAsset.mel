@@ -34,9 +34,15 @@ validateInputObjects(string $objects[],
             continue;
         }
         // actually, by the time we get here, we probably only have shapes
-	// so the transform check can probably dgo
+	// so the transform check can probably go
         if(`objectType -isAType "mesh" $object`)
         {
+ 	    if(`getAttr ($object + ".intermediateObject")` == 1) {
+                // an itermediate object isn't really invalid
+		// but it's part of history already and should not be modified further
+                continue;
+	    }
+	    
             $validObjects[size($validObjects)] = $object;
             $validObjectsCount++;
         }
@@ -328,6 +334,7 @@ houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $compo
 	$upstreamAttr = ($upstreamNode + ".outMesh");
 	connectAttr -f $upstreamAttr  ($targetMesh + ".inMesh");
     }
+
     if($upstreamNode == "") {
         print "Could not add history to this mesh\n";
 	return 0;

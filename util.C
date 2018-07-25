@@ -144,34 +144,77 @@ displayErrorForNode(
 }
 
 MString
-getAttrNameFromParm(const HAPI_ParmInfo &parm)
+mangleParmAttrName(const HAPI_ParmInfo &parm, const MString& in_name)
 {
-    MString name = HAPIString(parm.templateNameSH);
-    if(parm.isChildOfMultiParm)
+    MString name = in_name;
+    if (parm.isChildOfMultiParm)
     {
-        name = replaceString(name, "#", "_");
+	name = replaceString(name, "#", "_");
     }
 
     // If it's a button, add a suffix so that we can distinguish it while
     // populating the AE
-    if(parm.type == HAPI_PARMTYPE_BUTTON && parm.choiceCount == 0)
+    if (parm.type == HAPI_PARMTYPE_BUTTON && parm.choiceCount == 0)
     {
-        name += "__button";
+	name += "__button";
     }
-    else if(parm.type == HAPI_PARMTYPE_FOLDER)
+    else if (parm.type == HAPI_PARMTYPE_FOLDER)
     {
-        name += "__folder";
+	name += "__folder";
     }
-    else if(parm.type == HAPI_PARMTYPE_NODE)
+    else if (parm.type == HAPI_PARMTYPE_NODE)
     {
-        name += "__node";
+	name += "__node";
     }
-    else if(parm.rampType != HAPI_RAMPTYPE_INVALID)
+    else if (parm.rampType != HAPI_RAMPTYPE_INVALID)
     {
-        name += "__ramp";
+	name += "__ramp";
     }
 
-    return getParmAttrPrefix() + "_" + name;
+    name = getParmAttrPrefix() + "_" + name;
+    return name;
+}
+
+MString
+mangleParmAttrName(
+    const HAPI_ParmInfo &parm,
+    const HAPI_ParmInfo *parentParm,
+    const MString& in_name)
+{
+    if (parm.isChildOfMultiParm
+	&& parentParm
+	&& parentParm->rampType != HAPI_RAMPTYPE_INVALID)
+    {
+	// Map the parameters of a Houdini ramp to the equivalent attributes of
+	// a Maya ramp.
+	MString name = replaceString(in_name, "#", "_");
+
+	if (endsWith(name, "pos"))
+	{
+	    name = getAttrNameFromParm(*parentParm) + "_Position";
+	}
+	else if (endsWith(name, "value"))
+	{
+	    name = getAttrNameFromParm(*parentParm) + "_FloatValue";
+	}
+	else if (endsWith(name, "c"))
+	{
+	    name = getAttrNameFromParm(*parentParm) + "_Color";
+	}
+	else if (endsWith(name, "interp"))
+	{
+	    name = getAttrNameFromParm(*parentParm) + "_Interp";
+	}
+	return name;
+    }
+    return mangleParmAttrName(parm, in_name);
+}
+
+MString
+getAttrNameFromParm(const HAPI_ParmInfo &parm)
+{
+    MString name = HAPIString(parm.templateNameSH);
+    return mangleParmAttrName(parm, name);
 }
 
 MString
@@ -180,36 +223,8 @@ getAttrNameFromParm(
         const HAPI_ParmInfo *parentParm
         )
 {
-    if(parm.isChildOfMultiParm
-            && parentParm
-            && parentParm->rampType != HAPI_RAMPTYPE_INVALID)
-    {
-        // Map the parameters of a Houdini ramp to the equivalent attributes of
-        // a Maya ramp.
-        MString name = HAPIString(parm.templateNameSH);
-        name = replaceString(name, "#", "_");
-
-        if(endsWith(name, "pos"))
-        {
-            name = getAttrNameFromParm(*parentParm) + "_Position";
-        }
-        else if(endsWith(name, "value"))
-        {
-            name = getAttrNameFromParm(*parentParm) + "_FloatValue";
-        }
-        else if(endsWith(name, "c"))
-        {
-            name = getAttrNameFromParm(*parentParm) + "_Color";
-        }
-        else if(endsWith(name, "interp"))
-        {
-            name = getAttrNameFromParm(*parentParm) + "_Interp";
-        }
-
-        return name;
-    }
-
-    return getAttrNameFromParm(parm);
+    MString name = HAPIString(parm.templateNameSH);
+    return mangleParmAttrName(parm, parentParm, name);
 }
 
 MString

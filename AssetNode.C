@@ -1833,6 +1833,8 @@ AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
         attrs = NULL;
     }
 
+    myAsset->fillParmNameCache();
+
     myAsset->setParmValues(
             data,
             assetNodeFn,

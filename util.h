@@ -320,6 +320,13 @@ inline bool HAPIString::operator ==<const char*>(const char * const o) const
     return static_cast<std::string>(*this) == o;
 }
 
+MString mangleParmAttrName(
+    const HAPI_ParmInfo &parm, 
+    const MString& name);
+MString mangleParmAttrName(
+    const HAPI_ParmInfo &parm,
+    const HAPI_ParmInfo *parentParm, 
+    const MString& name);
 MString getAttrNameFromParm(const HAPI_ParmInfo &parm);
 MString getAttrNameFromParm(
         const HAPI_ParmInfo &parm,

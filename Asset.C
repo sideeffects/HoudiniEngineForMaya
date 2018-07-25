@@ -11,6 +11,8 @@
 #include <maya/MTime.h>
 #include <maya/MGlobal.h>
 #include <maya/MPlugArray.h>
+#include <maya/MAnimControl.h>
+#include <maya/MConditionMessage.h>
 
 #include "Asset.h"
 #include "Input.h"
@@ -22,6 +24,7 @@
 
 #include <cassert>
 #include <algorithm>
+#include <unordered_map>
 
 class AttrOperation : public Util::WalkParmOperation
 {
@@ -51,6 +54,8 @@ class AttrOperation : public Util::WalkParmOperation
                 const MString &attrName,
                 const HAPI_ParmInfo &parm
                 ) const;
+
+        MString getAttrNameFromParm(const HAPI_ParmInfo &parm) const;
 
     protected:
         std::vector<MDataHandle> myDataHandles;
@@ -129,7 +134,7 @@ AttrOperation::pushFolder(const HAPI_ParmInfo &parmInfo)
 
     if(parentExists)
     {
-        MString folderAttrName = Util::getAttrNameFromParm(parmInfo);
+        MString folderAttrName = getAttrNameFromParm(parmInfo);
         MObject folderAttrObj = myNodeFn.attribute(folderAttrName);
 
         if(!folderAttrObj.isNull())
@@ -216,7 +221,7 @@ AttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 
     if(parentExists)
     {
-        MString multiAttrName = Util::getAttrNameFromParm(parmInfo);
+        MString multiAttrName = getAttrNameFromParm(parmInfo);
         MObject multiAttrObj = myNodeFn.attribute(multiAttrName);
 
         // Ramp has no __multiSize attribute.
@@ -398,6 +403,93 @@ AttrOperation::containsParm(
     return false;
 }
 
+
+MString 
+AttrOperation::getAttrNameFromParm(const HAPI_ParmInfo &parmInfo) const
+{
+    MString name;
+    if (AssetNode* assetNode = dynamic_cast<AssetNode*>(myNodeFn.userNode()))
+    {
+        name = assetNode->getAsset()->getAttrNameFromParm(parmInfo);
+    }
+    return name;
+}
+
+// Helper class for caching the names of parms.  This avoids expensive
+// re-fetching of parm names during an update
+//
+class ParmNameCache
+{
+public:
+    bool cacheEnabled() const
+    {
+        return
+            //            false && 
+            myCacheEnabled &&
+            (
+                MAnimControl::isPlaying() ||
+                MConditionMessage::getConditionState("playblasting")
+            );
+    }
+    void clearCache()
+    {
+        myStringCache.clear();
+    }
+    void enableCache(bool enabled)
+    {
+        myCacheEnabled = enabled;
+    }
+
+    MString getParmTemplateName(const HAPI_ParmInfo& parm) const
+    {
+        if (cacheEnabled())
+        {
+            auto&& iter = myStringCache.find(parm);
+            if (iter != myStringCache.end())
+            {
+                return iter->second;
+            }
+        }
+        return MString();
+    }
+    void cacheName(const HAPI_ParmInfo& parm, const MString& name)
+    {
+        if (cacheEnabled())
+            myStringCache[parm] = name;
+    }
+
+private:
+    struct ParmInfoEqual
+    {
+        bool operator()(const HAPI_ParmInfo& rhs, const HAPI_ParmInfo& lhs) const
+        {
+            return rhs.id == lhs.id &&
+                rhs.parentId == lhs.parentId &&
+                rhs.childIndex == lhs.childIndex &&
+                rhs.type == lhs.type;
+        }
+    };
+    struct ParmInfoHasher
+    {
+        std::size_t operator()(const HAPI_ParmInfo& k) const
+        {
+            using std::size_t;
+            using std::hash;
+
+            size_t res = 17;
+            res = res * 31 + hash<HAPI_ParmId>()(k.id);
+            res = res * 31 + hash<HAPI_ParmId>()(k.parentId);
+            res = res * 31 + hash<int>()(k.childIndex);
+            res = res * 31 + hash<int>()(k.type);
+            return res;
+        }
+    };
+    typedef std::unordered_map<HAPI_ParmInfo, MString, ParmInfoHasher, ParmInfoEqual> StringCacheMap;
+    StringCacheMap myStringCache;
+    bool myCacheEnabled = true;
+};
+
+
 Asset::Asset(
         const MString &otlFilePath,
         const MString &assetName
@@ -405,6 +497,8 @@ Asset::Asset(
     // initialize values here because instantiating the asset could error out
     myAssetInputs(NULL)
 {
+    myParmNameCache = std::make_unique<ParmNameCache>();
+
     HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
 
     HAPI_AssetInfo_Init(&myAssetInfo);
@@ -518,6 +612,8 @@ Asset::Asset(
             );
     CHECK_HAPI(hapiResult);
 
+    myAssetName = Util::HAPIString(myAssetInfo.fullOpNameSH);
+
     hapiResult = HAPI_GetNodeInfo(
             Util::theHAPISession.get(),
             nodeId,
@@ -591,8 +687,7 @@ Asset::getAssetName() const
     {
         return MString();
     }
-
-    return Util::HAPIString(myAssetInfo.fullOpNameSH);
+    return myAssetName;
 }
 
 MString
@@ -1085,7 +1180,7 @@ GetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
-    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    MString attrName = getAttrNameFromParm(parmInfo);
     if(parmInfo.rampType == HAPI_RAMPTYPE_INVALID)
     {
         attrName += "__multiSize";
@@ -1170,7 +1265,7 @@ GetAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
-    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    MString attrName = getAttrNameFromParm(parmInfo);
     attrName += "__multiSize";
     if(isMulti && containsParm(attrName, parmInfo))
     {
@@ -1198,8 +1293,13 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     bool parentExists = myExists.back();
     const HAPI_ParmInfo* parentParmInfo
         = parentExists ? myParentParmInfos.back() : NULL;
+    
+    MString attrName;
+    if (parentExists && parentParmInfo && parmInfo.isChildOfMultiParm)
+        attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
+    else
+        attrName = getAttrNameFromParm(parmInfo);
 
-    MString attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
     if(parentExists && containsParm(attrName, parmInfo))
     {
         MObject attrObj = myNodeFn.attribute(attrName);
@@ -1214,20 +1314,20 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
         if(exists)
         {
-	    // if it's not a ramp, go ahead and lock based on disable
-	    // leave the ramps alone cause there are other UI issues that complicate things
-	    if(!(parmInfo.isChildOfMultiParm
+            // if it's not a ramp, go ahead and lock based on disable
+            // leave the ramps alone cause there are other UI issues that complicate things
+            if(!(parmInfo.isChildOfMultiParm
               && parentParmInfo
-	      && parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)) {
+              && parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)) {
 
-	        if(parmInfo.disabled) {
-	            plug.setLocked(true);
-	        } else {
-	            if(plug.isLocked()) {
-		        plug.setLocked(false);
-	            }
-	        }
-	    }
+                if(parmInfo.disabled) {
+                    plug.setLocked(true);
+                } else {
+                    if(plug.isLocked()) {
+                        plug.setLocked(false);
+                    }
+                }
+            }
 
             dataHandle = parentDataHandle.child(attrObj);
 
@@ -1240,7 +1340,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         || parmInfo.type == HAPI_PARMTYPE_BUTTON
                         || parmInfo.type == HAPI_PARMTYPE_STRING
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE
-			|| parmInfo.type == HAPI_PARMTYPE_PATH_FILE_DIR
+                        || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_DIR
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_GEO
                         || parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                     && parmInfo.choiceCount > 0)
@@ -1468,6 +1568,55 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 }
 
 void
+Asset::fillParmNameCache()
+{
+    auto num_parms = myNodeInfo.parmCount;
+    std::vector<HAPI_ParmInfo> parmInfos(num_parms);
+    HAPI_GetParameters(
+        Util::theHAPISession.get(),
+        myNodeInfo.id,
+        &parmInfos[0],
+        0, num_parms
+    );
+
+    std::vector<HAPI_StringHandle> parmNameHandles;
+    parmNameHandles.reserve(num_parms);
+    for (auto&& info : parmInfos)
+        parmNameHandles.push_back(info.nameSH);
+
+    int stringsbuffer_len;
+    HAPI_GetStringBatchSize(
+        Util::theHAPISession.get(),
+        &parmNameHandles[0],
+        num_parms,
+        &stringsbuffer_len
+    );
+
+    std::vector<char> strings_buffer(stringsbuffer_len);
+    HAPI_GetStringBatch(
+        Util::theHAPISession.get(),
+        &strings_buffer[0],
+        stringsbuffer_len
+    );
+
+    myParmNameCache->clearCache();
+    auto read_iter = strings_buffer.begin();
+    for (int i = 0; i < num_parms; ++i)
+    {
+        auto next_null = std::find(read_iter, strings_buffer.end(), '\0');
+        MString parmname(&(*read_iter));
+        // FIXME: Ramp name mangling requires looking at parent parm, so
+        // we can't cache the name until we actually traverse the parms.
+        if (!parmInfos[i].isChildOfMultiParm)
+        {
+            parmname = Util::mangleParmAttrName(parmInfos[i], parmname);
+            myParmNameCache->cacheName(parmInfos[i], parmname);
+        }
+        read_iter = next_null + 1;
+    }
+}
+
+void
 Asset::getParmValues(
         MDataBlock &dataBlock,
         const MFnDependencyNode &nodeFn,
@@ -1572,7 +1721,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
     //MPlug &multiPlug = myMultiPlugs.back();
     //int &multiLogicalIndex = myMultiLogicalIndices.back();
 
-    MString attrName = Util::getAttrNameFromParm(parmInfo);
+    MString attrName = getAttrNameFromParm(parmInfo);
     if(parmInfo.rampType == HAPI_RAMPTYPE_INVALID)
     {
         attrName += "__multiSize";
@@ -1666,7 +1815,12 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
     const HAPI_ParmInfo* parentParmInfo
         = parentExists ? myParentParmInfos.back() : NULL;
 
-    MString attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
+    MString attrName;
+    if (parentExists && parentParmInfo && parmInfo.isChildOfMultiParm)
+        attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
+    else
+        attrName = getAttrNameFromParm(parmInfo);
+
     if(parentExists && containsParm(attrName, parmInfo))
     {
         MObject attrObj = myNodeFn.attribute(attrName);
@@ -1997,4 +2151,14 @@ Asset::setParmValues(
                 );
         Util::walkParm(parmInfos, operation);
     }
+}
+
+MString 
+Asset::getAttrNameFromParm(const HAPI_ParmInfo &parm) const
+{
+    MString name = myParmNameCache->getParmTemplateName(parm);
+    if (name.length() > 0)
+        return name;
+    else
+        return Util::getAttrNameFromParm(parm);
 }

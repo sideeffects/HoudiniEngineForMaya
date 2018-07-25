@@ -13,9 +13,11 @@
 #include "OutputObject.h"
 
 #include <vector>
+#include <memory>
 
 class Inputs;
 class OutputMaterial;
+class ParmNameCache;
 
 class Asset {
     public:
@@ -53,6 +55,7 @@ class Asset {
                 bool &needToSyncOutputs
                 );
 
+        void fillParmNameCache();
         void getParmValues(
                 MDataBlock &dataBlock,
                 const MFnDependencyNode &nodeFn,
@@ -64,6 +67,8 @@ class Asset {
                 const MFnDependencyNode &nodeFn,
                 const std::vector<MObject>* attrs
                 );
+
+        MString getAttrNameFromParm(const HAPI_ParmInfo &parmInfo) const;
 
     private:
 
@@ -96,6 +101,7 @@ class Asset {
         typedef std::vector<OutputMaterial*> OutputMaterials;
 
         MTime myTime;
+        MString myAssetName;
 
         HAPI_AssetInfo         myAssetInfo;
         bool myIsObjSubnet;
@@ -106,6 +112,7 @@ class Asset {
         OutputObjects myObjects;            //the OutputObject class contains a 1 to 1 map with HAPI_ObjectInfos.
 
         OutputMaterials myMaterials;
+        std::unique_ptr<ParmNameCache> myParmNameCache;
 };
 
 #endif

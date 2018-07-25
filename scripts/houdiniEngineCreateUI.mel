@@ -3,6 +3,7 @@ source houdiniEngineAssetSync;
 source houdiniEngineUtils;
 source houdiniEngineBakeAsset;
 source houdiniEngineRemoveHistory;
+source houdiniEngineDeleteHistory;
 
 proc string[] getHoudiniVersions()
 {
@@ -280,7 +281,7 @@ houdiniEngine_removeSelectedHistory()
     string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
     if(size($assetNodes) < 1)
     {
-        error("Please select at least one houdiniAsset node to bake");
+        error("Please select at least one houdiniAsset node to remove from history");
     }
 
     for($assetNode in $assetNodes)
@@ -290,6 +291,26 @@ houdiniEngine_removeSelectedHistory()
 
     catchQuiet(`select -replace $old_selection`);
 }
+
+global proc
+houdiniEngine_deleteSelectedHistory()
+{
+    string $old_selection[] = `ls -selection -long`;
+
+    string $shapes[] = `ls -selection -long -dag -shapes -ni`;
+    if(size($shapes) < 1)
+    {
+        error("Please select at least one object with assets in history for history deletion");
+    }
+
+    for($shape in $shapes)
+    {
+        houdiniEngine_deleteHistory($shape);
+    }
+
+    catchQuiet(`select -replace $old_selection`);
+}
+
 global proc
 houdiniEngine_addSelectedHistory()
 {
@@ -606,6 +627,9 @@ houdiniEngineCreateUI()
     menuItem -label "Add Asset To Mesh History"
     	-version $mayaVersion
         -command "houdiniEngine_addSelectedHistory";
+    menuItem -label "Delete History"
+    	-version $mayaVersion
+        -command "houdiniEngine_deleteSelectedHistory";
     menuItem -label "Reload Asset"
        -command "houdiniEngine_reloadSelectedAssets";
 

@@ -1,0 +1,125 @@
+
+proc int
+only_geo_upstream(string $dstNode) {
+    // is there non-trivial mesh history upstream, or just a copy of the mesh?
+    // and set/group membership
+    string $historyInput = "";
+    if(`nodeType $dstNode` == "mesh") {
+    	$historyInput = ($dstNode + ".inMesh");	    
+    } else if(`nodeType $dstNode` == "groupParts") {
+        $historyInput = ($dstNode + ".inputGeometry");
+    } else {
+        return 0;
+    }
+     string $srcNodes[] = `listConnections -sh true -d false $historyInput`;
+     if(size($srcNodes) > 0)
+         return(only_geo_upstream($srcNodes[0]));
+     else
+         return 1;
+}
+
+global proc string[]
+get_upstream_assets(string $node)
+{
+    // find any immediate upstream asset nodes
+    //
+    string $result[];
+    string $srcNodes[] = `listConnections -d false $node`;
+    for ($srcNode in $srcNodes) {
+    	if(`nodeType $srcNode` == "houdiniAsset") {
+	     $result[size($result)] = $srcNode;
+	}
+	else {
+	     string $assets[] = get_upstream_assets($srcNode);
+	     appendStringArray($result, $assets,  size($assets));
+	}
+    }
+    return $result;
+}
+
+global proc string[]
+delete_all_upstream_assets(string $node)
+{
+    // find any immediate upstream asset nodes
+    //
+    string $result[];
+    string $srcNodes[] = get_upstream_assets($node);
+    for ($srcNode in $srcNodes) {
+         $result[size($result)] = $srcNode;
+	 string $assets[] = delete_all_upstream_assets($srcNode);
+	 appendStringArray($result, $assets,  size($assets));
+	 // should also do: get_all_upstream_geo and delete
+	 delete $srcNode;
+    }
+    return $result;
+}
+
+global proc int
+houdiniEngine_deleteHistory(string $node)
+{
+    /// when invoked from the menu, we're already called with a shape,
+    // but in general, better to check if it is a shape itself first
+    string $objects[];
+    if(`objectType -isAType "shape" $node`)
+        $objects[0] = $node;
+    else
+        $objects = `listRelatives -fullPath -shapes -ni $node`;
+    // validate to get the meshes and curves
+    // warn if any particles volumes or instancers were selected
+
+    string $object = $objects[0];
+    
+    string $upstreamAssets[] = get_upstream_assets($object);
+    
+    if(  `nodeType $object` != "mesh"
+      && `nodeType $object` != "nurbsCurve"
+      && `nodeType $object` != "bezierCurve") {
+        print("Error: can only delete asset history for curves or meshes. For particles and Volumes, export cache and reimport to maya object, for instancers, utrn off instancing option to get output geometry\n");
+        return 0;
+    }
+    
+    // find the upstream assets
+    // then delete history on the target objects
+    // unparent all the stuff under the assets (shouldn't be any for the history asset)
+    
+    // For a non-history asset, deleteing history for one output object
+    // deletes it for all the objects parented under the asset, then deletes the asset
+
+    string $assetNode = $upstreamAssets[0];
+    
+    // unparent children of asset (history asset should not have any)
+    string $children[] = `listRelatives -c -f $assetNode`;
+    for($child in $children) {
+        string $allDescendents[] = `listRelatives -ad -f $child`;
+        int $hasShape = 0;
+        for($desc in $allDescendents) {
+	    if(`objectType -isAType "shape" $desc`) {
+	        delete -ch $desc;
+	        $hasShape = 1;
+		break;
+	    }
+	    if(`objectType -isAType "instancer" $desc`) {
+	        $hasShape = 1;
+		break;
+	    }
+	}
+	if($hasShape) {
+	    delete -ch $child;
+	    if( `getAttr ($assetNode + ".ungroupOnBake")`)
+	        ungroup -a -w $child;
+	    else
+                parent -a -w  $child;
+	}
+	else
+	    delete $child;
+    }
+    
+    // if it was a history asset
+    if(size($children) == 0)
+        delete -ch $object;
+    delete_all_upstream_assets($assetNode);
+    delete $assetNode;
+    
+    return 0;
+}
+

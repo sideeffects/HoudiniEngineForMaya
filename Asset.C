@@ -498,7 +498,7 @@ Asset::Asset(
     // initialize values here because instantiating the asset could error out
     myAssetInputs(NULL)
 {
-    myParmNameCache = std::make_unique<ParmNameCache>();
+    myParmNameCache = std::unique_ptr<ParmNameCache>(new ParmNameCache());
 
     HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
 

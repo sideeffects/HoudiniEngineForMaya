@@ -25,6 +25,7 @@
 #include <cassert>
 #include <algorithm>
 #include <unordered_map>
+#include <memory>
 
 class AttrOperation : public Util::WalkParmOperation
 {

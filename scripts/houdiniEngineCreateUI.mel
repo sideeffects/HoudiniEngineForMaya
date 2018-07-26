@@ -470,87 +470,7 @@ houdiniEngine_runHKey()
 global proc
 houdiniEngine_launchSubmitBugs()
 {
-    string $houdiniEngineVersion  = `houdiniEngine -houdiniEngineVersion`;
-
-    string $operatingSystem = `about -operatingSystem`;
-    string $mayaVersion = `about -version`;
-    string $mayaCutIdentifier = `about -cutIdentifier`;
-
-    string $houdiniVersions[] = getHoudiniVersions();
-
-    string $extraURLParameters;
-
-    // version
-    $extraURLParameters += `format
-        -stringArg $houdiniVersions[0] "&version=^1s"`;
-
-    // build
-    $extraURLParameters += `format
-        -stringArg $houdiniVersions[1] "&build=^1s"`;
-
-    // category
-    $extraURLParameters += "&category=Maya%20Plug-in";
-
-    // platform
-    if($operatingSystem == "linux64")
-    {
-        $extraURLParameters += "&platform=Linux%2064-bit";
-    }
-    else if($operatingSystem == "linux")
-    {
-        $extraURLParameters += "&platform=Linux%2032-bit";
-    }
-    else if($operatingSystem == "win64")
-    {
-        $extraURLParameters += "&platform=Windows%2064-bit";
-    }
-    else if($operatingSystem == "nt")
-    {
-        $extraURLParameters += "&platform=Windows%2032-bit";
-    }
-    else if($operatingSystem == "mac")
-    {
-        $extraURLParameters += "&platform=Mac%20OSX%2064-bit";
-    }
-
-    // description
-    // It seems like "launch -web" will automatically convert "\n" to "%0A".
-    string $description;
-    string $temp;
-
-    $temp = `format
-        -stringArg $mayaVersion
-        -stringArg $mayaCutIdentifier
-        "Maya Version: ^1s (^2s)\n"`;
-
-    $description += substituteAllString(
-            $temp,
-            " ",
-            "%20"
-            );
-
-    if(`houdiniEngine -houdiniVersion`
-            != `houdiniEngine -buildHoudiniVersion`)
-    {
-        string $buildHoudiniVersion = `houdiniEngine -buildHoudiniVersion`;
-
-        $temp = `format
-            -stringArg $buildHoudiniVersion
-            "Build Houdini Version: ^1s\n"`;
-
-        $description += substituteAllString(
-                $temp,
-                " ",
-                "%20"
-                );
-    }
-
-    $extraURLParameters += `format
-        -stringArg $description
-        "&description=^1s"`;
-
-    launch -web ("http://archive.sidefx.com/index.php?option=com_content&task=view&id=768&Itemid=239"
-            + $extraURLParameters);
+     launch -web ("https://www.sidefx.com/bugs/submit/");
 }
 
 global proc
@@ -570,8 +490,8 @@ houdiniEngine_launchChangeLog()
         -stringArg $houdiniVersions[1]
         "&buildend=^1s"`;
 
-    launch -web ("https://archive.sidefx.com/index.php?option=com_journal&Itemid=213&page=index&journal=default&view=FULL&logfile=ALL&icon=maya&perpage=20"
-            + $extraURLParameters);
+    launch -web ("https://www.sidefx.com/changelog/Main/?journal=&categories=&body=Maya&version=&build_0=&build_1=&show_versions=on&show_compatibility=on"
+            + $extraURLParameter);
 }
 
 global proc

@@ -595,42 +595,53 @@ houdiniEngineCreateUI()
 
     menuItem
         -label "Load Asset..."
+	-annotation "Browse for assets or asset libraries"
         -command "houdiniEngine_browseAssetLibrary";
 
     $recentAssetsMenu = `menuItem
         -label "Recent Assets"
+	-annotation "Load a recently used asset"
         -subMenu true`;
     setParent -menu ..;
 
     menuItem -label "Asset Library Manager"
+        -annotation "See which libraries and which asset versions are loaded"
         -command "houdiniEngineAssetLibraryManager";
 
     menuItem -divider true;
 
     menuItem -label "Orbolt Asset Browser"
         -sourceType "python"
+	-annotation "Load assets that have been installed locally from the asset store"
         -command "import houdini_engine_for_maya.asset_store\nhoudini_engine_for_maya.asset_store.show_asset_store_window()";
 
     menuItem -label "Get Assets from Orbolt"
+    	-annotation "Visit the asset store to download assets for use in Maya"
         -command "houdiniEngine_launchOrboltPageClick";
 
     menuItem -divider true;
 
     menuItem -label "Sync Asset"
+        -annotation "Delete existing output nodes and rebuild the output hierarchy for the asset's current outputs"
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Bake Asset"
         -version $mayaVersion
+	-annotation "Tear off a copy of the asset's current output nodes"
         -command "houdiniEngine_bakeSelectedAssets";
     menuItem -label "Remove Asset From History"
+        -annotation "Remove this asset and its inputGeometry nodes and reconnect history across the gap"
     	-version $mayaVersion
         -command "houdiniEngine_removeSelectedHistory";
     menuItem -label "Add Asset To Mesh History"
     	-version $mayaVersion
+	-annotation "Apply the selected asset as construction history to the selected mesh"
         -command "houdiniEngine_addSelectedHistory";
     menuItem -label "Delete History"
     	-version $mayaVersion
+	-annotation "Delete construction history including any houdiniAsset nodes\n"
         -command "houdiniEngine_deleteSelectedHistory";
     menuItem -label "Reload Asset"
+       -annotation "Reload the definition of the selected asset"
        -command "houdiniEngine_reloadSelectedAssets";
 
     menuItem -divider true;
@@ -641,9 +652,11 @@ houdiniEngineCreateUI()
         -tearOff true;
 
         menuItem -label "View Assets in Houdini"
+	    -annotation "Start houdini and load the current assets along with any input geometry"
             -command "houdiniEngine_viewInHoudini";
 
         menuItem -label "Save Assets to Houdini Scene..."
+	    -annotation "Save the current assets and input geometry to a houdini scene"
             -command "houdiniEngine_saveHipFile";
 
     setParent -menu ..;
@@ -651,6 +664,7 @@ houdiniEngineCreateUI()
     menuItem -divider true;
 
     menuItem -label "Preferences..."
+        -annotation "Set the session type and non-asset specific options"
         -command "houdiniEnginePreferences";
 
     menuItem
@@ -660,14 +674,17 @@ houdiniEngineCreateUI()
         -tearOff true;
 
         menuItem -label "Hide All Assets in Outliner"
+	    -annotation "Mark all asset nodes as hidden in the outliner"
     	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 0";
 
         menuItem -label "Hide History Assets in Outliner"
+	    -annotation "Mark all history asset nodes as hidden in the outliner"
      	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 1";
 	    
         menuItem -label "Show All Assets in Outliner"
+	   -annotation "Mark all asset nodes as visible in the outliner"
      	   -version $mayaVersion
            -command "houdiniEngine_showOutliner 1 0";
 
@@ -680,25 +697,31 @@ houdiniEngineCreateUI()
         -subMenu true;
 
         menuItem -label "Online documentation"
+	    -annotation "Online Documentation for the current version"
             -command "houdiniEngine_onlineDocumentation";
 
         menuItem -divider true;
 
         menuItem -label "Visit Houdini Engine for Maya forum"
+	    -annotation "Houdini Engine for Maya forum"
             -command "houdiniEngine_launchForum";
 
         menuItem -label "Submit Bugs and RFEs"
+	    -annotation "Submission form  for Bugs, RFS's and Questions"
             -command "houdiniEngine_launchSubmitBugs";
 
         menuItem -label "View Change Log"
+	    -annotation "View Change Log for Maya plugin specific changes"
             -command "houdiniEngine_launchChangeLog";
 
         menuItem -label "Contribute on GitHub"
+	    -annotation "Plugin code is available on GitHub for customization"
             -command "houdiniEngine_launchGitHub";
 
         menuItem -divider true;
 
         menuItem -label "Houdini License Administrator"
+	    -annotation "information about the license server and available licenses"
             -command "houdiniEngine_runHKey";
 
     setParent -menu ..;

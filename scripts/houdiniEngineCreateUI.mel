@@ -491,7 +491,7 @@ houdiniEngine_launchChangeLog()
         "&buildend=^1s"`;
 
     launch -web ("https://www.sidefx.com/changelog/Main/?journal=&categories=&body=Maya&version=&build_0=&build_1=&show_versions=on&show_compatibility=on"
-            + $extraURLParameter);
+            + $extraURLParameters);
 }
 
 global proc

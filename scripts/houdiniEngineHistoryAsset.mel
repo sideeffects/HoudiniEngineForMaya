@@ -428,6 +428,8 @@ houdiniEngine_loadAndAddHistory(string $assetFile, string $assetName)
     
     if(!`exists houdiniEngine_loadAsset`)
         source houdiniEngineCreateUI;
+    if(!`exists AEhoudiniAssetTemplate`)
+        source AEhoudiniAssetTemplate;
     string $assetNode = `houdiniEngine_loadAsset $assetLocation $assetName`;
 
     catchQuiet(`select -replace $old_selection`);

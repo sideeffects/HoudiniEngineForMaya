@@ -1,0 +1,96 @@
+/*!
+
+@page Maya_History History
+
+@tableofcontents
+
+Certain assets can now be connected directly as Maya Construction History. Typically a SOP asset fits well as mesh construction history, and an Object asset, with a more complex collection of possible outputs works better with the classic asset structure. But any asset with at least one geo input and one geo output can be applied as construction history
+
+@section Maya_History_constructionHistory Assets as Maya Construction History
+
+The history asset differs from a classic asset in the way that is gets connected to maya objects. We make certain simpliflying assumptions
+
+- the asset node is connected upstream from the target maya geo - no new shapes are created
+- history assets cah be chained together directly or intermixed with native mayua history nodes
+- history assets can be applied to a mesh or to component selection on a mesh
+
+We make certain simpliflying assumptions in order for this to work - if your asset does not meet these criteria it should continue to be used as a classic asset
+- the exsisting mesh history will be connected to the first input
+- the first output will be connected to the existing mesh shape, all other outputs will be ignored
+- additional inputs can be connected to the history asset, however we are only interested in their effect on the first output.
+- if the target mesh has no construction history, we push a copy of the target mesh shape upstream to anchor the history chain
+- if there is component selection, we create a mayaComponentGroup of the appropriate type on  the input geo, however the asset must use the named copmonent group for it to have any effect
+- history assets should never be sync'd - their output needs to stay connected to the original target shape, If your asset has more than one output, it should be applied as a classic asset.
+
+Here are some additional menu items for manipulation of history assets:
+
+- @ref Maya_History_AddAsset "addAssetToHistory"
+- @ref Maya_History_RemoveAsset "removeAssetFromHistory"
+- @ref Maya_History_DeleteHistory "deleteHistory"
+- @ref Maya_History_ShowHide "hideAssetNodes"
+
+The houdiniAsset node outputs both the information needed for Sync to create the output maya geometry shapes, and the maya geometry data to connerct to those nodes once they are created.
+
+@section Maya_History_AddAsset Add Asset To History
+
+Applies a selected existing asset node as history to the selected mesh
+
+@image html Maya_History_AssetNodes.png
+
+The corresponding mel command, to add an asset as history to the selected mesh is:
+
+@verbatim
+houdiniEngine_addHistory($assetNode)
+@endverbatim
+
+@section Maya_History_RemoveAsset Remove Asset From History
+
+When a native maya history node is deleted, maya will reconnect the upstream and downstream history across the gap. Because Maya does not recognize plugin nodes as history,  we provide this command to remove an asset node and and its associated inputGeometry nodes , and reconnect history across the gap.
+
+The corresponding mel command is:
+
+@verbatim
+houdiniEngine_removeHistory($assetNode);
+@endverbatim
+
+@section Maya_History_DeleteHistory Delete History
+
+When the native Maya delete history command is used, Maya will only delete history as far back as the nearest upstream asset node, since it recognize plugin nodes as history. We provide this command to delete construction history including any houdinAsset nodes, and their history.
+
+The corresponding mel command is:
+
+@verbatim
+houdiniEngine_deleteHistory($meshShape);
+@endverbatim
+
+@section Maya_History_ShowHide Show/Hide Assets In Outliner
+
+While history asset nodes are still derived from transform nodes, we are not parenting any outputs under them, so it may not be useful to see them in the outliner. Under the Show/Hide submenu are 3 options
+- Hide all Assets in Outliner
+- Hide history Assets in Outliner
+- Show All Assets in Outliner
+
+These menu items set the hiddenInOutliner attribute on the asset node to control how it is displayed
+
+The corresponding mel command is:
+
+@verbatim
+houdiniEngine_showOutliner(int $show, int $history)
+@endverbatim
+
+@section Maya_History_ShelfAssets Apply Assets from the Shelf
+
+It's convenient to have shelf buttons to apply your favorite houdini assests directly to meshes. Shelf buttons make this easy, but we can't assume that the plugin is already loaded when that first shelf button is pressed. Here's an example shelf button that will load the plugin and source some UI files before attempting to load my exampl extrude asset and connect it. This currently (17.0 Beta) assumes that the asset may located somewhere in $HOUDINI_MAYA_ASSET_PATH, as well as your default asset locations, however this may be subject to change depending on Beta beedback
+
+@verbatim
+if(!`pluginInfo -query -loaded houdiniEngine`)
+     loadPlugin houdiniEngine;
+if(!`exists houdiniEngine_loadAndAddHistory`)
+     source houdiniEngineHistoryAsset;
+if(!`exists houdiniEngine_findAsset`)
+     source houdiniEngineUtils;
+$assetNode = `houdiniEngine_loadAndAddHistory "extrude.hda" "Object/extrude"`;
+@endverbatim
+
+
+*/

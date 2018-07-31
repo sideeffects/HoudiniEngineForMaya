@@ -1,0 +1,31 @@
+/*!
+
+@page Maya_Bake Baking
+
+@tableofcontents
+
+The outputs of an asset can now be baked. This disconnects all the outputs of an asset and unparents the child nodes from the houdiniAsset node. The asset is then sync'd again so that there are outputs to provide feedback for continuing work on the next version of the outputs. Note that a construction history asset should not be baked as that will turn it back into a  Classic asset.
+
+
+@section Maya_Bake_Options Options
+
+- ungroup on bake
+
+If this option is turned on on the asset node, one additional level of hierarchy will be removed when unparenting the outputs from the asset:
+
+e.g. when this extrude asset was baked with Ungroup on, only the leaf transform remained
+@image html Maya_Bake_Ungroup.png
+
+but when Ungroup was off, another layer of grouping was preserved
+@image html Maya_Bake_Group.png
+
+The corresponding mel command, to add an asset as history to the selected mesh is:
+
+@verbatim
+houdiniEngine_bakeAsset(string $assetNode)
+e.g. houdiniEngine_bakeAsset("|extrude1")
+@endverbatim
+
+
+
+*/

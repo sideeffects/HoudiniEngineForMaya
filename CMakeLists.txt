@@ -227,6 +227,12 @@ install(
     )
 
 install(
+    DIRECTORY icons
+    DESTINATION "${install_module_dir}"
+    PATTERN ".svn" EXCLUDE
+    )
+
+install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/houdiniEngine-maya${MAYA_VERSION}"
     DESTINATION "."
     )

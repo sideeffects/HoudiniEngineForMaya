@@ -13,7 +13,7 @@ The plugin nodes used by the houdiniEngine plugin for Maya are:
 - @ref Maya_Nodes_InputCurve "houdiniInputCurve"
 - @ref Maya_Nodes_InputMerge "houdiniInputMerge"
 
-The houdiniAsset node outputs both the information needed for Sync to create the output maya geometry shapes, and the maya geometry data to connerct to those nodes once they are created.
+The houdiniAsset node outputs both the information needed for Sync to create the output maya geometry shapes, and the maya geometry data to connect to those nodes once they are created.
 
 @section Maya_Nodes_HoudiniAsset houdiniAsset
 

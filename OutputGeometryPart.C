@@ -1956,8 +1956,6 @@ OutputGeometryPart::computeMesh(
             const MString alphaAttributeName
                 = Util::getAttrLayerName("Alpha", layerIndex);
 
-	    //fprintf(stderr, "layerIx %d color name %s alpha name %s\n",
-	    //	  layerIndex, cdAttributeName.asChar(), alphaAttributeName.asChar());
             HAPI_AttributeOwner colorOwner;
             if(!HAPI_FAIL(hapiGetAnyAttribute(
                             myNodeId, myPartId,
@@ -2216,7 +2214,6 @@ OutputGeometryPart::computeInstancer(
         MDataHandle &instanceHandle
         )
 {
-  // fprintf(stderr, "compute instancer\n");
     data.setClean(hasInstancerPlug);
     data.setClean(instancerPlug);
 
@@ -2261,36 +2258,6 @@ OutputGeometryPart::computeInstancer(
                     0, instanceCount
                     ));
         markAttributeUsed("P");
-
-#if 0
-	double *mat_array = new double[instanceCount * 16];
-	//std::vector<HAPI_Matrix> matrices(instanceCount);
-
-	 CHECK_HAPI(HAPI_GetInstancerPartMatrices(
-	 Util::theHAPISession.get(),
-	 myNodeId, myPartId,
-	 HAPI_SRT,
-	 //instanceCount ? &matrices.front() : NULL,
-	 instanceCount ? mat_array : NULL,
-	0, instanceCount
-	 ));
-	 fprintf(stderr, "instance count was%d\n", instanceCount);
-
-	 for(int ins = 0; ins<instanceCount; ins++) {
-	   fprintf(stderr, "instance: %d\n", (int) ins);
-		   fprintf(stderr,"%.10g, %.10g, %.10g, %.10g\n", mat_array[16*ins],
-			   mat_array[16*ins + 1],mat_array[16*ins + 2],mat_array[16*ins + 3]);
-		   fprintf(stderr,"%.10g, %.10g, %.10g, %.10g\n", mat_array[16*ins +4],
-			   mat_array[16*ins + 5],mat_array[16*ins + 6],mat_array[16*ins + 7]);
-		   fprintf(stderr,"%.10g, %.10g, %.10g, %.10g\n", mat_array[16*ins+8],
-			   mat_array[16*ins + 9],mat_array[16*ins + 10],mat_array[16*ins + 11]);
-		   fprintf(stderr,"%.10g, %.10g, %.10g, %.10g\n", mat_array[16*ins+13],
-			   mat_array[16*ins + 13],mat_array[16*ins + 14],mat_array[16*ins + 15]);
-		   fprintf(stderr,"%.10g, %.10g, %.10g, %.10g\n", matrices[ins].mat_array[0],
-			   matrices[ins].mat_array[1], matrices[ins].mat_array[2],
-			   matrices[ins].mat_array[3]);
-	 }
-#endif		   
 
         MVectorArray positions = instancerArrayDataFn.vectorArray("position");
         MVectorArray rotations = instancerArrayDataFn.vectorArray("rotation");

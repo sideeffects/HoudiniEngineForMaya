@@ -1600,7 +1600,10 @@ OutputGeometryPart::computeMesh(
             {
                 vertexLockedNormal = &lockedNormal;
             }
-
+#if MAYA_API_VERSION >= 201800
+	    MIntArray edgeIds;
+	    MIntArray edgeSmoothing;
+#endif	    
             size_t polygonVertexOffset = 0;
             for(MItMeshPolygon itMeshPolygon(meshDataObj);
                     !itMeshPolygon.isDone(); itMeshPolygon.next())
@@ -1629,14 +1632,24 @@ OutputGeometryPart::computeMesh(
                                     || (*vertexLockedNormal)[polygonVertexIndex2]))
                       )
                     {
-                        CHECK_MSTATUS(meshFn.setEdgeSmoothing(
-                                    edges[i],
-                                    !intArray[polygonVertexIndex1]
-                                    ));
+#if MAYA_API_VERSION >= 201800
+			edgeIds.append(edges[i]);
+			edgeSmoothing.append( !intArray[polygonVertexIndex1]);
+#else
+			CHECK_MSTATUS(meshFn.setEdgeSmoothing(
+				 edges[i],
+			         !intArray[polygonVertexIndex1]
+				 ));
+#endif			
                     }
                 }
                 polygonVertexOffset += numVertices;
             }
+#if MAYA_API_VERSION >= 201800
+	    if(edgeIds.length() > 0) {
+	        CHECK_MSTATUS(meshFn.setEdgeSmoothings( edgeIds, edgeSmoothing));
+	    }
+#endif
             assert(polygonVertexOffset == intArray.size());
         }
     }
@@ -2236,6 +2249,7 @@ OutputGeometryPart::computeInstancer(
         const int &instanceCount = myPartInfo.instanceCount;
 
         std::vector<HAPI_Transform> transforms(instanceCount);
+	
         CHECK_HAPI(HAPI_GetInstancerPartTransforms(
                     Util::theHAPISession.get(),
                     myNodeId, myPartId,

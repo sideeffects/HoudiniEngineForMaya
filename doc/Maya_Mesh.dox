@@ -150,7 +150,7 @@ Maya will internally convert these polygons. However, this leads to the topology
 
 @subsection Maya_Mesh_MultiplePieces_Input Input
 
-At the moment, only one Maya object can be connected to each asset's input. There is currently no support for connecting multiple Maya mesh objects into a single input. However, a workaround may be to use `Mesh -> Combine` menu to combine multiple Maya mesh objects into one. Since this maintains a construction history, any upstream changes from each mesh object will be passed into the asset's input.
+Multiple Maya meshes can be connected to each asset input. It is possible select a hierarchy, or multiple objects, and do 'Set to Selection'. Each mesh shape is input separately, and all the inputs are then joined together on the Houdini side using a Merge SOP. To add or remove inputs, select the desired inputs and 'Set To Selection' again.
 
 @subsection Maya_Mesh_MultiplePieces_Output Output
 
@@ -158,6 +158,6 @@ When outputting geometry from Houdini, you may want to want to split up the geom
 
 One way is to make use of Houdini groups. The asset would put the separate pieces into separate Houdini groups, which would then be converted into Maya sets. Then inside Maya, the Maya sets can be used to identify and manipulate the individual pieces.
 
-Another way is to use Maya's `Edit Mesh -> Separate` to separate the mesh into different objects. However, this is only possible if the pieces are connected.
+Another way is to use Maya's `Edit Mesh -> Separate` to separate the mesh into different objects. However, this is only possible if the pieces are already separate shells.
 
 */

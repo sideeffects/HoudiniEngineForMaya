@@ -7,6 +7,10 @@ houdiniEnginePreferences_refresh()
         -value1 `optionVar -query "houdiniEngineAsynchronousMode"`
         asynchronousModeCheck;
         
+    checkBoxGrp -e
+        -value1 `optionVar -query "houdiniEngineDeleteAfterBake"`
+        delAfterBakeCheck;
+        
     int $sessionType = int(`optionVar -query "houdiniEngineSessionType"`);
         
     switch ( $sessionType )
@@ -60,6 +64,9 @@ houdiniEnginePreferences_save()
     optionVar
         -intValue "houdiniEngineAsynchronousMode"
         `checkBoxGrp -q -value1 asynchronousModeCheck`;
+    optionVar
+        -intValue "houdiniEngineDeleteAfterBake"
+        `checkBoxGrp -q -value1 delAfterBakeCheck`;
         
     if (`radioButton -query -select sessionTypeInProcess`)
     {    
@@ -106,6 +113,14 @@ houdiniEnginePreferences_toggleAsynchronousMode(int $state)
     global int $houdiniEngineAsynchronousMode;
 
     $houdiniEngineAsynchronousMode = $state;
+}
+
+global proc
+houdiniEnginePreferences_toggleDelAfterBake(int $state)
+{
+    global int $houdiniEngineDeleteAfterBake;
+
+    $houdiniEngineDeleteAfterBake = $state;
 }
 
 global proc
@@ -193,6 +208,12 @@ houdiniEnginePreferences()
                 "issues. If unsure, leave it on. (Default: on)\"")
                 asynchronousModeHelp;
 
+            checkBoxGrp
+                -numberOfCheckBoxes 1
+                -label "Delete Asset After Baking:"
+                -changeCommand "houdiniEnginePreferences_toggleDelAfterBake #1"
+                delAfterBakeCheck;
+    
         setParent ..;
     setParent ..;
     
@@ -203,6 +224,8 @@ houdiniEnginePreferences()
 
         -attachForm asynchronousModeHelp "top" 5
         -attachForm asynchronousModeHelp "right" 5
+        -attachControl delAfterBakeCheck "top" 5 asynchronousModeCheck
+        -attachForm delAfterBakeCheck "left" 5
         globalPreferences;    
     
     // Sessions

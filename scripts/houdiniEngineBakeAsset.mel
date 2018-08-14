@@ -61,8 +61,16 @@ houdiniEngine_bakeAsset(string $assetNode)
     // connection is determinded by the asset options
     // and not a particular output
 
-    // now sync it again - so there is a new output to provide feedback
-    houdiniEngine_syncAssetOutput $assetNode;
+    int $deleteAfterBake = 0;
+    if(`optionVar -exists houdiniEngineDeleteAfterBake`)
+        $deleteAfterBake =  `optionVar -q houdiniEngineDeleteAfterBake`;
+
+    // either delete the asset after baking,
+    // or sync it again - so there is a new output to provide feedback
+    if($deleteAfterBake)
+        delete $assetNode;
+    else
+        houdiniEngine_syncAssetOutput $assetNode;
     
     return 1;
 }

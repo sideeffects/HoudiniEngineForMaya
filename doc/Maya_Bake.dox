@@ -19,7 +19,13 @@ e.g. when this extrude asset was baked with Ungroup on, only the leaf transform 
 but when Ungroup was off, another layer of grouping was preserved
 @image html Maya_Bake_Group.png
 
-The corresponding mel command, to add an asset as history to the selected mesh is:
+@section Maya_Bake_Preferences Preferences
+
+- delete asset after baking
+
+If this preference is turned on, the asset will be deleted after the output is baked.
+
+The corresponding mel command, to bake the output of the selected asset is:
 
 @verbatim
 houdiniEngine_bakeAsset(string $assetNode)

@@ -106,6 +106,8 @@ class AssetNode: public MPxTransform
         static MObject otlFilePath;
         static MObject assetName;
 	static MObject assetConnectType;
+	static MObject preSyncCallback;
+	static MObject postSyncCallback;
 
         static MObject input;
         static MObject inputName;

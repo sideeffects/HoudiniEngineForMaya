@@ -879,13 +879,22 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate
             -label "File Path"
             -addControl "otlFilePath";
-        editorTemplate -callCustom "AEhoudiniAssetConnectNew" "AEhoudiniAssetConnectReplace" "assetConnectType";	    
-
+        editorTemplate -callCustom "AEhoudiniAssetConnectNew" "AEhoudiniAssetConnectReplace" "assetConnectType";
     editorTemplate -endLayout;
 
     editorTemplate -beginLayout "Asset Options" -collapse false;
 
         editorTemplate -callCustom "AEhoudiniAssetOptionsNew" "AEhoudiniAssetOptionsReplace" "unused";
+	editorTemplate -beginLayout "Asset Callbacks" -collapse true;
+            editorTemplate
+                -label "Pre Sync Callback"
+                -addControl "preSyncCallback";	
+
+            editorTemplate
+                -label "Post Sync Callback"
+                -addControl "postSyncCallback";	
+
+	editorTemplate -endLayout;
 
         editorTemplate -suppress "syncWhenInputConnects";
         editorTemplate -suppress "autoSyncOutputs";

@@ -34,6 +34,9 @@ MObject AssetNode::inTime;
 MObject AssetNode::otlFilePath;
 MObject AssetNode::assetName;
 MObject AssetNode::assetConnectType;
+MObject AssetNode::postSyncCallback;
+MObject AssetNode::preSyncCallback;
+
 
 MObject AssetNode::input;
 MObject AssetNode::inputName;
@@ -228,6 +231,19 @@ AssetNode::initialize()
             MFnData::kString
             );
     tAttr.setInternal(true);
+    
+
+    AssetNode::postSyncCallback = tAttr.create(
+            "postSyncCallback", "postSyncCallback",
+            MFnData::kString
+            );
+    tAttr.setStorable(true);
+  
+    AssetNode::preSyncCallback = tAttr.create(
+            "preSyncCallback", "preSyncCallback",
+            MFnData::kString
+            );
+    tAttr.setStorable(true);
     
     // asset usage type: classic = 0, history = 1, bake = 2
     AssetNode::assetConnectType = nAttr.create(
@@ -1290,6 +1306,8 @@ AssetNode::initialize()
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);
     addAttribute(AssetNode::assetConnectType);
+    addAttribute(AssetNode::postSyncCallback);
+    addAttribute(AssetNode::preSyncCallback);
     addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
 
@@ -1364,7 +1382,6 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         MPlugArray& affectedPlugs)
 {
     MStatus status;
-
     bool isTime = plugBeingDirtied == inTime;
     bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
     bool isParameter = false; 

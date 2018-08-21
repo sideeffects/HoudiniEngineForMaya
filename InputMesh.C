@@ -48,6 +48,8 @@ InputMesh::InputMesh() :
 
 InputMesh::~InputMesh()
 {
+    if(!Util::theHAPISession.get())
+      return;
     CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
                 geometryNodeId()

@@ -77,6 +77,8 @@ InputMergeNode::InputMergeNode() :
 
 InputMergeNode::~InputMergeNode()
 {
+    if(!Util::theHAPISession.get())
+        return;
     CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
                 myGeometryNodeId

@@ -42,6 +42,8 @@ InputParticle::InputParticle() :
 
 InputParticle::~InputParticle()
 {
+    if(!Util::theHAPISession.get())
+        return;
     CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
                 geometryNodeId()

@@ -58,6 +58,8 @@ InputCurveNode::InputCurveNode()
 
 InputCurveNode::~InputCurveNode()
 {
+    if(!Util::theHAPISession.get())
+        return;
     if ( myNodeId > 0 )
     {
         CHECK_HAPI(HAPI_DeleteNode(

@@ -655,6 +655,8 @@ Asset::~Asset()
     }
     myMaterials.clear();
 
+    if(!Util::theHAPISession.get())
+        return;
     if(myNodeInfo.id >= 0)
     {
         CHECK_HAPI(HAPI_DeleteNode(

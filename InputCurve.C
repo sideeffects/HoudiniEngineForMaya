@@ -42,6 +42,8 @@ InputCurve::InputCurve() :
 
 InputCurve::~InputCurve()
 {
+    if(!Util::theHAPISession.get())
+        return;
     HAPI_DeleteNode(
             Util::theHAPISession.get(),
             geometryNodeId()

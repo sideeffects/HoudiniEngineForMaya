@@ -441,6 +441,9 @@ cleanupSession()
 
     CHECK_HAPI_AND_RETURN( HAPI_CloseSession( Util::theHAPISession.get() ), false );
 
+    // null out the session when closed, it will be reset if reinitialized anyway
+    Util::theHAPISession.reset(NULL);
+
     return true;
 }
 

@@ -109,7 +109,8 @@ InputMergeNode::compute(
                         Util::theHAPISession.get(),
                         myGeometryNodeId,
                         i,
-                        inputNode
+                        inputNode,
+                        0
                         ));
         }
 

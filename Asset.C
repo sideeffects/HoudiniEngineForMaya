@@ -908,7 +908,8 @@ Asset::setInputs(const MPlug& plug, MDataBlock& data)
         CHECK_HAPI(HAPI_ConnectNodeInput(
             Util::theHAPISession.get(),
             myNodeInfo.id, i,
-            inputNodeId
+            inputNodeId,
+            0
             ));
     }
 }

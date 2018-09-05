@@ -535,7 +535,7 @@ initializePlugin(MObject obj)
     OptionVars optionVars;
 
     initializeSession(optionVars);
-std::cout.rdbuf(std::cerr.rdbuf());
+
     if(!HAPI_FAIL(initializeHAPI(optionVars)))
     {
         printHAPIVersion();

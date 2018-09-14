@@ -331,6 +331,13 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     else if(size($sourceInputAttr) == 1)
     {
         $finalInputAttr = $sourceInputAttr[0];
+	// don't promote shading to primitives
+	// if there is one input, or if the input has no primitives
+	string $inputNode = plugNode($finalInputAttr);
+        if(`nodeType $inputNode` == "houdiniInputGeometry") {
+ 	    string $matOverrideAttr = $inputNode + ".materialPerFace";
+	    setAttr $matOverrideAttr 0;
+	}
     }
     else
     {
@@ -339,7 +346,15 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
         for($i = 0; $i < size($sourceInputAttr); $i++)
         {
             connectAttr $sourceInputAttr[$i] ($mergeNode + ".inputNode[" + $i + "]");
-        }
+	    // if we are merging, set shading group per prim
+	    // so that the shading group info survives the merge
+	    // unless the input has no primitives - i.e. its not a geo
+ 	    string $inputNode = plugNode($sourceInputAttr[$i]);
+            if(`nodeType $inputNode` == "houdiniInputGeometry") {
+	        string $matOverrideAttr =  $inputNode + ".materialPerFace";
+	        setAttr $matOverrideAttr 1;
+	    }
+	}
 
         $finalInputAttr = $mergeNode + ".outputNodeId";
     }

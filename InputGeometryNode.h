@@ -19,6 +19,7 @@ public:
     static MObject inputGeometry;
     static MObject inputComponents;
     static MObject unlockNormals;
+    static MObject materialPerFace;
 
     static MObject outputNodeId;
 

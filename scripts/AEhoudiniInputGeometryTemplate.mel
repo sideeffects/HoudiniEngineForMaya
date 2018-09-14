@@ -4,8 +4,11 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
     editorTemplate -beginLayout "Inputs" -collapse false;
 
         editorTemplate
-            -label "Unlock Normals"
+	    -label "Unlock Normals"
             -addControl "unlockNormals";
+        editorTemplate
+            -label "Material Per Face"
+            -addControl "materialPerFace";
         editorTemplate
             -label "Input Transform"
             -addControl "inputTransform";

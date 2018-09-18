@@ -414,7 +414,6 @@ houdiniEngine_viewInHoudini()
 
     string $hipFile = `houdiniEngine -makeTempDir`;
     $hipFile += "/houdiniEngineForMaya_" + `getpid` + ".hip";
-    $hipFile = toNativePath($hipFile);
 
     houdiniEngine -saveHIP $hipFile;
 

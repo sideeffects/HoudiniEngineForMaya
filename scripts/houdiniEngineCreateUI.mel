@@ -5,6 +5,8 @@ source houdiniEngineBakeAsset;
 source houdiniEngineRemoveHistory;
 source houdiniEngineDeleteHistory;
 
+global int $houdiniEngine_scriptJobId = -1;
+
 proc string[] getHoudiniVersions()
 {
     string $houdiniVersion = `houdiniEngine -houdiniVersion`;
@@ -512,13 +514,33 @@ houdiniEngine_launchGitHub()
 }
 
 global proc
+houdiniEngine_shaderChangeCallbacks()
+{
+    // This is used to set up the shader changed script jobs on file open
+    // for meshes that are inputs to assets
+    
+    string $inputNodes[] = `ls -type "houdiniInputGeometry"`;
+    for($inputNode in $inputNodes) {
+        string $inputGeos[] = `listConnections -sh true -type mesh $inputNode`;
+	if(size($inputGeos) == 0)
+	     continue;
+	string $shadingGroupAttr =  ($inputGeos[0] + ".instObjGroups");
+	scriptJob -kws -connectionChange $shadingGroupAttr houdiniEngine_objectShaderChanged;	
+    }   
+}
+
+global proc
 houdiniEngineCreateUI()
 {
+    global int $houdiniEngine_scriptJobId;
     //cleanup UI
     houdiniEngineDeleteUI;
     string $MODULE_PATH=`getModulePath -moduleName "houdiniEngine"`;
     if(!`shelfLayout -exists "Houdini"`)
         catchQuiet(loadNewShelf ($MODULE_PATH + "/scripts/shelf_Houdini"));
+    // add shader change script job for input meshes after file read
+    if( $houdiniEngine_scriptJobId <= 0)
+        $houdiniEngine_scriptJobId = `scriptJob -event PostSceneRead houdiniEngine_shaderChangeCallbacks`;
 
     global string $gMainWindow;
     setParent $gMainWindow;

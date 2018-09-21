@@ -769,13 +769,31 @@ InputMesh::processShadingGroups(
 {
     MStatus status;
 
-    if(sgCompObjs.length() == 1 && sgCompObjs[0].isNull())
+    // Normally, if there is no per face shader assignment
+    // we use a detail attribute to keep track of the maya shading group
+    // However, if we anticipate merging the input objects, we can
+    // promote the shading group info to primitive attributes so that
+    // it will survive the merge.
+
+    if(sgCompObjs.length() == 1 && sgCompObjs[0].isNull() )
     {
-        CHECK_HAPI(hapiSetDetailAttribute(
+       if(!myMatPerFace) {
+            CHECK_HAPI(hapiSetDetailAttribute(
                     geometryNodeId(), 0,
                     "maya_shading_group",
                     const_cast<MStringArray&>(sgNames)[0]
                     ));
+        }
+	else {
+	    std::vector<const char*> sgNamePerComp;
+            sgNamePerComp.resize(meshFn.numPolygons(), sgNames[0].asChar());
+            CHECK_HAPI(hapiSetPrimAttribute(
+                    geometryNodeId(), 0,
+                    1,
+                    "maya_shading_group",
+                    sgNamePerComp
+                    ));
+	}
     }
     else
     {

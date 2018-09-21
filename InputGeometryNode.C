@@ -16,6 +16,7 @@ MObject InputGeometryNode::inputTransform;
 MObject InputGeometryNode::inputGeometry;
 MObject InputGeometryNode::inputComponents;
 MObject InputGeometryNode::unlockNormals;
+MObject InputGeometryNode::materialPerFace;
 MObject InputGeometryNode::outputNodeId;
 
 void*
@@ -66,6 +67,15 @@ InputGeometryNode::initialize()
     nAttr.setStorable(true);
     addAttribute(InputGeometryNode::unlockNormals);
 
+    InputGeometryNode::materialPerFace = nAttr.create(
+            "materialPerFace", "materialPerFace",
+            MFnNumericData::kBoolean,
+            0
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputGeometryNode::materialPerFace);
+
     InputGeometryNode::outputNodeId = nAttr.create(
             "outputNodeId", "outputNodeId",
             MFnNumericData::kInt,
@@ -78,6 +88,7 @@ InputGeometryNode::initialize()
     attributeAffects(InputGeometryNode::inputTransform, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::inputGeometry, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::unlockNormals, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::materialPerFace, InputGeometryNode::outputNodeId);
 
     return MStatus::kSuccess;
 }
@@ -107,8 +118,11 @@ InputGeometryNode::compute(
         // set input geo
         MPlug geometryPlug(thisMObject(), InputGeometryNode::inputGeometry);
         MPlug normalPlug(thisMObject(), InputGeometryNode::unlockNormals);
+        MPlug matPerFacePlug(thisMObject(), InputGeometryNode::materialPerFace);
 	bool unlockNormals =  normalPlug.asBool();
+	bool matPerFace = matPerFacePlug.asBool();
 	myInput->setUnlockNormals(unlockNormals);
+	myInput->setMatPerFace(matPerFace);
         myInput->setInputGeo(dataBlock, geometryPlug);
 
         // set input component list

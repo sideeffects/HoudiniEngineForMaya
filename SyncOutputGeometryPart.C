@@ -402,6 +402,32 @@ SyncOutputGeometryPart::createOutputMesh(
             {
                 MFnStringArrayData mayaSGData(mayaSGDataPlug.asMObject());
                 MStringArray mayaSG = mayaSGData.array();
+		
+		const char* firstSgName = mayaSG[0].asChar();
+		bool sameShader = true;
+                for(size_t i = 0; i < mayaSG.length(); i++)
+                {
+		    const char* sgName = mayaSG[i].asChar();
+                    if(!sgName || !sgName[0])
+                    {
+		      sameShader = false;
+		      break;
+                    }
+		    if(!strcmp(sgName, firstSgName))
+		      continue;
+		    sameShader = false;
+		    break;
+		}
+		// if all the primitives are on the same shader, assign it as object level shader
+		if(sameShader) {
+                    myDagModifier.commandToExecute(
+                         MString("sets -e -forceElement ")
+		         + mayaSG[0]
+		         + MString(" ")
+                         + partMeshFn.fullPathName()
+                    );
+	            objectShaderAssigned = true;
+		} else {
 
                 std::map<std::string, MaterialComponent> materialComponentsMap;
 
@@ -443,6 +469,7 @@ SyncOutputGeometryPart::createOutputMesh(
                 {
                     materialComponents.push_back(iter->second);
                 }
+		}
             }
         }
 	if(!objectShaderAssigned) {

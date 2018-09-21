@@ -1,7 +1,13 @@
 global proc houdiniEngineDeleteUI()
 {
+    global int $houdiniEngine_scriptJobId;
+
     if(`menu -q -exists houdiniEngineMenu`)
     {
         deleteUI -menu houdiniEngineMenu;
+    }
+    if($houdiniEngine_scriptJobId > 0) {
+        scriptJob -kill  $houdiniEngine_scriptJobId;
+	$houdiniEngine_scriptJobId = -1;
     }
 }

@@ -15,6 +15,9 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
         editorTemplate
             -label "Output Node Id"
             -addControl "outputNodeId";
+        editorTemplate
+            -label "Object Shading Group"
+            -addControl "objectShadingGroup";
 
         editorTemplate -suppress "inputGeometry";
         editorTemplate -suppress "inputComponents";

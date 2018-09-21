@@ -17,6 +17,7 @@ MObject InputGeometryNode::inputGeometry;
 MObject InputGeometryNode::inputComponents;
 MObject InputGeometryNode::unlockNormals;
 MObject InputGeometryNode::materialPerFace;
+MObject InputGeometryNode::objectShadingGroup;
 MObject InputGeometryNode::outputNodeId;
 
 void*
@@ -76,6 +77,15 @@ InputGeometryNode::initialize()
     nAttr.setStorable(true);
     addAttribute(InputGeometryNode::materialPerFace);
 
+    InputGeometryNode::objectShadingGroup = tAttr.create(
+            "objectShadingGroup", "objectShadingGroup",
+            MFnData::kString,
+            0
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputGeometryNode::objectShadingGroup);
+
     InputGeometryNode::outputNodeId = nAttr.create(
             "outputNodeId", "outputNodeId",
             MFnNumericData::kInt,
@@ -89,6 +99,7 @@ InputGeometryNode::initialize()
     attributeAffects(InputGeometryNode::inputGeometry, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::unlockNormals, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::materialPerFace, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::objectShadingGroup, InputGeometryNode::outputNodeId);
 
     return MStatus::kSuccess;
 }

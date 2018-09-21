@@ -160,8 +160,17 @@ getInputNodeForSingle(string $object)
         else
         {
             string $geometryAttr = $object + ".outMesh";
-
-            return createInputGeometryNode($transformAttr, $geometryAttr);
+            string $inputNodeIdAttr  = createInputGeometryNode($transformAttr, $geometryAttr);
+	    
+	    // keep track of object level shader assignment so that we can dirty the geo input if needed
+	    string $shadingGroupAttr = ($object + ".instObjGroups");
+	    scriptJob -kws -connectionChange $shadingGroupAttr houdiniEngine_objectShaderChanged;
+	    string $inputNode = plugNode($inputNodeIdAttr);
+	    string $objectShader[] = `listConnections -type shadingEngine ($object + ".instObjGroups")`;
+	    if(size($objectShader) > 0) {
+		 setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
+	    }
+	    return $inputNodeIdAttr;
         }
     }
     else if(`objectType -isAType "nurbsCurve" $object`)
@@ -279,6 +288,74 @@ houdiniEngine_clearAssetInput(string $inputAttr)
             delete $sourceInputNode;
         }
     }
+}
+
+global proc string[]
+houdiniEngine_getDownstreamAssets( string $inputNode)
+{
+    // get the immediate downstream asset either directly or through a merge node
+    // but NOT assets further downstream
+    string $downstreamAssets[] = `listConnections -s false -type "houdiniAsset" $inputNode`;
+    string $downstreamMerges[] =  `listConnections -s false -type "houdiniInputMerge" $inputNode`;
+    for ($merge in $downstreamMerges) {
+    	string $moreAssets[] = `listConnections -s false -type "houdiniAsset" $merge`;
+	for($asset in $moreAssets) {
+	    $downstreamAssets[size($downstreamAssets)] = $asset;
+	}
+    }
+
+    string $assets[] = stringArrayRemoveDuplicates($downstreamAssets);
+    return $assets;
+}
+
+global proc
+houdiniEngine_objectShaderChanged()
+{
+    // This is primarily used as a script job on shader connection changed
+    // for meshes that are inputs to assets
+    
+    // detect if the object shader on the inputGeo has changed
+    // and dirty the inputGeometry node if it has
+    // if the inputGeo does not come from a shape:
+    //     then it's a construction history asset,
+    //     and shader assignment is downstream anyway
+
+    string $inputNodes[] = `ls -type "houdiniInputGeometry"`;
+    for($inputNode in $inputNodes) {
+        string $inputGeos[] = `listConnections -sh true -type mesh $inputNode`;
+	if(size($inputGeos) == 0)
+	     continue;
+	string $inputGeo =  $inputGeos[0];
+	int $numObjGroups = `getAttr -size  ($inputGeo + ".instObjGroups")`;
+	int $hasShader = 0;
+	int $changedShader = 0;
+	if($numObjGroups > 0) {
+	    string $objectShader[] = `listConnections -type shadingEngine ($inputGeo + ".instObjGroups")`;
+	    if(size($objectShader) > 0) {
+	        $hasShader = 1;
+	        string $oldShadingGroup = `getAttr ($inputNode + ".objectShadingGroup")`;
+	        if($oldShadingGroup != $objectShader[0]) {
+		    setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
+		    $changedShader = 1;
+		}
+	    }		     
+	}
+	if(!$hasShader){
+	    if(`getAttr ($inputNode + ".objectShadingGroup")` != "") {
+	        setAttr -type "string" ($inputNode + ".objectShadingGroup") "";
+		$changedShader = 1;
+	    }
+        }
+        string $affectedAssets[] = `houdiniEngine_getDownstreamAssets($inputNode)`;
+	if($changedShader) {
+	    for($affectedAsset in $affectedAssets) {
+	        if(`getAttr ($affectedAsset + ".autoSyncOutputs")` == 1)
+	            houdiniEngine_syncAssetOutput $affectedAsset;
+	    }
+	}
+    }
+
+
 }
 
 global proc int

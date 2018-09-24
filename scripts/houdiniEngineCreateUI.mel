@@ -326,6 +326,73 @@ houdiniEngine_updateShelf()
 }
 
 global proc
+houdiniEngine_updateToolsShelf()
+{
+    // Note - don't put this command on the Tools shelf itself - it will crash
+    if(`shelfLayout -exists "HoudiniTools"`)
+        deleteShelfTab "HoudiniTools";
+	
+    // shared tools are installed under engine - i.e. $MODULE_PATH/../../Tools/
+    string $MODULE_PATH=`getModulePath -moduleName "houdiniEngine"`;
+    string $toolsLocation = `dirname $MODULE_PATH`;
+    $toolsLocation = `dirname $toolsLocation`;
+    $toolsLocation += "/Tools/";
+    if(!`shelfLayout -exists "HoudiniTools"`)
+    	catchQuiet(houdiniEngine_buildToolsShelf ($toolsLocation));	     
+       // catchQuiet(houdiniEngine_buildToolsShelf ($MODULE_PATH + "/../../Tools/"));
+}
+
+global proc
+houdiniEngine_buildToolsShelf(string $toolsLocation)
+{
+    global string $gShelfTopLevel;
+
+    // load an empty shelf to make sure that the deleted shelf is really gone
+    // just using addNewShelfTab with the same name would restore deleted items !!!
+    string $MODULE_PATH=`getModulePath -moduleName "houdiniEngine"`;
+    loadNewShelf ($MODULE_PATH + "/scripts/shelf_HoudiniTools");
+
+    string $currentShelf = `tabLayout -query -selectTab $gShelfTopLevel`;
+    setParent $currentShelf;
+    
+    string $tools[] = `getFileList -folder $toolsLocation - filespec "*.hda"`;
+
+    for($tool in $tools) {
+    	string $toolName = basename($tool, ".hda");
+	string $toolImage = ( $toolName + ".png");
+	string $toolJson = ($toolsLocation + $toolName + ".json");
+
+	// brute force parse of the simple json asset properties
+	string $assetProps[];
+	string $assetKeys[];
+	string $toolDesc[] = freadAllLines($toolJson);
+	for($desc in $toolDesc) {
+		  string $buffer[];
+		  string $num = `tokenize $desc "\"" $buffer`;
+		  if($num == 5) {
+		      $assetKeys[size($assetKeys)] = $buffer[1];
+		      $assetProps[size($assetProps)] = $buffer[3];
+		  }
+	}
+	
+        string $toolPath = ($toolsLocation + $tool);
+	string $assets[] = `houdiniAsset -listAssets $toolPath`;
+	if(size($assets) == 0) continue;
+        string $script = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\"");
+	shelfButton 
+			-command $script
+			-sourceType "mel"
+			-label $tool
+			-annotation $assetProps[2]
+			-image1 $toolImage
+			-style "iconOnly"
+			-width 32
+			-height 32;
+
+    }
+}
+
+global proc
 houdiniEngine_addSelectedHistory()
 {
     if(!`exists houdiniEngine_addHistory`)
@@ -568,9 +635,16 @@ houdiniEngineCreateUI()
         -command "houdiniEngineAssetLibraryManager";
 
     menuItem -label "Update Houdini Shelf"
-
+        -imageOverlayLabel "UHS"
+        -version $mayaVersion
         -annotation "Replace your old Houdini shelf with the  current version "
         -command "houdiniEngine_updateShelf";
+
+    menuItem -label "Update Houdini Tool Shelf"
+        -imageOverlayLabel "UTS"
+        -version $mayaVersion
+        -annotation "Rebuild your Tool shelf from the contents of the Tool directory "
+        -command "houdiniEngine_updateToolsShelf";
 
     menuItem -divider true;
 

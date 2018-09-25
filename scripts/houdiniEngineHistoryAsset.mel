@@ -442,7 +442,7 @@ houdiniEngine_loadAndAddHistory(string $assetFile, string $assetName)
 }
 
 global proc string
-houdiniEngine_loadAndAddAsset(string $assetFile, string $assetName)
+houdiniEngine_loadAndAddAsset(string $assetFile, string $assetName, string $assignMode)
 {
 
     // assume that geo to get history is selected
@@ -456,8 +456,23 @@ houdiniEngine_loadAndAddAsset(string $assetFile, string $assetName)
     string $assetNode = `houdiniEngine_loadAsset $assetFile $assetName`;
 
     catchQuiet(`select -replace $old_selection`);
-    string $firstNodeInput = getHistoryInputAttr($assetNode);
-    AEhoudiniAssetSetInputToSelection(($assetNode + "." + $firstNodeInput));
+    if($assignMode == "OPERATOR_MULTI") {
+        int $numInputs = `getAttr -size ($assetNode + ".input")`;
+	int $numSelected = size($old_selection);
+	int $input;
+	string $nodeInput;
+        for($input = 0; $input<$numInputs &&  $input<$numSelected; $input++){
+	    $nodeInput = ("input[" +$input + "].inputNodeId");
+	    select -r $old_selection[$input];
+	     AEhoudiniAssetSetInputToSelection(($assetNode + "." + $nodeInput));
+        }
+	catchQuiet(`select -replace $old_selection`);
+    } else if($assignMode == "OPERATOR_SINGLE") {
+        string $firstNodeInput = getHistoryInputAttr($assetNode);
+        AEhoudiniAssetSetInputToSelection(($assetNode + "." + $firstNodeInput));
+    } else if($assignMode == "HISTORY") {
+        houdiniEngine_addHistory($assetNode);
+    }
 
     if(!`about -batch`) {
         showEditor $assetNode;

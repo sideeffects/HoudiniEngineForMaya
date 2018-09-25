@@ -363,6 +363,12 @@ houdiniEngine_buildToolsShelf(string $toolsLocation)
 	string $toolJson = ($toolsLocation + $toolName + ".json");
 
 	// brute force parse of the simple json asset properties
+	// we know apriori, for initial set of tools anyway, that
+	// assetProps[0] == name
+	// assetProps[1] == toolType
+	// assetProps[2] == toolTip
+	// actual json parsing will follow as needed
+	
 	string $assetProps[];
 	string $assetKeys[];
 	string $toolDesc[] = freadAllLines($toolJson);
@@ -378,7 +384,7 @@ houdiniEngine_buildToolsShelf(string $toolsLocation)
         string $toolPath = ($toolsLocation + $tool);
 	string $assets[] = `houdiniAsset -listAssets $toolPath`;
 	if(size($assets) == 0) continue;
-        string $script = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\"");
+        string $script = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\" \"" + $assetProps[1] + "\"" );
 	shelfButton 
 			-command $script
 			-sourceType "mel"

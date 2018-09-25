@@ -385,7 +385,20 @@ houdiniEngine_buildToolsShelf(string $toolsLocation)
 	string $assets[] = `houdiniAsset -listAssets $toolPath`;
 	if(size($assets) == 0) continue;
         string $script = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\" \"" + $assetProps[1] + "\"" );
-	shelfButton 
+	string $rmbHistoryScript = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\" \"" + "HISTORY" + "\"" );
+	if($assetProps[1]== "OPERATOR_SINGLE") {
+	       shelfButton 
+			-command $script
+			-sourceType "mel"
+			-label $tool
+			-annotation $assetProps[2]
+			-image1 $toolImage
+			-style "iconOnly"
+			-mi "Apply As History" $rmbHistoryScript
+			-width 32
+			-height 32;
+	} else {
+	       shelfButton 
 			-command $script
 			-sourceType "mel"
 			-label $tool
@@ -394,6 +407,7 @@ houdiniEngine_buildToolsShelf(string $toolsLocation)
 			-style "iconOnly"
 			-width 32
 			-height 32;
+	}
 
     }
 }

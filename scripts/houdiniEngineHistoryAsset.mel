@@ -73,8 +73,13 @@ createInputGeometryNode(string $transformAttr, string $geometryAttr)
 
     string $inputNode = `createNode -skipSelect houdiniInputGeometry`;
 
-    if($transformAttr != "")
-        connectAttr $transformAttr ($inputNode + ".inputTransform");
+    // don't connect the input world transform for a history asset
+    // Since the output is still parented under that same hierarchy
+    // but if you really need the input transform, uncomment this code
+    
+    //if($transformAttr != "")
+        //connectAttr $transformAttr ($inputNode + ".inputTransform");
+	
     connectAttr $geometryAttr ($inputNode + ".inputGeometry");
 
     return ($inputNode + ".outputNodeId");

@@ -1,0 +1,74 @@
+/*!
+
+@page Maya_Shelves Shelves
+
+@tableofcontents
+
+There are now two shelves available for use with the houdiniEngine plugin  in maya
+- @ref Maya_Shelves_HoudiniShelf "houdini"
+- @ref Maya_Shelves_HoudiniTools "houdiniTools"
+
+Since maya shelves are saved locally once they are loaded, you will need to update your shelves if they have been modified in a new install of houdini There are menu items to update the tools:
+- Update Houdini Shelf
+- Update Houdini Tools Shelf
+
+The Houdini shelf is static and may not need to be updated very often. The Houdini Tools shelf is built dyncamically based on the hda's currently in the engine Tools directory, so it needs to rebuild for a new install in order to point at the correct tools directory, as well as to include any new tools that may have been added
+
+@section Maya_Shelves_HoudiniShelf houdini Shelf
+
+The houdini shelf has two sections:
+
+Loading the plugin:
+- set session type to socket (SoS)
+- set session type to autostart named pipe
+- set session to custom named pipe
+- load plugin
+
+Menu items that operate on selected nodes
+- sync asset (SA)
+- bake asset (BA)
+- remove asset from history (RAH)
+- add asset to history (AAH)
+- delete construction history, including assets, from this mesh (DH)
+- reload asset definition (RA)
+
+@section Maya_Shelves_HoudiniTools  houdini Tools
+
+The tools shelf is build from all the tools available in the shared engine Tools. Each tool has a JSON description file as well as the hda.
+
+These tool types are currently supported
+- OPERATOR_SINGLE
+- OPERATOR_MULTI
+- HISTORY
+
+A SINGLE tool will add the selected objects (merging if needed) to the first input of the asset. You can also apply a SINGLE tool to a selected mesh as construction history by using the shelf item's RMB menu.
+
+A MULTI tool will match one selected item to each of the tools input, in the order they were selected
+
+A HISTORY tool will be connected as construction history to a single selected mesh, or to the selected faces or vertices from a mesh
+
+The initial set of houdiniEngine tools are:
+- he_boolean
+- he_calculate_occlusion
+- he_curve_instancer
+- he_delete_small_parts
+- he_polyreduce
+- he_set_pivot
+- he_surface_instancer
+
+@section Maya_Shelves_CustomTools
+
+You can create custom shelf items for your own HDA's if the follow one of the connection styles above. For example, the shelf script for my extrudeFaces hda might look like:
+
+@verbatim
+if(!`pluginInfo -query -loaded houdiniEngine`)
+     loadPlugin houdiniEngine;
+if(!`exists houdiniEngine_loadAndAddAsset`)
+     source houdiniEngineHistoryAsset;
+houdiniEngine_loadAndAddAsset "/home/julia/houdini17.0/otls/extrudeFaces.hda" "Sop/extrudeFaces" "HISTORY"
+@endverbatim
+
+
+
+
+*/

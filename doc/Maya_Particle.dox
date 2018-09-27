@@ -57,6 +57,8 @@ Some standard per-particle attributes in Maya have different names in Houdini. T
 </tr>
 </table>
 
+Also note that while age is explicitly represented in Houdini, in Maya it is computed from birthTime and the current frame. If an asset has explicitly defined a birthTime attribute, we use for output, otherwise we compute birthTime from age.
+
 @section Maya_Particle_NucleusSolver Nucleus Solver
 
 When the asset creates an `nParticle` node for outputting points/particles, the `nParticle` node is assigned to the active Nucleus solver. This means that the output particles would then participate in any simulations that are assigned to the same Nucleus solver. This may or may not be the desired result.

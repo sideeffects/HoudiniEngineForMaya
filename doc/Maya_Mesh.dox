@@ -64,9 +64,9 @@ Stores the name of the current color set.
 
 @subsection Maya_Mesh_Input_ShadingGroup Shading Groups
 
-- `maya_shading_group` - primitive string
+- `maya_shading_group` - primitive or detail string
 
-Stores the name of the shading group that is assigned to each polygon.
+Stores the name of the shading group that is assigned to the object, or to each polygon.
 
 @subsection Maya_Mesh_Input_Sets Sets
 

@@ -60,4 +60,24 @@ Outputs hidden objects from the asset.
 
 Outputs templated geometries from the asset.
 
+@subsection Maya_Assets_Options_OutputGeometryGroups Output Geometry Groups
+
+Outputs component sets for geometry groups;
+
+@subsection Maya_Assets_Options_OutputCustomAttributes Output Custom Attributes
+
+Outputs dynamic attributes for custom attributes in the asset.
+
+@subsection Maya_Assets_Options_PreserveMeshHardEdges Preserve Mesh Hard Edges
+
+Add attributes to flag hard edges on inputs, and set edge hardness for the corresponding outputs. No longer slow as of maya 2018.
+
+@subsection Maya_Assets_Options_PreserveMeshLockedNormals Preserve Mesh Locked Normals
+
+Add attributes to flag locked normals on inputs, and set normals for the corresponding outputs. No longer slow as of maya 2018.
+
+@subsection Maya_Assets_Options_UngroupOnBake Ungroup On Bake
+
+Discard the top level group node when baking an asset.
+
 */

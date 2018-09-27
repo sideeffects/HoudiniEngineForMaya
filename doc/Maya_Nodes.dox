@@ -358,8 +358,13 @@ There are 2 input attributes:
 - inputGeometry (generic)
 - inputTransform (matrix)
 
-and one output:
+one output:
 - outputNodeId (houdini node id)
+
+and some additional attributes for better control over meshes:
+- unlockNormals (do not pass custom normals in to the asset)
+- materialPerFace (set the shading group per face - used if geometry will be merged)
+- objectShadingGroup (used to track object shader assignment chages)
 
 The geometry and the world transform are connected separately. On the engine side, an input null is created for the geometry. The input does not need to be an actual mesh shape - almost all the information we use is from the mesh data, so you could connect the output mesh from a mesh history node directly.
 

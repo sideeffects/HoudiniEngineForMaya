@@ -2,6 +2,260 @@
 
 @page Maya_Scripting Scripting
 
+@tableofcontents
+
+@section Maya_Scripting_Commands Plugin Commands
+
+There are two native plugin commands, houdiniAsset and houdiniEngine
+
+@subsection Maya_Scripting_Commands_houdiniEngine houdiniEngine
+
+houdiniEngine
+[-license]
+[-houdiniVersion]
+[-houdiniEngineVersion]
+[-buildHoudiniVersion]
+[-buildHoudiniEngineVersion]
+[-makeTempDir]
+[-saveHIP string]
+
+<table>
+<tr>
+    <th>Long Name</th>
+    <th>Argument</th>
+    <th>Description</th>       
+</tr>
+<tr>
+    <td>-license (-lic)</td>
+    <td></td>
+    <td>Returns the license type that is currently in use</td>       
+</tr>
+<tr>
+    <td>-houdiniVersion (-hv)</td>
+    <td></td>
+    <td>Returns the houdini version that is currently in use</td>       
+</tr>
+<tr>
+    <td>-houdiniEngineVersion (h-ev)</td>
+    <td></td>
+    <td>Returns the houdini engine version that is currently in use</td>       
+</tr>
+<tr>
+    <td>-buildHoudiniVersion (-bhv)</td>
+    <td></td>
+    <td>Returns the houdini version that was built with</td>       
+</tr>
+<tr>
+    <td>-buildHoudiniEngineVersion (-bev)</td>
+    <td></td>
+    <td>Returns the houdini engine version that was build with</td>       
+</tr>
+<tr>
+    <td>-makeTempDir (-mtp)</td>
+    <td></td>
+    <td>Returns the path of the houdini temp directory, creating it if needed</td>       
+</tr>
+<tr>
+    <td>-saveHIP (-sh)</td>
+    <td>filePath</td>
+    <td>Save the contents of the engine session to the specified hip file</td>       
+</tr>
+</table>
+<br>
+
+@verbatim
+// Some Examples:
+
+houdiniEngine -lic;
+// Result: Houdini-Engine // 
+houdiniEngine -hv;
+// Result: 17.0.354//
+houdiniEngine -makeTempDir;
+// Result: /usr/tmp/houdini_temp // 
+@endverbatim
+<br>
+
+@subsection Maya_Scripting_Commands_houdiniAsset houdiniAsset
+
+houdiniAsset
+[-listAssets string]
+[-loadAsset string string]
+[-resetSimulation string ]
+[-cookMessages string ]
+[-reloadAsset string]
+[-sync string]
+[-syncAttributes]
+[-syncOutputs]
+[-syncHidden]
+[-syncTemplatedGeos]
+[-autoSyncId string]
+
+<table>
+<tr>
+    <th>Long Name</th>
+    <th>Argument</th>
+    <th>Description</th>       
+</tr>
+<tr>
+    <td>-listAssets (-ls)</td>
+    <td>filePath </td>
+    <td>Returns a string array of the names of assets contained in this hda</td>       
+</tr>
+<tr>
+    <td>-loadAsset (-la)</td>
+    <td>filePath assetName </td>
+    <td>Load the named asset from this hda</td>       
+</tr>
+<tr>
+    <td>-resetSimulation(-rs)</td>
+    <td>assetNode</td>
+    <td>reset the simulation for the asset node </td>       
+</tr>
+<tr>
+    <td>-cookMessages(-cm)</td>
+    <td>assetNode</td>
+    <td>Returns the cook messages for the asset node </td>       
+</tr>
+<tr>
+    <td>-reloadAsset(-rl)</td>
+    <td>assetName</td>
+    <td>reload the asset definition for the specified asset, from the hda from which it was previously loaded</td>       
+</tr>
+<tr>
+    <td>-sync(-syn)</td>
+    <td>assetNode </td>
+    <td>sync the asset node </td>       
+</tr>
+<tr>
+    <td>-syncAttributes(-sa)</td>
+    <td></td>
+    <td>if the -sync flag is present, sync only the attributes, not the outputs for the specified asset noded</td>       
+</tr>
+<tr>
+    <td>-syncOutputs(-so)</td>
+    <td></td>
+    <td>if the -sync flag is present, sync only the outputs, not the attributes </td>       
+</tr>
+<tr>
+    <td>-syncHidden(-shi)</td>
+    <td></td>
+    <td>when syncing attributes, create attributes for the hidden parms as well</td>       
+</tr>
+<tr>
+    <td>-syncTemplatedGeos(-stm)</td>
+    <td></td>
+    <td>when syncing outputs, sync templated geos </td>       
+</tr>
+<tr>
+    <td>-autoSyncId(-asi)</td>
+    <td>assetNode </td>
+    <td>Returns the current autoSyncId for this asset, used internally to determine whether there is already an autoSync running, or whether another one should be triggered </td>       
+</tr>
+</table>
+<br>
+
+@verbatim
+// Some Examples:
+
+houdiniAsset -listAssets "/home/julia/houdini17.0/otls/extrudeFaces.hda";
+// Result: Object/extrudeFaces //
+
+houdiniAsset -loadAsset "/home/myHomeDir/houdini17.0/otls/extrudeFaces.hda" "Object/extrudeFaces";
+// Result: |extrudeFaces1 //
+
+houdiniAsset -sync |extrudeFaces1 -syncOutputs;
+@endverbatim
+<br>
+
+@section Maya_Scripting_Mel Mel Procs
+
+There are a number of global mel procs in the houdiniEngine module. Many of these were put in place to support functionality that is available from the menu, from attribute editor buttons, or from one of the shelves. Only the ones that seem usable for general purpose scripting have been documented here.
+
+@subsection Maya_Scripting_Mel_Asset Loading and Connecting Assets
+
+- <b>houdiniEngine_loadAssetLibrary(string $assetLibraryFilePath) </b> <br>
+Load the asset definitions from the asset library (hda)
+- <b>houdiniEngine_loadAsset(string$assetLibraryFilePath, string $asset) </b> <br>
+Instantiate the named asset, loading the specified asset library if needed
+- <b>houdiniEngine_loadAndAddAsset(string $assetFile, string $assetName, string $assignMode) </b> <br>
+load the asset, and attach it to the selected Maya objects according to the $assignMode: <br>
+OPERATOR_SINGLE: connect all the selected objects to the first input. <br>
+OPERATOR_MULTI: connect selected items to inputs in selection order. <br>
+HISTORY: connect to the first selected item as construction history
+- <b>houdiniEngine_autoSyncAssetOutput(string $assetNode, int $autoSyncId) </b>  <br>
+check that no other autosync is running, and then sync
+- <b>houdiniEngine_setAssetInput(string $inputAttr, string $objects[]) </b> <br>
+assign the objects to to the specified input attribute, merging if necessary
+
+- <b>houdiniEngine_syncAssetOutput(string $assetNode) </b>  <br>
+rebuild the assets output nodes
+- <b>houdiniEngine_syncAsset(string $assetNode) </b>  <br>
+sync attributes and outputs
+- <b>houdiniEngine_syncSelectedAsset() </b>  <br>
+sync the asset nodes on the selection list
+- <b>houdiniEngine_reloadSelectedAssets() </b> <br>
+reload the asset definition for the selected assets. Note that other nodes using the same asset definition will not update until forced to cook (and then sync)
+
+- <b>houdiniEngine_getAssetInput(string $inputAttr) </b> <br>
+get all the input nodes connected to the asset node
+- <b>houdiniEngine_getDownstreamAssets( string $inputNode) </b> <br>
+get all the asset nodes immedialtely downstream of the input node
+- <b>houdiniEngine_getSelectedAssetNodes() </b> <br>
+get all the houdini input nodes upstream of the asset
+
+  
+- <b>houdiniEngine_updateShelf() </b>  <br>replace the contents of your local Houdini shelf with the version from the current install
+- <b>houdiniEngine_updateToolsShelf() </b>  <br>rebuild the content of the tools shelf from the contents of the Tools directory in your current engine instll
+- <b>houdiniEngine_buildToolsShelf(string $toolsLocation) </b> <br> rebuild the content of the tools shelf from the contents of the specified directory.  So you can replace the tools with your own aversions, or add additional tools. Any new tools need to have the corresponding .json file created. 
+
+@subsection Maya_Scripting_Mel_History Construction History
+- <b>houdiniEngine_addHistory($assetNode) </b> <br>
+  add the assetNode as construction history to the selected mesh, (or to the mesh whose components are selected)
+- <b>houdiniEngine_addSelectedHistory() </b> <br>
+  determine if there is a suitable asset node selected, and if there is apply it to the selected mesh
+- <b>houdiniEngine_bakeAsset($assetNode) </b>  <br>
+bake the specified asset
+- <b>houdiniEngine_connectHistory(string $inputAttr, string $objects[], string $components[]) </b> <br>
+connect  the objects to the input attr as history
+- <b>houdiniEngine_deleteHistory(string $node)</b> <br> Delete construction history, including any asssets, from this node. (The regular Maya delete History does not cross plugin nodes)
+- <b>houdiniEngine_removeHistory(string $assetNode) </b> <br>
+- <b>houdiniEngine_removeSelectedHistory() </b> <br>
+
+
+@subsection Maya_Scripting_Mel_ScriptJob Procs for ScriptJobs
+These two procs are used in script jobs to make sure object level shader changes propagate to the output geometry.
+
+- <b>houdiniEngine_objectShaderChanged()</b><br>
+For all meshes connected to input geometry nodes, checks if the object shader assigned to a mesh is the same as the one listed on its input geometry node, if it isn't reset it and dirty the input. We use this with a connectionChanged event to track when shader assignment changes on input geometry. It could be used diretcly to update the shader information on all the input geometry nodes.
+
+- <b>houdiniEngine_shaderChangeCallbacks()</b><br>
+For all meshes connected to input geometry nodes, set up the shader changed script job on file open.
+
+@subsection Maya_Scripting_Mel_Web Houdini Pages and Applications
+
+These mel procs will start start an application or open a web page
+
+- <b>houdiniEngine_saveHipFile() </b> <br>
+- <b>houdiniEngine_viewInHoudini() </b> <br>
+- <b>houdiniEngine_runHKey() </b> <br>
+- <b>houdiniEngine_launchChangeLog() </b> <br>
+- <b>houdiniEngine_launchForum() </b> <br>
+- <b>houdiniEngine_launchGitHub() </b> <br>
+- <b>houdiniEngine_launchOrboltPageClick() </b> <br>
+- <b>houdiniEngine_launchSubmitBugs() </b> <br>
+- <b>houdiniEngine_onlineDocumentation() </b> <br>
+
+@section Maya_Scripting_Mel_Callbacks Callbacks
+
+The asset node allows you to register preSync and postSync callbacks by setting the preSyncCallback or postSyncCallback attribute on the asset to the name of the callback script e.g:
+
+setAttr -type "string" myAssetNode.preSyncCallback "myPreSyncCallback";
+
+Callbacks should be of the form:
+
+preSync(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOutputs) <br>
+postSync(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOutputs)
+
 @section Maya_Scripting_Python Python
 
     import maya.cmds as cmds

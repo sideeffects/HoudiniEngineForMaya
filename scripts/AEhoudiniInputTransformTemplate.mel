@@ -1,19 +1,10 @@
-global proc AEhoudiniInputGeometryTemplate(string $nodeName)
+global proc AEhoudiniInputTransformTemplate(string $nodeName)
 {
     editorTemplate -beginScrollLayout;
     editorTemplate -beginLayout "Inputs" -collapse false;
         editorTemplate
-	    -label "Unlock Normals"
-            -addControl "unlockNormals";
-        editorTemplate
-            -label "Material Per Face"
-            -addControl "materialPerFace";
-        editorTemplate
-            -label "Input Transform"
-            -addControl "inputTransform";
-        editorTemplate
-            -label "Object Shading Group"
-            -addControl "objectShadingGroup";
+            -label "Input Matrix"
+            -addControl "inputMatrix";
     editorTemplate -endLayout;
     
     editorTemplate -beginLayout "Outputs" -collapse false;
@@ -24,6 +15,7 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
     
     editorTemplate -suppress "inputGeometry";
     editorTemplate -suppress "inputComponents";
+    editorTemplate -suppress "inputTransform";
 
     editorTemplate -addExtraControls;
 

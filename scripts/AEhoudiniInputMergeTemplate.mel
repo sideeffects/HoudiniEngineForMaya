@@ -1,0 +1,25 @@
+global proc AEhoudiniInputMergeTemplate(string $nodeName)
+{
+    editorTemplate -beginScrollLayout;
+    
+    editorTemplate -beginLayout "Inputs" -collapse true;
+        editorTemplate
+            -label "Input Nodes"
+            -addControl "inputNode";
+    editorTemplate -endLayout;
+    
+    editorTemplate -beginLayout "Outputs" -collapse false;
+        editorTemplate
+            -label "Output Node Id"
+            -addControl "outputNodeId";
+    editorTemplate -endLayout;
+
+    editorTemplate -suppress "inputGeometry";
+    editorTemplate -suppress "inputTransform";
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+
+    editorTemplate -endScrollLayout;
+}
+

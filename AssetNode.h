@@ -60,7 +60,16 @@ class AssetNode: public MPxTransform
 
         virtual MStatus setDependentsDirty(const MPlug& plugBeingDirtied,
                 MPlugArray& affectedPlugs);
-
+	virtual MStatus connectionBroken (
+	        const MPlug & plug,
+		const MPlug & otherPlug,
+		bool asSrc
+		);
+	virtual MStatus shouldSave(
+		const MPlug & plug,
+		bool & isSaving 
+		);	
+	
 #if MAYA_API_VERSION >= 201600
         virtual MStatus preEvaluation(
                 const MDGContext& context,

@@ -656,13 +656,11 @@ houdiniEngineCreateUI()
 
     menuItem -label "Update Houdini Shelf"
         -imageOverlayLabel "UHS"
-        -version $mayaVersion
         -annotation "Replace your old Houdini shelf with the  current version "
         -command "houdiniEngine_updateShelf";
 
     menuItem -label "Update Houdini Tool Shelf"
         -imageOverlayLabel "UTS"
-        -version $mayaVersion
         -annotation "Rebuild your Tool shelf from the contents of the Tool directory "
         -command "houdiniEngine_updateToolsShelf";
 
@@ -687,22 +685,18 @@ houdiniEngineCreateUI()
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Bake Asset"
 	-imageOverlayLabel "BA"
-        -version $mayaVersion
 	-annotation "Tear off a copy of the asset's current output nodes"
         -command "houdiniEngine_bakeSelectedAssets";
     menuItem -label "Remove Asset From History"
 	-imageOverlayLabel "RAH"
         -annotation "Remove this asset and its inputGeometry nodes and reconnect history across the gap"
-    	-version $mayaVersion
         -command "houdiniEngine_removeSelectedHistory";
     menuItem -label "Add Asset To Mesh History"
 	-imageOverlayLabel "AAH"
-   	-version $mayaVersion
 	-annotation "Apply the selected asset as construction history to the selected mesh"
         -command "houdiniEngine_addSelectedHistory";
     menuItem -label "Delete History"
 	-imageOverlayLabel "DH"
-    	-version $mayaVersion
 	-annotation "Delete construction history including any houdiniAsset nodes\n"
         -command "houdiniEngine_deleteSelectedHistory";
     menuItem -label "Reload Asset"
@@ -737,26 +731,22 @@ houdiniEngineCreateUI()
 
     menuItem
         -label "Show/Hide"
-     	-version $mayaVersion
         -subMenu true
         -tearOff true;
 
         menuItem -label "Hide All Assets in Outliner"
 	    -imageOverlayLabel "HAO"
 	    -annotation "Mark all asset nodes as hidden in the outliner"
-    	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 0";
 
         menuItem -label "Hide History Assets in Outliner"
 	    -imageOverlayLabel "HHO"
 	    -annotation "Mark all history asset nodes as hidden in the outliner"
-     	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 0 1";
 	    
         menuItem -label "Show All Assets in Outliner"
 	    -imageOverlayLabel "SAO"
 	    -annotation "Mark all asset nodes as visible in the outliner"
-     	    -version $mayaVersion
             -command "houdiniEngine_showOutliner 1 0";
 
     setParent -menu ..;

@@ -1748,6 +1748,46 @@ AssetNode::copyInternalData(MPxNode* node)
 
     MPxTransform::copyInternalData(node);
 }
+MStatus
+AssetNode:: shouldSave(
+		const MPlug & plug,
+		bool & isSaving )
+{
+    // Since we went to all the trouble to make sure that inputs (nodeIds) were storable
+    // to get around the numeric compound file save optimization (bug),
+    // and that the attrs get reset to default on disconnect so we don't have bogus inputs,
+    // just want to make sure that default values also get stored
+    // In Maya2018 it looks like default values in multi compounds are written anyway
+    // but I don't want to take my chances with older versions, so make sure they  get written
+   
+    int nameSize = plug.name().numChars();
+    MString tail = plug.name().substring(nameSize - 6, nameSize - 1);
+    if(tail == "__node") {
+        isSaving = true;
+        return MS::kSuccess;
+    } else {
+        return MPxNode::shouldSave( plug, isSaving );
+    }
+}
+MStatus
+AssetNode::connectionBroken (
+    const MPlug & plug,
+    const MPlug & otherPlug,
+    bool asSrc )
+{
+    // setting the disconnect behavior to reset doesn't seem to work for elements of multi compounds
+    // and we particularly want to make sure that it is correct for node id's
+    // since they are now storable, so we do a brute force reset to -1 in that case
+  
+    int nameSize = plug.name().numChars();
+    MString tail = plug.name().substring(nameSize - 6, nameSize - 1);
+    if(tail == "__node") {
+        MPlug ncPlug( plug);
+        ncPlug.setValue(-1);
+    }
+    return(MPxTransform::connectionBroken(plug,otherPlug, asSrc));
+}
+
 
 Asset*
 AssetNode::getAsset() const

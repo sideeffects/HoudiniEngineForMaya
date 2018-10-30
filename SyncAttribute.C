@@ -435,10 +435,15 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
 
     if(parm.type == HAPI_PARMTYPE_NODE)
     {
+        // NODE parms attributes don't need to be stored for their value
+        // since they are only meaningful if connected
+        // however if Maya chooses to optimize storing a compound with
+        // all numeric elements, a non-storable element confuses the
+        // optimization and can cause data loss
         nAttr.setDefault(-1);
         nAttr.setDisconnectBehavior(MFnAttribute::kReset);
         nAttr.setCached(false);
-        nAttr.setStorable(false);
+        nAttr.setStorable(true);
     }
 
     // TODO: support min/max for all sizes

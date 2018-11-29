@@ -332,14 +332,14 @@ houdiniEngine_updateToolsShelf()
     if(`shelfLayout -exists "HoudiniTools"`)
         deleteShelfTab "HoudiniTools";
 	
-    // shared tools are installed under engine - i.e. $MODULE_PATH/../../Tools/
+    // shared tools are installed under engine - i.e. $MODULE_PATH/../../tools/
     string $MODULE_PATH=`getModulePath -moduleName "houdiniEngine"`;
     string $toolsLocation = `dirname $MODULE_PATH`;
     $toolsLocation = `dirname $toolsLocation`;
-    $toolsLocation += "/Tools/";
+    $toolsLocation += "/tools/";
     if(!`shelfLayout -exists "HoudiniTools"`)
     	catchQuiet(houdiniEngine_buildToolsShelf ($toolsLocation));	     
-       // catchQuiet(houdiniEngine_buildToolsShelf ($MODULE_PATH + "/../../Tools/"));
+       // catchQuiet(houdiniEngine_buildToolsShelf ($MODULE_PATH + "/../../tools/"));
 }
 
 global proc

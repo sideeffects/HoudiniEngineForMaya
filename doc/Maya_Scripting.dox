@@ -114,7 +114,7 @@ houdiniAsset
 <tr>
     <td>-cookMessages(-cm)</td>
     <td>assetNode</td>
-    <td>Returns the cook messages for the asset node </td>       
+    <td>Returns the cook status for the most recent cook for the asset node </td>       
 </tr>
 <tr>
     <td>-reloadAsset(-rl)</td>

@@ -631,7 +631,12 @@ houdiniEngineCreateUI()
 
     global string $gMainWindow;
     setParent $gMainWindow;
-    string $mayaVersion = `about -version`;
+    
+    string $mayaVersionString = `about -version`;
+    string $mayaVersionStrings[];
+    int $verLen = `tokenize $mayaVersionString " " $mayaVersionStrings`;
+    string $mayaVersion = $mayaVersionStrings[0];
+
     menu -label "Houdini Engine"
         -familyImage  "houdiniAsset.png"
         -tearOff true

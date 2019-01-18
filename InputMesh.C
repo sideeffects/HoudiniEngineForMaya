@@ -322,8 +322,7 @@ InputMesh::processNormals(
 
     // build the per-vertex normals
     std::vector<int> lockedNormals(normalIds.length());
-    std::vector<float> vertexNormals;
-    vertexNormals.reserve(normalIds.length() * 3);
+    std::vector<float> vertexNormals(normalIds.length() * 3);
     for(unsigned int i = 0; i < normalIds.length(); ++i)
     {
         if(meshFn.isNormalLocked(normalIds[i]))
@@ -331,9 +330,9 @@ InputMesh::processNormals(
             lockedNormals[i] = 1;
         }
 
-        vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 0]);
-        vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 1]);
-        vertexNormals.push_back(rawNormals[normalIds[i] * 3 + 2]);
+        vertexNormals[i*3 + 0] = (rawNormals[normalIds[i] * 3 + 0]);
+        vertexNormals[i*3 + 1] = (rawNormals[normalIds[i] * 3 + 1]);
+        vertexNormals[i*3 + 2] = (rawNormals[normalIds[i] * 3 + 2]);
     }
 
     // add and set it to HAPI

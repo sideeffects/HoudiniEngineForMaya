@@ -357,7 +357,6 @@ struct HAPISetAttribute
             )
     {
         HAPI_Result hapiResult;
-
         if(tupleSize == 0)
             return HAPI_RESULT_SUCCESS;
 
@@ -366,6 +365,7 @@ struct HAPISetAttribute
         size_t count = dataArraySize / tupleSize;
 
         HAPI_AttributeInfo attributeInfo;
+        HAPI_AttributeInfo_Init(&attributeInfo);
         attributeInfo.exists = true;
         attributeInfo.owner = owner;
         attributeInfo.storage = storageType;

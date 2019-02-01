@@ -826,7 +826,7 @@ replaceString(const MString &str, const MString &searchStr, const MString &repla
             break;
         }
         result += replaceStr;
-        remaining = remaining.substringW(index + searchStr.numChars(), length - 1);;
+        remaining = remaining.substringW(index + searchStr.numChars(), length - 1);
     }
 
     return result;

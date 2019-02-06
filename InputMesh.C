@@ -687,13 +687,35 @@ InputMesh::processSets(
             continue;
         }
 
+	// these are mostly hidden set types that are used internally
+	// by various maya tools - so we skip them to avoid conflicts
         if(setFn.findPlug("verticesOnlySet").asBool()
                 || setFn.findPlug("edgesOnlySet").asBool()
-                || setFn.findPlug("facetsOnlySet").asBool()
                 || setFn.findPlug("editPointsOnlySet").asBool()
                 || setFn.findPlug("renderableOnlySet").asBool()
           )
         {
+            continue;
+        }
+
+	// BUT ... they're documemented, so some customers have
+	// found and used some of them - We will provide options
+	// to allow them if required
+        if(!myAllowFacetSet 
+                && setFn.findPlug("facetsOnlySet").asBool()
+          )
+        {
+	    // if facet sets are not allowed they might have been before
+	    // delete the group for the facet set in case it exists already
+
+            MString setName = setFn.name();
+            setName = Util::sanitizeStringForNodeName(setName);
+            CHECK_HAPI(HAPI_DeleteGroup(
+                    Util::theHAPISession.get(),
+                    geometryNodeId(), 0,
+                    HAPI_GROUPTYPE_PRIM,
+                    setName.asChar()
+                    ));
             continue;
         }
 

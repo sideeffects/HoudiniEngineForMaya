@@ -94,6 +94,7 @@ void Inputs::setNumInputs(int numInputs)
 Input::Input() :
     myUnlockNormals(0),
     myMatPerFace(0),
+    myAllowFacetSet(0),
     myGeometryNodeId(-1)
 {
 }
@@ -223,6 +224,11 @@ void Input::setUnlockNormals(bool unlockNormals)
 void Input::setMatPerFace(bool matPerFace)
 {
     myMatPerFace = matPerFace;
+}
+
+void Input::setAllowFacetSet(bool allowFacetSet)
+{
+    myAllowFacetSet = allowFacetSet;
 }
 
 void

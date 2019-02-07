@@ -17,6 +17,7 @@ MObject InputGeometryNode::inputGeometry;
 MObject InputGeometryNode::inputComponents;
 MObject InputGeometryNode::unlockNormals;
 MObject InputGeometryNode::materialPerFace;
+MObject InputGeometryNode::allowFacetSet;
 MObject InputGeometryNode::objectShadingGroup;
 MObject InputGeometryNode::outputNodeId;
 
@@ -77,6 +78,15 @@ InputGeometryNode::initialize()
     nAttr.setStorable(true);
     addAttribute(InputGeometryNode::materialPerFace);
 
+    InputGeometryNode::allowFacetSet = nAttr.create(
+            "allowFacetSet", "allowFacetSet",
+            MFnNumericData::kBoolean,
+            0
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputGeometryNode::allowFacetSet);
+
     InputGeometryNode::objectShadingGroup = tAttr.create(
             "objectShadingGroup", "objectShadingGroup",
             MFnData::kString,
@@ -99,6 +109,7 @@ InputGeometryNode::initialize()
     attributeAffects(InputGeometryNode::inputGeometry, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::unlockNormals, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::materialPerFace, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::allowFacetSet, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::objectShadingGroup, InputGeometryNode::outputNodeId);
 
     return MStatus::kSuccess;
@@ -130,10 +141,13 @@ InputGeometryNode::compute(
         MPlug geometryPlug(thisMObject(), InputGeometryNode::inputGeometry);
         MPlug normalPlug(thisMObject(), InputGeometryNode::unlockNormals);
         MPlug matPerFacePlug(thisMObject(), InputGeometryNode::materialPerFace);
+        MPlug allowFacetSetPlug(thisMObject(), InputGeometryNode::allowFacetSet);
 	bool unlockNormals =  normalPlug.asBool();
 	bool matPerFace = matPerFacePlug.asBool();
+	bool allowFacetSet = allowFacetSetPlug.asBool();
 	myInput->setUnlockNormals(unlockNormals);
 	myInput->setMatPerFace(matPerFace);
+	myInput->setAllowFacetSet(allowFacetSet);
         myInput->setInputGeo(dataBlock, geometryPlug);
 
         // set input component list

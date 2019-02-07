@@ -70,7 +70,7 @@ Stores the name of the shading group that is assigned to the object, or to each 
 
 @subsection Maya_Mesh_Input_Sets Sets
 
-All Maya sets that the mesh belongs to are converted into Houdini primitive groups.
+Almost all Maya sets that the mesh belongs to are converted into Houdini primitive groups. Certain types of sets that are used interally by Maya tools are omitted, since adding components from the output geo to those sets could cause incorrect tool behavior. This includes verticesOnly, edgesOnly, editPointsOnly and renderableOnly sets. An option has been added on the houdiniInputGeometry node to allow facetsOnly sets to be included.
 
 @section Maya_Mesh_Output Output
 

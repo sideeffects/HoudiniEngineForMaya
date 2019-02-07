@@ -20,6 +20,7 @@ public:
     static MObject inputComponents;
     static MObject unlockNormals;
     static MObject materialPerFace;
+    static MObject allowFacetSet;
     static MObject objectShadingGroup;
 
     static MObject outputNodeId;

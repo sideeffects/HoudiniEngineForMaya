@@ -53,6 +53,7 @@ class Input
         HAPI_NodeId geometryNodeId() const { return myGeometryNodeId; };
 	void setUnlockNormals(bool unlockNormals);
 	void setMatPerFace(bool matPerFace);
+	void setAllowFacetSet(bool allowFacetSet);
 
         void setInputName(
                 HAPI_AttributeOwner owner, int count,
@@ -84,6 +85,7 @@ class Input
 
 	bool myUnlockNormals;
 	bool myMatPerFace;
+	bool myAllowFacetSet;
 	
     private:
         static void nameChangedCallback(

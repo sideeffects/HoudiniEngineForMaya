@@ -10,6 +10,9 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
             -label "Material Per Face"
             -addControl "materialPerFace";
         editorTemplate
+            -label "Allow Facet Only Sets"
+            -addControl "allowFacetSet";
+        editorTemplate
             -label "Input Transform"
             -addControl "inputTransform";
         editorTemplate

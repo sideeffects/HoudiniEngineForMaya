@@ -365,6 +365,7 @@ and some additional attributes for better control over meshes:
 - unlockNormals (do not pass custom normals in to the asset)
 - materialPerFace (set the shading group per face - used if geometry will be merged)
 - objectShadingGroup (used to track object shader assignment chages)
+- allowFacetSet (create groups for facetOnly sets if enabled - normally this type of set is ignored since it used internally by maya tools which could lead to conflicts)
 
 The geometry and the world transform are connected separately. On the engine side, an input null is created for the geometry. The input does not need to be an actual mesh shape - almost all the information we use is from the mesh data, so you could connect the output mesh from a mesh history node directly.
 

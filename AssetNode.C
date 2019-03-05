@@ -1341,7 +1341,8 @@ AssetNode::nodeRemoved(MObject& node,void *clientData)
 AssetNode::AssetNode() :
     myNeedToMarshalInput(false),
     myAutoSyncId(-1),
-    myExtraAutoSync(false)
+    myExtraAutoSync(false),
+    mySetAllParmsForEM(false)
 {
     myAsset = NULL;
 
@@ -1494,6 +1495,8 @@ AssetNode::preEvaluation(
 {
     MFnDependencyNode assetNodeFn(thisMObject());
     MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
+    MPlug parmAttrPlug(thisMObject(), parmAttrObj);
+
     if(parmAttrObj.isNull())
     {
         return MStatus::kSuccess;
@@ -1505,9 +1508,17 @@ AssetNode::preEvaluation(
     {
         if(Util::isPlugBelow(nodeIt.plug(), parmAttrObj))
         {
+	    // we currently never get here, because the evaluation manager
+	    // only looks at the root of the plug tree
+	    // but if they ever change this, the code is ready and waiting
             myDirtyParmAttributes.push_back(nodeIt.plug().attribute());
         }
-
+	if(nodeIt.plug() == parmAttrPlug)
+	{
+	    // updateing all the parms can be slow
+	    // but we don't have enough information to update individual parms
+	    mySetAllParmsForEM = true;
+	}
         if(Util::isPlugBelow(nodeIt.plug(), AssetNode::input))
         {
             myNeedToMarshalInput = true;
@@ -1887,6 +1898,12 @@ AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
     {
         mySetAllParms = false;
 
+        attrs = NULL;
+    }
+    AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
+    if(options.updateParmsForEvalMode() && mySetAllParmsForEM)
+    {
+	mySetAllParmsForEM  = false; 
         attrs = NULL;
     }
 

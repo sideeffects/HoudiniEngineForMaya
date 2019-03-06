@@ -105,6 +105,7 @@ class AssetNode: public MPxTransform
 
         int myAutoSyncId;
 	int myExtraAutoSync;
+        bool mySetAllParmsForEM;
 
         typedef std::vector<MObject> MObjectVector;
         MObjectVector myDirtyParmAttributes;

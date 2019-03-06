@@ -80,4 +80,10 @@ Add attributes to flag locked normals on inputs, and set normals for the corresp
 
 Discard the top level group node when baking an asset.
 
+@subsection Maya_Assets_Options_ Update Parms for Eval Mode
+
+When evaluating in DG mode parm animation is always evaluated as expected during playback.  When the Evaluation Mode is serial or parallel, because of the way our attributes are structured, we only know that some parms has been dirtied, not which specific ones. We are forced to update all the parms if any animation is detected.
+
+Updating all the parms can impact playback speed if there are a lot of parms, and the asset cook itself is fast. Turning off this option lets you disable the parm animation update for serial and parallel mode when you don't need it. Note that animated input geometry will still update in serial or parallel mode if this option is off.
+
 */

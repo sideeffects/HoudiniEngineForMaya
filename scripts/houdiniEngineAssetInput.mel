@@ -121,7 +121,7 @@ createInputGeometryNode(string $transformAttr, string $geometryAttr)
 }
 
 proc string
-getInputNodeForSingle(string $object)
+getInputNodeForSingle(string $object, int $connectGeoForAsset )
 {
     string $transformAttr;
     {
@@ -129,6 +129,15 @@ getInputNodeForSingle(string $object)
         $transformAttr = $parents[0] + ".worldMatrix";
     }
 
+    if(`objectType -isAType "houdiniAsset" $object` && $connectGeoForAsset) {
+        // if an asset was selected, but we wanted to connect on the output geo
+	// so that it can be edited, replace $object with the first output geo
+	// to connect once or more specific output geos, select them explicitly
+	string $outputGeos[] = `listConnections -sh true  -t geometryShape $object`;
+	if($connectGeoForAsset && size($outputGeos) > 0) {
+	    $object = $outputGeos[0];
+	}
+    }
     if(`objectType -isAType "houdiniAsset" $object`)
     {
         // if we just got the houdiniAsset, just assume the first output
@@ -141,13 +150,15 @@ getInputNodeForSingle(string $object)
     {
         return ($object + ".outputNodeId");
     }
-    else if(`objectType -isAType "mesh" $object`)
+    else if(`objectType -isAType "mesh" $object` )
     {
         string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
         string $histNode = plugNode($histPlug);
+	// if we're connecting on the geo so that it can be edited
+	// ignore any upstream history asset
 
         if($histNode != ""
-                && `nodeType $histNode` == "houdiniAsset")
+                && `nodeType $histNode` == "houdiniAsset"  && !$connectGeoForAsset)
         {
             // TODO: Assume that assets with inputs are SOPs
             // *** A bit of a hack, plugNode just takes a substring of
@@ -380,12 +391,14 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
         return 1;
     }
 
+    string $assetNodeName = plugNode($inputAttr);
+    int $connectGeoForAsset = `getAttr ($assetNodeName + ".connectGeoForAssetInputs")`;
     string $sourceInputAttr[];
     for($i = 0; $i < size($validObjects); $i++)
     {
         string $validObject = $validObjects[$i];
         $sourceInputAttr[size($sourceInputAttr)] =
-            getInputNodeForSingle($validObject);
+            getInputNodeForSingle($validObject, $connectGeoForAsset);
     }
 
     for($i = 0; $i < size($multiObjects); $i++)
@@ -445,7 +458,6 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
 
     connectAttr $finalInputAttr $inputAttr;
 
-    string $assetNodeName = plugNode($inputAttr);
     if(`getAttr ($assetNodeName + ".syncWhenInputConnects")`)
     {
         houdiniEngine_syncAssetOutput $assetNodeName;

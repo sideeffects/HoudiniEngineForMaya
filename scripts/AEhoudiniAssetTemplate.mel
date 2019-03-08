@@ -760,6 +760,11 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 "Update Parms for Eval Mode",
                 "When evaluation mode is Serial or Parallel, update animated parms "
                 );
+        createAttrCheckBox(
+                "connectGeoForAssetInputs",
+                "Connect Geo For Asset Inputs",
+                "When setting an input to a geo output of another asset, connect through the geo, not directly from the asset"
+                );
 
 
     setParent ..;
@@ -836,6 +841,10 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     replaceAttrCheckBox(
             $optionsLayoutFull + "|outputLayout|updateParmsForEvalMode",
             $nodeName + ".updateParmsForEvalMode",
+            "");
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|connectGeoForAssetInputs",
+            $nodeName + ".connectGeoForAssetInputs",
             "");
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
@@ -920,6 +929,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "outputMeshPreserveLockedNormals";
         editorTemplate -suppress "ungroupOnBake";
         editorTemplate -suppress "updateParmsForEvalMode";
+        editorTemplate -suppress "connectGeoForAssetInputs";
 
         editorTemplate -suppress "useInstancerNode";
 

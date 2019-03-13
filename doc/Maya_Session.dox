@@ -69,4 +69,12 @@ HARS links directly to libHAPI and to core Houdini libraries and their dependenc
 
 Please note that the HARS server currently only supports a single client connection. If a client is connected to the server and another client tries to connect, then the second client will block until the first connection is closed.
 
+@section Maya_Session_CleaningUpTheSession Cleaning Up the Session
+
+If the server  was set to autostart, unloading the plugin will terminate the server, and the houdini engine license will be released. The server will be restarted when the plugin is reloaded, and the server will acquire a license when the first asset is loaded.
+
+If the HARS server is started manually, it will not be automatically killed unless the auto-close option was set (and assuming that no other client was connected to the server).
+
+If the HARS server has been running for a while, it may get cluttered up with input and merge nodes belonging to deleted maya nodes still on the undo queue. Flushing the undo queue from time to time will ensure that those nodes are deleted.
+
 */

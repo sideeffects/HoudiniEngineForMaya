@@ -79,10 +79,19 @@ InputMergeNode::~InputMergeNode()
 {
     if(!Util::theHAPISession.get())
         return;
-    CHECK_HAPI(HAPI_DeleteNode(
+
+    // the merge is a sop, so it will have a parent geo
+    // and an objectMerge to remove as well
+    HAPI_NodeInfo node_info;
+    HAPI_GetNodeInfo(Util::theHAPISession.get(),
+		     myGeometryNodeId,
+		     &node_info);
+    if(node_info.parentId >= 0){
+        CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
-                myGeometryNodeId
+                node_info.parentId
                 ));
+    }
 }
 
 MStatus

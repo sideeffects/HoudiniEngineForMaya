@@ -256,6 +256,45 @@ Callbacks should be of the form:
 preSync(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOutputs) <br>
 postSync(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOutputs)
 
+These callbackes are intended to allow saving modifications that were made to the
+asset's attributes or outputs so that they can be reapplied after the asset is synced.
+For example, you might want to change the lock state of parm attributes, or rename
+output nodes to be consistent with local naming conventions
+
+@verbatim
+// These procs let you cache which parm attributes have been hidden in the channel box
+// and restore the hidden state after a sync
+
+global string $parmAttrNames[];
+
+global proc preSync(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOutputs) {
+    global string $parmAttrNames[];
+    
+    // in real life, this should recurse to all the leaf children
+    // and handle multi attributes appropriately, but this is the simple example
+    
+    string $parmAttrs[] = `attributeQuery -node $assetNode  -lc "houdiniAssetParm"`;
+    clear $parmAttrNames;
+    for($parmAttr in $parmAttrs) {
+	if  ( !`getAttr -channelBox  (  $assetNode + "." + $parmAttr )`) {
+             $parmAttrNames[size($parmAttrNames)] = $parmAttr;
+        }
+    }
+}
+
+global proc postSync(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOutputs)
+{
+    global string $parmAttrNames[];
+   
+    for($parmAttr in $parmAttrNames) {
+	 if( `attributeExists $parmAttr $assetNode`) {
+	    setAttr -channelBox off (  $assetNode + "." + $parmAttr );
+        }
+    }
+}
+@endverbatim
+<br>
+
 @section Maya_Scripting_Python Python
 
     import maya.cmds as cmds

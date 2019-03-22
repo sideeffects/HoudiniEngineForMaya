@@ -2168,10 +2168,11 @@ Asset::setParmValues(
                 );
         Util::walkParm(parmInfos, operation);
 	if(operation.detectedMismatch()) {
-	    DISPLAY_WARNING(
-                "Possible mismatch between attribute and parm structure, some parms may not be set "
+	    DISPLAY_WARNING(MString(
+                "Possible mismatch between attribute and parm structure"
+		"some parms may not be set "
                 "from attributes. Sync the asset to rebuild the attributes."
-            );
+		 ));
 	}
     }
 }

@@ -57,6 +57,7 @@ class AttrOperation : public Util::WalkParmOperation
                 ) const;
 
         MString getAttrNameFromParm(const HAPI_ParmInfo &parm) const;
+        bool detectedMismatch();
 
     protected:
         std::vector<MDataHandle> myDataHandles;
@@ -77,6 +78,7 @@ class AttrOperation : public Util::WalkParmOperation
         const MFnDependencyNode &myNodeFn;
         const HAPI_NodeInfo &myNodeInfo;
         const std::vector<MObject>* myAttrs;
+        bool myMismatch;
 };
 
 AttrOperation::AttrOperation(
@@ -90,7 +92,8 @@ AttrOperation::AttrOperation(
     myMode(mode),
     myNodeFn(nodeFn),
     myNodeInfo(nodeInfo),
-    myAttrs(attrs)
+    myAttrs(attrs),
+    myMismatch(false)
 {
     MDataHandle dataHandle;
     MPlug plug;
@@ -414,6 +417,11 @@ AttrOperation::getAttrNameFromParm(const HAPI_ParmInfo &parmInfo) const
         name = assetNode->getAsset()->getAttrNameFromParm(parmInfo);
     }
     return name;
+}
+bool
+AttrOperation::detectedMismatch()
+{
+    return myMismatch;
 }
 
 // Helper class for caching the names of parms.  This avoids expensive
@@ -1828,6 +1836,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
     else
         attrName = getAttrNameFromParm(parmInfo);
+    if(!parentExists && containsParm(attrName, parmInfo)) myMismatch = true;
 
     if(parentExists && containsParm(attrName, parmInfo))
     {
@@ -2158,6 +2167,12 @@ Asset::setParmValues(
                 attrs
                 );
         Util::walkParm(parmInfos, operation);
+	if(operation.detectedMismatch()) {
+	    DISPLAY_WARNING(
+                "Possible mismatch between attribute and parm structure, some parms may not be set "
+                "from attributes. Sync the asset to rebuild the attributes."
+            );
+	}
     }
 }
 

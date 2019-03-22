@@ -40,6 +40,8 @@ Automatically performs a sync when necessary. However, this could lead to the sc
 
 Deletes all the Maya shape nodes, and re-creates all the Maya shape nodes that are needed to represent what the asset is outputting at that moment.
 
+Deletes and recreates the attributes for the asset's parameters. If the asset's parameter interface remains the same, attribute values and input connections will be restored. If however, the parameters for the asset have changed (because a new definition has been loaded from disk, or if the asset type has changed the ) it may not be possible to restore all the attribute values. Note that we look at folders as well as attribute names when matching attributes to parameters, if the folder names or hierarchy have changed, attributes may not match up with parameters even if the attribute names still match.
+
 @subsection Maya_Assets_Options_SplitGeosByGroup Split Geos By Group
 
 This option may soon become obsolete and removed, so relying on this option is not recommended.

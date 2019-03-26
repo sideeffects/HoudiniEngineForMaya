@@ -2111,7 +2111,8 @@ void
 Asset::setParmValues(
         MDataBlock &dataBlock,
         const MFnDependencyNode &nodeFn,
-        const std::vector<MObject>* attrs
+        const std::vector<MObject>* attrs,
+	bool checkMismatch
         )
 {
     MStatus status;
@@ -2167,7 +2168,9 @@ Asset::setParmValues(
                 attrs
                 );
         Util::walkParm(parmInfos, operation);
-	if(operation.detectedMismatch()) {
+	
+	// if attrs was NULL, we're walking all the attributes
+ 	if(checkMismatch && operation.detectedMismatch()) {
 	    DISPLAY_WARNING(MString(
                 "Possible mismatch between attribute and parm structure"
 		"some parms may not be set "

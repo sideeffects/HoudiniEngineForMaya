@@ -1907,12 +1907,15 @@ AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
         attrs = NULL;
     }
 
+    bool checkMismatch = !mySetAllParmsForEM && !onlyDirtyParms;
+
     myAsset->fillParmNameCache();
 
     myAsset->setParmValues(
             data,
             assetNodeFn,
-            attrs
+            attrs,
+	    checkMismatch
             );
 }
 

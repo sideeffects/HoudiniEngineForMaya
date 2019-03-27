@@ -65,7 +65,8 @@ class Asset {
         void setParmValues(
                 MDataBlock &dataBlock,
                 const MFnDependencyNode &nodeFn,
-                const std::vector<MObject>* attrs
+                const std::vector<MObject>* attrs,
+		bool checkMismatch
                 );
 
         MString getAttrNameFromParm(const HAPI_ParmInfo &parmInfo) const;

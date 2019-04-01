@@ -1336,7 +1336,15 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
               && parentParmInfo
               && parentParmInfo->rampType != HAPI_RAMPTYPE_INVALID)) {
 
-                if(parmInfo.disabled) {
+	        bool disabledAncestor = false;
+	        for(auto olderParmInfo  : myParentParmInfos) {
+		    if( olderParmInfo && olderParmInfo->disabled) {
+		        disabledAncestor = true;
+		        break;
+	            }
+		}
+
+	      if(parmInfo.disabled || disabledAncestor) {
                     plug.setLocked(true);
                 } else {
                     if(plug.isLocked()) {

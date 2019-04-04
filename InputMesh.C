@@ -516,8 +516,10 @@ InputMesh::processColorSets(
 
     MStringArray mappedCdNames;
     MStringArray mappedAlphaNames;
+    MIntArray colorReps;
     mappedCdNames.setLength(colorSetNames.length());
     mappedAlphaNames.setLength(colorSetNames.length());
+    colorReps.setLength(colorSetNames.length());
 
     MColor defaultUnsetColor;
     MColorArray colors;
@@ -545,8 +547,8 @@ InputMesh::processColorSets(
                     hasAlpha = true;
                     break;
             }
+	    colorReps[i] = colorSetRepresentation;
         }
-
         CHECK_MSTATUS(const_cast<MFnMesh&>(meshFn).getFaceVertexColors(
                     colors,
                     &colorSetName,
@@ -625,6 +627,12 @@ InputMesh::processColorSets(
             geometryNodeId(), 0,
             "maya_colorset_mapped_Alpha",
             mappedAlphaNames
+            ));
+
+    CHECK_HAPI(hapiSetDetailAttribute(
+            geometryNodeId(), 0,
+            "maya_colorRep",
+            colorReps
             ));
 
     return true;

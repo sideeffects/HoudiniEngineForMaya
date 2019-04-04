@@ -1911,6 +1911,7 @@ OutputGeometryPart::computeMesh(
         MStringArray colorSetNames;
         MStringArray mappedCdAttributeNames;
         MStringArray mappedAlphaAttributeNames;
+	MIntArray colorReps;
 
         hapiGetDetailAttribute(
                     myNodeId, myPartId,
@@ -1943,10 +1944,24 @@ OutputGeometryPart::computeMesh(
                     mappedAlphaAttributeNames
                     );
         markAttributeUsed("maya_colorset_mapped_Alpha");
+	
+        hapiGetDetailAttribute(
+                    myNodeId, myPartId,
+                    "maya_colorRep",
+                    attrInfo,
+                    colorReps
+                    );
+        markAttributeUsed("maya_colorRep");
 
+	// if there is no Alpha, still want to map the color set names
         bool useMappedColorset = colorSetNames.length()
-            && (colorSetNames.length() == mappedCdAttributeNames.length())
+	  && (colorSetNames.length() == mappedCdAttributeNames.length());
+        bool useMappedAlpha = colorSetNames.length()
             && (colorSetNames.length() == mappedAlphaAttributeNames.length());
+#if MAYA_API_VERSION >= 201600	
+	bool useColorRep =  colorSetNames.length()
+	   && (colorSetNames.length() == colorReps.length());
+#endif
 
         int layerIndex = 0;
         for(;;)
@@ -1955,6 +1970,14 @@ OutputGeometryPart::computeMesh(
                 = Util::getAttrLayerName("Cd", layerIndex);
             const MString alphaAttributeName
                 = Util::getAttrLayerName("Alpha", layerIndex);
+	    //prior to 2016, you gould get the color representation, but you couldn't set it
+#if MAYA_API_VERSION >= 201600		    
+	    MFnMesh::MColorRepresentation colorRep = MFnMesh::MColorRepresentation::kRGBA;
+	      if(useColorRep)  {
+	          if(layerIndex <  (int) colorReps.length())
+		      colorRep = (MFnMesh::MColorRepresentation) colorReps[layerIndex];
+	      }
+#endif
 
             HAPI_AttributeOwner colorOwner;
             if(!HAPI_FAIL(hapiGetAnyAttribute(
@@ -2105,7 +2128,13 @@ OutputGeometryPart::computeMesh(
                 }
             }
 
-            // get the mapped colorset name
+            // get the mapped colorset name:
+	    // In a mesh originating from maya, there are always mapping
+	    // for both alpha and RGB: empty if there's no alpha or no rgb.
+	    // But it has turned out to be confusing forusers trying to build
+	    // their own mapping - they expect to just  set up color mapping
+	    // if there is no alpha, so we check the color mapping first
+	    // and then we check the alpha
             MString colorSetName = cdAttributeName;
             if(useMappedColorset)
             {
@@ -2123,7 +2152,9 @@ OutputGeometryPart::computeMesh(
                             = colorSetNames[std::distance(begin, iter)];
                     }
                 }
-
+	    }
+	    if(useMappedAlpha)
+	    {
                 {
                     ArrayIterator<MStringArray> begin
                         = arrayBegin(mappedAlphaAttributeNames);
@@ -2138,8 +2169,11 @@ OutputGeometryPart::computeMesh(
                     }
                 }
             }
-
-            meshFn.createColorSetDataMesh(colorSetName);
+#if MAYA_API_VERSION >= 201600
+	    meshFn.createColorSetDataMesh(colorSetName, false, colorRep);
+#else
+	    meshFn.createColorSetDataMesh(colorSetName);
+#endif	    
 
             // If currentColorSetName is set, then use it to determine the
             // current color set. Otherwise, use the first as the current color
@@ -2152,7 +2186,11 @@ OutputGeometryPart::computeMesh(
                 meshCurrentColorSetHandle.setString(colorSetName);
             }
 
+#if MAYA_API_VERSION >= 201600
+            meshFn.setColors(promotedColors, &colorSetName, colorRep);
+#else
             meshFn.setColors(promotedColors, &colorSetName);
+#endif	    
             meshFn.assignColors(vertexList, &colorSetName);
 
             layerIndex++;

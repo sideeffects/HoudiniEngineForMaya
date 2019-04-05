@@ -62,6 +62,12 @@ For example, if the asset expects a Maya color set named "diffuse". First, the a
 
 Stores the name of the current color set.
 
+- `maya_colorRep` - detail int tuple  (size is the number of color sets)
+
+This attribute keeps track of the color representation of each of the mapped color sets. It uses the internal Maya representation, so RGBA is 4, RGB is 3 and A is 1. While  we also determine  whether or not to create the corresponding Cd and Alpha attributes based on the incoming color representation,  it seemed more straightforward to keep the representation explicitly than to reconstitute it from the color mapping on output.
+
+Note that while Maya supports empty and partial color sets, houdini does not, so any unset colors are initialized to white, and unset alpha is set to 1.
+
 @subsection Maya_Mesh_Input_ShadingGroup Shading Groups
 
 - `maya_shading_group` - primitive or detail string
@@ -127,6 +133,10 @@ If you are adding mapping information to a mesh created in houdini, or adding ne
 - `maya_colorset_current` - detail string
 
 Used to set the current color set.
+
+- `maya_colorRep` - detail int tuple  (size is the number of color sets)
+
+If you have added new color attributes that did not come from maya, the maya_colorRep attribute can be used to set the color representation on the output color sets, and to determine which color channels to set on the output. It uses the internal Maya representation, so RGBA is 4, RGB is 3 and A is 1. If maya_colorRep is not found, or it's not valid,  or if there is no mapping specified for the color sets, the resulting color set will be RGBA.
 
 @subsection Maya_Mesh_Output_ShadingGroup Shading Groups
 

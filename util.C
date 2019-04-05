@@ -97,11 +97,14 @@ getTempDir()
     {
         const char* env = getenv("TMPDIR");
         if(env)
+	{
             tempDir = env;
 
-        // not a Houdini-specific directory, so append a sub-directory to make
-        // it Houdini-specific
-        tempDir += PATH_SEPARATOR "houdini_temp";
+            // not a Houdini-specific directory, so append a sub-directory
+	    // to make it Houdini-specific
+	    if(!tempDir.empty())
+                tempDir += PATH_SEPARATOR "houdini_temp";
+	}
     }
 
     if(tempDir.empty())

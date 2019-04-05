@@ -1975,7 +1975,9 @@ OutputGeometryPart::computeMesh(
 	    MFnMesh::MColorRepresentation colorRep = MFnMesh::MColorRepresentation::kRGBA;
 	      if(useColorRep)  {
 	          if(layerIndex <  (int) colorReps.length())
-		      colorRep = (MFnMesh::MColorRepresentation) colorReps[layerIndex];
+		      if(colorReps[layerIndex] == MFnMesh::MColorRepresentation::kRGB
+		         || colorReps[layerIndex] == MFnMesh::MColorRepresentation::kAlpha)
+		          colorRep = (MFnMesh::MColorRepresentation) colorReps[layerIndex];
 	      }
 #endif
 

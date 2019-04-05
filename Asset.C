@@ -657,11 +657,15 @@ Asset::~Asset()
 
     if(!Util::theHAPISession.get())
         return;
-    if(myNodeInfo.id >= 0)
+
+    int idToDelete =  myNodeInfo.id;
+    if(myNodeInfo.type == HAPI_NODETYPE_SOP)
+        idToDelete = myNodeInfo.parentId;
+    if(idToDelete >= 0)
     {
         CHECK_HAPI(HAPI_DeleteNode(
                 Util::theHAPISession.get(),
-                myNodeInfo.id
+                idToDelete
                 ));
     }
 }

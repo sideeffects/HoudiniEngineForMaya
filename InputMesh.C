@@ -516,7 +516,7 @@ InputMesh::processColorSets(
 
     MStringArray mappedCdNames;
     MStringArray mappedAlphaNames;
-    MIntArray colorReps;
+    MStringArray colorReps;
     mappedCdNames.setLength(colorSetNames.length());
     mappedAlphaNames.setLength(colorSetNames.length());
     colorReps.setLength(colorSetNames.length());
@@ -538,16 +538,18 @@ InputMesh::processColorSets(
             {
                 case MFnMesh::kAlpha:
                     hasAlpha = true;
+		    colorReps[i] = "A";
                     break;
                 case MFnMesh::kRGB:
                     hasColor = true;
+		    colorReps[i] = "RGB";
                     break;
                 case MFnMesh::kRGBA:
+		    colorReps[i] = "RGBA";
                     hasColor = true;
                     hasAlpha = true;
                     break;
             }
-	    colorReps[i] = colorSetRepresentation;
         }
         CHECK_MSTATUS(const_cast<MFnMesh&>(meshFn).getFaceVertexColors(
                     colors,

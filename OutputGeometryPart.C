@@ -1911,7 +1911,7 @@ OutputGeometryPart::computeMesh(
         MStringArray colorSetNames;
         MStringArray mappedCdAttributeNames;
         MStringArray mappedAlphaAttributeNames;
-	MIntArray colorReps;
+	MStringArray colorReps;
 
         hapiGetDetailAttribute(
                     myNodeId, myPartId,
@@ -1975,9 +1975,10 @@ OutputGeometryPart::computeMesh(
 	    MFnMesh::MColorRepresentation colorRep = MFnMesh::MColorRepresentation::kRGBA;
 	      if(useColorRep)  {
 	          if(layerIndex <  (int) colorReps.length())
-		      if(colorReps[layerIndex] == MFnMesh::MColorRepresentation::kRGB
-		         || colorReps[layerIndex] == MFnMesh::MColorRepresentation::kAlpha)
-		          colorRep = (MFnMesh::MColorRepresentation) colorReps[layerIndex];
+		      if(colorReps[layerIndex] == "RGB")
+			  colorRep = MFnMesh::MColorRepresentation::kRGB;
+		      if(colorReps[layerIndex] == "A")
+		          colorRep= MFnMesh::MColorRepresentation::kAlpha;
 	      }
 #endif
 

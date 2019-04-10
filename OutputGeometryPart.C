@@ -1973,12 +1973,15 @@ OutputGeometryPart::computeMesh(
 	    //prior to 2016, you gould get the color representation, but you couldn't set it
 #if MAYA_API_VERSION >= 201600		    
 	    MFnMesh::MColorRepresentation colorRep = MFnMesh::MColorRepresentation::kRGBA;
-	      if(useColorRep)  {
-	          if(layerIndex <  (int) colorReps.length())
+	      if(useColorRep)
+	      {
+		  if(layerIndex <  (int) colorReps.length())
+		  {
 		      if(colorReps[layerIndex] == "RGB")
 			  colorRep = MFnMesh::MColorRepresentation::kRGB;
 		      if(colorReps[layerIndex] == "A")
 		          colorRep= MFnMesh::MColorRepresentation::kAlpha;
+	 	  }
 	      }
 #endif
 

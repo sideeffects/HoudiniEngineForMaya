@@ -179,7 +179,7 @@ SyncOutputInstance::createOutput()
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         // set the rotation units to radians
-        status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits"), 1);
+        status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits", true), 1);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         {
@@ -188,26 +188,26 @@ SyncOutputInstance::createOutput()
 
             // inputPoints
             srcPlug = myOutputPlug.child(AssetNode::outputInstancerData);
-            dstPlug = instancerFn.findPlug("inputPoints");
+            dstPlug = instancerFn.findPlug("inputPoints", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // go through every instanced objects
             MPlug instancedNamesPlug = myOutputPlug.child(AssetNode::outputInstancedObjectNames);
-            MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy");
+            MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy", true);
             for(unsigned int i = 0; i < instancedNamesPlug.numElements(); i++)
             {
                 MObject objectTransform = Util::findDagChild(assetNodeFn, instancedNamesPlug[i].asString());
                 MFnDependencyNode objectTransformFn(objectTransform);
 
                 // connect inputHierarchy
-                srcPlug = objectTransformFn.findPlug("matrix");
+                srcPlug = objectTransformFn.findPlug("matrix", true);
                 dstPlug = inputHierarchyPlug.elementByLogicalIndex(i);
                 status = myDagModifier.connect(srcPlug, dstPlug);
                 CHECK_MSTATUS_AND_RETURN_IT(status);
 
                 // set objectTransform hidden
-                status = myDagModifier.newPlugValueInt(objectTransformFn.findPlug("visibility"), 0);
+                status = myDagModifier.newPlugValueInt(objectTransformFn.findPlug("visibility", true), 0);
                 CHECK_MSTATUS_AND_RETURN_IT(status);
             }
         }
@@ -221,12 +221,12 @@ SyncOutputInstance::createOutput()
 
         myDagModifier.doIt();
 
-        MPlug instanceTransformPlug = assetNodeFn.findPlug(AssetNode::outputInstanceTransform);
+        MPlug instanceTransformPlug = assetNodeFn.findPlug(AssetNode::outputInstanceTransform, true);
         instanceTransformPlug.selectAncestorLogicalIndex (myParentMultiIndex, AssetNode::outputInstancers);
         unsigned int numPoints = instanceTransformPlug.numElements();
 
         MString objectToInstanceName("");
-        MPlug instanceObjectNamesPlug = assetNodeFn.findPlug(AssetNode::outputInstancedObjectNames);
+        MPlug instanceObjectNamesPlug = assetNodeFn.findPlug(AssetNode::outputInstancedObjectNames, true);
         instanceObjectNamesPlug.selectAncestorLogicalIndex (myParentMultiIndex, AssetNode::outputInstancers);
         unsigned int numInstanceObjects = instanceObjectNamesPlug.numElements();
 
@@ -236,11 +236,11 @@ SyncOutputInstance::createOutput()
             objectToInstanceName = namePlug.asString();
         }
 
-        MPlug houdiniInstanceAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniInstanceAttribute);
+        MPlug houdiniInstanceAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniInstanceAttribute, true);
         houdiniInstanceAttributesPlug.selectAncestorLogicalIndex(myParentMultiIndex, AssetNode::outputInstancers);
         unsigned int numHoudiniInstanceAttributes = houdiniInstanceAttributesPlug.numElements();
 
-        MPlug houdiniNameAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniNameAttribute);
+        MPlug houdiniNameAttributesPlug = assetNodeFn.findPlug(AssetNode::outputHoudiniNameAttribute, true);
         houdiniNameAttributesPlug.selectAncestorLogicalIndex(myParentMultiIndex, AssetNode::outputInstancers);
         unsigned int numHoudiniNameAttributes = houdiniNameAttributesPlug.numElements();
 

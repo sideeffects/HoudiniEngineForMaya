@@ -656,7 +656,9 @@ InputMesh::processSets(
     }
 
     // XXX: instance number
-    MDagPath srcDagPath = MDagPath::getAPathTo(srcPlug.node());
+    // MDagPath srcDagPath = MDagPath::getAPathTo(srcPlug.node());
+    MDagPath srcDagPath;
+    MDagPath::getAPathTo(srcPlug.node(), srcDagPath);
 
     // Sets and Members
     MFnMesh srcNodeFn(srcDagPath, &status);
@@ -699,10 +701,10 @@ InputMesh::processSets(
 
 	// these are mostly hidden set types that are used internally
 	// by various maya tools - so we skip them to avoid conflicts
-        if(setFn.findPlug("verticesOnlySet").asBool()
-                || setFn.findPlug("edgesOnlySet").asBool()
-                || setFn.findPlug("editPointsOnlySet").asBool()
-                || setFn.findPlug("renderableOnlySet").asBool()
+        if(setFn.findPlug("verticesOnlySet", true).asBool()
+	   || setFn.findPlug("edgesOnlySet", true).asBool()
+                || setFn.findPlug("editPointsOnlySet", true).asBool()
+                || setFn.findPlug("renderableOnlySet", true).asBool()
           )
         {
             continue;
@@ -712,7 +714,7 @@ InputMesh::processSets(
 	// found and used some of them - We will provide options
 	// to allow them if required
         if(!myAllowFacetSet 
-                && setFn.findPlug("facetsOnlySet").asBool()
+                && setFn.findPlug("facetsOnlySet", true).asBool()
           )
         {
 	    // if facet sets are not allowed they might have been before

@@ -640,9 +640,6 @@ SyncAttribute::doIt()
         }
     }
 
-    // Restore the values
-    assetNode->getParmValues();
-
     // Restore the connections
     unsigned int connectAttrCmdsLength = connectAttrCmds.length();
     for(unsigned int i = 0; i < connectAttrCmdsLength; ++i)
@@ -651,7 +648,15 @@ SyncAttribute::doIt()
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
-    return redoIt();
+    // execute all the DG commands for recreating the attributes
+    // and connections. Then restore the attribute values once
+    // the attributes exist again.
+
+    status = myDGModifier.doIt();
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+    assetNode->getParmValues();
+    
+    return MStatus::kSuccess;
 }
 
 MStatus

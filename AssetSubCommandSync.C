@@ -122,9 +122,10 @@ AssetSubCommandSync::doIt()
                 MPlug materialPlug = materialsPlug.elementByPhysicalIndex(i);
 
 		// Note that myDagModifier::doIt is invoked in deleteMaterials
-		// In many cases it may be that the materials for each plug are the same
-		// in which case the first deleteMaterials will get them,
-		// and subsequent deleteMaterials calls will find nothing to delete
+		// It's extremely likely that all the color outputs are still pointing
+		// at the same shader. So as soon as we find an output that has a shader
+		// it will be deleted, and the remaining deleteMaterials will have nothing
+		// to delete, but why take chances
 
 		MPlug shadingPlug = materialPlug.child(AssetNode::outputMaterialDiffuseColor);
 		deleteMaterials(shadingPlug);
@@ -135,7 +136,7 @@ AssetSubCommandSync::doIt()
 	        shadingPlug = materialPlug.child(AssetNode::outputMaterialAlphaColor);
 		deleteMaterials(shadingPlug);
 
-		// there might also be a file texture connected for the color
+		// there might also be a file texture connected for the diffuse color
 		// delete it, and the downstream shader too, it it's not already gone
 		MPlug texturePlug =  materialPlug.child(AssetNode::outputMaterialTexturePath);
 		MObject textureObj = SyncOutputMaterial::findFileTexture(texturePlug);

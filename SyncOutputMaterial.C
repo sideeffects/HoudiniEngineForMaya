@@ -33,8 +33,13 @@ SyncOutputMaterial::createOutputMaterial(
     {
         return MObject::kNullObj;
     }
+    
+    // check if the ambient output has a shader already (checking diffuse
+    // would force us to check the file texture connections as well)
+    
+    MPlug shadingPlug = materialPlug.child(AssetNode::outputMaterialAmbientColor);	    
+    MObject shaderObj = findShader(shadingPlug);
 
-    MObject shaderObj = findShader(materialPlug);
     if(shaderObj.isNull())
     {
         // create shader

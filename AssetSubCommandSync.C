@@ -1,7 +1,6 @@
 #include "AssetSubCommandSync.h"
 
 #include <maya/MGlobal.h>
-#include <maya/MPlug.h>
 #include <maya/MSelectionList.h>
 
 #include <maya/MFnDependencyNode.h>
@@ -63,6 +62,23 @@ AssetSubCommandSync::setSyncOutputTemplatedGeos()
     mySyncOutputTemplatedGeos = true;
 }
 
+void
+AssetSubCommandSync::deleteMaterials(MPlug &materialPlug)
+{
+        MObject shaderObj = SyncOutputMaterial::findShader(materialPlug);
+        if(shaderObj.isNull())
+        {
+            return;
+        }
+
+        MObject shadingGroupObj = SyncOutputMaterial::findShadingGroup(shaderObj);
+        myDagModifier.deleteNode(shaderObj);
+        if(!shadingGroupObj.isNull())
+        {
+             myDagModifier.deleteNode(shadingGroupObj);
+        }
+	myDagModifier.doIt();
+}
 MStatus
 AssetSubCommandSync::doIt()
 {
@@ -105,23 +121,32 @@ AssetSubCommandSync::doIt()
             {
                 MPlug materialPlug = materialsPlug.elementByPhysicalIndex(i);
 
-                MObject shaderObj = SyncOutputMaterial::findShader(materialPlug);
-                if(shaderObj.isNull())
-                {
-                    continue;
-                }
+		// Note that myDagModifier::doIt is invoked in deleteMaterials
+		// In many cases it may be that the materials for each plug are the same
+		// in which case the first deleteMaterials will get them,
+		// and subsequent deleteMaterials calls will find nothing to delete
 
-                MObject shadingGroupObj = SyncOutputMaterial::findShadingGroup(shaderObj);
+		MPlug shadingPlug = materialPlug.child(AssetNode::outputMaterialDiffuseColor);
+		deleteMaterials(shadingPlug);
+	        shadingPlug = materialPlug.child(AssetNode::outputMaterialAmbientColor);
+		deleteMaterials(shadingPlug);
+		shadingPlug = materialPlug.child(AssetNode::outputMaterialSpecularColor);
+		deleteMaterials(shadingPlug);
+	        shadingPlug = materialPlug.child(AssetNode::outputMaterialAlphaColor);
+		deleteMaterials(shadingPlug);
 
-                if(!shaderObj.isNull())
-                {
-                    myDagModifier.deleteNode(shaderObj);
-                }
-
-                if(!shaderObj.isNull())
-                {
-                    myDagModifier.deleteNode(shadingGroupObj);
-                }
+		// there might also be a file texture connected for the color
+		// delete it, and the downstream shader too, it it's not already gone
+		MPlug texturePlug =  materialPlug.child(AssetNode::outputMaterialTexturePath);
+		MObject textureObj = SyncOutputMaterial::findFileTexture(texturePlug);
+		if(!textureObj.isNull()) {
+		    MFnDependencyNode textureFn(textureObj);
+		    shadingPlug = textureFn.findPlug("outColor");
+		    deleteMaterials(shadingPlug);
+		    myDagModifier.deleteNode(textureObj);
+		    status = myDagModifier.doIt();
+                    CHECK_MSTATUS_AND_RETURN_IT(status);
+		}
             }
 
             // Call doIt() here so that the delete commands are actually executed.

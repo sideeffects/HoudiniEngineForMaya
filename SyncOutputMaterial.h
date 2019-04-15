@@ -20,6 +20,7 @@ public:
             int nodeId);
 
     static MObject findShader(const MPlug &materialPlug);
+    static MObject findFileTexture(const MPlug &materialPlug);
     static MObject findShadingGroup(const MObject &shaderFn);
 };
 

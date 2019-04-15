@@ -203,8 +203,7 @@ SyncOutputMaterial::createOutputMaterialPlug(
 MObject
 SyncOutputMaterial::findShader(const MPlug &materialPlug)
 {
-    MPlugArray destinationPlugs = Util::plugDestination(
-            materialPlug.child(AssetNode::outputMaterialDiffuseColor));
+    MPlugArray destinationPlugs = Util::plugDestination(materialPlug);
     for(size_t i = 0; i < destinationPlugs.length(); i++)
     {
         MObject shaderObj = destinationPlugs[i].node();
@@ -239,6 +238,22 @@ SyncOutputMaterial::findShadingGroup(const MObject &shaderObj)
     {
         MObject shadingGroupObj = destinationPlugs[i].node();
         if(shadingGroupObj.hasFn(MFn::kShadingEngine))
+        {
+            return shadingGroupObj;
+        }
+    }
+
+    return MObject::kNullObj;
+}
+
+MObject
+SyncOutputMaterial::findFileTexture(const MPlug &materialPlug)
+{
+    MPlugArray destinationPlugs = Util::plugDestination(materialPlug);
+    for(size_t i = 0; i < destinationPlugs.length(); i++)
+    {
+        MObject shadingGroupObj = destinationPlugs[i].node();
+        if(shadingGroupObj.hasFn(MFn::kFileTexture))
         {
             return shadingGroupObj;
         }

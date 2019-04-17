@@ -14,6 +14,6 @@ The original intention of the attribute is to preserve the material assignment w
 
 - `shop_materialpath` - detail|primitive string
 
-In a typical Houdini workflow, materials are assigned through the `shop_materialpath` attribute. When an asset outputs geometries that contain Houdini materials, some basic parameters of the materials are recreated in the Maya scene. Materials in Maya are created as `blinn`. And the basic parameters `ogl_diff`, `ogl_amb`, `ogl_alpha`, and `ogl_spec`, `ogl_tex1` of the Houdini material is output into the Maya material.
+In a typical Houdini workflow, materials are assigned through the `shop_materialpath` attribute. When an asset outputs geometries that contain Houdini materials, some basic parameters of the materials are recreated in the Maya scene. Materials in Maya are created as `phong`. And the basic parameters `ogl_diff`, `ogl_amb`, `ogl_alpha`, and `ogl_spec`, `ogl_tex1` of the Houdini material is output into the Maya material.
 
 */

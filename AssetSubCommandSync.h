@@ -5,6 +5,7 @@
 
 #include <maya/MObject.h>
 #include <maya/MDagModifier.h>
+#include <maya/MPlug.h>
 
 #include <vector>
 
@@ -21,6 +22,7 @@ class AssetSubCommandSync : public SubCommandAsset
 
         void setSyncOutputHidden();
         void setSyncOutputTemplatedGeos();
+	void deleteMaterials(MPlug &materialPlug);
 
         virtual MStatus doIt();
         virtual MStatus redoIt();

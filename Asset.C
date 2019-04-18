@@ -98,7 +98,7 @@ AttrOperation::AttrOperation(
     MDataHandle dataHandle;
     MPlug plug;
 
-    plug = myNodeFn.findPlug(Util::getParmAttrPrefix());
+    plug = myNodeFn.findPlug(Util::getParmAttrPrefix(), true);
     if(myMode == AttrOperation::Get)
     {
         dataHandle = myDataBlock.outputValue(plug);
@@ -380,13 +380,13 @@ AttrOperation::containsParm(
         return true;
     }
 
-    MPlug parmPlug = myNodeFn.findPlug(attrName);
+    MPlug parmPlug = myNodeFn.findPlug(attrName, true);
 
     for(std::vector<MObject>::const_iterator iter = myAttrs->begin();
             iter != myAttrs->end();
             iter++)
     {
-        MPlug plug = myNodeFn.findPlug(*iter);
+        MPlug plug = myNodeFn.findPlug(*iter, true);
 
         if(parmPlug == plug)
         {

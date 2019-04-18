@@ -89,8 +89,7 @@ InputGeometryNode::initialize()
 
     InputGeometryNode::objectShadingGroup = tAttr.create(
             "objectShadingGroup", "objectShadingGroup",
-            MFnData::kString,
-            0
+            MFnData::kString
             );
     nAttr.setCached(false);
     nAttr.setStorable(true);

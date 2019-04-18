@@ -109,37 +109,37 @@ SyncOutputMaterial::createOutputMaterial(
         if(textureFileFn.object().isNull())
         {
             srcPlug = materialPlug.child(AssetNode::outputMaterialDiffuseColor);
-            dstPlug = shaderFn.findPlug("color");
+            dstPlug = shaderFn.findPlug("color", true);
             status = dgModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
         }
         else
         {
-            dstPlug = textureFileFn.findPlug("fileTextureName");
+            dstPlug = textureFileFn.findPlug("fileTextureName", true);
             status = dgModifier.connect(texturePathPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
-            srcPlug = textureFileFn.findPlug("outColor");
-            dstPlug = shaderFn.findPlug("color");
+            srcPlug = textureFileFn.findPlug("outColor", true);
+            dstPlug = shaderFn.findPlug("color", true);
             status = dgModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
         }
 
         // specularColor
         srcPlug = materialPlug.child(AssetNode::outputMaterialSpecularColor);
-        dstPlug = shaderFn.findPlug("specularColor");
+        dstPlug = shaderFn.findPlug("specularColor", true);
         status = dgModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
         // ambientColor
         srcPlug = materialPlug.child(AssetNode::outputMaterialAmbientColor);
-        dstPlug = shaderFn.findPlug("ambientColor");
+        dstPlug = shaderFn.findPlug("ambientColor", true);
         status = dgModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
         // transparency
         srcPlug = materialPlug.child(AssetNode::outputMaterialAlphaColor);
-        dstPlug = shaderFn.findPlug("transparency");
+        dstPlug = shaderFn.findPlug("transparency", true);
         status = dgModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
     }
@@ -237,7 +237,7 @@ SyncOutputMaterial::findShadingGroup(const MObject &shaderObj)
     MFnDependencyNode shaderFn(shaderObj);
 
     MPlugArray destinationPlugs = Util::plugDestination(
-            shaderFn.findPlug("outColor")
+            shaderFn.findPlug("outColor", true)
             );
     for(size_t i = 0; i < destinationPlugs.length(); i++)
     {

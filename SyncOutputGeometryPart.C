@@ -251,7 +251,7 @@ SyncOutputGeometryPart::createOutputMesh(
 
     // set mesh.displayColors
     myDagModifier.newPlugValueBool(
-            partMeshFn.findPlug("displayColors"),
+				   partMeshFn.findPlug("displayColors", true),
             true
             );
 
@@ -259,7 +259,7 @@ SyncOutputGeometryPart::createOutputMesh(
     // Connecting outputPartMeshCurrentColorSet to currentColorSet doesn't seem
     // to trigger updates.
     myDagModifier.newPlugValueString(
-            partMeshFn.findPlug("currentColorSet"),
+            partMeshFn.findPlug("currentColorSet", true),
             meshPlug.child(AssetNode::outputPartMeshCurrentColorSet).asString()
             );
 
@@ -267,7 +267,7 @@ SyncOutputGeometryPart::createOutputMesh(
     // Connecting outputPartMeshCurrentUV to currentUVSet doesn't seem to
     // trigger updates.
     myDagModifier.newPlugValueString(
-            partMeshFn.findPlug("currentUVSet"),
+            partMeshFn.findPlug("currentUVSet", true),
             meshPlug.child(AssetNode::outputPartMeshCurrentUV).asString()
             );
 
@@ -277,17 +277,17 @@ SyncOutputGeometryPart::createOutputMesh(
         MPlug dstPlug;
 
         //srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentColorSet);
-        //dstPlug = partMeshFn.findPlug("currentColorSet");
+        //dstPlug = partMeshFn.findPlug("currentColorSet", true);
         //status = myDagModifier.connect(srcPlug, dstPlug);
         //CHECK_MSTATUS_AND_RETURN_IT(status);
 
         //srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentUV);
-        //dstPlug = partMeshFn.findPlug("currentUVSet");
+        //dstPlug = partMeshFn.findPlug("currentUVSet", true);
         //status = myDagModifier.connect(srcPlug, dstPlug);
         //CHECK_MSTATUS_AND_RETURN_IT(status);
 
         srcPlug = meshPlug.child(AssetNode::outputPartMeshData);
-        dstPlug = partMeshFn.findPlug("inMesh");
+        dstPlug = partMeshFn.findPlug("inMesh", true);
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -305,7 +305,7 @@ SyncOutputGeometryPart::createOutputMesh(
     // dirty/invalid. We need to force the mesh to evaluate before running the
     // "sets" command. Otherwise, the "sets" command would fail when there are
     // extra attributes.
-    partMeshFn.findPlug("outMesh").asMObject();
+    partMeshFn.findPlug("outMesh", true).asMObject();
 
     std::vector<bool> hasMaterials;
     {
@@ -577,7 +577,7 @@ SyncOutputGeometryPart::createOutputCurves(
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         MFnDependencyNode curveShapeFn(curveShape, &status);
-        MPlug dstPlug = curveShapeFn.findPlug("create");
+        MPlug dstPlug = curveShapeFn.findPlug("create", true);
         CHECK_MSTATUS(status);
 
         myDagModifier.connect(curvePlug, dstPlug);
@@ -620,29 +620,29 @@ SyncOutputGeometryPart::createOutputParticle(
 
     // connect nParticleShape attributes
     srcPlug = particlePlug.child(AssetNode::outputPartParticleCurrentTime);
-    dstPlug = particleShapeFn.findPlug("currentTime");
+    dstPlug = particleShapeFn.findPlug("currentTime", true);
     status = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     srcPlug = particlePlug.child(AssetNode::outputPartParticlePositions);
-    dstPlug = particleShapeFn.findPlug("positions");
+    dstPlug = particleShapeFn.findPlug("positions", true);
     status = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     srcPlug = particlePlug.child(AssetNode::outputPartParticleArrayData);
-    dstPlug = particleShapeFn.findPlug("cacheArrayData");
+    dstPlug = particleShapeFn.findPlug("cacheArrayData", true);
     status = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set particleRenderType to points
     status = myDagModifier.newPlugValueInt(
-            particleShapeFn.findPlug("particleRenderType"),
+            particleShapeFn.findPlug("particleRenderType", true),
             3);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set playFromCache to true
     status = myDagModifier.newPlugValueBool(
-            particleShapeFn.findPlug("playFromCache"),
+            particleShapeFn.findPlug("playFromCache", true),
             true);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -682,13 +682,13 @@ SyncOutputGeometryPart::createOutputInstancer(
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // set the rotation units to radians
-            status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits"), 1);
+            status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits", true), 1);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect instancer directly to assetnode
             status = myDagModifier.connect(
                 instancerPlug.child(AssetNode::outputPartInstancerArrayData),
-                instancerFn.findPlug("inputPoints"));
+                instancerFn.findPlug("inputPoints", true));
 
             createOutputExtraAttributes(
                     myPartShapes[i]
@@ -725,19 +725,19 @@ SyncOutputGeometryPart::createOutputInstancer(
             // connect translate
             status = myDagModifier.connect(
                     translatePlug,
-                    instanceTransform.findPlug("translate"));
+                    instanceTransform.findPlug("translate", true));
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect rotate
             status = myDagModifier.connect(
                     rotatePlug,
-                    instanceTransform.findPlug("rotate"));
+                    instanceTransform.findPlug("rotate", true));
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect scale
             status = myDagModifier.connect(
                     scalePlug,
-                    instanceTransform.findPlug("scale"));
+                    instanceTransform.findPlug("scale", true));
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
     }
@@ -769,20 +769,20 @@ SyncOutputGeometryPart::createOutputInstancerPost(
             MFnDependencyNode instancerFn(myPartShapes[i], &status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
-            MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy");
+            MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy", true);
 
             const MObject &instancedPartTransform = syncParts[parts[i]]->partTransform();
             MFnDependencyNode instancedPartTransformFn(instancedPartTransform);
 
             // set objectTransform hidden
             status = myDagModifier.newPlugValueInt(
-                    instancedPartTransformFn.findPlug("visibility"),
+                    instancedPartTransformFn.findPlug("visibility", true),
                     0);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect inputHierarchy
             status = myDagModifier.connect(
-                    instancedPartTransformFn.findPlug("matrix"),
+                    instancedPartTransformFn.findPlug("matrix", true),
                     inputHierarchyPlug.elementByLogicalIndex(0));
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }

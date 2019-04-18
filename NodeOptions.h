@@ -121,7 +121,7 @@ public:
     {
         const MObject &attribute = base->myDefinition.myAttributes[Index];
 
-        return base->myDataSource.findPlug(attribute).asBool();
+        return base->myDataSource.findPlug(attribute, true).asBool();
     }
 };
 

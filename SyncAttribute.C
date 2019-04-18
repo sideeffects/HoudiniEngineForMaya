@@ -588,7 +588,7 @@ SyncAttribute::doIt()
     {
         MPlugArray connections;
         getConnectedChildrenPlugs(connections,
-                assetNodeFn.findPlug(houdiniAssetParmObj, &status));
+		   assetNodeFn.findPlug(houdiniAssetParmObj, true, &status));
 
         MString connectAttrFormat = "connectAttr ^1s ^2s;";
         unsigned int connectionsLength = connections.length();

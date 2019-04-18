@@ -86,7 +86,7 @@ AssetSubCommandLoadAsset::doIt()
     // time1.outTime -> houdiniAsset.inTime
     {
         MObject srcNode = Util::findNodeByName("time1");
-        MPlug srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
+        MPlug srcPlug = MFnDependencyNode(srcNode).findPlug("outTime", true);
         MPlug dstPlug(assetNodeObj, AssetNode::inTime);
 
         status = myDagModifier.connect(srcPlug, dstPlug);

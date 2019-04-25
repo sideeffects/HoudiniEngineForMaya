@@ -1211,9 +1211,9 @@ AssetNode::initialize()
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputObjectFluidFromAsset);
 #endif
+    cAttr.addChild(AssetNode::outputObjectTransform);
     cAttr.addChild(AssetNode::outputGeos);
     cAttr.addChild(AssetNode::outputObjectName);
-    cAttr.addChild(AssetNode::outputObjectTransform);
     cAttr.addChild(AssetNode::outputVisibility);
     cAttr.addChild(AssetNode::outputIsInstanced);
 

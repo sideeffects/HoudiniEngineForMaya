@@ -10,6 +10,10 @@ houdiniEnginePreferences_refresh()
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineDeleteAfterBake"`
         delAfterBakeCheck;
+	
+    checkBoxGrp -e
+        -value1 `optionVar -query "houdiniEngineUnsetLLP"`
+        unsetLLPCheck;
         
     int $sessionType = int(`optionVar -query "houdiniEngineSessionType"`);
         
@@ -67,6 +71,9 @@ houdiniEnginePreferences_save()
     optionVar
         -intValue "houdiniEngineDeleteAfterBake"
         `checkBoxGrp -q -value1 delAfterBakeCheck`;
+    optionVar
+        -intValue "houdiniEngineUnsetLLP"
+        `checkBoxGrp -q -value1 unsetLLPCheck`;
         
     if (`radioButton -query -select sessionTypeInProcess`)
     {    
@@ -116,6 +123,14 @@ houdiniEnginePreferences_toggleAsynchronousMode(int $state)
 }
 
 global proc
+houdiniEnginePreferences_toggleUnsetLLP(int $state)
+{
+    global int $houdiniEngineUnsetLLP;
+
+    $houdiniEngineUnsetLLP = $state;
+}
+
+global proc
 houdiniEnginePreferences_toggleDelAfterBake(int $state)
 {
     global int $houdiniEngineDeleteAfterBake;
@@ -150,7 +165,8 @@ houdiniEnginePreferences_toggleSessionTypePipe(int $state)
 
     int $custom = `radioButton -query -select sessionPipeCustom`;
 
-    houdiniEnginePreferences_toggleSessionTypePipeCustom($state && $custom);
+    textField -edit -enable ($state && $custom) sessionPipeName;
+    checkBoxGrp -edit -enable  ($state && !$custom) unsetLLPCheck;
 }
 
 global proc
@@ -159,6 +175,7 @@ houdiniEnginePreferences_toggleSessionTypePipeCustom(int $state)
     setParent houdiniEnginePreferences;
 
     textField -edit -enable $state sessionPipeName;
+    checkBoxGrp -edit -enable  (!$state) unsetLLPCheck;
 }
 
 global proc
@@ -274,6 +291,12 @@ houdiniEnginePreferences()
 
 
             textField -width 200 sessionPipeName;
+            checkBoxGrp
+                -numberOfCheckBoxes 1
+                -label "Unset LD_LIBRARY_PATH:"
+		-label1 "(for Linux auto-start)"
+                -changeCommand "houdiniEnginePreferences_toggleUnsetLLP #1"
+                unsetLLPCheck;
 
         setParent ..;
         
@@ -301,13 +324,17 @@ houdiniEnginePreferences()
             
             -attachControl sessionPipeAuto "top" 5 sessionTypePipe
             -attachForm sessionPipeAuto "left" 20
+	    
+	    -attachControl unsetLLPCheck "top" 5 sessionPipeAuto
+            -attachForm unsetLLPCheck "left" 20
 
-            -attachControl sessionPipeCustom "top" 5 sessionPipeAuto
+            -attachControl sessionPipeCustom "top" 5 unsetLLPCheck
             -attachForm sessionPipeCustom "left" 20
 
-            -attachControl sessionPipeName "top" 5 sessionPipeAuto
+            -attachControl sessionPipeName "top" 5 unsetLLPCheck
             -attachControl sessionPipeName "left" 5 sessionPipeCustom
 
+	    
             sessionLayout;
     setParent ..;
 

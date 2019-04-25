@@ -173,6 +173,7 @@ namespace
             , thriftPort("ThriftPort", 9090)
             , sessionPipeCustom("SessionPipeCustom", 0)
             , thriftPipe("ThriftPipe", "hapi")
+	    , unsetLLP("UnsetLLP", 1)
         {}
 
         IntOptionVar     asyncMode;
@@ -181,6 +182,7 @@ namespace
         IntOptionVar     thriftPort;
         IntOptionVar     sessionPipeCustom;
         StringOptionVar  thriftPipe;
+        IntOptionVar     unsetLLP;
 
     private:
         OptionVars& operator=(const OptionVars&);
@@ -296,12 +298,37 @@ initializeSession(const OptionVars& optionVars)
                         "Automatically starting Houdini Engine server "
                         "using named pipe."
                         );
+		
+		// on Linux, if LD_LIBRARY_PATH is set, HARS might fail to start due to library conflicts
+		// so we have an option to unset it before autostarting the server.
+#ifndef _WIN32		
+	        char *llpString = getenv("LD_LIBRARY_PATH");
+	        char *llpSave = NULL;
+		if(optionVars.unsetLLP.get()) {	
+		    if(llpString && strlen(llpString) > 0) {
+		        // llpString points into the environment, so if we unsetenv,
+		        // it may well be deleted, so save a copy just in case
+		        llpSave  = new char[strlen((llpString)) + 1];
+		        strcpy(llpSave,llpString);
+		        unsetenv( "LD_LIBRARY_PATH" );
+		    }
+		}
+#endif
 
                 HAPI_ProcessId processId;
                 sessionResult = HAPI_StartThriftNamedPipeServer(
                         &serverOptions,
                         pipeName.asChar(),
                         &processId);
+		
+#ifndef _WIN32		
+		if(llpSave) {
+		    setenv("LD_LIBRARY_PATH", llpSave, 1);
+		    delete llpSave;
+		    llpSave  = NULL;
+		}
+#endif		
+		
                 if( HAPI_FAIL(sessionResult) )
                 {
                     MGlobal::displayError(

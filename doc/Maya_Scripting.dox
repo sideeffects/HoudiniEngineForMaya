@@ -83,6 +83,7 @@ houdiniAsset
 [-resetSimulation string ]
 [-cookMessages string ]
 [-reloadAsset string]
+[-reloadNoSync string]
 [-sync string]
 [-syncAttributes]
 [-syncOutputs]
@@ -120,6 +121,11 @@ houdiniAsset
     <td>-reloadAsset(-rl)</td>
     <td>assetName</td>
     <td>reload the asset definition for the specified asset, from the hda from which it was previously loaded</td>       
+</tr>
+<tr>
+    <td>-reloadNoSync(-rn)</td>
+    <td>assetName</td>
+    <td>reload the asset definition for the specified asset, from the hda from which it was previously loaded, but do not sync the asset after reloading. If you know that the asset has the same number and types of outputs as before, this avoids deleting and rebuilding the output shapes in Maya, and any downstream modifications to the outputs will be preserved.</td>       
 </tr>
 <tr>
     <td>-sync(-syn)</td>

@@ -22,6 +22,8 @@
 #define kCookMessagesFlagLong "-cookMessages"
 #define kReloadAssetFlag "-rl"
 #define kReloadAssetFlagLong "-reloadAsset"
+#define kReloadNoSyncFlag "-rn"
+#define kReloadNoSyncFlagLong "-reloadNoSync"
 #define kSyncAttributesFlag "-sa"
 #define kSyncAttributesFlagLong "-syncAttributes"
 #define kSyncOutputsFlag "-so"
@@ -180,12 +182,22 @@ AssetCommand::newSyntax()
                                  kCookMessagesFlagLong,
                                  MSyntax::kSelectionItem));
 
-    // -reloadAsset will unload and immediate reload the asset.  If an otl file
-    // has changed due to an edit in Houdini, this should pick up the change
-        // Note that this won't refresh the AE, you need to that separately after
-        // running this, with refreshEditorTemplates
+    // -reloadAsset will unload and immediate reload and sync the asset. If the
+    // otl file has changed due to an edit in Houdini, this should pick up the
+    // change. Note that this won't refresh the AE, you need to that separately
+    // after running this, with refreshEditorTemplates
     CHECK_MSTATUS(syntax.addFlag(kReloadAssetFlag,
                                  kReloadAssetFlagLong,
+                                 MSyntax::kSelectionItem));
+
+    // -reloadNoSync will unload and immediate reload the asset.
+    // If you know that the number and type of outputs has not changed.
+    // Originally intended to be used when loading an asset that was
+    // deferred from file load, where we either believe the outputs
+    // still match the asset, or we plan to independently connect
+    // the correct outputs.
+    CHECK_MSTATUS(syntax.addFlag(kReloadNoSyncFlag,
+                                 kReloadNoSyncFlagLong,
                                  MSyntax::kSelectionItem));
 
     CHECK_MSTATUS(syntax.addFlag(kSyncAttributesFlag, kSyncAttributesFlagLong));
@@ -257,6 +269,7 @@ AssetCommand::parseArgs(const MArgList &args)
                 ^ argData.isFlagSet(kResetSimulationFlag)
                 ^ argData.isFlagSet(kCookMessagesFlag)
                 ^ argData.isFlagSet(kReloadAssetFlag)
+                ^ argData.isFlagSet(kReloadNoSyncFlag)
                 ^ argData.isFlagSet(kAutoSyncIdFlag)))
     {
         displayError("Exactly one of these flags must be specified:\n"
@@ -264,6 +277,7 @@ AssetCommand::parseArgs(const MArgList &args)
                 kSyncFlagLong "\n"
                 kResetSimulationFlagLong "\n"
                 kCookMessagesFlagLong "\n"
+                kReloadNoSyncFlagLong "\n"
                 kReloadAssetFlagLong "\n");
         return MStatus::kInvalidParameter;
     }
@@ -324,6 +338,19 @@ AssetCommand::parseArgs(const MArgList &args)
         assetNode->rebuildAsset();
 
         mySubCommand = new AssetSubCommandSync(assetNodeObj);
+    }
+
+    if(argData.isFlagSet(kReloadNoSyncFlag))
+    {
+        MObject assetNodeObj;
+        if(!getMObjectFromFlag(argData, kReloadNoSyncFlagLong, assetNodeObj, status))
+            return status;
+
+        MFnDependencyNode assetNodeFn(assetNodeObj);
+        AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+        assetNode->rebuildAsset();
+
+        mySubCommand = NULL;
     }
 
     if(argData.isFlagSet(kSyncFlag))
@@ -394,25 +421,42 @@ MStatus AssetCommand::doIt(const MArgList& args)
     MStatus status;
 
     status = parseArgs(args);
-    if(!status)
+    if(!status || !mySubCommand)
     {
         return status;
     }
+     
 
     return mySubCommand->doIt();
 }
 
 MStatus AssetCommand::redoIt()
 {
+    if(!mySubCommand)
+    {
+        return MStatus::kSuccess;
+    }
+
     return mySubCommand->redoIt();
+    
 }
 
 MStatus AssetCommand::undoIt()
 {
+    if(!mySubCommand)
+    {
+        return MStatus::kSuccess;
+    }
+
     return mySubCommand->undoIt();
 }
 
 bool AssetCommand::isUndoable() const
 {
+    if(!mySubCommand)
+    {
+        return false;
+    }
+
     return mySubCommand->isUndoable();
 }

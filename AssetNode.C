@@ -1834,7 +1834,7 @@ AssetNode::createAsset()
     // if the asset has been frozen. and DeferAssetLoad in on
     // and we're reading a file, don't load the assets
     MFnDependencyNode assetNodeFn(thisMObject());
-    MPlug frozenPlug = assetNodeFn.findPlug("frozen");
+    MPlug frozenPlug = assetNodeFn.findPlug("frozen", true);
     bool frozen =  frozenPlug.asBool();
 
     int defer = MGlobal::optionVarIntValue("houdiniEngineDeferAssetLoad");

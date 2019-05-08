@@ -674,6 +674,9 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         button -label "Reload Asset"
             -annotation "Reloads this asset to use the updated asset definition."
             reloadAssetButton;
+        button -label "Reload Without Syncing"
+            -annotation "Reloads this asset keeping the existing parms and outputs"
+            reloadNoSyncButton;
 
     setParent ..;
 
@@ -791,6 +794,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     button -e
         -c ("houdiniAsset -reloadAsset " + $nodeName)
         ($optionsLayoutFull + "|buttonLayout|reloadAssetButton");
+    button -e
+        -c ("houdiniAsset -reloadNoSync " + $nodeName)
+        ($optionsLayoutFull + "|buttonLayout|reloadNoSyncButton");
 
     // syncLayout
     replaceAttrCheckBox($optionsLayoutFull + "|syncLayout|syncWhenInputConnects",
@@ -899,7 +905,14 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate
             -label "File Path"
             -addControl "otlFilePath";
-        editorTemplate -callCustom "AEhoudiniAssetConnectNew" "AEhoudiniAssetConnectReplace" "assetConnectType";
+	    
+        editorTemplate -beginLayout "Asset State" -collapse true;
+            editorTemplate -callCustom "AEhoudiniAssetConnectNew" "AEhoudiniAssetConnectReplace" "assetConnectType";
+            editorTemplate
+                -label "Frozen"
+                -addControl "frozen";	
+        editorTemplate -endLayout;
+
     editorTemplate -endLayout;
 
     editorTemplate -beginLayout "Asset Options" -collapse false;
@@ -932,6 +945,8 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "connectGeoForAssetInputs";
 
         editorTemplate -suppress "useInstancerNode";
+	editorTemplate -suppress "cachedSrc";
+	editorTemplate -suppress "cachedDst";
 
     editorTemplate -endLayout;
 

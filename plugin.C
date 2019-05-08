@@ -174,6 +174,7 @@ namespace
             , sessionPipeCustom("SessionPipeCustom", 0)
             , thriftPipe("ThriftPipe", "hapi")
 	    , unsetLLP("UnsetLLP", 1)
+	    , deferAssetLoad("DeferAssetLoad", 0)
         {}
 
         IntOptionVar     asyncMode;
@@ -183,6 +184,7 @@ namespace
         IntOptionVar     sessionPipeCustom;
         StringOptionVar  thriftPipe;
         IntOptionVar     unsetLLP;
+        IntOptionVar     deferAssetLoad;
 
     private:
         OptionVars& operator=(const OptionVars&);

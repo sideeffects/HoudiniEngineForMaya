@@ -142,7 +142,8 @@ AssetSubCommandSync::doIt()
 		MObject textureObj = SyncOutputMaterial::findFileTexture(texturePlug);
 		if(!textureObj.isNull()) {
 		    MFnDependencyNode textureFn(textureObj);
-		    shadingPlug = textureFn.findPlug("outColor");
+		    MString shadingPlugName("outColor");
+		    shadingPlug = textureFn.findPlug(shadingPlugName, true);
 		    deleteMaterials(shadingPlug);
 		    myDagModifier.deleteNode(textureObj);
 		    status = myDagModifier.doIt();

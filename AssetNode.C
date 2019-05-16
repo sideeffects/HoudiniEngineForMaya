@@ -1831,19 +1831,17 @@ AssetNode::createAsset()
         return;
     }
     
-    // if the asset has been frozen. and DeferAssetLoad in on
+    // if the asset has been frozen
     // and we're reading a file, don't load the assets
     MFnDependencyNode assetNodeFn(thisMObject());
     MPlug frozenPlug = assetNodeFn.findPlug("frozen", true);
     bool frozen =  frozenPlug.asBool();
 
-    int defer = MGlobal::optionVarIntValue("houdiniEngineDeferAssetLoad");
-
     if((MFileIO::isOpeningFile()
             || MFileIO::isImportingFile()
             || MFileIO::isReferencingFile()))
     {
-        if(defer && frozen)
+        if(frozen)
             return;
     }
 

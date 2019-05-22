@@ -78,17 +78,17 @@ SyncOutputObject::doIt()
         MPlug dstPlug;
 
         srcPlug = transformPlug.child(AssetNode::outputObjectTranslate);
-        dstPlug = objectTransformFn.findPlug("translate");
+        dstPlug = objectTransformFn.findPlug("translate", true);
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         srcPlug = transformPlug.child(AssetNode::outputObjectRotate);
-        dstPlug = objectTransformFn.findPlug("rotate");
+        dstPlug = objectTransformFn.findPlug("rotate", true);
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         srcPlug = transformPlug.child(AssetNode::outputObjectScale);
-        dstPlug = objectTransformFn.findPlug("scale");
+        dstPlug = objectTransformFn.findPlug("scale", true);
         status = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -98,7 +98,7 @@ SyncOutputObject::doIt()
     if(!myVisible)
     {
         status = myDagModifier.newPlugValueBool(
-                objectTransformFn.findPlug("visibility"),
+                objectTransformFn.findPlug("visibility", true),
                 false
                 );
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -435,12 +435,12 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
         {
             status = myDagModifier.connect(
                     densityVolumePlug.child(AssetNode::outputPartVolumeGrid),
-                    partVolumeFn.findPlug("inDensity")
+                    partVolumeFn.findPlug("inDensity", true)
                     );
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             status = myDagModifier.newPlugValueInt(
-                    partVolumeFn.findPlug("densityMethod"),
+                    partVolumeFn.findPlug("densityMethod", true),
                     2
                     );
             CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -451,11 +451,11 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
         {
             status = myDagModifier.connect(
                     temperatureVolumePlug.child(AssetNode::outputPartVolumeGrid),
-                    partVolumeFn.findPlug("inTemperature")
+                    partVolumeFn.findPlug("inTemperature", true)
                     );
             CHECK_MSTATUS_AND_RETURN_IT(status);
             status = myDagModifier.newPlugValueInt(
-                    partVolumeFn.findPlug("temperatureMethod"),
+                    partVolumeFn.findPlug("temperatureMethod", true),
                     2
                     );
             CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -466,11 +466,11 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
         {
             status = myDagModifier.connect(
                     fuelVolumePlug.child(AssetNode::outputPartVolumeGrid),
-                    partVolumeFn.findPlug("inReaction")
+                    partVolumeFn.findPlug("inReaction", true)
                     );
             CHECK_MSTATUS_AND_RETURN_IT(status);
             status = myDagModifier.newPlugValueInt(
-                    partVolumeFn.findPlug("fuelMethod"),
+                    partVolumeFn.findPlug("fuelMethod", true),
                     2
                     );
             CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -491,7 +491,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
 
             myDagModifier.newPlugValueShort(
                     velConverterFn.findPlug(
-                        FluidGridConvert::conversionMode
+                        FluidGridConvert::conversionMode, true
                         ),
                     velConversionMode);
 
@@ -500,7 +500,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
 
             // resolution
             srcPlug = referenceVolumePlug.child(AssetNode::outputPartVolumeRes);
-            dstPlug = velConverterFn.findPlug(FluidGridConvert::resolution);
+            dstPlug = velConverterFn.findPlug(FluidGridConvert::resolution, true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -508,27 +508,27 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             srcPlug = velVolumePlug[0].child(
                     AssetNode::outputPartVolumeGrid
                     );
-            dstPlug = velConverterFn.findPlug("inGridX");
+            dstPlug = velConverterFn.findPlug("inGridX", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             srcPlug = velVolumePlug[1].child(
                     AssetNode::outputPartVolumeGrid
                     );
-            dstPlug = velConverterFn.findPlug("inGridY");
+            dstPlug = velConverterFn.findPlug("inGridY", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             srcPlug = velVolumePlug[2].child(
                     AssetNode::outputPartVolumeGrid
                     );
-            dstPlug = velConverterFn.findPlug("inGridZ");
+            dstPlug = velConverterFn.findPlug("inGridZ", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // converter to fluidShape
-            srcPlug = velConverterFn.findPlug(FluidGridConvert::outGrid);
-            dstPlug = partVolumeFn.findPlug("inVelocity");
+            srcPlug = velConverterFn.findPlug(FluidGridConvert::outGrid, true);
+            dstPlug = partVolumeFn.findPlug("inVelocity", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
@@ -548,7 +548,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
 
             myDagModifier.newPlugValueShort(
                     cdConverterFn.findPlug(
-                        FluidGridConvert::conversionMode
+                        FluidGridConvert::conversionMode, true
                         ),
                     0);
 
@@ -557,7 +557,7 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
 
             // resolution
             srcPlug = referenceVolumePlug.child(AssetNode::outputPartVolumeRes);
-            dstPlug = cdConverterFn.findPlug(FluidGridConvert::resolution);
+            dstPlug = cdConverterFn.findPlug(FluidGridConvert::resolution, true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -565,31 +565,31 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             srcPlug = cdVolumePlug[0].child(
                     AssetNode::outputPartVolumeGrid
                     );
-            dstPlug = cdConverterFn.findPlug("inGridX");
+            dstPlug = cdConverterFn.findPlug("inGridX", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             srcPlug = cdVolumePlug[1].child(
                     AssetNode::outputPartVolumeGrid
                     );
-            dstPlug = cdConverterFn.findPlug("inGridY");
+            dstPlug = cdConverterFn.findPlug("inGridY", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             srcPlug = cdVolumePlug[2].child(AssetNode::outputPartVolumeGrid);
-            dstPlug = cdConverterFn.findPlug("inGridZ");
+            dstPlug = cdConverterFn.findPlug("inGridZ", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             status = myDagModifier.newPlugValueInt(
-                    partVolumeFn.findPlug("colorMethod"),
+                    partVolumeFn.findPlug("colorMethod", true),
                     2
                     );
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // converter to fluidShape
-            srcPlug = cdConverterFn.findPlug(FluidGridConvert::outGrid);
-            dstPlug = partVolumeFn.findPlug("inColor");
+            srcPlug = cdConverterFn.findPlug(FluidGridConvert::outGrid, true);
+            dstPlug = partVolumeFn.findPlug("inColor", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
@@ -606,42 +606,42 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             srcPlug = referenceTransform.child(
                     AssetNode::outputPartVolumeTranslate
                     );
-            dstPlug = partFluidTransformFn.findPlug("translate");
+            dstPlug = partFluidTransformFn.findPlug("translate", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             srcPlug = referenceVolumePlug.child(
                     AssetNode::outputPartVolumeRes
                     );
-            dstPlug = partVolumeFn.findPlug("inResolution");
+            dstPlug = partVolumeFn.findPlug("inResolution", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             srcPlug = referenceTransform.child(
                     AssetNode::outputPartVolumeRotate
                     );
-            dstPlug = partFluidTransformFn.findPlug("rotate");
+            dstPlug = partFluidTransformFn.findPlug("rotate", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             srcPlug = referenceTransform.child(
                     AssetNode::outputPartVolumeScale
                     );
-            dstPlug = partFluidTransformFn.findPlug("scale");
+            dstPlug = partFluidTransformFn.findPlug("scale", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // time1.outTime -> fluidShape.currentTime
             {
                 MObject srcNode = Util::findNodeByName("time1");
-                srcPlug = MFnDependencyNode(srcNode).findPlug("outTime");
-                dstPlug = partVolumeFn.findPlug("currentTime");
+                srcPlug = MFnDependencyNode(srcNode).findPlug("outTime", true);
+                dstPlug = partVolumeFn.findPlug("currentTime", true);
                 status = myDagModifier.connect(srcPlug, dstPlug);
                 CHECK_MSTATUS_AND_RETURN_IT(status);
             }
 
             srcPlug = myOutputPlug.child(AssetNode::outputObjectFluidFromAsset);
-            dstPlug = partVolumeFn.findPlug("playFromCache");
+            dstPlug = partVolumeFn.findPlug("playFromCache", true);
             status = myDagModifier.connect(srcPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -653,10 +653,10 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
             offset.append(0);
             MFnFloatArrayData offsetCreator;
             MObject data = offsetCreator.create(offset);
-            partVolumeFn.findPlug("inOffset").setValue(data);
-            partVolumeFn.findPlug("dimensionsW").setValue(1);
-            partVolumeFn.findPlug("dimensionsH").setValue(1);
-            partVolumeFn.findPlug("dimensionsD").setValue(1);
+            partVolumeFn.findPlug("inOffset", true).setValue(data);
+            partVolumeFn.findPlug("dimensionsW", true).setValue(1);
+            partVolumeFn.findPlug("dimensionsH", true).setValue(1);
+            partVolumeFn.findPlug("dimensionsD", true).setValue(1);
         }
 
         // doIt so that we can access the fullPathName

@@ -100,7 +100,7 @@ AssetSubCommandSync::doIt()
             }
 
             // delete all the materials
-            MPlug materialsPlug = assetNodeFn.findPlug(AssetNode::outputMaterials);
+            MPlug materialsPlug = assetNodeFn.findPlug(AssetNode::outputMaterials, true);
             for(unsigned int i = 0; i < materialsPlug.numElements(); i++)
             {
                 MPlug materialPlug = materialsPlug.elementByPhysicalIndex(i);
@@ -131,13 +131,13 @@ AssetSubCommandSync::doIt()
 
         // Asset
         {
-            MPlug assetTranslate = assetNodeFn.findPlug(AssetNode::outputAssetTranslate);
-            MPlug assetRotate = assetNodeFn.findPlug(AssetNode::outputAssetRotate);
-            MPlug assetScale = assetNodeFn.findPlug(AssetNode::outputAssetScale);
+	  MPlug assetTranslate = assetNodeFn.findPlug(AssetNode::outputAssetTranslate, true);
+            MPlug assetRotate = assetNodeFn.findPlug(AssetNode::outputAssetRotate, true);
+            MPlug assetScale = assetNodeFn.findPlug(AssetNode::outputAssetScale, true);
 
-            MPlug transformTranslate = assetNodeFn.findPlug(MPxTransform::translate);
-            MPlug transformRotate = assetNodeFn.findPlug(MPxTransform::rotate);
-            MPlug transformScale = assetNodeFn.findPlug(MPxTransform::scale);
+            MPlug transformTranslate = assetNodeFn.findPlug(MPxTransform::translate, true);
+            MPlug transformRotate = assetNodeFn.findPlug(MPxTransform::rotate, true);
+            MPlug transformScale = assetNodeFn.findPlug(MPxTransform::scale, true);
 
             AssetNodeOptions::AccessorFn options(assetNodeOptionsDefinition, assetNodeFn);
             if(options.useAssetObjectTransform())
@@ -164,7 +164,7 @@ AssetSubCommandSync::doIt()
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         // Objects
-        MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects);
+        MPlug objectsPlug = assetNodeFn.findPlug(AssetNode::outputObjects, true);
         unsigned int objCount = objectsPlug.evaluateNumElements(&status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
@@ -192,7 +192,7 @@ AssetSubCommandSync::doIt()
         }
 
         // instancers
-        MPlug instancersPlug = assetNodeFn.findPlug(AssetNode::outputInstancers);
+        MPlug instancersPlug = assetNodeFn.findPlug(AssetNode::outputInstancers, true);
         unsigned int instCount = instancersPlug.numElements(&status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 

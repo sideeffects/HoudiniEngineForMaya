@@ -54,6 +54,12 @@ houdiniEngine_freezeAsset(string $assetNode)
     // connection is determinded by the asset options
     // and not a particular output
 
+    // freeze input merge nodes
+    string $inputMergeCon[] = `listConnections -type "houdiniInputMerge" $assetNode`;
+    for($merge in  $inputMergeCon) {
+        setAttr  ( $merge + ".frozen" ) 1;
+    }
+    
     return 1;
 }
 
@@ -65,8 +71,13 @@ houdiniEngine_unfreezeAsset(string $assetNode)
 	return 0;
     }
 
-    // add  atring attributes for caching asset output connections
+    // unfreeze asset
     setAttr  ( $assetNode + ".frozen" ) 0;
+    // unfreeze input merge nodes
+    string $inputMergeCon[] = `listConnections -type "houdiniInputMerge" $assetNode`;
+    for($merge in  $inputMergeCon) {
+        setAttr  ( $merge + ".frozen" ) 0;
+    }
     houdiniAsset -reloadNoSync $assetNode;
 
     // can't restore the connections if one of the cached connection atts isn't there

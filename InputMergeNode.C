@@ -94,7 +94,6 @@ InputMergeNode::compute(
         bool frozen =  frozenPlug.asBool();
 
         if(!frozen) {
-            fprintf(stderr, "not frozen\n");
             CHECK_HAPI(HAPI_CreateNode(
                 Util::theHAPISession.get(),
                 -1,

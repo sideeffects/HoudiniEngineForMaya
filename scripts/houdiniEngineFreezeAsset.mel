@@ -22,9 +22,25 @@ houdiniEngine_freezeAsset(string $assetNode)
     int $attrIndex = 0;
     for($con in $outputObjCon) {
         string $src = `connectionInfo -sfd $con`;
+	string $discon = $con;
+
+	// if a mesh output has auxiliary nodes or downstream history
+	// need a temporary mesh shape to backstop the history
+	if(endsWith($src, "outputPartMeshData")) {
+	    if(nodeType(plugNode($con)) != "mesh") {
+		string $proxyMesh = `createNode mesh -n "houdiniAssetProxyMesh#" -parent $assetNode`;
+		connectAttr $src ($proxyMesh + ".inMesh");
+
+		// force a compute of the mesh before disconnecting so that it has data
+		polyEvaluate $proxyMesh;
+		$discon = $proxyMesh + ".inMesh";
+		connectAttr -f  ($proxyMesh + ".outMesh") $con;
+		setAttr ($proxyMesh + ".intermediateObject") 1;
+	    }
+	}
 	setAttr ( $assetNode + ".cachedSrc[" + $attrIndex +"]") -type "string"  $src;
 	setAttr ( $assetNode + ".cachedDst[" + $attrIndex +"]") -type "string" $con;
-	disconnectAttr $src $con;
+	disconnectAttr $src $discon;
 	$attrIndex++;
     }
 
@@ -98,7 +114,19 @@ houdiniEngine_unfreezeAsset(string $assetNode)
     for($ai = 0; $ai  < $numCon; $ai++) {
 	string $src = `getAttr ( $assetNode + ".cachedSrc[" + $ai +"]")`;
 	string $dst = `getAttr ( $assetNode + ".cachedDst[" + $ai +"]")`;
-	connectAttr $src $dst;
+
+	// if an output that needs reconnecting has an input mesh, it's either
+	// the mesh we added to backstop downstream history when we did the freeze
+	string $dstNode = plugNode($dst);
+	string $inputProxies[] = `listConnections -type "mesh" -d off -shapes on $dstNode`;
+	
+	connectAttr -f $src $dst;
+	
+	// delete them only after they're been forced to disconnect, otherwise
+	// maya's delete might take some of the downstream history with it
+	for($proxy in  $inputProxies) {
+             delete $proxy;
+	}
     }
     
     setAttr  ( $assetNode + ".nodeState") 0;

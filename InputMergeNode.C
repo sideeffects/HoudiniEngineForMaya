@@ -59,20 +59,6 @@ InputMergeNode::initialize()
 InputMergeNode::InputMergeNode() :
     myGeometryNodeId(-1)
 {
-    Util::PythonInterpreterLock pythonInterpreterLock;
-
-    CHECK_HAPI(HAPI_CreateNode(
-                Util::theHAPISession.get(),
-                -1,
-                "Sop/merge",
-                NULL,
-                false,
-                &myGeometryNodeId
-                ));
-    if(!Util::statusCheckLoop())
-    {
-        DISPLAY_ERROR(MString("Unexpected error when creating merge node."));
-    }
 }
 
 InputMergeNode::~InputMergeNode()
@@ -100,6 +86,33 @@ InputMergeNode::compute(
         MDataBlock &dataBlock
         )
 {
+    if(myGeometryNodeId == -1) {
+        Util::PythonInterpreterLock pythonInterpreterLock;
+
+        MFnDependencyNode mergeNodeFn(thisMObject());
+        MPlug frozenPlug = mergeNodeFn.findPlug("frozen", true);
+        bool frozen =  frozenPlug.asBool();
+
+        if(!frozen) {
+            CHECK_HAPI(HAPI_CreateNode(
+                Util::theHAPISession.get(),
+                -1,
+                "Sop/merge",
+                NULL,
+                false,
+                &myGeometryNodeId
+                ));
+            if(!Util::statusCheckLoop())
+            {
+                DISPLAY_ERROR(MString("Unexpected error when creating merge node."));
+	    }
+	} else {
+	    // if the node has been frozen ever since file open
+	    // we don't create a merge or compute
+	    return MStatus::kSuccess;
+	}
+    }
+
     if(plug == InputMergeNode::outputNodeId)
     {
         MArrayDataHandle inputNodeArrayHandle =

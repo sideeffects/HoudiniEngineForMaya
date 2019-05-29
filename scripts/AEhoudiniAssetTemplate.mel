@@ -945,8 +945,9 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "connectGeoForAssetInputs";
 
         editorTemplate -suppress "useInstancerNode";
-	editorTemplate -suppress "cachedSrc";
-	editorTemplate -suppress "cachedDst";
+	editorTemplate -suppress "cachedSrcAttr";
+	editorTemplate -suppress "cachedDstAttr";
+	editorTemplate -suppress "cachedDstNode";
 
     editorTemplate -endLayout;
 

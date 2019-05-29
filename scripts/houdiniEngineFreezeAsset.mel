@@ -5,16 +5,23 @@ houdiniEngine_freezeAsset(string $assetNode)
     	print "Error: Asset is already frozen\n";
 	return 0;
     }
-    // add  atring attributes for caching asset output connections
-    if(`attributeExists "cachedSrc" $assetNode`)
-        deleteAttr ( $assetNode + ".cachedSrc");
+    // add string attributes for caching attribute names for output connections
+    // add message attributes for proxy connections to keep track of output nodes
+    if(`attributeExists "cachedSrcAttr" $assetNode`)
+        deleteAttr ( $assetNode + ".cachedSrcAttr");
     select $assetNode;
-    addAttr -longName "cachedSrc" -dt "string" -multi;
+    addAttr -longName "cachedSrcAttr" -dt "string" -multi;
 
-    if(`attributeExists "cachedDst" $assetNode`)
-        deleteAttr ( $assetNode + ".cachedDst");
+    if(`attributeExists "cachedDstAttr" $assetNode`)
+        deleteAttr ( $assetNode + ".cachedDstAttr");
     select $assetNode;
-    addAttr -longName "cachedDst" -dt "string" -multi;
+    addAttr -longName "cachedDstAttr" -dt "string" -multi;
+
+    if(`attributeExists "cachedDstNode" $assetNode`)
+        deleteAttr ( $assetNode + ".cachedDstNode");
+    select $assetNode;
+    addAttr -longName "cachedDstNode" -at "message" -multi;
+    
     setAttr  ( $assetNode + ".frozen" ) 1;
     // disconnect output objects
        
@@ -38,8 +45,17 @@ houdiniEngine_freezeAsset(string $assetNode)
 		setAttr ($proxyMesh + ".intermediateObject") 1;
 	    }
 	}
-	setAttr ( $assetNode + ".cachedSrc[" + $attrIndex +"]") -type "string"  $src;
-	setAttr ( $assetNode + ".cachedDst[" + $attrIndex +"]") -type "string" $con;
+	string $srcAttr = plugAttr($src);
+	string $dstAttr = plugAttr($con);
+	setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
+	setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
+	string $dstNode = plugNode($con);
+	select $dstNode;
+	if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
+	    addAttr -longName "houdiniAssetOutput" -at "message" -multi;
+	}
+	int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
+	connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
 	disconnectAttr $src $discon;
 	$attrIndex++;
     }
@@ -50,8 +66,19 @@ houdiniEngine_freezeAsset(string $assetNode)
     for($con in $outputMatCon) {
         string $src = `connectionInfo -sfd $con`;
 	disconnectAttr $src $con;
-	setAttr ( $assetNode + ".cachedSrc[" + $attrIndex +"]") -type "string"  $src;
-	setAttr ( $assetNode + ".cachedDst[" + $attrIndex +"]") -type "string" $con;
+	
+	string $srcAttr = plugAttr($src);
+	string $dstAttr = plugAttr($con);
+	setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
+	setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
+	string $dstNode = plugNode($con);
+	select $dstNode;
+	if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
+	    addAttr -longName "houdiniAssetOutput" -at "message" -multi;
+	}
+	int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
+	connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
+	
 	$attrIndex++;
     }
     
@@ -61,8 +88,19 @@ houdiniEngine_freezeAsset(string $assetNode)
     for($con in $outputInstCon) {
         string $src = `connectionInfo -sfd $con`;
 	disconnectAttr $src $con;
-	setAttr ( $assetNode + ".cachedSrc[" + $attrIndex +"]") -type "string"  $src;
-	setAttr ( $assetNode + ".cachedDst[" + $attrIndex +"]") -type "string" $con;
+	
+	string $srcAttr = plugAttr($src);
+	string $dstAttr = plugAttr($con);
+	setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
+	setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
+	string $dstNode = plugNode($con);
+	select $dstNode;
+	if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
+	    addAttr -longName "houdiniAssetOutput" -at "message" -multi;
+	}
+	int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
+	connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
+	
 	$attrIndex++;
     }
 
@@ -87,6 +125,15 @@ houdiniEngine_unfreezeAsset(string $assetNode)
 	return 0;
     }
 
+    // can't restore the connections if one of the cached connection atts isn't there
+    // not sure if we should remove the 
+    if(   !`attributeExists "cachedSrcAttr" $assetNode`
+       || !`attributeExists "cachedDstAttr" $assetNode`
+       || !`attributeExists "cachedDstNode" $assetNode` ) {
+        print "Error: Some of the cached connection data is missing, cannot unfreeze asset\n";
+        return 0;
+    }
+
     // unfreeze asset
     setAttr  ( $assetNode + ".frozen" ) 0;
     // unfreeze input merge nodes
@@ -96,43 +143,53 @@ houdiniEngine_unfreezeAsset(string $assetNode)
     }
     houdiniAsset -reloadNoSync $assetNode;
 
-    // can't restore the connections if one of the cached connection atts isn't there
-    if(!`attributeExists "cachedSrc" $assetNode` || !`attributeExists "cachedDst" $assetNode`) {
-        if(`attributeExists "cachedDst" $assetNode`)
-	    deleteAttr ( $assetNode + ".cachedDst");
-        if(`attributeExists "cachedSrc" $assetNode`)
-	    deleteAttr ( $assetNode + ".cachedSrc");
-        return 0;
-    }
-
     // set the asset node to blocking - we don't want it to cook on each connectAttr
     setAttr  ( $assetNode + ".nodeState") 2;
     // disconnect output objects
        
+    string $dstNodes[];
     int $ai = 0;
-    int $numCon = `getAttr -size  ($assetNode + ".cachedSrc")`;
+    
+    int $numCon = `getAttr -size  ($assetNode + ".cachedSrcAttr")`;
+    
     for($ai = 0; $ai  < $numCon; $ai++) {
-	string $src = `getAttr ( $assetNode + ".cachedSrc[" + $ai +"]")`;
-	string $dst = `getAttr ( $assetNode + ".cachedDst[" + $ai +"]")`;
+	string $srcAttr = `getAttr ( $assetNode + ".cachedSrcAttr[" + $ai +"]")`;
+	string $dstAttr = `getAttr ( $assetNode + ".cachedDstAttr[" + $ai +"]")`;
 
-	// if an output that needs reconnecting has an input mesh, it's either
-	// the mesh we added to backstop downstream history when we did the freeze
-	string $dstNode = plugNode($dst);
-	string $inputProxies[] = `listConnections -type "mesh" -d off -shapes on $dstNode`;
+	string $dstNodesOut[] = listConnections  ( $assetNode + ".cachedDstNode[" + $ai +"]");
+	if(size($dstNodesOut) > 0) {
+	    string $dstNode = $dstNodesOut[0];
+	    $dstNodes[size($dstNodes)] = $dstNode;
+
+	    // if an output that needs reconnecting has an input mesh it had better be the 
+	    // the mesh we added to backstop downstream history when we did the freeze
+	    string $inputProxies[] = `listConnections -type "mesh" -d off -shapes on $dstNode`;
 	
-	connectAttr -f $src $dst;
+	    // need the -f flag in case there is a proxy upstream mesh connected.
+	    connectAttr -f ($assetNode + "." + $srcAttr) ($dstNode + "." + $dstAttr);
 	
-	// delete them only after they're been forced to disconnect, otherwise
-	// maya's delete might take some of the downstream history with it
-	for($proxy in  $inputProxies) {
-             delete $proxy;
+	    // delete the proxies only after they're been forced to disconnect, otherwise
+	    // maya's delete might take some of the downstream history with it
+	    for($proxy in  $inputProxies) {
+                delete $proxy;
+	    }
 	}
     }
-    
+
+    // once we're restored all the connections, delete the placeholder
+    // message attributes from the output nodes
+    string $uniqueDstNodes[] = stringArrayRemoveDuplicates($dstNodes);
+    for($dstNode in $uniqueDstNodes) {
+    	deleteAttr( $dstNode + ".houdiniAssetOutput");
+    }
+
+    // set the asset node's state back to normal so that it can cook again.
     setAttr  ( $assetNode + ".nodeState") 0;
 
-    deleteAttr ( $assetNode + ".cachedSrc");
-    deleteAttr ( $assetNode + ".cachedDst");
+    deleteAttr ( $assetNode + ".cachedSrcAttr");
+    deleteAttr ( $assetNode + ".cachedDstAttr");
+    deleteAttr ( $assetNode + ".cachedDstNode");
+    
 
     return 1;
 }

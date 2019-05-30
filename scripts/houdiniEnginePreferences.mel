@@ -246,6 +246,8 @@ houdiniEnginePreferences()
         globalPreferences;    
     
     // Sessions
+    int $isLinux = `about -linux`;
+
     string $sessionLayout = `frameLayout -label "Back End (requires restart)"`;
         radioCollection sessionTypeList;
             
@@ -297,10 +299,13 @@ houdiniEnginePreferences()
 		-label1 "(for Linux auto-start)"
                 -changeCommand "houdiniEnginePreferences_toggleUnsetLLP #1"
                 unsetLLPCheck;
+	    if(!$isLinux)
+	        checkBoxGrp -edit -visible 0  unsetLLPCheck;
 
         setParent ..;
-        
-        formLayout -e
+	if($isLinux)
+	{
+	    formLayout -e
             -attachForm sessionTypeInProcess "top" 5
             -attachForm sessionTypeInProcess "left" 5
 
@@ -333,9 +338,42 @@ houdiniEnginePreferences()
 
             -attachControl sessionPipeName "top" 5 unsetLLPCheck
             -attachControl sessionPipeName "left" 5 sessionPipeCustom
-
 	    
             sessionLayout;
+	} else {
+	    formLayout -e
+            -attachForm sessionTypeInProcess "top" 5
+            -attachForm sessionTypeInProcess "left" 5
+
+            -attachControl sessionTypeSocket "top" 5 sessionTypeInProcess
+            -attachForm sessionTypeSocket "left" 5
+
+            -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
+            -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
+
+            -attachControl sessionSocketHost "top" 5 sessionTypeSocket
+            -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
+
+            -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
+            -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
+
+            -attachControl sessionSocketPort "top" 5 sessionTypeSocket
+            -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
+
+            -attachControl sessionTypePipe "top" 5 sessionSocketPort
+            -attachForm sessionTypePipe "left" 5
+            
+            -attachControl sessionPipeAuto "top" 5 sessionTypePipe
+            -attachForm sessionPipeAuto "left" 20
+	    
+            -attachControl sessionPipeCustom "top" 5 sessionPipeAuto
+            -attachForm sessionPipeCustom "left" 20
+
+            -attachControl sessionPipeName "top" 5 sessionPipeAuto
+            -attachControl sessionPipeName "left" 5 sessionPipeCustom
+	    
+            sessionLayout;
+	}
     setParent ..;
 
     // Buttons

@@ -91,6 +91,7 @@ class AssetNode: public MPxTransform
     private:
         Asset* myAsset;
         bool isAssetValid() const;
+        bool isAssetFrozen() const;
         void createAsset();
         void destroyAsset();
 

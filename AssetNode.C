@@ -1569,7 +1569,8 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
         // make sure asset was created properly
         if(!isAssetValid())
         {
-            DISPLAY_ERROR("^1s: Could not instantiate asset: ^2s\n"
+	    if(!isAssetFrozen())
+                DISPLAY_ERROR("^1s: Could not instantiate asset: ^2s\n"
                     "in OTL file: ^3s\n",
                     name(),
                     myAssetName,
@@ -1811,6 +1812,17 @@ AssetNode::isAssetValid() const
 {
     return getAsset() != NULL
         && getAsset()->getAssetName() == myAssetName;
+}
+
+bool
+AssetNode::isAssetFrozen() const
+{
+    // This method can only be used once the assetNode is added to the graph
+    // and the attributes are accessible
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MPlug frozenPlug = assetNodeFn.findPlug("frozen", true);
+    bool frozen =  frozenPlug.asBool();
+    return frozen;
 }
 
 void

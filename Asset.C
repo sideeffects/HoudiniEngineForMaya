@@ -1844,8 +1844,8 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
         attrName = Util::getAttrNameFromParm(parmInfo, parentParmInfo);
     else
         attrName = getAttrNameFromParm(parmInfo);
-    if(!parentExists && containsParm(attrName, parmInfo)) myMismatch = true;
-
+    if(!parentExists && containsParm(attrName, parmInfo) && !parmInfo.invisible) myMismatch = true;
+    
     if(parentExists && containsParm(attrName, parmInfo))
     {
         MObject attrObj = myNodeFn.attribute(attrName);

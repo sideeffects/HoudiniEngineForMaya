@@ -940,6 +940,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "outputCustomAttributes";
         editorTemplate -suppress "outputMeshPreserveHardEdges";
         editorTemplate -suppress "outputMeshPreserveLockedNormals";
+	editorTemplate -suppress "output";
         editorTemplate -suppress "ungroupOnBake";
         editorTemplate -suppress "updateParmsForEvalMode";
         editorTemplate -suppress "connectGeoForAssetInputs";

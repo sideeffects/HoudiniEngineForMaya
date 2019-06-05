@@ -113,6 +113,8 @@ houdiniEngine_freezeAsset(string $assetNode)
     for($merge in  $inputMergeCon) {
         setAttr  ( $merge + ".frozen" ) 1;
     }
+
+    setAttr -l true ($assetNode + ".houdiniAssetParm");
     
     return 1;
 }
@@ -125,6 +127,7 @@ houdiniEngine_unfreezeAsset(string $assetNode)
 	return 0;
     }
 
+    setAttr -l false ($assetNode + ".houdiniAssetParm");
     // can't restore the connections if one of the cached connection atts isn't there
     // not sure if we should remove the 
     if(   !`attributeExists "cachedSrcAttr" $assetNode`

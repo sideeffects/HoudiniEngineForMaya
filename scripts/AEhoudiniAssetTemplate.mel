@@ -464,11 +464,11 @@ AEhoudiniAssetOperationNew(string $attr)
             -annotation "Recreates all the parameters and output nodes."
             syncButton;
 	    
-        button -label "Add Asset to History (prototype)"
+        button -label "Add Asset to History"
             -annotation "Connect this asset as history to the selected mesh"
              historyButton;
 	     
-       button -label "Bake Asset (prototype)"
+       button -label "Bake Asset"
             -annotation "Sync this asset, then unparent and disconnect outputs"
              bakeButton;
     setParent ..;

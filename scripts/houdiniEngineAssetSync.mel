@@ -74,6 +74,11 @@ houdiniEngine_syncAssetOutput(string $assetNode)
 {
     syncAsset($assetNode, 0, 1);
 }
+global proc
+houdiniEngine_syncAssetAttributes(string $assetNode)
+{
+    syncAsset($assetNode, 1, 0);
+}
 
 global proc
 houdiniEngine_syncAsset(string $assetNode)

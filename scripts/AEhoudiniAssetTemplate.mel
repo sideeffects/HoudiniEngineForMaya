@@ -706,10 +706,22 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs",
                 "Attemps to automatically sync the output nodes when necessary.");
 
-        button -label "Sync Asset"
-            -annotation "Recreates all the parameters and output nodes."
-            syncButton;
-
+	rowLayout
+	    -numberOfColumns 2
+	    -columnAttach 1 both 0 
+	    -columnAttach 2 both 0 
+	    -columnAlign 1 center
+	    -columnAlign 2 center
+	    -columnWidth2 130 130
+	    syncButtonLayout;
+	    
+            button -label "Sync Asset"
+                -annotation "Recreates all the parameters and output nodes - bottom sync button"
+                syncButton;
+            button -label "Sync Attributes"
+                -annotation "Recreates all the parameters and output nodes - bottom sync button"
+                syncAttrButton;
+        setParent ..;
     setParent ..;
 
     separator;
@@ -821,7 +833,10 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
     button -e
         -c ("houdiniEngine_syncAsset " + $nodeName)
-        ($optionsLayoutFull + "|syncLayout|syncButton");
+        ($optionsLayoutFull + "|syncLayout|syncButtonLayout|syncButton");
+    button -e
+        -c ("houdiniEngine_syncAssetAttributes " + $nodeName)
+        ($optionsLayoutFull + "|syncLayout|syncButtonLayout|syncAttrButton");
 
     // outputLayout
     replaceAttrCheckBox(

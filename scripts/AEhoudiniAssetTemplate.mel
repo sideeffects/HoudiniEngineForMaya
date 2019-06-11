@@ -685,12 +685,22 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
             -annotation "Resets all the simulation caches."
             resetSimulationButton;
 
-        button -label "Reload Asset"
-            -annotation "Reloads this asset to use the updated asset definition."
-            reloadAssetButton;
-        button -label "Reload Without Syncing"
-            -annotation "Reloads this asset keeping the existing parms and outputs"
-            reloadNoSyncButton;
+	rowLayout
+	    -numberOfColumns 2
+	    -columnAttach 1 both 0 
+	    -columnAttach 2 both 0 
+	    -columnAlign 1 center
+	    -columnAlign 2 center
+	    -columnWidth2 130 130
+	    reloadLayout;
+
+            button -label "Reload Asset"
+                -annotation "Reloads this asset to use the updated asset definition."
+                reloadAssetButton;
+            button -label "Reload Without Syncing"
+                -annotation "Reloads this asset keeping the existing parms and outputs"
+                reloadNoSyncButton;
+        setParent ..;
 
     setParent ..;
 
@@ -819,10 +829,10 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
         ($optionsLayoutFull + "|buttonLayout|resetSimulationButton");
     button -e
         -c ("houdiniAsset -reloadAsset " + $nodeName)
-        ($optionsLayoutFull + "|buttonLayout|reloadAssetButton");
+        ($optionsLayoutFull + "|buttonLayout|reloadLayout|reloadAssetButton");
     button -e
         -c ("houdiniAsset -reloadNoSync " + $nodeName)
-        ($optionsLayoutFull + "|buttonLayout|reloadNoSyncButton");
+        ($optionsLayoutFull + "|buttonLayout|reloadLayout|reloadNoSyncButton");
 
     // syncLayout
     replaceAttrCheckBox($optionsLayoutFull + "|syncLayout|syncWhenInputConnects",
@@ -992,5 +1002,3 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
 
     editorTemplate -endLayout;
 }
-
-

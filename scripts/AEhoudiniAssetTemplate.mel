@@ -459,18 +459,32 @@ AEhoudiniAssetOperationNew(string $attr)
                 -label "Houdini Engine Indie - For Limited Commercial Use Only"
                 -font "boldLabelFont"
                 -backgroundColor 1 1 0;
+        rowLayout
+            -numberOfColumns 3
+	    -columnAttach 1 both 0 
+	    -columnAttach 2 both 0 
+	    -columnAttach 3 both 0
+	    -columnAlign 1 center
+	    -columnAlign 2 center
+	    -columnAlign 3 center	    
+	    -columnWidth3 143 143 140;
+		
+        button -label "Bake Asset"
+	-h 27
+            -annotation "Sync this asset, then unparent and disconnect outputs"
+             bakeButton;
 
         button -label "Sync Asset"
+	-h 27
             -annotation "Recreates all the parameters and output nodes."
             syncButton;
 	    
         button -label "Add Asset to History"
+	-h 27
             -annotation "Connect this asset as history to the selected mesh"
              historyButton;
 	     
-       button -label "Bake Asset"
-            -annotation "Sync this asset, then unparent and disconnect outputs"
-             bakeButton;
+       setParent ..;
     setParent ..;
 
     setUITemplate -popTemplate;

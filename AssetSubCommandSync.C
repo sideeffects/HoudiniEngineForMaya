@@ -5,6 +5,7 @@
 
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnDagNode.h>
+#include <maya/MDagPath.h>
 
 #include "AssetNode.h"
 #include "AssetNodeOptions.h"
@@ -89,6 +90,28 @@ AssetSubCommandSync::doIt()
     // save selection
     MSelectionList oldSelection;
     MGlobal::getActiveSelectionList(oldSelection);
+    
+    // check for pre and post sync callbacks and what args to pass
+    MPlug preSyncCallbackPlug(myAssetNodeObj, AssetNode::preSyncCallback);
+    MString preSyncCallback = preSyncCallbackPlug.asString();
+    MPlug postSyncCallbackPlug(myAssetNodeObj, AssetNode::postSyncCallback);
+    MString postSyncCallback = postSyncCallbackPlug.asString();
+    MString syncOutputFlag = mySyncOutputs ? " 1 " : " 0 ";
+    MString syncAttrFlag = mySyncAttributes ? " 1 " : " 0 ";
+    MDagPath assetPath;
+    assetNodeFn.getPath(assetPath);
+    
+    // use MGlobal to execute the command rather than the MDagModifier
+    // cause we don't know whether the callbacks do anything undoable or not
+    // or whether they do something that is specifically NOT undoable
+    // the MDagModifier commandToExecute can fail and corrupt the undo
+    // if there was not actually anything undoable in the command.
+    if(preSyncCallback.length() > 0) {
+      // command string to be  built is preSyncCallback assetNode mySyncAttributes mySyncOutputs
+      MString preSyncCmd = preSyncCallback +  MString(" ") + assetPath.partialPathName() +  syncAttrFlag + syncOutputFlag ;
+      MGlobal::executeCommand( preSyncCmd, false, true);
+    }
+    
     // attributes
     if(mySyncAll || mySyncAttributes)
     {
@@ -239,6 +262,13 @@ AssetSubCommandSync::doIt()
 	    getAssetNode()->setExtraAutoSync(false);
 	}
     }
+    
+    if(postSyncCallback.length() > 0) {
+      // command string to be  built is postSyncCallback assetNode mySyncAttributes mySyncOutputs
+      MString postSyncCmd = postSyncCallback +  MString(" ") + assetPath.partialPathName() +  syncAttrFlag + syncOutputFlag ;
+      MGlobal::executeCommand( postSyncCmd, false, true);
+    }
+    
 
     // restore old selection
     MGlobal::setActiveSelectionList(oldSelection);

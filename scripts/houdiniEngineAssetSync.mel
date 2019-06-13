@@ -20,14 +20,8 @@ houdiniEngine_syncSelectedAsset()
 proc
 syncAsset(string $assetNode, int $syncAttributes, int $syncOutputs)
 {
-    string $callBackPost = `getAttr ($assetNode + ".postSyncCallback")`;
-    string $callBackPre =  `getAttr ($assetNode + ".preSyncCallback")`;
     string $cmd;
-    if($callBackPre != "") {
-        if(`exists $callBackPre`)
-	    $cmd = "; " + $callBackPre + " " + $assetNode + " " +  $syncAttributes + " " +  $syncOutputs +"; " ;
-    }
-    
+    // pre and post sync callbacks have been moved inside the houdiniAsset command    
     $cmd += "houdiniAsset ";
 
     if($syncAttributes)
@@ -51,10 +45,6 @@ syncAsset(string $assetNode, int $syncAttributes, int $syncOutputs)
     }
 
     $cmd += "-sync " + $assetNode;
-    if($callBackPost != "") {
-        if(`exists $callBackPost`)
-	$cmd += "; " + $callBackPost + " " + $assetNode + " " +  $syncAttributes + " " +  $syncOutputs;
-    }
     eval($cmd);
 }
 

@@ -300,7 +300,58 @@ global proc postSync(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOu
 }
 @endverbatim
 <br>
+@verbatim
+// This proc shows how to give a unique custom name to all your output meshes
 
+global proc postSyncRename(string $assetNode, int $syncOnlyAttributes, int $syncOnlyOutputs)
+{
+    // Here's an example that looks for output meshes and renames the mesh and its parent transform
+    // The # in the name will force it to resolve to a unique node name
+
+    if($syncOnlyAttributes)
+        return;
+    
+    string $baseName = "customName#";
+
+    // we only want the meshData connections, but listConnections gets confused
+    // trying to access a single compound child across all elements of a multi
+    string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
+    string $outputMeshCon[];
+    for($con in $outputObjCon) {
+        string $src = `connectionInfo -sfd $con`;
+        // if a mesh output has auxiliary nodes or downstream history
+        // need a temporary mesh shape to backstop the history
+        if(endsWith($src, "outputPartMeshData")) {
+            $outputMeshCon[size($outputMeshCon)] = $con;
+        }
+    }
+    
+    for($con in $outputMeshCon) {
+        string $outNode = plugNode($con); 
+            
+        if(nodeType($outNode) == "mesh") {
+            // renaming the Xform will rename the shape as well;
+            string $outXforms[] = `listRelatives -parent -path $outNode`;
+            rename $outXforms[0] $baseName;
+        } else {
+            // if there were groups on the output mesh
+            // there will be groupParts nodes in between the  hda and the output mesh
+            // list connections returns the name of a non-dag node
+            // and the shortest unique substring of the path of dag node
+            // since we didn't specify shape, we get the transform of the mesh
+            // which is what we wanted to rename anyway
+            while(nodeType($outNode) == "groupParts") {
+                string $cons[] = `listConnections ($outNode + ".outputGeometry")`;
+                $outNode = $cons[0];
+            }
+            if(nodeType($outNode) == "transform") {
+                rename $outNode $baseName;
+            }
+        }
+    }
+}
+@endverbatim
+<br>
 @section Maya_Scripting_Python Python
 
     import maya.cmds as cmds

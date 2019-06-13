@@ -313,32 +313,39 @@ global proc postSyncRename(string $assetNode, int $syncOnlyAttributes, int $sync
     
     string $baseName = "customName#";
 
+    // we only want the meshData connections, but listConnections gets confused
+    // trying to access a single compound child across all elements of a multi
     string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
+    string $outputMeshCon[];
     for($con in $outputObjCon) {
         string $src = `connectionInfo -sfd $con`;
         // if a mesh output has auxiliary nodes or downstream history
         // need a temporary mesh shape to backstop the history
         if(endsWith($src, "outputPartMeshData")) {
-            string $outNode = plugNode($con); 
+            $outputMeshCon[size($outputMeshCon)] = $con;
+        }
+    }
+    
+    for($con in $outputMeshCon) {
+        string $outNode = plugNode($con); 
             
-            if(nodeType($outNode) == "mesh") {
-                // renaming the Xform will rename the shape as well;
-                string $outXforms[] = `listRelatives -parent -path $outNode`;
-                rename $outXforms[0] $baseName;
-            } else {
-                // if there were groups on the output mesh
-                // there will be groupParts nodes in between the  hda and the output mesh
-                // list connections returns the name of a non-dag node
-                // and the shortest unique substring of the path of dag node
-                // since we didn't specify shape, we get the transform of the mesh
-                // which is what we wanted to rename anyway
-                while(nodeType($outNode) == "groupParts") {
-                    string $cons[] = `listConnections ($outNode + ".outputGeometry")`;
-                    $outNode = $cons[0];
-                }
-                if(nodeType($outNode) == "transform") {
-                     rename $outNode $baseName;
-                }
+        if(nodeType($outNode) == "mesh") {
+            // renaming the Xform will rename the shape as well;
+            string $outXforms[] = `listRelatives -parent -path $outNode`;
+            rename $outXforms[0] $baseName;
+        } else {
+            // if there were groups on the output mesh
+            // there will be groupParts nodes in between the  hda and the output mesh
+            // list connections returns the name of a non-dag node
+            // and the shortest unique substring of the path of dag node
+            // since we didn't specify shape, we get the transform of the mesh
+            // which is what we wanted to rename anyway
+            while(nodeType($outNode) == "groupParts") {
+                string $cons[] = `listConnections ($outNode + ".outputGeometry")`;
+                $outNode = $cons[0];
+            }
+            if(nodeType($outNode) == "transform") {
+                rename $outNode $baseName;
             }
         }
     }

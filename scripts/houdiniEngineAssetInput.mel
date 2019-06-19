@@ -179,7 +179,10 @@ getInputNodeForSingle(string $object, int $connectGeoForAsset )
 	    string $inputNode = plugNode($inputNodeIdAttr);
 	    string $objectShader[] = `listConnections -type shadingEngine ($object + ".instObjGroups")`;
 	    if(size($objectShader) > 0) {
-		 setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
+	        string $oldShadingGroup = `getAttr ($inputNode + ".objectShadingGroup")`;
+	        if($oldShadingGroup != $objectShader[0]) {
+		    setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
+		}
 	    }
 	    return $inputNodeIdAttr;
         }
@@ -420,13 +423,19 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     }
     else if(size($sourceInputAttr) == 1)
     {
+	// the materialPerFace attr means, "store shading group per face even if
+	// the input geo does not have shaderPerFace" - if it does have shaderPerFace
+	// this flag has no effect
+	
         $finalInputAttr = $sourceInputAttr[0];
 	// don't promote shading to primitives
 	// if there is one input, or if the input has no primitives
 	string $inputNode = plugNode($finalInputAttr);
         if(`nodeType $inputNode` == "houdiniInputGeometry") {
  	    string $matOverrideAttr = $inputNode + ".materialPerFace";
-	    setAttr $matOverrideAttr 0;
+	    int $oldMatPerFace = `getAttr($matOverrideAttr)`;
+	    if($oldMatPerFace > 0)
+	        setAttr $matOverrideAttr 0;
 	}
     }
     else
@@ -442,7 +451,9 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
  	    string $inputNode = plugNode($sourceInputAttr[$i]);
             if(`nodeType $inputNode` == "houdiniInputGeometry") {
 	        string $matOverrideAttr =  $inputNode + ".materialPerFace";
-	        setAttr $matOverrideAttr 1;
+	        int $oldMatPerFace = `getAttr($matOverrideAttr)`;
+	        if($oldMatPerFace == 0)
+	            setAttr $matOverrideAttr 1;
 	    }
 	}
 

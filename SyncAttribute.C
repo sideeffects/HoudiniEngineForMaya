@@ -627,6 +627,7 @@ SyncAttribute::doIt()
                 Util::getParmAttrPrefix(),
                 Util::getParmAttrPrefix()
                 );
+	attrFn.setInternal(true);
 
         CreateAttrOperation operation(
                 reinterpret_cast<MFnCompoundAttribute*>(&reinterpret_cast<char&>(attrFn)),

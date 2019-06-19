@@ -1672,6 +1672,14 @@ AssetNode::getInternalValueInContext(
 
         return true;
     }
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MPlug houdiniAssetParmPlug = assetNodeFn.findPlug("houdiniAssetParm", true);
+
+    if(Util::isPlugBelow(plug, houdiniAssetParmPlug))
+    {
+	// return false to indicate that the value data block value should be used.
+	return false;
+    }
 
 #if MAYA_API_VERSION >= 201800
     return MPxTransform::getInternalValue(plug, dataHandle);
@@ -1712,6 +1720,17 @@ AssetNode::setInternalValueInContext(
         rebuildAsset();
 
         return true;
+    }
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MPlug houdiniAssetParmPlug = assetNodeFn.findPlug("houdiniAssetParm", true);
+
+    if(Util::isPlugBelow(plug, houdiniAssetParmPlug))
+    {
+	// flag the parm value as dirty
+        myDirtyParmAttributes.push_back(plug);
+	// return false to indicate that the value should be stored
+	// in the data block too.
+	return false;
     }
 
 #if MAYA_API_VERSION >= 201800

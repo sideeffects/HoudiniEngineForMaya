@@ -209,8 +209,9 @@ OutputInstancerObject::compute(
 
         unsigned int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
-        CHECK_HAPI(HAPI_GetInstanceTransforms(
+        CHECK_HAPI(HAPI_GetInstanceTransformsOnPart(
                 Util::theHAPISession.get(),
+		0,
                 mySopNodeInfo.id,
                 HAPI_SRT,
                 instTransforms,

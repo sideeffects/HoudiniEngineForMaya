@@ -1385,15 +1385,21 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     MStatus status;
     bool isTime = plugBeingDirtied == inTime;
     bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
-    bool isParameter = false; 
+    bool isParameter = false;
+    bool parmsAreInternal = false;
     {
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+	MFnAttribute parmAttr(parmAttrObj);
+	if(parmAttr.internal())
+	  parmsAreInternal = true;
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
     }
     bool isMaterialPath = plugBeingDirtied == outputMaterialPath;
 
-    if(isParameter)
+    // For backward compatibility, for scenes from before the parm attributes
+    // were internal set. New improved parms are done in setInternalValue
+    if(isParameter && !parmsAreInternal)
     {
         myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
 
@@ -1672,6 +1678,14 @@ AssetNode::getInternalValueInContext(
 
         return true;
     }
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MPlug houdiniAssetParmPlug = assetNodeFn.findPlug("houdiniAssetParm", true);
+
+    if(Util::isPlugBelow(plug, houdiniAssetParmPlug))
+    {
+	// return false to indicate that the value data block value should be used.
+	return false;
+    }
 
 #if MAYA_API_VERSION >= 201800
     return MPxTransform::getInternalValue(plug, dataHandle);
@@ -1683,26 +1697,26 @@ AssetNode::getInternalValueInContext(
 #if MAYA_API_VERSION >= 201800
 bool
 AssetNode::setInternalValue(
-        const MPlug &plug,
+        const MPlug &plugBeingSet,
         const MDataHandle &dataHandle)
 #else
 bool
 AssetNode::setInternalValueInContext(
-        const MPlug &plug,
+        const MPlug &plugBeingSet,
         const MDataHandle &dataHandle,
         MDGContext &ctx
         )
 #endif
 {
     MStatus status;
-    if(plug == AssetNode::otlFilePath
-            || plug == AssetNode::assetName)
+    if(plugBeingSet == AssetNode::otlFilePath
+            || plugBeingSet == AssetNode::assetName)
     {
-        if(plug == AssetNode::otlFilePath)
+        if(plugBeingSet == AssetNode::otlFilePath)
         {
             myOTLFilePath = dataHandle.asString();
         }
-        else if(plug == AssetNode::assetName)
+        else if(plugBeingSet == AssetNode::assetName)
         {
             myAssetName = dataHandle.asString();
         }
@@ -1714,10 +1728,76 @@ AssetNode::setInternalValueInContext(
         return true;
     }
 
+    // If a parm attribute was set, mark it dirty, so that the parm get updated
+    // This used to be done in setDependentsDirty, but as of maya2019, they're using
+    // the evaluation manager for (some) interactive manipulation, and then we don't
+    // get dirty propagation, but we still get the setInternalValue for the individual attr plugs.
+    // Note that during playback in EM mode (in 2019 and earlier anyway),
+    // we only get the setInternalValue call for the parent plug, which we handle
+    // in the preEvaluation callback, and not here
+    
+    MFnDependencyNode assetNodeFn(thisMObject());
+    MPlug houdiniAssetParmPlug = assetNodeFn.findPlug("houdiniAssetParm", true);
+
+    if(Util::isPlugBelow(plugBeingSet, houdiniAssetParmPlug))
+    {
+        myDirtyParmAttributes.push_back(plugBeingSet.attribute());
+
+        // This catches when an instance being removed. Since we always remove
+        // the last instance from the mulitparm, we need to shuffle all the
+        // values. So we mark them all dirty.
+        {
+            MPlug rampPlug;
+            if(plugBeingSet.isElement())
+            {
+                MPlug arrayPlug = plugBeingSet.array();
+                if(Util::endsWith(arrayPlug.name(), "__ramp"))
+                {
+                    rampPlug = arrayPlug;
+                }
+
+                if(!rampPlug.isNull())
+                {
+                    for(unsigned int i = 0; i < arrayPlug.numElements(); i++)
+                    {
+                        MPlug elemPlug = arrayPlug.elementByPhysicalIndex(i);
+                        myDirtyParmAttributes.push_back(elemPlug.child(0));
+                        myDirtyParmAttributes.push_back(elemPlug.child(1));
+                        myDirtyParmAttributes.push_back(elemPlug.child(2));
+                    }
+                }
+            }
+        }
+        // This catches when an instance is added. The ramp plug needs to be
+        // marked dirty so that the we can catch it in pushMultiparm().
+        {
+            MPlug plug;
+            MString attrName;
+            if(plugBeingSet.isChild())
+            {
+                MPlug parentPlug = plugBeingSet.parent();
+                if(parentPlug.isElement())
+                {
+                    plug = parentPlug.array();
+                    attrName = plug.name();
+                }
+            }
+
+            if(Util::endsWith(attrName, "__ramp"))
+            {
+                myDirtyParmAttributes.push_back(plug);
+            }
+        }
+
+	// return false to indicate that the value should be stored
+	// in the data block too.
+	return false;
+    }
+
 #if MAYA_API_VERSION >= 201800
-    return MPxTransform::setInternalValue(plug, dataHandle);
+    return MPxTransform::setInternalValue(plugBeingSet, dataHandle);
 #else
-    return MPxTransform::setInternalValueInContext(plug, dataHandle, ctx);
+    return MPxTransform::setInternalValueInContext(plugBeingSet, dataHandle, ctx);
 #endif
 }
 

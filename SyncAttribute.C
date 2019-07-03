@@ -556,6 +556,53 @@ getConnectedChildrenPlugs(MPlugArray &connections, const MPlug &plug)
     }
 }
 
+static void
+unlockChildPlugs(MPlug &plug)
+{
+    std::vector<MPlug> plugsToTraverse;
+    plugsToTraverse.push_back(plug);
+
+    while(plugsToTraverse.size())
+    {
+        MPlug currentPlug = plugsToTraverse.back();
+        plugsToTraverse.pop_back();
+
+        // as destination
+        {
+            if(currentPlug.isLocked()) {
+	        // Ideally we woud do this with executeCommand since it needs to be undoable
+	        // but any attempt to access the attr from after the undo
+	        // triggers updating the attr state from the parms so you'd never actually see
+	        // the unlock getting undone, so skip the extra overhead for now
+	        // if we change the way we do the locking for disabled parms,  this may
+	        // need to be re-enabled again.
+	      
+	        // MString unlockFormat = "setAttr -l false ^1s";
+	        // MString setAttrCmd;
+	        // setAttrCmd.format(unlockFormat, currentPlug.name());
+	        // MGlobal::executeCommand(setAttrCmd);
+		 currentPlug.setLocked(false);
+
+            }
+        }
+
+        if(currentPlug.isArray())
+        {
+            for(unsigned int i = currentPlug.numElements(); i-- > 0 ;)
+            {
+                plugsToTraverse.push_back(currentPlug.elementByPhysicalIndex(i));
+            }
+        }
+        else if(currentPlug.isCompound())
+        {
+            for(unsigned int i = currentPlug.numChildren(); i-- > 0;)
+            {
+                plugsToTraverse.push_back(currentPlug.child(i));
+            }
+        }
+    }
+}
+
 SyncAttribute::SyncAttribute(
         const MObject &assetNodeObj
         ) :
@@ -587,8 +634,9 @@ SyncAttribute::doIt()
     if(!houdiniAssetParmObj.isNull())
     {
         MPlugArray connections;
-        getConnectedChildrenPlugs(connections,
-		   assetNodeFn.findPlug(houdiniAssetParmObj, true, &status));
+	MPlug parmPlug = assetNodeFn.findPlug(houdiniAssetParmObj, true, &status );
+        getConnectedChildrenPlugs(connections, parmPlug);
+	unlockChildPlugs(parmPlug);
 
         MString connectAttrFormat = "connectAttr ^1s ^2s;";
         unsigned int connectionsLength = connections.length();

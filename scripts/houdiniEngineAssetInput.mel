@@ -540,7 +540,7 @@ houdiniEngine_getAssetInput(string $inputAttr)
         }
         else if(`nodeType $inputNode` == "houdiniAsset")
         {
-            $inputGeometryNodes[0] = $inputNode;
+            $inputGeometryNodes[size($inputGeometryNodes)] = $inputNode;
         }
     }
 

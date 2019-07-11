@@ -1386,20 +1386,14 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     bool isTime = plugBeingDirtied == inTime;
     bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
     bool isParameter = false;
-    bool parmsAreInternal = false;
     {
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
-	MFnAttribute parmAttr(parmAttrObj);
-	if(parmAttr.internal())
-	  parmsAreInternal = true;
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
     }
     bool isMaterialPath = plugBeingDirtied == outputMaterialPath;
 
-    // For backward compatibility, for scenes from before the parm attributes
-    // were internal set. New improved parms are done in setInternalValue
-    if(isParameter && !parmsAreInternal)
+    if(isParameter)
     {
         myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
 

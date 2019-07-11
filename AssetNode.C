@@ -1386,30 +1386,14 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     bool isTime = plugBeingDirtied == inTime;
     bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
     bool isParameter = false;
-    bool isNodeParameter = false;
-    bool parmsAreInternal = false;
     {
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
-	MFnAttribute parmAttr(parmAttrObj);
-	if(parmAttr.internal())
-	    parmsAreInternal = true;
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
-
-	// if we had the parmInfo handy, could check if the type is HAPI_PARMTYPE_NODE
-	// but we don't, so just check the naming convention
-	const char *attrNameStr = plugBeingDirtied.name().asChar();
-	int attrNameLen = strlen(attrNameStr);
-	isNodeParameter = !strncmp("__node", (attrNameStr + attrNameLen - 6), 6);
-	
     }
     bool isMaterialPath = plugBeingDirtied == outputMaterialPath;
 
-    // For backward compatibility, for scenes from before the parm attributes
-    // were internal set. New improved parms are done in setInternalValue
-    // We also need to catch the Object inputs here when they connect to make sure
-    // they're on the dirty parm list before the syncWhenInputConnects kicks in
-    if(isParameter && (!parmsAreInternal || isNodeParameter))
+    if(isParameter)
     {
         myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
 

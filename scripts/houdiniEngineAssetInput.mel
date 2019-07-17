@@ -61,6 +61,7 @@ validateInputObjects(string $objects[],
         else if(`objectType -isAType "mesh" $object`
                 || `objectType -isAType "particle" $object`
                 || `objectType -isAType "hairSystem" $object`
+                || `objectType -isAType "instancer" $object`
                )
         {
             $validObjects[size($validObjects)] = $object;
@@ -192,6 +193,20 @@ getInputNodeForSingle(string $object, int $connectGeoForAsset )
         string $geometryAttr = $object + ".local";
 
         return createInputGeometryNode($transformAttr, $geometryAttr);
+    }
+    else if(`objectType -isAType "instancer" $object`)
+    {
+        string $histPlug = `connectionInfo -sfd ($object + ".inputPoints")`;
+        string $histNode = plugNode($histPlug);
+        if($histNode != ""
+                && `nodeType $histNode` == "houdiniAsset" )
+        {
+	    // no point checking $connectGeoForAsset cause instancers don't have geo
+            string $obj = plugNode(plugAttr($histPlug));
+            return ($histNode + "." + $obj + ".outputObjectMetaData");
+        }
+	print("Error: Unable to use object as input:" + $object + "\n");
+	return "";
     }
     else if(`objectType -isAType "particle" $object`)
     {

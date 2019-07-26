@@ -161,6 +161,14 @@ void displayErrorForNode(
         const MString &typeName,
         const MString &message
         );
+void markItemNameUsed(
+	const std::string &itemName,
+	std::vector<std::string> &itemNamesUsed
+	);
+bool isItemNameUsed(
+		    const std::string &itemName,	
+	std::vector<std::string> &itemNamesUsed
+);
 
 template <size_t N>
 struct CacheImpl;

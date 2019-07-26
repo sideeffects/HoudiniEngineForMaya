@@ -666,6 +666,7 @@ InputMesh::processSets(
 
     MObjectArray sets;
     MObjectArray comps;
+    std::vector<std::string> setNamesUsed;
     // XXX: instance number
     srcNodeFn.getConnectedSetsAndMembers(0, sets, comps, false);
 
@@ -770,6 +771,8 @@ InputMesh::processSets(
         MString setName = setFn.name();
         // If the set is in a namespace, the name will contain a colon.
         setName = Util::sanitizeStringForNodeName(setName);
+	std::string setNameStr =  setName.asChar();
+	Util::markItemNameUsed(setNameStr, setNamesUsed);
 
         CHECK_HAPI(HAPI_AddGroup(
                     Util::theHAPISession.get(),
@@ -786,6 +789,84 @@ InputMesh::processSets(
                     &groupMembership[0],
                     0, groupMembership.size()
                     ));
+    }
+    // now remove any groups that no longer correspond to sets on the input
+
+
+    // Commit it (even though we only care about pre-existing groups to delete
+    // if we don't commit the geo the first time through, bad stuff happens
+    HAPI_CommitGeo(
+            Util::theHAPISession.get(),
+            geometryNodeId()
+            );
+
+    HAPI_CookOptions cook_options = HAPI_CookOptions_Create();
+    // cook the input geo so that the group counts are updated on the geoInfo
+    HAPI_CookNode(
+        Util::theHAPISession.get(),
+        geometryNodeId(),
+        &cook_options
+    );
+    HAPI_PartInfo partInfo;
+    HAPI_GeoInfo geoInfo;
+    CHECK_HAPI(HAPI_GetGeoInfo(
+            Util::theHAPISession.get(),
+            geometryNodeId(),
+            &geoInfo
+    ));
+    CHECK_HAPI(HAPI_GetPartInfo(
+            Util::theHAPISession.get(),
+            geometryNodeId(), 0,
+            &partInfo
+    ));
+
+    if(geoInfo.pointGroupCount > 0)
+    {
+        std::vector<HAPI_StringHandle> groupNames(geoInfo.pointGroupCount);
+        HAPI_GetGroupNames(
+                Util::theHAPISession.get(),
+                geometryNodeId(),
+                HAPI_GROUPTYPE_POINT,
+                &groupNames[0],
+                geoInfo.pointGroupCount
+                );
+        for(int j = 0; j < geoInfo.pointGroupCount ; j++)
+        {
+            MString groupName = Util::HAPIString(groupNames[j]);
+	    std::string groupNameStr =  groupName.asChar();
+	    if(!Util::isItemNameUsed(groupNameStr, setNamesUsed) ){
+	        CHECK_HAPI(HAPI_DeleteGroup(
+                    Util::theHAPISession.get(),
+                    geometryNodeId(), 0,
+                    HAPI_GROUPTYPE_POINT,
+                    groupName.asChar()
+                    ));
+	    }
+        }
+    }
+    if(geoInfo.primitiveGroupCount > 0)
+    {
+        std::vector<HAPI_StringHandle> groupNames(geoInfo.primitiveGroupCount);
+        HAPI_GetGroupNames(
+                Util::theHAPISession.get(),
+                geometryNodeId(),
+                HAPI_GROUPTYPE_PRIM,
+                &groupNames[0],
+                geoInfo.primitiveGroupCount
+                );
+        for(int j = 0; j < geoInfo.primitiveGroupCount; j++)
+        {
+            MString groupName = Util::HAPIString(groupNames[j]);
+	    std::string groupNameStr =  groupName.asChar();
+	    if(!Util::isItemNameUsed(groupNameStr, setNamesUsed) ) {
+	        CHECK_HAPI(HAPI_DeleteGroup(
+                    Util::theHAPISession.get(),
+                    geometryNodeId(), 0,
+                    HAPI_GROUPTYPE_PRIM,
+                    groupName.asChar()
+                    ));
+	    }
+        }
     }
 
     processShadingGroups(meshFn, sgNames, sgCompObjs);

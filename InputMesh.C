@@ -480,7 +480,7 @@ InputMesh::processUVs(
                 vertexUVNumbers
                 ));
     }
-    
+#if MAYA_API_VERSION > 201600    
     // now remove any TEXTURE type parms that no longer correspond
     // to uvsets on the input
     // This seems more complicated but less of a performance hit  than deleting and recreating
@@ -555,6 +555,7 @@ InputMesh::processUVs(
 	    }
         }
     }
+#endif
     
     // update the attribute mappiing parms
 
@@ -683,7 +684,7 @@ InputMesh::processColorSets(
                     ));
         }
     }
-
+#if MAYA_API_VERSION > 201600
     // now remove any color and type parms that are no longer mapped
     // This seems more complicated but less of a performance hit  than deleting and recreating
     // all the attributes every time we pull on the inputs.
@@ -764,8 +765,7 @@ InputMesh::processColorSets(
 
         }
     }
-
-
+#endif
 
 
     CHECK_HAPI(hapiSetDetailAttribute(

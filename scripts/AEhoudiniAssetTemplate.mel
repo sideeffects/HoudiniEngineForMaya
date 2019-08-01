@@ -726,10 +726,10 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
 	    syncButtonLayout;
 	    
             button -label "Sync Asset"
-                -annotation "Recreates all the parameters and output nodes - bottom sync button"
+                -annotation "Recreates all the parameters and output nodes"
                 syncButton;
             button -label "Sync Attributes"
-                -annotation "Recreates all the parameters and output nodes - bottom sync button"
+                -annotation "Recreates only the parameters"
                 syncAttrButton;
         setParent ..;
     setParent ..;

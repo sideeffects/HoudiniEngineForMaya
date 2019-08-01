@@ -480,6 +480,84 @@ InputMesh::processUVs(
                 vertexUVNumbers
                 ));
     }
+#if MAYA_API_VERSION > 201600    
+    // now remove any TEXTURE type parms that no longer correspond
+    // to uvsets on the input
+    // This seems more complicated but less of a performance hit  than deleting and recreating
+    // all the attributes every time we pull on the inputs.
+    
+    HAPI_CommitGeo(
+            Util::theHAPISession.get(),
+            geometryNodeId()
+            );
+    HAPI_CookOptions cook_options = HAPI_CookOptions_Create();
+    // cook the input geo so that the group counts are updated on the geoInfo
+    HAPI_CookNode(
+        Util::theHAPISession.get(),
+        geometryNodeId(),
+        &cook_options
+    );
+    
+    HAPI_PartInfo partInfo;
+    CHECK_HAPI(HAPI_GetPartInfo(
+            Util::theHAPISession.get(),
+            geometryNodeId(), 0,
+            &partInfo
+    ));
+
+    // on the inputs, we know that UV parms are called uv[0-9]*
+    // and that uvNumbers have the corresponding names
+    // so we just check the names and don't bother checking the types
+
+    int attributeCount = partInfo.attributeCounts[HAPI_ATTROWNER_VERTEX];
+    if(attributeCount > 0) 
+    {
+        std::vector<HAPI_StringHandle> attributeNames(attributeCount);
+        HAPI_GetAttributeNames(
+                Util::theHAPISession.get(),
+                geometryNodeId(),
+		0,
+                HAPI_ATTROWNER_VERTEX,
+                &attributeNames[0],
+                attributeCount
+                );
+        for(int j = 0; j < attributeCount ; j++)
+        {
+	    MString attrMStrName = Util::HAPIString(attributeNames[j]);
+	    const char *attributeName = attrMStrName.asChar();
+	    if(!strncmp(attributeName, "uv", 2)  && strncmp(attributeName, "uvNumber", 8)  ) {
+	        if( mappedUVAttributeNames.indexOf(attrMStrName) < 0)
+		{
+	            HAPI_AttributeInfo attributeInfo;
+                    attributeInfo.exists = true;
+                    attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+                    attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+                    attributeInfo.count = 1;
+                    attributeInfo.tupleSize = 3;
+
+                    HAPI_DeleteAttribute(Util::theHAPISession.get(),
+			 geometryNodeId(), 0,
+			 attributeName,
+                         &attributeInfo );
+		    char vertNumName[16] = "uvNumber";
+		    strcat(vertNumName, attributeName+2);
+		    
+                    attributeInfo.storage = HAPI_STORAGETYPE_INT;
+                    attributeInfo.count = 1;
+                    attributeInfo.tupleSize = 1;
+	            HAPI_DeleteAttribute(Util::theHAPISession.get(),
+		         geometryNodeId(), 0,
+                         vertNumName,
+                         &attributeInfo);
+		}
+
+	      
+	    }
+        }
+    }
+#endif
+    
+    // update the attribute mappiing parms
 
     CHECK_HAPI(hapiSetDetailAttribute(
             geometryNodeId(), 0,
@@ -606,6 +684,89 @@ InputMesh::processColorSets(
                     ));
         }
     }
+#if MAYA_API_VERSION > 201600
+    // now remove any color and type parms that are no longer mapped
+    // This seems more complicated but less of a performance hit  than deleting and recreating
+    // all the attributes every time we pull on the inputs.
+    // need to commit to update the parms and cook to update the parm counts
+    
+    HAPI_CommitGeo(
+            Util::theHAPISession.get(),
+            geometryNodeId()
+            );
+    HAPI_CookOptions cook_options = HAPI_CookOptions_Create();
+    // cook the input geo so that the group counts are updated on the geoInfo
+    HAPI_CookNode(
+        Util::theHAPISession.get(),
+        geometryNodeId(),
+        &cook_options
+    );
+    
+    HAPI_PartInfo partInfo;
+    CHECK_HAPI(HAPI_GetPartInfo(
+            Util::theHAPISession.get(),
+            geometryNodeId(), 0,
+            &partInfo
+    ));
+
+    // on the inputs, we know that color parms are called Cd[0-9]*
+    // and that mapped Alpha are called Alpha[0-9]
+    // so we just check the names and don't bother checking the types
+
+    int attributeCount = partInfo.attributeCounts[HAPI_ATTROWNER_VERTEX];
+    if(attributeCount > 0) 
+    {
+        std::vector<HAPI_StringHandle> attributeNames(attributeCount);
+        HAPI_GetAttributeNames(
+                Util::theHAPISession.get(),
+                geometryNodeId(),
+		0,
+                HAPI_ATTROWNER_VERTEX,
+                &attributeNames[0],
+                attributeCount
+                );
+        for(int j = 0; j < attributeCount ; j++)
+        {
+	    MString attrMStrName = Util::HAPIString(attributeNames[j]);
+	    const char *attributeName = attrMStrName.asChar();
+	    if(!strncmp(attributeName, "Cd", 2) ) {
+	        if( mappedCdNames.indexOf(attrMStrName) < 0)
+		{
+
+	            HAPI_AttributeInfo attributeInfo;
+                    attributeInfo.exists = true;
+                    attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+                    attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+                    attributeInfo.count = 1;
+                    attributeInfo.tupleSize = 3;
+
+                    HAPI_DeleteAttribute(Util::theHAPISession.get(),
+			 geometryNodeId(), 0,
+			 attributeName,
+                         &attributeInfo );
+		}
+	    }
+	    if(!strncmp(attributeName, "Alpha", 2) ) {
+	        if( mappedAlphaNames.indexOf(attrMStrName) < 0)
+		{
+	            HAPI_AttributeInfo attributeInfo;
+                    attributeInfo.exists = true;
+                    attributeInfo.owner = HAPI_ATTROWNER_VERTEX;
+                    attributeInfo.storage = HAPI_STORAGETYPE_FLOAT;
+                    attributeInfo.count = 1;
+                    attributeInfo.tupleSize = 1;
+
+                    HAPI_DeleteAttribute(Util::theHAPISession.get(),
+			 geometryNodeId(), 0,
+			 attributeName,
+                         &attributeInfo );
+		}
+	    }
+
+        }
+    }
+#endif
+
 
     CHECK_HAPI(hapiSetDetailAttribute(
             geometryNodeId(), 0,

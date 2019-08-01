@@ -142,6 +142,37 @@ displayErrorForNode(
 {
     MGlobal::displayError(typeName + ": " + message);
 }
+void markItemNameUsed(
+	const std::string &itemName,
+	std::vector<std::string> &itemNamesUsed		      
+	)
+{
+    std::vector<std::string>::iterator pos = std::lower_bound(
+            itemNamesUsed.begin(),
+            itemNamesUsed.end(),
+            itemName
+            );
+
+    // Attribute already exist.
+    if(pos != itemNamesUsed.end()
+            && *pos == itemName)
+    {
+        return;
+    }
+
+    itemNamesUsed.insert(pos, itemName);
+}
+bool isItemNameUsed(
+	const std::string &itemName,
+	std::vector<std::string> &itemNamesUsed
+)
+{
+    return std::binary_search(
+            itemNamesUsed.begin(),
+            itemNamesUsed.end(),
+            itemName
+            );
+}
 
 MString
 mangleParmAttrName(const HAPI_ParmInfo &parm, const MString& in_name)

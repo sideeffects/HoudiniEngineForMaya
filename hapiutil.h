@@ -371,6 +371,12 @@ struct HAPISetAttribute
         attributeInfo.storage = storageType;
         attributeInfo.count = count;
         attributeInfo.tupleSize = tupleSize;
+	// identify UV and colorSet parms (later we'll check for matching uvNumber
+	// or Alpha if they if they exist)
+	if(!strncmp(attributeName, "uv", 2)  && strncmp(attributeName, "uvNumber", 8)  )
+	   attributeInfo.typeInfo = HAPI_AttributeTypeInfo::HAPI_ATTRIBUTE_TYPE_TEXTURE;
+	if(!strncmp(attributeName, "Cd", 2))
+	    attributeInfo.typeInfo = HAPI_AttributeTypeInfo::HAPI_ATTRIBUTE_TYPE_COLOR;
 
         hapiResult = HAPI_AddAttribute(
                 Util::theHAPISession.get(),

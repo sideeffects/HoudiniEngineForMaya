@@ -205,6 +205,20 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
 
             knots.push_back( static_cast<float>(knotsArray[0]) );
 
+	    // Maya seems ok with having end knots of multiplicity > order
+	    // (counting the 1st and last knots added above)
+	    // so if we detect this, warn the user to rebuild their curves
+
+	    if(fabs(knotsArray[0] - knotsArray[order - 1]) < .0001) {
+	        MPlug curveSrcPlug = Util::plugSource(inputCurvePlug);
+	        MFnDependencyNode curveSrcObj(curveSrcPlug.node());
+	        DISPLAY_WARNING(
+                "Curve ^1s has knots with higher multiplicity than the order of the curve."
+                "You may need to rebuild the curve in order to see it in Houdini",
+                curveSrcObj.name()
+                );
+	    }
+
             for ( unsigned int iKnot = 0; iKnot < knotsArray.length(); ++iKnot )
             {
                 knots.push_back( static_cast<float>(knotsArray[iKnot]) );

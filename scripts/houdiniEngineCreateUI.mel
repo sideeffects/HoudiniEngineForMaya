@@ -629,6 +629,26 @@ houdiniEngineCreateUI()
     if( $houdiniEngine_scriptJobId <= 0)
         $houdiniEngine_scriptJobId = `scriptJob -event PostSceneRead houdiniEngine_shaderChangeCallbacks`;
 
+    // maya2019 has playbackCaching (which we check for by seeing if the cacheEvaluator command exists)
+    // If playback caching on idle results in cooking, interactive performance can be impacted
+    // If there AutoSync outputs is ON, caching on idle can trigger an infinite loop 
+    // So we strongly advise only doing playback caching on playback, if at all.
+    
+    if(`exists cacheEvaluator`)
+    {
+	if(`optionVar -q cachedPlaybackEnable` == 1
+             && `optionVar -q cachedPlaybackFillType` != "syncOnly" ) {
+	    string $result = "No";
+            if(!`about -batch`)
+                $result = `confirmDialog -title "Warning"
+	        -message "Maya's Cached Playback is on, and filling on idle. This can conflict with houdiniEngine's AutoSync Output, and can impact interactive performance. Switch to fill on playback only? "
+	        -button "Yes" -button "No" -defaultButton "Yes"
+                -cancelButton "No" -dismissString "No"`;
+	    if( $result == "Yes" )
+	        optionVar -sv cachedPlaybackFillType "syncOnly";	     
+        }
+    }
+
     global string $gMainWindow;
     setParent $gMainWindow;
     

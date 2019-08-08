@@ -12,10 +12,6 @@ houdiniEnginePreferences_refresh()
         delAfterBakeCheck;
 
     checkBoxGrp -e
-        -value1 `optionVar -query "houdiniEngineDeferAssetLoad"`
-        deferAssetLoadCheck;
-	
-    checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineUnsetLLP"`
         unsetLLPCheck;
         
@@ -75,9 +71,6 @@ houdiniEnginePreferences_save()
     optionVar
         -intValue "houdiniEngineDeleteAfterBake"
         `checkBoxGrp -q -value1 delAfterBakeCheck`;
-    optionVar
-        -intValue "houdiniEngineDeferAssetLoad"
-        `checkBoxGrp -q -value1 deferAssetLoadCheck`;
     optionVar
         -intValue "houdiniEngineUnsetLLP"
         `checkBoxGrp -q -value1 unsetLLPCheck`;
@@ -143,14 +136,6 @@ houdiniEnginePreferences_toggleDelAfterBake(int $state)
     global int $houdiniEngineDeleteAfterBake;
 
     $houdiniEngineDeleteAfterBake = $state;
-}
-
-global proc
-houdiniEnginePreferences_toggleDeferAssetLoad(int $state)
-{
-    global int $houdiniEngineDeferAssetLoad;
-
-    $houdiniEngineDeferAssetLoad = $state;
 }
 
 global proc
@@ -246,12 +231,6 @@ houdiniEnginePreferences()
                 -changeCommand "houdiniEnginePreferences_toggleDelAfterBake #1"
                 delAfterBakeCheck;
     
-            checkBoxGrp
-                -numberOfCheckBoxes 1
-                -label "Defer Frozen Asset Load:"
-                -changeCommand "houdiniEnginePreferences_toggleDeferAssetLoad #1"
-                deferAssetLoadCheck;
-    
         setParent ..;
     setParent ..;
     
@@ -262,11 +241,8 @@ houdiniEnginePreferences()
 
         -attachForm asynchronousModeHelp "top" 5
         -attachForm asynchronousModeHelp "right" 5
-	
         -attachControl delAfterBakeCheck "top" 5 asynchronousModeCheck
         -attachForm delAfterBakeCheck "left" 5
-        -attachControl deferAssetLoadCheck "top" 5 delAfterBakeCheck
-        -attachForm deferAssetLoadCheck "left" 5
         globalPreferences;    
     
     // Sessions

@@ -33,5 +33,6 @@ Other topics
   - @subpage Maya_Scripting "Scripting"
   - @subpage Maya_History "Construction History"
   - @subpage Maya_Bake "Baking Assets"
+  - @subpage Maya_Freeze "Freeze Assets"
 
 */

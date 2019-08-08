@@ -1,0 +1,45 @@
+/*!
+
+@page Maya_Freeze Freezing Assets
+
+@tableofcontents
+
+Freezing an asset allows you to cache the assets outputs and disable the loading and cooking of the asset in engine. This allows a maya scene with frozen assets to be passed to a non-houdini artist, who can load the scene and operate on the non-houdini parts without pulling an engine license. This differs from baking in that it is reversable - Output shapes remain parented to the asset, we just replace the data connections with message connections, and the then swap back the real connections on unfreeze
+
+
+@section Maya_Freeze_Menus Menus
+
+Freezing or unfreezing an asset should be done from the menu oe from the mel commands. Just setting the frozen state on the asset is not enough, we also need to add and set the  attributes for keeping track of the output connections to restore, and make sure that the output geometry is always cached.
+
+@image html Maya_Freeze_Menu.png
+
+- Freeze Asset
+
+Replaces all the output geometry connection with message connections and sets the Frozen attribute on (i.e. the assets inputs will not be dirtied by chagnges to the unputs. Adds proxy shapes where there was history between the asset and its output geometry.
+
+- Unfreeze Asset
+
+Restores the original output connections, turns off the frozen state so that the asset can pull on the input geo, loads the assets (pulling a license).
+
+The corresponding mel commands, for freezing and unfreezing  the output of the selected asset are:
+
+@verbatim
+houdiniEngine_freezeAsset(string $assetNode)
+e.g. houdiniEngine_freezeAsset("|extrude1")
+houdiniEngine_unfreezeAsset(string $assetNode)
+e.g. houdiniEngine_unfreezeAsset("|extrude1")
+@endverbatim
+
+@section Maya_Freeze_Attributes Attributes
+
+Here's an example of how the asset nodes are modified when frozen, in this case using the he_boolean asset from the HoudiniTools shelf:
+
+@image html Maya_Freeze_Attrs.png
+
+We've added a list of cached source and destination attributes on the asset for all the output node connections, and we've added message attributes on the asset, and on each output node as placeholders for the connections. By keeping connections rather than node names we allow renaming of the nodes, so we can support workflows such as unfreezing a referenced asset. And yes, having multiple proxy connections to the same output node may seem excessive, but keeping the attribute and node mappings lined up does make the attribute structure simpler.
+
+For the most part breaking the data connection to the output maya geo will leave the geometry definition saved on the shape, but in case there is intermediate history betweent the asset and the output shape, we add a proxy geometry node to cache the output geo. In the example, we see that there is a houdiniAssetProxyMesh anchoring the history chain connected to the output shape. This proxy shape will be removed when the asset is unfrozen.
+
+You'll note that the input geomtry is still connected, but does not dirty the asset because the asset is frozen.
+
+*/

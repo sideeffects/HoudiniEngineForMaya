@@ -1,4 +1,4 @@
-global proc
+ global proc
 houdiniEnginePreferences_refresh()
 {
     setParent houdiniEnginePreferences;
@@ -16,11 +16,22 @@ houdiniEnginePreferences_refresh()
         unsetLLPCheck;
         
     int $sessionType = int(`optionVar -query "houdiniEngineSessionType"`);
+
+    // if the optionvars still refer to an in-process session,
+    // (because the prefs window haven't been edited since houdini was updated
+    // we set the prefs UI the new defaults (auto-start named pipe). so that if the
+    // prefs are saved they will be consisten
+    // with the way we overrode the in-process settings internally
+    
+    int $originalSessionType = $sessionType;
+    if($sessionType == 0) {
+        $sessionType = 2;
+    }
         
     switch ( $sessionType )
     {
     case 0:
-        radioCollection -edit -select sessionTypeInProcess
+        radioCollection -edit -select sessionTypePipe
             sessionTypeList;
         break;
         
@@ -43,7 +54,7 @@ houdiniEnginePreferences_refresh()
         -text `optionVar -query "houdiniEngineThriftPort"`
         sessionSocketPort;
 
-    if(`optionVar -query "houdiniEngineSessionPipeCustom"` == 0)
+    if((`optionVar -query "houdiniEngineSessionPipeCustom"` == 0) || $originalSessionType == 0)
         radioButton -edit
             -select
             sessionPipeAuto;
@@ -75,11 +86,7 @@ houdiniEnginePreferences_save()
         -intValue "houdiniEngineUnsetLLP"
         `checkBoxGrp -q -value1 unsetLLPCheck`;
         
-    if (`radioButton -query -select sessionTypeInProcess`)
-    {    
-        optionVar -intValue "houdiniEngineSessionType" 0;
-    }    
-    else if (`radioButton -query -select sessionTypeSocket`)
+    if (`radioButton -query -select sessionTypeSocket`)
     {    
         optionVar -intValue "houdiniEngineSessionType" 1;
     }
@@ -254,11 +261,6 @@ houdiniEnginePreferences()
         formLayout sessionLayout;
             radioButton
                 -collection sessionTypeList
-                -label "Within Maya Process"
-                sessionTypeInProcess;
-
-            radioButton
-                -collection sessionTypeList
                 -label "TCP Socket"
                 -changeCommand "houdiniEnginePreferences_toggleSessionTypeSocket #1"
                 sessionTypeSocket;
@@ -306,10 +308,7 @@ houdiniEnginePreferences()
 	if($isLinux)
 	{
 	    formLayout -e
-            -attachForm sessionTypeInProcess "top" 5
-            -attachForm sessionTypeInProcess "left" 5
-
-            -attachControl sessionTypeSocket "top" 5 sessionTypeInProcess
+            -attachForm sessionTypeSocket "top" 5
             -attachForm sessionTypeSocket "left" 5
 
             -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
@@ -342,10 +341,7 @@ houdiniEnginePreferences()
             sessionLayout;
 	} else {
 	    formLayout -e
-            -attachForm sessionTypeInProcess "top" 5
-            -attachForm sessionTypeInProcess "left" 5
-
-            -attachControl sessionTypeSocket "top" 5 sessionTypeInProcess
+            -attachForm sessionTypeSocket "top" 5
             -attachForm sessionTypeSocket "left" 5
 
             -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket

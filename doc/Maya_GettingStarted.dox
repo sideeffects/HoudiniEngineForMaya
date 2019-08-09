@@ -6,7 +6,7 @@
 
 @section Maya_GettingStarted_Load Load the plug-in
 
-Once the Maya plug-in has been installed, the `houdiniEngine` plugin can be loaded through Maya's plug-in manager. Once the plug-in has been loaded, the `Houdini Engine` menu appears at the main menu.
+Once the Maya plug-in has been installed, the `houdiniEngine` plugin can be loaded through Maya's plug-in manager. Once the plug-in has been loaded, the `Houdini Engine` menu appears at the main menu. In this menu, highlighted items are those added in the current release of Houdini, not the current release of Maya.
 
 @image html Maya_Menu.png
 

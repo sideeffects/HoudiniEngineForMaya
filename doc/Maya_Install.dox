@@ -28,15 +28,15 @@ and is designed to be copied to one of the directories that Maya searches, such 
 
 To register the plug-in, for example on Windows, copy the file:
 
-    C:\Program Files\Side Effects Software\Houdini 15.0.244\engine\maya\maya2016\houdiniEngine-maya2016
+    C:\Program Files\Side Effects Software\Houdini 17.0.544\engine\maya\maya2018\houdiniEngine-maya2018
 
 into:
 
-    C:\Program Files\Autodesk\Maya2016\modules
+    C:\Program Files\Autodesk\Maya2018\modules
 
 Or for example on Linux, copy the file:
 
-    /opt/hfs16.5.364/engine/maya/maya2018/houdiniEngine-maya2018
+    /opt/hfs17.5.342/engine/maya/maya2018/houdiniEngine-maya2018
 
 into:
 
@@ -52,11 +52,11 @@ Setting the `MAYA_MODULE_PATH` environment variable is a more flexible way to re
 
 and is designed to be used with the `MAYA_MODULE_PATH` environment variable. For example, insert the following path into `MAYA_MODULE_PATH`:
 
-    C:\Program Files\Side Effects Software\Houdini 15.0.244\engine\maya
+    C:\Program Files\Side Effects Software\Houdini 17.0.544\engine\maya
 
 Or on Linux, you can add something like:
 
-    /opt/hfs16.5.364/engine/maya
+    /opt/hfs17.5.342/engine/maya
 
 Note that the path does not contain the `maya<version` directory. The module description files are created such that Maya is able to select correct module depending on the running Maya version.
 

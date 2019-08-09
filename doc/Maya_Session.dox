@@ -8,14 +8,6 @@ In order to use Houdini Engine, a Houdini Engine session needs to be created. Cr
 
 @image html Maya_Session.png
 
-@section Maya_Session_InProcess Within Maya Process
-
-The Within Maya Process session type is no longer supported in Maya as of Houdini 17.0
-
-Before thin client was added to Houdini Engine, creating a Houdini Engine session within the Maya process was how Houdini Engine was initialized. All the Houdini libraries and necessary files were loaded directly within Maya's process. This required the libraries of Houdini, its plug-ins, and their library dependencies to be compatible with the libraries of Maya and its plug-ins. Otherwise, there could be dynamic library conflicts, library symbol conflicts, and crashes. Since the introduction of Houdini Engine, we have encountered additional issues and conflicts, and we are no longer able to support this session type.
-
-If your session type optionVar is set to Within Process, Named Pipe with auto-start will be used instead. On some Linux systems, there may be problems with auto-start, in which case you will need to manually start HARS in order to connect to it.
-
 @section Maya_Session_Socket Socket
 
 Socket session was added when thin client was introduced in Houdini Engine. In short, thin client allows the main Houdini Engine processing to happen in a separate process, outside of the Maya process. For socket sessions, TCP socket is used to communicate between the Maya process and the Houdini Engine process.
@@ -29,6 +21,14 @@ Named pipe session was added when thin client was introduced in Houdini Engine. 
 The named pipe session support auto-starting the Houdini Engine server. When the plug-in initializes, the Houdini Engine server will be automatically started, and a named pipe is automatically chosen. In some cases on Linux, we have found that there can be library conflicts if the LD_LIBRARY_PATH has been set, resulting in HARS failing to start.  There is now a preference to unset LD_LIBRARY_PATH before starting the server (and restoring the value afterwards, of course). The preference is on by default, but if you need to pass LD_LIBRARY_PATH to engine, you can turn this preference off.
 
 The Houdini Engine server can also be manually started with a known named pipe. Then, the named pipe information is entered into the plug-in.
+
+@section Maya_Session_InProcess Within Maya Process
+
+The Within Maya Process session type is no longer supported in Maya as of Houdini 17.0
+
+Before thin client was added to Houdini Engine, creating a Houdini Engine session within the Maya process was how Houdini Engine was initialized. All the Houdini libraries and necessary files were loaded directly within Maya's process. This required the libraries of Houdini, its plug-ins, and their library dependencies to be compatible with the libraries of Maya and its plug-ins. Otherwise, there could be dynamic library conflicts, library symbol conflicts, and crashes. Since the introduction of Houdini Engine, we have encountered additional issues and conflicts, and we are no longer able to support this session type.
+
+If your session type optionVar is set to Within Process, Named Pipe with auto-start will be used instead. On some Linux systems, there may be problems with auto-start, in which case you will need to manually start HARS in order to connect to it.
 
 @section Maya_Session_OptionVars OptionVars
 

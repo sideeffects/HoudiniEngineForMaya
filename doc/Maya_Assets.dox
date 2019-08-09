@@ -26,6 +26,10 @@ Resets the simulation cache of all the DOP networks within the asset.
 
 Reloads the asset definition of this asset. This is useful when making changes to the asset from another Houdini session while the Maya session is running.
 
+@subsection Maya_Assets_Options_ReloadAssetNoSync Reload Asset Without Syncing
+
+Reloads the asset definition of this asset without rebuilding either the parm attributes or the output node. This is faster than the regular reload when you know that the inputs and outputs have remained the same, and preserves any modifications make downstream from the asset.
+
 @subsection Maya_Assets_Options_SyncWhenInputConnects Sync When Input Connects
 
 Perform a sync when Maya geometry is connected to the asset's input. This is useful because connecting a Maya geometry often means the asset's output will change somehow.
@@ -39,6 +43,9 @@ Automatically performs a sync when necessary. However, this could lead to the sc
 @subsection Maya_Assets_Options_SyncAsset Sync Asset
 
 Deletes all the Maya shape nodes, and re-creates all the Maya shape nodes that are needed to represent what the asset is outputting at that moment.
+
+Deletes and recreates the attributes for the asset's parameters. (see @ref Maya_Assets_Options_SyncAttibutes "Sync Attributes" for more details)
+@subsection Maya_Assets_Options_SyncAttibutes Sync Atttributes
 
 Deletes and recreates the attributes for the asset's parameters. If the asset's parameter interface remains the same, attribute values and input connections will be restored. If however, the parameters for the asset have changed (because a new definition has been loaded from disk, or if the asset type has changed the ) it may not be possible to restore all the attribute values. Note that we look at folders as well as attribute names when matching attributes to parameters, if the folder names or hierarchy have changed, attributes may not match up with parameters even if the attribute names still match.
 

@@ -94,6 +94,7 @@ class Asset {
         void computeMaterial(
                 const MPlug& plug,
                 MDataBlock& data,
+                AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
 

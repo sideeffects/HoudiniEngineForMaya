@@ -19,6 +19,7 @@ NODE_OPTION(outputMeshPreserveLockedNormals, bool, true)
 NODE_OPTION(ungroupOnBake, bool, true)
 NODE_OPTION(updateParmsForEvalMode, bool, true)
 NODE_OPTION(connectGeoForAssetInputs, bool, false)
+NODE_OPTION(bakeOutputTextures, bool, true)
 
 NODE_OPTION(useInstancerNode, bool, true)
 

@@ -19,7 +19,8 @@ public:
             const MTime &time,
             const MPlug &materialPlug,
             MDataBlock &data,
-            MDataHandle &materialHandle
+            MDataHandle &materialHandle,
+	    bool bakeTexture
             );
 private:
     void update(MDataHandle &materialHandle);

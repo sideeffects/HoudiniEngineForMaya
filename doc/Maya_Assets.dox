@@ -99,4 +99,8 @@ Updating all the parms can impact playback speed if there are a lot of parms, an
 
 Normally, when you use the Attribute Editor to connect another asset as an input to an asset, the first output of the asset is directly connected. If you select a mesh that is the direct output of an asset, the corresponding output from the asset  is directly connected. The original output geo from the asset still exists, but it's a dead end, and not part of the history chain. This option allows you to maintain an editable copy of the geometry that can be manipulated after downstream assets have been added.
 
+@subsection Maya_Assets_Options_BakeOutputTextures Bake Output Textures
+
+If the asset has materials with procedural textures, the Maya plugin will render the texture, bake it out to a file and use that file in a file texture. This can significantly impact the plugin's performance, especially if the texture needs to be recomputed often. Turning off Bake Output Textures will disable the rebaking of the texture files. The file texture nodes will persist with the correct file names during the maya session, however if the scene is reopened with the texture baking still turned off, you will need to turn it on again and sync the asset to see the texture in Maya again.
+
 */

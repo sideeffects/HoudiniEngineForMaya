@@ -18,7 +18,8 @@ OutputMaterial::compute(
         const MTime &time,
         const MPlug &materialPlug,
         MDataBlock &data,
-        MDataHandle &materialHandle
+        MDataHandle &materialHandle,
+	bool bakeTexture
         )
 {
     HAPI_Result hapiResult;
@@ -155,9 +156,9 @@ OutputMaterial::compute(
 
             bool hasTextureSource = ((std::string)Util::HAPIString(texturePathSH)).size() > 0;
             bool canRenderTexture = false;
-            if(hasTextureSource)
+            if(hasTextureSource && bakeTexture)
             {
-                // this could fail if texture parameter is empty
+               // this could fail if texture parameter is empty
                 hapiResult = HAPI_RenderTextureToImage(
                         Util::theHAPISession.get(),
                         myNodeId,

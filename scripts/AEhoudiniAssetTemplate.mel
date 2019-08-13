@@ -804,6 +804,11 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 "Connect Geo For Asset Inputs",
                 "When setting an input to a geo output of another asset, connect through the geo, not directly from the asset"
                 );
+        createAttrCheckBox(
+                "bakeOutputTextures",
+                "Bake Output Textures",
+                "When an Output Material has a Texture, bake to a file texture. Turn this off to improve performace when the texture is not needed."
+                );
 
 
     setParent ..;
@@ -890,6 +895,10 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     replaceAttrCheckBox(
             $optionsLayoutFull + "|outputLayout|connectGeoForAssetInputs",
             $nodeName + ".connectGeoForAssetInputs",
+            "");
+    replaceAttrCheckBox(
+            $optionsLayoutFull + "|outputLayout|bakeOutputTextures",
+            $nodeName + ".bakeOutputTextures",
             "");
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
@@ -982,6 +991,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
 	editorTemplate -suppress "output";
         editorTemplate -suppress "ungroupOnBake";
         editorTemplate -suppress "updateParmsForEvalMode";
+        editorTemplate -suppress "bakeOutputTextures";
         editorTemplate -suppress "connectGeoForAssetInputs";
 
         editorTemplate -suppress "useInstancerNode";

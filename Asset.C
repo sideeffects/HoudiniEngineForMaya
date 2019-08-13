@@ -936,6 +936,7 @@ void
 Asset::computeMaterial(
         const MPlug& plug,
         MDataBlock& data,
+	AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs
         )
 {
@@ -957,7 +958,7 @@ Asset::computeMaterial(
         MPlug materialPlug = materialsPlug.elementByLogicalIndex(i);
         MDataHandle materialHandle = data.outputValue(materialPlug);
 
-        myMaterials[i]->compute(myTime, materialPlug, data, materialHandle);
+        myMaterials[i]->compute(myTime, materialPlug, data, materialHandle, options.bakeOutputTextures());
     }
 }
 
@@ -1142,7 +1143,9 @@ Asset::compute(
             options,
             needToSyncOutputs);
 
-    computeMaterial(plug, data, needToSyncOutputs);
+    computeMaterial(plug, data,
+            options,
+	    needToSyncOutputs);
 
     return stat;
 }

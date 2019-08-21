@@ -9,7 +9,8 @@
 OutputMaterial::OutputMaterial(HAPI_NodeId assetId) :
     myAssetId(assetId),
     myNodeId(-1),
-    myMaterialLastCookCount(0)
+    myMaterialLastCookCount(0),
+    myBakeTexture(0)
 {
 }
 
@@ -58,8 +59,9 @@ OutputMaterial::compute(
             &materialInfo));
 
     if(myNodeInfo.totalCookCount > myMaterialLastCookCount
-            || materialInfo.hasChanged)
+            || materialInfo.hasChanged || bakeTexture != myBakeTexture)
     {
+        myBakeTexture = bakeTexture;
         std::vector<HAPI_ParmInfo> parms(myNodeInfo.parmCount);
         HAPI_GetParameters(
                 Util::theHAPISession.get(),
@@ -169,13 +171,13 @@ OutputMaterial::compute(
             }
 
             int destinationFilePathSH = 0;
-            if(canRenderTexture)
-            {
-                MString destinationFolderPath;
-                MGlobal::executeCommand("workspace -expandName "
-                        "`workspace -q -fileRuleEntry sourceImages`;",
-                        destinationFolderPath);
+            MString destinationFolderPath;
+            MGlobal::executeCommand("workspace -expandName "
+                    "`workspace -q -fileRuleEntry sourceImages`;",
+                    destinationFolderPath);
 
+            if(canRenderTexture && bakeTexture)
+            {
                 // this could fail if the image planes don't exist
                 hapiResult = HAPI_ExtractImageToFile(
                         Util::theHAPISession.get(),
@@ -196,6 +198,29 @@ OutputMaterial::compute(
                     DISPLAY_ERROR_HAPI_STATUS_CALL();
                 }
             }
+	    
+	    if(hasTextureSource && !bakeTexture) {
+	        // if baking is off but the expected texture file exists
+	        // keep using it
+                hapiResult = HAPI_GetImageFilePath(
+                        Util::theHAPISession.get(),
+                        myNodeId,
+                        HAPI_PNG_FORMAT_NAME,
+                        "C A",
+                        destinationFolderPath.asChar(),
+                        NULL,
+			texturePathSHParmIndex,
+                        &destinationFilePathSH
+                        );
+		
+      		MString texturePath = Util::HAPIString(destinationFilePathSH);
+		MString cmd = "filetest -e \"" +  texturePath + "\"";
+		int fileExists;
+		MGlobal::executeCommand(cmd, fileExists);
+		if(!fileExists)
+		    destinationFilePathSH = 0;
+			
+	    }
 
             if(destinationFilePathSH > 0)
             {

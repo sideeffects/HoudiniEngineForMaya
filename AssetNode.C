@@ -1386,10 +1386,18 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     bool isTime = plugBeingDirtied == inTime;
     bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
     bool isParameter = false;
+    bool isTextureOpt = false;
     {
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
+	
+        MPlug optionPlug = assetNodeFn.findPlug("bakeOutputTextures", true);
+        if(plugBeingDirtied == optionPlug ) {
+	    isTextureOpt = true;
+        }
+
+    
     }
     bool isMaterialPath = plugBeingDirtied == outputMaterialPath;
 
@@ -1449,6 +1457,11 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         myNeedToMarshalInput = true;
     }
 
+    // if bakeOutputTextures was toggled and the texture was rebaked
+    // the texture file path may have changed
+    if(isTextureOpt) {
+        affectedPlugs.append(MPlug(thisMObject(),AssetNode::outputMaterialTexturePath));
+    }
     // Changing time or parameters will dirty the output
     if(isTime || isInput || isParameter)
     {
@@ -1470,7 +1483,16 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     // and we're doing dirty propagation outside of playback
     // and it's an attr that would affect the outputs
     // sync to see if this change actually produces outputs
-    if((isInput || isParameter) && myExtraAutoSync) {
+    // if we turned on bakeTextures and there was not a file texture node
+    // auto-sync is needed to create the file texture node
+    bool textureOptOn = false;
+    if(isTextureOpt) {
+        // the plug value is still the previous value
+        // so we're really checking if it's being  toggled on
+        // no need to sync if we are turning it off
+         textureOptOn = !plugBeingDirtied.asBool();
+    }
+    if(((isInput || isParameter) && myExtraAutoSync) || textureOptOn ) {
         if(!MAnimControl::isPlaying()) {
             MDataBlock data = forceCache();
             AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
@@ -1787,6 +1809,33 @@ AssetNode::setInternalValueInContext(
 	// in the data block too.
 	return false;
     }
+
+    // if we've turned on the bakeTextures option, we may need to actually
+    // bake the textures, since even if the files exist from before and the
+    // output file name isn't dirty, the actual texture may be out of date
+    // although if the fileTexture node doesn't exist at all it will
+    // still need syncing
+    MPlug optionPlug = assetNodeFn.findPlug("bakeOutputTextures", true);
+    if(plugBeingSet == optionPlug ) {
+        int bakeTexture = dataHandle.asBool();
+        if(bakeTexture) {
+	    // recompute output textures
+	     MPlug outputPlug(thisMObject(), AssetNode::output);
+	     MDataBlock data = forceCache(); 
+
+	     // note that we need to be careful accessing the data block here
+	     // the new value for the plug being set has not updated the data block yet
+	     // other data not related to that plug should be OK though
+	     bool needToSyncOutputs;
+	     myAsset->computeMaterial(
+                outputPlug,
+                data,
+                bakeTexture,
+                needToSyncOutputs
+                );
+	
+        }
+    } 
 
 #if MAYA_API_VERSION >= 201800
     return MPxTransform::setInternalValue(plugBeingSet, dataHandle);

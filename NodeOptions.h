@@ -44,6 +44,7 @@ public:
                 MFnNumericData::kBoolean,
                 defaultValue
                 );
+	nAttr.setInternal(true);
     }
 };
 

@@ -33,6 +33,7 @@ private:
     HAPI_NodeId myNodeId;
     HAPI_NodeInfo myNodeInfo;
     int myMaterialLastCookCount;
+    bool myBakeTexture;
 };
 
 #endif

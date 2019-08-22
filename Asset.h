@@ -54,6 +54,12 @@ class Asset {
                 AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );
+        void computeMaterial(
+                const MPlug& plug,
+                MDataBlock& data,
+                bool bakeTextures,
+                bool &needToSyncOutputs
+                );
 
         void fillParmNameCache();
         void getParmValues(
@@ -88,12 +94,6 @@ class Asset {
                 MDataBlock& data,
                 const MIntArray &instancedObjIds,
                 const MStringArray &instancedObjNames,
-                AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs
-                );
-        void computeMaterial(
-                const MPlug& plug,
-                MDataBlock& data,
                 AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs
                 );

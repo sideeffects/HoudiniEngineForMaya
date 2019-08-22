@@ -1483,7 +1483,16 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     // and we're doing dirty propagation outside of playback
     // and it's an attr that would affect the outputs
     // sync to see if this change actually produces outputs
-    if((isInput || isParameter) && myExtraAutoSync) {
+    // if we turned on bakeTextures and there was not a file texture node
+    // auto-sync is needed to create the file texture node
+    bool textureOptOn = false;
+    if(isTextureOpt) {
+        // the plug value is still the previous value
+        // so we're really checking if it's being  toggled on
+        // no need to sync if we are turning it off
+         textureOptOn = !plugBeingDirtied.asBool();
+    }
+    if(((isInput || isParameter) && myExtraAutoSync) || textureOptOn ) {
         if(!MAnimControl::isPlaying()) {
             MDataBlock data = forceCache();
             AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);

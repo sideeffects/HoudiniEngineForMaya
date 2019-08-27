@@ -106,6 +106,7 @@ InputGeometryNode::initialize()
 
     attributeAffects(InputGeometryNode::inputTransform, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::inputGeometry, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::inputComponents, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::unlockNormals, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::materialPerFace, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::allowFacetSet, InputGeometryNode::outputNodeId);

@@ -105,7 +105,7 @@ createInputGeometryNode(string $transformAttr, string $geometryAttr)
     // if a houdiniInputGeometry already exists, reuse it
     {
         string $connections[] =
-            `listConnections -type houdiniInputGeometry -destination true
+            `listConnections -type houdiniInputGeometry -destination true -source false
             $geometryAttr`;
         if(size($connections))
         {
@@ -478,6 +478,31 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     if(`isConnected $finalInputAttr $inputAttr`)
     {
         return 1;
+    }
+
+    // if the final input is connected to a merge node that's connected to the asset input
+    // it means we're replacing a merged input with a single input that used to be part of the merge
+    // so we disconnect the one we're going to keep from the target assets merge to keep it safe
+    // and then let clearAssetInput get rid of all the other input
+    
+    // Note that the input geometry could be connected to multiple inputs or merges on multiple assets
+    // we only want to disconnect it from the merge on the input we're modifying
+    
+    string $outConnections[] = `listConnections -type "houdiniInputMerge" -plugs true $finalInputAttr`;
+    if(size($outConnections) > 0) {
+        for( $outConAttr in $outConnections ) {
+	    string $outCon = plugNode($outConAttr);
+            string $assetConnections[] = `listConnections -source false -type "houdiniAsset" -plugs true  $outCon`;
+	    for($outAssetCon in $assetConnections) {
+	        // there should only be one asset connection on the merge
+	        // you'd think that you could just compare the original strings
+	        // but the attribute names could be in different formats, epecially leaf vs compound hierarchy
+	        if(plugNode($outAssetCon) == plugNode($inputAttr) && `attributeName -long $outAssetCon` == `attributeName -long $inputAttr`)  {
+		    disconnectAttr $finalInputAttr $outConAttr;
+		    break;
+	        }
+	    }
+        }
     }
 
     houdiniEngine_clearAssetInput($inputAttr);

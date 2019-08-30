@@ -13,6 +13,7 @@ stringArrayReverseAppend(string $to[], int $end, string $from[])
 
 proc int
 validateInputObjects(string $objects[],
+	string $targetAsset,
         string $validObjects[],
         string $multiObjects[],
         string $invalidObjects[])
@@ -36,6 +37,19 @@ validateInputObjects(string $objects[],
             $invalidObjects[size($invalidObjects)] = $object;
             continue;
         }
+	
+	// if object is the target asset or below the target asset skip it
+	// sure, the expected workflow was to select the inputs and maybe the asset last
+	// but it's easy enough to select the asset outputs or the asset by mistake.
+	// This does assume that the asset outputs are still parented under the asset
+	// where we left them (history assets are connected by a different code path)
+
+	if($object == $targetAsset) {
+	    continue;
+	}
+	if(isParentOf($targetAsset, $object)) {
+	    continue;
+	}
 
         if(`objectType -isAType "houdiniAsset" $object`)
         {
@@ -393,7 +407,8 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     string $validObjects[];
     string $multiObjects[];
     string $invalidObjects[];
-    int $validObjectsCount = validateInputObjects($objects,
+    string $assetNodeName = plugNode($inputAttr);
+    int $validObjectsCount = validateInputObjects($objects, $assetNodeName,
             $validObjects, $multiObjects, $invalidObjects);
 
     if(size($invalidObjects))
@@ -409,7 +424,6 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
         return 1;
     }
 
-    string $assetNodeName = plugNode($inputAttr);
     int $connectGeoForAsset = `getAttr ($assetNodeName + ".connectGeoForAssetInputs")`;
     string $sourceInputAttr[];
     for($i = 0; $i < size($validObjects); $i++)

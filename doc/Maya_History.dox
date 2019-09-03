@@ -19,7 +19,7 @@ We make certain simpliflying assumptions in order for this to work - if your ass
 - the first output will be connected to the existing mesh shape, all other outputs will be ignored
 - additional inputs can be connected to the history asset, however we are only interested in their effect on the first output.
 - if the target mesh has no construction history, we push a copy of the target mesh shape upstream to anchor the history chain
-- if there is component selection, we create a mayaComponentGroup of the appropriate type on  the input geo, however the asset must use the named copmonent group for it to have any effect
+- if there is face or vertex component selection, we create a group of the appropriate type on the input geo (named inputPrimitiveComponent or inputPointComponent), however the asset must use the named component group for it to have any effect
 - history assets should never be sync'd - their output needs to stay connected to the original target shape, If your asset has more than one output, it should be applied as a classic asset.
 
 Here are some additional menu items for manipulation of history assets:

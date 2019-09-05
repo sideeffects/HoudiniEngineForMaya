@@ -74,6 +74,21 @@ Note that while Maya supports empty and partial color sets, houdini does not, so
 
 Stores the name of the shading group that is assigned to the object, or to each polygon.
 
+@subsection Maya_Mesh_Input_Component_Selection Component Selection
+
+When mesh components are selected doing addToSelection on an input, the inputComponents attribute is set on the inputGeometry node, and corresponding groups are created on the input geo. The asset still needs to use the named component group for it to have any effect. The inputComponents attribute is a componentList attribute, so that while it doesn't show up in the attribute editor, it can be set like this:
+
+@verbatim
+setAttr houdiniInputGeometry1.inputComponents -type "componentList" 5 "f[106:116]" "f[126:136]" "f[146:156]" "f[166:176]" "f[186:196]" ;
+
+getAttr houdiniInputGeometry1.inputComponents;
+// Result: f[106:116] f[126:136] f[146:156] f[166:176] f[186:196] // 
+@endverbatim
+
+The groups that are created are:
+- `inputPrimitiveComponent` - selected faces
+- `inputPointComponent` - selected vertices
+	
 @subsection Maya_Mesh_Input_Sets Sets
 
 Almost all Maya sets that the mesh belongs to are converted into Houdini primitive groups. Certain types of sets that are used interally by Maya tools are omitted, since adding components from the output geo to those sets could cause incorrect tool behavior. This includes verticesOnly, edgesOnly, editPointsOnly and renderableOnly sets. An option has been added on the houdiniInputGeometry node to allow facetsOnly sets to be included.

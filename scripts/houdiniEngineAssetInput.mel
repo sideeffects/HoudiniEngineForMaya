@@ -10,14 +10,51 @@ stringArrayReverseAppend(string $to[], int $end, string $from[])
     }
     return $newEnd;
 }
+proc int
+containsComponents(string $objects[])
+{
+    for($object in $objects)
+    {
+	    string $buffer[];
+	    int $numTokens = `tokenize $object "." $buffer`;
+	    if($numTokens > 1)
+	        return 1;	    
+    }
+    return 0;
+}
+proc int
+isComponent(string $object)
+{
+    string $buffer[];
+    int $numTokens = `tokenize $object "." $buffer`;
+    if($numTokens > 1)
+	return 1;	    
+    return 0;
+}
 
 proc int
-validateInputObjects(string $objects[],
+validateInputObjects(string $inputObjects[],
 	string $targetAsset,
         string $validObjects[],
+	string $validComponents[],
         string $multiObjects[],
         string $invalidObjects[])
 {
+    // if there are multiple meshes with component selection
+    // there is no guarantee that components from the same mesh will be contiguous
+    // so we sort them (If there are no components selected, no sorting
+    // and we get the same order as before, for backward compatibility.
+
+    // only mesh vertex or face selection is used for the  houdini geo
+    // although other component selection is also saved on the houdiniInputGeometry
+
+    string $objects[];
+    if(containsComponents($inputObjects)) {
+	 $objects = `sort $inputObjects`;
+    } else {
+         $objects = $inputObjects;
+    }
+	 
     string $objectsToProcess[];
     int $objectsToProcessEnd = stringArrayReverseAppend(
             $objectsToProcess, 0, $objects);
@@ -26,6 +63,9 @@ validateInputObjects(string $objects[],
 
     string $curveObjects[];
     string $transformObjects[];
+
+    string $componentList[];
+    string $lastCompMesh;
 
     while($objectsToProcessEnd)
     {
@@ -37,7 +77,6 @@ validateInputObjects(string $objects[],
             $invalidObjects[size($invalidObjects)] = $object;
             continue;
         }
-	
 	// if object is the target asset or below the target asset skip it
 	// sure, the expected workflow was to select the inputs and maybe the asset last
 	// but it's easy enough to select the asset outputs or the asset by mistake.
@@ -72,8 +111,43 @@ validateInputObjects(string $objects[],
         {
             $transformObjects[size($transformObjects)] = $object;
         }
-        else if(`objectType -isAType "mesh" $object`
-                || `objectType -isAType "particle" $object`
+        else if(`objectType -isAType "mesh" $object` )
+        {
+	    if(isComponent($object)) {
+		string $buffer[];
+                int $numTokens = `tokenize $object "." $buffer`;
+		if($buffer[0] != $lastCompMesh) {
+		    if(size($componentList) > 0) {
+		        string $cmd =  size($componentList);
+		        for($comp in $componentList) {
+	                     $cmd += " " + $comp;	    
+                 	}
+	                // if there is a non empty component list, append the mesh to validObjects
+			// and the component count and list to validComponents - to be used with setAttr later
+			// e.g.  "2 f[95:98]  f[125:128]" for adding 2 sequences of faces
+                        // reset the compObjectName (to the current mesh) and the component list
+
+			string $meshShapes[] = `listRelatives -fullPath -shapes $lastCompMesh`;
+			$validObjects[size($validObjects)] = $meshShapes[0];
+			$validComponents[size($validComponents)] = $cmd;
+                        $validObjectsCount++;
+			string $emptyArray[];
+			$componentList = $emptyArray;
+		    }
+		    $lastCompMesh = $buffer[0];
+		}
+		 $componentList[size($componentList)] = $buffer[1];
+	        // add the component to the current component list
+
+	    } else {
+	        // if it's not a component, just keep going
+	        // we'll process any pending component list
+		// when we hit the next component or at the end.
+                $validObjects[size($validObjects)] = $object;
+                $validObjectsCount++;
+	    }
+        }
+        else if( `objectType -isAType "particle" $object`
                 || `objectType -isAType "hairSystem" $object`
                 || `objectType -isAType "instancer" $object`
                )
@@ -92,9 +166,27 @@ validateInputObjects(string $objects[],
         {
             $invalidObjects[size($invalidObjects)] = $object;
         }
+	
+	if(size($validComponents) < size($validObjects)) {
+	    // if we got here there wasn't any component selection on this object
+	    // so just put in an emty string
+	    $validComponents[size($validComponents)] = "";
+	}
     }
 
     $validObjects = stringArrayRemoveDuplicates($validObjects);
+
+    // if there is still a pending component list, process it too
+    if(size($componentList) > 0) {
+	string $cmd = size($componentList);
+	for($comp in $componentList) {
+	    $cmd += " " + $comp;	    
+        }
+	string $meshShapes[] = `listRelatives -fullPath -shapes $lastCompMesh`;
+	$validObjects[size($validObjects)] = $meshShapes[0];
+	$validComponents[size($validComponents)] = $cmd;
+        $validObjectsCount++;
+    }
 
     if(size($curveObjects))
     {
@@ -136,7 +228,7 @@ createInputGeometryNode(string $transformAttr, string $geometryAttr)
 }
 
 proc string
-getInputNodeForSingle(string $object, int $connectGeoForAsset )
+getInputNodeForSingle(string $object, string $components, int $connectGeoForAsset )
 {
     string $transformAttr;
     {
@@ -187,11 +279,22 @@ getInputNodeForSingle(string $object, int $connectGeoForAsset )
         {
             string $geometryAttr = $object + ".outMesh";
             string $inputNodeIdAttr  = createInputGeometryNode($transformAttr, $geometryAttr);
+
 	    
 	    // keep track of object level shader assignment so that we can dirty the geo input if needed
 	    string $shadingGroupAttr = ($object + ".instObjGroups");
 	    scriptJob -kws -connectionChange $shadingGroupAttr houdiniEngine_objectShaderChanged;
 	    string $inputNode = plugNode($inputNodeIdAttr);
+
+	    // set the component list if there are some, otherwise clear it
+	    string $cmd = "setAttr " + $inputNode + ".inputComponents -type componentList ";
+	    if(size($components) > 0) {
+		$cmd += $components;
+	    } else {
+		$cmd += 0;
+	    }
+	    eval $cmd;
+
 	    string $objectShader[] = `listConnections -type shadingEngine ($object + ".instObjGroups")`;
 	    if(size($objectShader) > 0) {
 	        string $oldShadingGroup = `getAttr ($inputNode + ".objectShadingGroup")`;
@@ -405,11 +508,12 @@ global proc int
 houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
 {
     string $validObjects[];
+    string $validComponents[];
     string $multiObjects[];
     string $invalidObjects[];
     string $assetNodeName = plugNode($inputAttr);
     int $validObjectsCount = validateInputObjects($objects, $assetNodeName,
-            $validObjects, $multiObjects, $invalidObjects);
+            $validObjects, $validComponents, $multiObjects, $invalidObjects);
 
     if(size($invalidObjects))
     {
@@ -429,8 +533,9 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     for($i = 0; $i < size($validObjects); $i++)
     {
         string $validObject = $validObjects[$i];
+	string $validComponent = $validComponents[$i];
         $sourceInputAttr[size($sourceInputAttr)] =
-            getInputNodeForSingle($validObject, $connectGeoForAsset);
+            getInputNodeForSingle($validObject, $validComponent, $connectGeoForAsset);
     }
 
     for($i = 0; $i < size($multiObjects); $i++)

@@ -1387,6 +1387,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
     bool isParameter = false;
     bool isTextureOpt = false;
+    bool isButton = false;
     {
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
@@ -1397,7 +1398,11 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 	    isTextureOpt = true;
         }
 
-    
+        if(Util::endsWith(plugBeingDirtied.name(), "__button"))
+        {
+            isButton = true;
+        }
+   
     }
     bool isMaterialPath = plugBeingDirtied == outputMaterialPath;
 
@@ -1483,8 +1488,13 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     // and we're doing dirty propagation outside of playback
     // and it's an attr that would affect the outputs
     // sync to see if this change actually produces outputs
+
     // if we turned on bakeTextures and there was not a file texture node
     // auto-sync is needed to create the file texture node
+
+    // if a button was pressed and there were no outputs, we might as
+    // well sync, because the button press will have no effect otherwise
+    
     bool textureOptOn = false;
     if(isTextureOpt) {
         // the plug value is still the previous value
@@ -1496,7 +1506,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         if(!MAnimControl::isPlaying()) {
             MDataBlock data = forceCache();
             AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
-	    if(options.autoSyncOutputs())
+	    if(options.autoSyncOutputs() || isButton)
             {
 	        myAutoSyncId++;
 	        MGlobal::executeCommandOnIdle("houdiniEngine_autoSyncAssetOutput "

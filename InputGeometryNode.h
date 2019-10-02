@@ -18,6 +18,8 @@ public:
     static MObject inputTransform;
     static MObject inputGeometry;
     static MObject inputComponents;
+    static MObject primComponentGroup;
+    static MObject pointComponentGroup;
     static MObject unlockNormals;
     static MObject materialPerFace;
     static MObject allowFacetSet;

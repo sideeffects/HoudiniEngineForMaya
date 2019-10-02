@@ -258,7 +258,9 @@ void
 Input::setInputComponents(
                 MDataBlock &dataBlock,
                 const MPlug &geoPlug,
-                const MPlug &compPlug
+                const MPlug &compPlug,
+                const MPlug &primGroupPlug,
+                const MPlug &pointGroupPlug
 		)
 {
 }

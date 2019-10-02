@@ -14,4 +14,34 @@ Another interesting use of this debugging feature is to see exactly what data an
 
 Another useful workflow is to author assets while viewing this internal Houdini scene. The benefit is that the replicated Maya geometry is immediately available in this Houdini scene. Asset authors can directly test how the Maya geometry would behave in the asset. The author can also have Houdini and Maya running at the same time. Then, the author can make changes to the asset in the Houdini UI, save the asset in the Houdini UI, and @ref Maya_Assets_Options_ReloadAsset "reload the asset" inside Maya to immediately see the changes.
 
+@section Maya_Debugging_Debugger Houdini Engine Debugger
+
+In order to use the Houdini Engine Debugger, Maya must connect directly to the debugger session. We do not have an auto-start option for the debugger, so the debugging session needs to be started independently.
+
+To use the Houdini Engine Debugger session:
+
+  -# First start a Houdini Engine Debugger session in Houdini via **Window** > **Houdini Engine Debugger** and start one of session types.
+  -# In Maya, you will either need to set the session option vars in the script editor before loading the plugin, or you can load the plugin normally, open the Houdini Preferences Window to set the port or pipe name for the Debugger session, and then unload and reload the plugin to start using the debugging session.
+  
+e.g. if the debugger has a socket session, on port 9090, set:
+@verbatim
+optionVar -iv "houdiniEngineSessionType" 1;
+optionVar -iv "houdiniEngineThriftPort" 9090;
+@endverbatim
+
+If the debugger is using a named pipe called "hapi_debug_session", set:
+
+@verbatim
+optionVar -iv "houdiniEngineSessionType" 2;
+optionVar -sv "houdiniEngineThriftPipe" "hapi_debug_session";
+optionVar -iv "houdiniEngineSessionPipeCustom" 1;
+@endverbatim
+
+Once connected, any asset instantiated in Maya will also be instantiated in the Houdini session. Parameter values and input geometry will also be reflected in the Houdini scene after cooking. If the user makes a change in Houdini (e.g. parameters, node state, network graph), in order to reflect that change in Maya, the asset definition must be saved in Houdini and reloaded in Maya.
+
+When you are finished with the debugger, reset your preferences back to your normal Back End settings for the next time that you load the plugin.
+
+See the 
+@ref Maya_Session "Session"
+section for more detail on how to configure a socket or named pipe session.
 */

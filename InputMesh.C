@@ -130,7 +130,6 @@ InputMesh::setInputComponents(
 	      primGroupName = "inputPrimitiveComponent";
 	  }
 	  
-	    //MString primGroupName = "inputPrimitiveComponent";
           CHECK_HAPI(HAPI_AddGroup(
                     Util::theHAPISession.get(),
                     geometryNodeId(), 0,

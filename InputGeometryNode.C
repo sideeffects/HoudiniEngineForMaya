@@ -15,6 +15,8 @@ MTypeId InputGeometryNode::typeId(MayaTypeID_HoudiniInputGeometryNode);
 MObject InputGeometryNode::inputTransform;
 MObject InputGeometryNode::inputGeometry;
 MObject InputGeometryNode::inputComponents;
+MObject InputGeometryNode::pointComponentGroup;
+MObject InputGeometryNode::primComponentGroup;
 MObject InputGeometryNode::unlockNormals;
 MObject InputGeometryNode::materialPerFace;
 MObject InputGeometryNode::allowFacetSet;
@@ -60,6 +62,22 @@ InputGeometryNode::initialize()
     tAttr.setDisconnectBehavior(MFnAttribute::kReset);
     addAttribute(InputGeometryNode::inputComponents);
     
+    InputGeometryNode::pointComponentGroup = tAttr.create(
+            "pointComponentGroup", "pointComponentGroup",
+            MFnData::kString
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputGeometryNode::pointComponentGroup);
+
+    InputGeometryNode::primComponentGroup = tAttr.create(
+            "primComponentGroup", "primComponentGroup",
+            MFnData::kString
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputGeometryNode::primComponentGroup);
+
     InputGeometryNode::unlockNormals = nAttr.create(
             "unlockNormals", "unlockNormals",
             MFnNumericData::kBoolean,
@@ -107,6 +125,8 @@ InputGeometryNode::initialize()
     attributeAffects(InputGeometryNode::inputTransform, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::inputGeometry, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::inputComponents, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::primComponentGroup, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::pointComponentGroup, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::unlockNormals, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::materialPerFace, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::allowFacetSet, InputGeometryNode::outputNodeId);
@@ -152,7 +172,10 @@ InputGeometryNode::compute(
 
         // set input component list
         MPlug complistPlug(thisMObject(), InputGeometryNode::inputComponents);
-        myInput->setInputComponents(dataBlock, geometryPlug, complistPlug);	
+        MPlug primGroupPlug(thisMObject(), InputGeometryNode::primComponentGroup);
+        MPlug pointGroupPlug(thisMObject(), InputGeometryNode::pointComponentGroup);
+        myInput->setInputComponents(dataBlock, geometryPlug, complistPlug,
+				    primGroupPlug, pointGroupPlug);	
 
         outputNodeIdHandle.setInt(myInput->geometryNodeId());
 

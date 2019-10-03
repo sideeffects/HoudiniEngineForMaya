@@ -66,10 +66,12 @@ void
 InputMesh::setInputComponents(
         MDataBlock &dataBlock,
         const MPlug &geoPlug,
-        const MPlug &compPlug
+        const MPlug &compPlug,
+        const MPlug &primGroupPlug,
+        const MPlug &pointGroupPlug
         )
 {
-    // extract mesh data from Maya
+    // extract component list data from Maya
     MDataHandle compHandle = dataBlock.inputValue(compPlug);
     MObject compList = compHandle.data();
     MFnComponentListData compListFn( compList );
@@ -123,8 +125,11 @@ InputMesh::setInputComponents(
 	  {
 	      groupMembership[faceIds[i]] = 1;
           }
+	  MString primGroupName = primGroupPlug.asString();
+	  if( primGroupName == "") {
+	      primGroupName = "inputPrimitiveComponent";
+	  }
 	  
-	  MString primGroupName = "inputPrimitiveComponent";
           CHECK_HAPI(HAPI_AddGroup(
                     Util::theHAPISession.get(),
                     geometryNodeId(), 0,
@@ -153,19 +158,22 @@ InputMesh::setInputComponents(
 	     groupMembership[vertIds[i]] = 1;
          }
 	  
-	 MString primGroupName = "inputPointComponent";
+	 MString pointGroupName = pointGroupPlug.asString();
+	 if( pointGroupName == "") {
+	     pointGroupName = "inputPointComponent";
+	 }
          CHECK_HAPI(HAPI_AddGroup(
                     Util::theHAPISession.get(),
                     geometryNodeId(), 0,
                     groupType,
-                    primGroupName.asChar()
+                    pointGroupName.asChar()
                     ));
 
          CHECK_HAPI(HAPI_SetGroupMembership(
                     Util::theHAPISession.get(),
                     geometryNodeId(), 0,
                     groupType,
-                    primGroupName.asChar(),
+                    pointGroupName.asChar(),
                     &groupMembership[0],
                     0, groupMembership.size()
                     ));

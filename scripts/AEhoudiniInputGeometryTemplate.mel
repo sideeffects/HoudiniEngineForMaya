@@ -17,6 +17,12 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
         editorTemplate
             -label "Object Shading Group"
             -addControl "objectShadingGroup";
+        editorTemplate
+            -label "Primitive Component Group"
+            -addControl "primComponentGroup";
+        editorTemplate
+            -label "Point Component Group"
+            -addControl "pointComponentGroup";
     editorTemplate -endLayout;
     
     editorTemplate -beginLayout "Outputs" -collapse false;

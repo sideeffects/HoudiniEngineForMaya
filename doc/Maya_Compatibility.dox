@@ -1,0 +1,77 @@
+/*!
+
+@page Maya_Compatibility  Maya vs Houdini Incompatibilities
+
+@tableofcontents
+
+There are a number of differences in geometry representation and organization between Maya and Houdini. As a result there are some quirks in the plugin architecture that may require some explanation. To provide some context for some of the issues below, here's what the plugin nodes look like in the DG:
+
+@image html Maya_Nodes_InputGeometry.png
+
+@section Maya_Compatibility_DagDg DAG and DG limitations, and Syncing
+Maya geometry consists of shapes nodes that live in the DAG, each shape is a single  kind of geometry, every shape node requires  a parent transform.
+The Maya DAG and Dependency Graph are not meant to be modified during compute/playback (you could get away with this is DG mode if you were careful, but the evaluation manager is more strict)
+
+This is why we sync. We don't know in advance what kind of geometry an hda will output, but we can't create (or remove) output nodes during the asset node's compute. On the other hand, the asset node won't compute by itself if it has no (visible) outputs. So the sync command initiates the compute of the asset node (and thus the cook of the hda), iterates over the output attributes and creates output geometry and connects them.
+
+And here's an example of how a simple output mesh would be connececed. Note that the OUtputObject attibutes encompass all the supported output geometry types, so we could have been outputting curves and particles and fluids as well, so the corresponding geometry shapes would need to be created in Maya
+
+@image html Maya_Code_MeshConnect.png
+
+Sometimes it's obvious that we should sync, for example when the asset is  first instantiated, or when the connected inputs are changed. Sometimes it's less obvious whether the outputs may have changed, and the auto-sync option attempts to determine if outputs have been added or removed by the cook, and triggers a sync if it has. If there are currently no outputs, but an input or parm has changed, then autoSync will also be invoked.
+
+Because autoSync happens on idle, it still will not be invoked during playback. If there are no outputs at the start of playback, you will need to sync at a later frame where outputs exist before starting platback. e.g. if your particle hda has a start frame after the time slider start. If you have a variable number of objects being output per frame, new objects will not be added. For example, if your hda is doing a boolean on animated inputs, you should sync at a frame where there are the maximal number of separate pieces, in order to make sure that there are enough connected output meshes to capture all the parts at any frame.
+
+We're careful to not queue another autoSync if one has already been requested, but an autosync between mouse move events isn't that great for interactivity. And autoSync does not play nicely with other actions that take place on idle, such as playback caching, so it may not always be the best option. Note that there may still be cases where we're not detecting that a change requires modifying DG connections or output nodes.
+
+@section Maya_Compatibility_ParmAttr Parameters vs Attributes
+
+Houdini Parms can be disabled or hidden. Maya attributes have different kinds of properties. They can be locked (which means temporarily not editable or connectable) They can be visible in the channel box (but they are also visible in the channel box if they the are connectable)
+
+As for the attribute editor, whether a widget is visible or grayed out is determined by the callback scripts associated with the widget, and not by any innate property of the attribute. So in order to make the attribute editor display look like the Houdini parm UI, we would have had to attach callbacks to every parm attribute, and provide a command to determine if the parms were hidden/disabled. Perhaps we should have, although the performance could have potentially been dismal.
+
+Instead, we chose to just not add the attribute if a parm was hidden, and to lock the attribute if the parm was disabled.  So the user sees the same attributes or parms as they would in Houdini, but the behavior is not the same.  This led to needing to SyncAttributes if the visibility of a parm changed, and locking of disable attributes can interfere with the user own locking workflows.
+
+@section Maya_Compatibility_Mesh Mesh Geometry
+Houdini allows the same edge to be used in both directions within a primitive; Maya does not. For example, this geometry with a bridges to a hole would be valid in Houdini, but not in Maya:
+
+@image html Maya_Code_BadGeo.png
+
+Several versions of a cleanup hda to fix this have been made available on the forums or elsewhere, called maya_unsupported_prims.hda or something similar. These triangulate the offending primitive and then remove any remaining degenerate triangles that reuse the points/edge. If the  geometry is not cleaned up, the output mesh is still created, but Maya will drop the offending components on creation without providing any reindexing information, so then the output loses its UVs and colors because we no longer know where to apply them.
+
+@section Maya_Compatibility_Curves Curves
+
+Maya has curves but no curve networks, so each curve has a shape node. So for example Houdini hair has to come in as thousands of individual curves. With even a modest number of hairs, interactive performance is unusable. Bringing in the curves at render time only might be be a partial solution, but we can't visualize large numbers of curves interactively.
+
+There seem to be a number of subtle differences in implementation as well. Closed curves are interpreted differntly in Maya and Houdini, so transferring them back and forth can yield unexpected results. Maya is OK with knot multiplicity > order at end points, Houdini is not. We haven't mateched up Bezier curves completely yet either. We should be able to do better in matching up the representations, but for the moment there are still mismatches.
+
+@section Maya_Compatibility_Units Units
+
+Maya internal units are centimeters, Houdini units are meters, but we just send the data over unconverted.
+But ... Maya classic dynamics treated centimeters as meters (and nucleus defaulted to  old settings for the same reason) so if geometry was modelled to work with a Maya sim, but then sent off to Houdini to sim, the failure to scale gives the expected results in Maya. There is an RFE to add a preserveScale option to the asset options.
+
+@section Maya_Compatibility_Instancing Instancing
+
+Maya has dag instancing and particle instancing. We can convert packed primitives to one or the other depending on the asset options. But particle instancing is only really useful if the packed primitive contains multiple instances of the same geo, and not a lot of different geos. The instancer expects a unique Maya shape input for each unique piece of geometry.  In the worst case, we can end up outputting each piece of geo as a shape, connecting them to the instancer and hiding them, and then displaying the instancer outputs in Maya.
+
+We don't support creating a packed primitive from Maya instances or particler instancers either. A Maya particle instancer does not have output geo - it's just drawable and renderable. We would need to recreate the the functionality of the particle instancer based on its inputs and attributes in order to bring the instanced  geo into Houdini. Bringing in Maya dag instances is more of a UI issue, and could (someday, in principle)  be implemeted with only slight modifications to the houdiniInputGeometry node.
+
+@section Maya_Compatibility_Dynamics Dynamics
+
+Since Maya fluids and particles don't really have construction history we've hijacked the Maya nCache inputs for fluid and particle outputs. So creating a Maya cache for fluids/particles is problematic. CreateCache will write out the cache files but connecting the cache will fail because the Houdini asset connections already exist. Since the cache has been created, a workaround would be to duplicate the fluid or particle node and assign the created cache to the new node, but ideally we would  provide UI, or at least an example script for that.
+
+While age is explicitly represented in Houdini, in Maya it is computed from birthTime and the current frame. If an asset has explicitly defined a birthTime attribute, we use it for output, otherwise we compute birthTime from age.
+
+@section Maya_Compatibility_Construction_Hist  Construction History
+
+When we added the option of connecting an asset as construction history for an existing shape, we discovered that Maya's Delete->history would stop at the plugin node and no longer delete the entire history chain. Nor would deleting an asset node from a history chain result in history reconnecting across the gap, as it would for native Maya mesh history. We've added  out own versions of DeleteHistory and RemoveAssetFromHistory on the HoudiniEngine menu to deal with these cases.
+
+@section Maya_Compatibility_Library_Conflicts Library Conflicts
+
+When engine was still running in-process we encountered many conflicts - usually QT conflicts caused by loading Houdini modules that had UI dependencies. The module file sets the HOUDINI,_DSO_EXCLUDE_PATTERN to a list of all the problematic DSOs. Now that we only allow running engine out-of-process, there are far fewer client-side conflicts. We've removed some libraries from that list, but only those where hdas were crashing engine due to missing librraries: e.g. ROP_OpenGL and  OBJ_ReLight. Most of the other dso's on that list could be safely removed as well, we just haven't had any specific bugs for the rest yet.
+
+There's still the possibility of conflicts with other plugins: On Windows, when PATH is modified from the module specifications, we can get conflicts when other plugins have libraries with the same name e.g. between our libray and Mentalray's libray. Mentalray may no longer be an issue for most customers - but similar problems could potentially occur with other plugins.  
+On Linux, we can have LD_LIBRARY_PATH conflicts as well, but our plugin does not rely on having anything set in LD_LIBRARY_PATH, we can (and do) just have an option to unset LD_LIBRARY_PATH before auto-starting the plugin.
+
+
+*/

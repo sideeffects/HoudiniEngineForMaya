@@ -34,5 +34,6 @@ Other topics
   - @subpage Maya_Bake "Baking Assets"
   - @subpage Maya_Freeze "Freeze Assets"
   - @subpage Maya_Compatibility "Maya vs. Houdini Incompatibilites"
+  - @subpage Maya_Code "Intro to the Plugin Code"
   
 */

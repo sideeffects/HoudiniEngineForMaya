@@ -890,7 +890,8 @@ Asset::computeGeometryObjects(
         const MIntArray &instancedObjIds,
         const MStringArray &instancedObjNames,
         AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs
+        bool &needToSyncOutputs,
+        bool &needToRecomputeOutputData
         )
 {
     MStatus stat;
@@ -922,7 +923,8 @@ Asset::computeGeometryObjects(
                     instancedObjIds,
                     instancedObjNames,
                     options,
-                    needToSyncOutputs
+                    needToSyncOutputs,
+                    needToRecomputeOutputData
                     );
         }
     }
@@ -1032,7 +1034,8 @@ Asset::compute(
         const MPlug& plug,
         MDataBlock& data,
         AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs
+        bool &needToSyncOutputs,
+        bool &needToRecomputeOutputData
         )
 {
     assert(myNodeInfo.id >= 0);
@@ -1143,7 +1146,8 @@ Asset::compute(
             instancedObjIds,
             instancedObjNames,
             options,
-            needToSyncOutputs);
+            needToSyncOutputs,
+            needToRecomputeOutputData);
 
     computeMaterial(plug, data,
 	    options.bakeOutputTextures(),	    

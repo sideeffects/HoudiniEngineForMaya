@@ -25,7 +25,8 @@ class OutputGeometryObject: public OutputObject
                 const MIntArray &instancedObjIds,
                 const MStringArray &instancedObjNames,
                 AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs
+                bool &needToSyncOutputs,
+                bool &needToRecomputeOutputData
                 );
 
         virtual ObjectType type();

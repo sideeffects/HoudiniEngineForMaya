@@ -243,6 +243,9 @@ OutputInstancerObject::compute(
 
             int objIndex = myInstancedObjectIndices[j];
 
+            if (options.preserveScale())
+                p *= 100.0;
+
             positions[j] = p;
             rotations[j] = r;
             scales[j] = s;

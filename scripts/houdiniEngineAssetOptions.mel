@@ -1,0 +1,33 @@
+proc string[] getUpstreamNodes(string $node, string $type)
+{
+    string $upstreamNodes[] = `hyperShade -lun $node`;
+
+    string $filteredNodes[];
+
+    for ($upstreamNode in $upstreamNodes)
+    {
+        if (`nodeType $upstreamNode` == $type)
+            $filteredNodes[size($filteredNodes)] = $upstreamNode; 
+    }
+
+    return $filteredNodes;
+}
+
+global proc
+houdiniEngine_preserveHoudiniScaleChanged(string $assetNode)
+{
+    string $upstreamInputGeos[]   = getUpstreamNodes($assetNode, "houdiniInputGeometry");
+    string $upstreamAssets[]      = getUpstreamNodes($assetNode, "houdiniAsset");
+    string $upstreamInputXforms[] = getUpstreamNodes($assetNode, "houdiniInputTransform");
+
+    int $preserveScale = `getAttr ($assetNode + ".preserveScale")`;
+
+    for ($upstreamInputGeo in $upstreamInputGeos)
+        setAttr ($upstreamInputGeo + ".preserveScale") $preserveScale;
+
+    for ($upstreamAsset in $upstreamAssets)
+        setAttr ($upstreamAsset + ".preserveScale") $preserveScale;
+
+    for ($upstreamInputXform in $upstreamInputXforms)
+        setAttr ($upstreamInputXform + ".preserveScale") $preserveScale;
+}

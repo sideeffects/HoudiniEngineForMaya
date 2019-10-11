@@ -5,6 +5,7 @@ source houdiniEngineBakeAsset;
 source houdiniEngineRemoveHistory;
 source houdiniEngineDeleteHistory;
 source houdiniEngineFreezeAsset;
+source houdiniEngineAssetOptions;
 
 global int $houdiniEngine_scriptJobId = -1;
 

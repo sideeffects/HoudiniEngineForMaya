@@ -103,4 +103,8 @@ Normally, when you use the Attribute Editor to connect another asset as an input
 
 If the asset has materials with procedural textures, the Maya plugin will render the texture, bake it out to a file and use that file in a file texture. This can significantly impact the plugin's performance, especially if the texture needs to be recomputed often. Turning off Bake Output Textures will disable the rebaking of the texture files. The file texture nodes will persist with the correct file names during the maya session, however if the scene is reopened with the texture baking still turned off, you will need to turn it on again and sync the asset to see the texture in Maya again.
 
+@subsection Maya_Assets_Options_PreserveHoudiniScale Preserve Houdini Scale
+
+Each unit in Houdini is interpreted as 1 meter, while in Maya each unit is interpreted as 1 centimeter. If this option is enabled, outgoing assets from Maya will be scaled by a factor of 100, and outgoing assets from Houdini will be scaled by a factor of 0.01. This preserves the scale of the asset between both applications. If this is disabled, assets from Maya will come into Houdini 100x larger, and assets from Houdini will come into Maya 100x smaller than their intended scale. 
+
 */

@@ -24,7 +24,8 @@ class OutputGeometry {
                 MDataBlock &data,
                 MDataHandle &geoHandle,
                 AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs
+                bool &needToSyncOutputs,
+                bool &needToRecomputeOutputData
                 );
 
         void update();

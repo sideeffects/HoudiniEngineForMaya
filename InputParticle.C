@@ -180,6 +180,8 @@ InputParticle::setInputGeo(
         {
             MVectorArray vectorArray;
 
+            bool doPreserveAttrScale = false;
+
             // query the original particle for names of the per-particle
             // attributes
             MString getAttributesCommand = "particle -q -perParticleVector ";
@@ -238,18 +240,27 @@ InputParticle::setInputGeo(
                 if(strcmp(mappedAttributeName, "position") == 0)
                 {
                     mappedAttributeName = "P";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "velocity") == 0)
                 {
                     mappedAttributeName = "v";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "acceleration") == 0)
                 {
                     mappedAttributeName = "force";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "rgbPP") == 0)
                 {
                     mappedAttributeName = "Cd";
+                }
+
+                if (myPreserveScale && doPreserveAttrScale)
+                {
+                    for (unsigned int i = 0; i < vectorArray.length(); i++)
+                        vectorArray[i] *= 0.01;
                 }
 
                 CHECK_HAPI(hapiSetPointAttribute(
@@ -267,6 +278,8 @@ InputParticle::setInputGeo(
         // double attributes
         {
             MDoubleArray doubleArray;
+
+            bool doPreserveAttrScale = false;
 
             // query the original particle for names of the per-particle
             // attributes
@@ -325,10 +338,17 @@ InputParticle::setInputGeo(
                 else if(strcmp(mappedAttributeName, "radiusPP") == 0)
                 {
                     mappedAttributeName = "pscale";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "finalLifespanPP") == 0)
                 {
                     mappedAttributeName = "life";
+                }
+
+                if (myPreserveScale && doPreserveAttrScale)
+                {
+                    for (unsigned int i = 0; i < doubleArray.length(); i++)
+                        doubleArray[i] *= 0.01;
                 }
 
                 CHECK_HAPI(hapiSetPointAttribute(

@@ -1340,6 +1340,7 @@ AssetNode::nodeRemoved(MObject& node,void *clientData)
 
 AssetNode::AssetNode() :
     myNeedToMarshalInput(false),
+    myNeedToRecomputeOutputData(false),
     myAutoSyncId(-1),
     myExtraAutoSync(false),
     mySetAllParmsForEM(false)
@@ -1388,15 +1389,20 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
     bool isParameter = false;
     bool isTextureOpt = false;
     bool isButton = false;
+    bool isPreserveScale = false;
     {
         MFnDependencyNode assetNodeFn(thisMObject());
         MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
 	
-        MPlug optionPlug = assetNodeFn.findPlug("bakeOutputTextures", true);
-        if(plugBeingDirtied == optionPlug ) {
+        MPlug bakeOutputTexturesPlug = assetNodeFn.findPlug("bakeOutputTextures", true);
+        if(plugBeingDirtied == bakeOutputTexturesPlug ) {
 	    isTextureOpt = true;
         }
+
+        MPlug preserveScalePlug = assetNodeFn.findPlug("preserveScale", true);
+        if(plugBeingDirtied == preserveScalePlug)
+            isPreserveScale = true;
 
         if(Util::endsWith(plugBeingDirtied.name(), "__button"))
         {
@@ -1468,7 +1474,7 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         affectedPlugs.append(MPlug(thisMObject(),AssetNode::outputMaterialTexturePath));
     }
     // Changing time or parameters will dirty the output
-    if(isTime || isInput || isParameter)
+    if(isTime || isInput || isParameter || isPreserveScale)
     {
         Util::getChildPlugs(
                 affectedPlugs,
@@ -1631,11 +1637,13 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
+
         status = myAsset->compute(
                 outputPlug,
                 data,
                 options,
-                needToSyncOutputs
+                needToSyncOutputs,
+                myNeedToRecomputeOutputData
                 );
 
 	// this gets parm properties as well as values
@@ -1846,6 +1854,13 @@ AssetNode::setInternalValueInContext(
 	
         }
     } 
+
+    // asset doesn't need to cook, but it does need to recompute the output data
+    // to properly redraw the asset in the viewport
+    MPlug preserveScalePlug = assetNodeFn.findPlug("preserveScale", true);
+
+    if (plugBeingSet == preserveScalePlug)
+        myNeedToRecomputeOutputData = true;
 
 #if MAYA_API_VERSION >= 201800
     return MPxTransform::setInternalValue(plugBeingSet, dataHandle);

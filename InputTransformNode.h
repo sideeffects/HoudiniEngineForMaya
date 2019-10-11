@@ -17,6 +17,7 @@ public:
 
     static MObject inputTransform;
     static MObject inputMatrix;
+    static MObject preserveScale;
 
     static MObject outputNodeId;
 

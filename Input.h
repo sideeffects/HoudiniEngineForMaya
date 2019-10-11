@@ -54,6 +54,7 @@ class Input
 	void setUnlockNormals(bool unlockNormals);
 	void setMatPerFace(bool matPerFace);
 	void setAllowFacetSet(bool allowFacetSet);
+	void setPreserveScale(bool preserveScale);
 
         void setInputName(
                 HAPI_AttributeOwner owner, int count,
@@ -88,6 +89,7 @@ class Input
 	bool myUnlockNormals;
 	bool myMatPerFace;
 	bool myAllowFacetSet;
+	bool myPreserveScale;
 	
     private:
         static void nameChangedCallback(

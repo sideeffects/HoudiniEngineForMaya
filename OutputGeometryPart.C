@@ -50,7 +50,8 @@ OutputGeometryPart::~OutputGeometryPart() {}
 void
 OutputGeometryPart::computeVolumeTransform(
         const MTime &time,
-        MDataHandle& volumeTransformHandle
+        MDataHandle& volumeTransformHandle,
+        const bool preserveScale
         )
 {
     HAPI_Transform transform = myVolumeInfo.transform;
@@ -76,6 +77,13 @@ OutputGeometryPart::computeVolumeTransform(
         transform.scale[2]
     };
 
+    if (preserveScale)
+    {
+        transform.position[0] *= 100.0;
+        transform.position[1] *= 100.0;
+        transform.position[2] *= 100.0;
+    }
+
     MTransformationMatrix matrix;
     matrix.addScale(scale, MSpace::kTransform);
     matrix.addRotation(rot, MTransformationMatrix::kXYZ, MSpace::kTransform);
@@ -89,17 +97,41 @@ OutputGeometryPart::computeVolumeTransform(
 
     const double scale2[3] = {2, 2, 2};
     matrix.addScale(scale2, MSpace::kPreTransform);
-    matrix.addTranslation(MVector(-0.5, -0.5, -0.5), MSpace::kPreTransform);
-    matrix.addTranslation(
+
+    if (preserveScale)
+        matrix.addTranslation(MVector(-50.0, -50.0, -50.0), MSpace::kPreTransform);
+    else
+        matrix.addTranslation(MVector(-0.5, -0.5, -0.5), MSpace::kPreTransform);
+
+
+    if (preserveScale)
+    {
+        matrix.addTranslation(
+            MVector(xoffset * 100.0, yoffset * 100.0, zoffset * 100.0),
+            MSpace::kPreTransform
+            );
+    }
+    else
+    {
+        matrix.addTranslation(
             MVector(xoffset, yoffset, zoffset),
             MSpace::kPreTransform
             );
+    }
 
-    const double scale3[3] = {
+    double scale3[3] = {
         static_cast<double>(myVolumeInfo.xLength),
         static_cast<double>(myVolumeInfo.yLength),
         static_cast<double>(myVolumeInfo.zLength)
     };
+
+    if (preserveScale)
+    {
+        scale3[0] *= 100.0;
+        scale3[1] *= 100.0;
+        scale3[2] *= 100.0;
+    }
+
     matrix.addScale(scale3, MSpace::kPreTransform);
 
     double final_scale[3];
@@ -202,7 +234,8 @@ OutputGeometryPart::compute(
                 partPlug.child(AssetNode::outputPartHasParticles),
                 partPlug.child(AssetNode::outputPartParticle),
                 data,
-                hasParticlesHandle, particleHandle);
+                hasParticlesHandle, particleHandle,
+                options);
 
 #if MAYA_API_VERSION >= 201400
         // Volume
@@ -212,7 +245,8 @@ OutputGeometryPart::compute(
             computeVolume(time,
                     partPlug.child(AssetNode::outputPartVolume),
                     data,
-                    volumeHandle);
+                    volumeHandle,
+                    options.preserveScale());
         }
 #endif
 
@@ -233,7 +267,9 @@ OutputGeometryPart::compute(
                 partPlug.child(AssetNode::outputPartHasInstancer),
                 partPlug.child(AssetNode::outputPartInstancer),
                 data,
-                hasInstancerHandle, instanceHandle);
+                hasInstancerHandle, instanceHandle,
+                options.preserveScale()
+                );
 
         // Groups
         MDataHandle groupsHandle = partHandle.child(
@@ -464,7 +500,8 @@ template<typename T>
 bool
 OutputGeometryPart::convertParticleAttribute(
         T particleArray,
-        const char* houdiniName
+        const char* houdiniName,
+        bool preserveScale
    )
 {
     typedef ARRAYTRAIT(T) Trait;
@@ -481,6 +518,13 @@ OutputGeometryPart::convertParticleAttribute(
                     )))
     {
         particleArray = Util::reshapeArray<T>(dataArray);
+
+        if (preserveScale)
+        {
+            for (unsigned int i = 0; i < particleArray.length(); i++)
+                particleArray[i] *= 100.0;
+        }
+
 	return true;
     }
     else
@@ -821,7 +865,8 @@ OutputGeometryPart::computeParticle(
         const MPlug &particlePlug,
         MDataBlock& data,
         MDataHandle &hasParticlesHandle,
-        MDataHandle &particleHandle
+        MDataHandle &particleHandle,
+        AssetNodeOptions::AccessorDataBlock &options
         )
 {
     data.setClean(hasParticlePlug);
@@ -872,7 +917,8 @@ OutputGeometryPart::computeParticle(
     // position
     convertParticleAttribute(
             arrayDataFn.vectorArray("position"),
-            "P"
+            "P",
+            options.preserveScale()
             );
     {
         MObject positionsObj = positionsHandle.data();
@@ -916,7 +962,8 @@ OutputGeometryPart::computeParticle(
     // velocity
     convertParticleAttribute(
             arrayDataFn.vectorArray("velocity"),
-            "v"
+            "v",
+            options.preserveScale()
             );
     markAttributeUsed("v");
     markAttributeUsed("velocity");
@@ -924,7 +971,8 @@ OutputGeometryPart::computeParticle(
     // acceleration
     convertParticleAttribute(
             arrayDataFn.vectorArray("acceleration"),
-            "force"
+            "force",
+            options.preserveScale()
             );
     markAttributeUsed("acceleration");
     markAttributeUsed("force");
@@ -950,21 +998,24 @@ OutputGeometryPart::computeParticle(
     // mass
     convertParticleAttribute(
             arrayDataFn.doubleArray("mass"),
-            "mass"
+            "mass",
+            true
             );
     markAttributeUsed("mass");
 
     // birthTime
     bool birthTimeDefined = convertParticleAttribute(
             arrayDataFn.doubleArray("birthTime"),
-            "birthTime"
+            "birthTime",
+            false
             );
     markAttributeUsed("birthTime");
 
     // age
     bool ageDefined = convertParticleAttribute(
             arrayDataFn.doubleArray("age"),
-            "age"
+            "age",
+            false
             );
     markAttributeUsed("age");
 
@@ -984,13 +1035,15 @@ OutputGeometryPart::computeParticle(
     // lifespanPP
     convertParticleAttribute(
             arrayDataFn.doubleArray("lifespanPP"),
-            "life"
+            "life",
+            false
             );
 
     // finalLifespanPP
     convertParticleAttribute(
             arrayDataFn.doubleArray("finalLifespanPP"),
-            "life"
+            "life",
+            false
             );
     markAttributeUsed("life");
 
@@ -1063,7 +1116,8 @@ OutputGeometryPart::computeParticle(
         {
             convertParticleAttribute(
                     arrayDataFn.vectorArray(translatedAttributeName),
-                    attributeName.asChar()
+                    attributeName.asChar(),
+                    false
                     );
         }
         else if(storage == HAPI_STORAGETYPE_FLOAT64
@@ -1071,7 +1125,8 @@ OutputGeometryPart::computeParticle(
         {
             convertParticleAttribute(
                     arrayDataFn.doubleArray(translatedAttributeName),
-                    attributeName.asChar()
+                    attributeName.asChar(),
+                    false
                     );
         }
     }
@@ -1083,7 +1138,8 @@ OutputGeometryPart::computeVolume(
         const MTime &time,
         const MPlug &volumePlug,
         MDataBlock& data,
-        MDataHandle &volumeHandle
+        MDataHandle &volumeHandle,
+        const bool preserveScale
         )
 {
     MDataHandle gridHandle
@@ -1177,7 +1233,7 @@ OutputGeometryPart::computeVolume(
     }
 
     // transform
-    computeVolumeTransform(time, transformHandle);
+    computeVolumeTransform(time, transformHandle, preserveScale);
 
     // resolution
     MFloatArray resolution;
@@ -1265,6 +1321,12 @@ OutputGeometryPart::computeMesh(
                 attrInfo,
                 floatArray
                 );
+
+        if (options.preserveScale())
+        {
+            for (size_t i = 0; i < floatArray.size(); i++)
+                floatArray[i] *= 100.0f;
+        }
 
         vertexArray = Util::reshapeArray<
             3,
@@ -2255,7 +2317,8 @@ OutputGeometryPart::computeInstancer(
         const MPlug &instancerPlug,
         MDataBlock& data,
         MDataHandle &hasInstancerHandle,
-        MDataHandle &instanceHandle
+        MDataHandle &instanceHandle,
+        const bool preserveScale
         )
 {
     data.setClean(hasInstancerPlug);
@@ -2329,6 +2392,9 @@ OutputGeometryPart::computeInstancer(
             MVector s(transform.scale[0],
                     transform.scale[1],
                     transform.scale[2]);
+
+            if (preserveScale)
+                p *= 100.0;
 
             // Particle instancer
             positions[i] = p;

@@ -40,7 +40,8 @@ OutputGeometryObject::compute(
         const MIntArray &instancedObjIds,
         const MStringArray &instancedObjNames,
         AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs
+        bool &needToSyncOutputs,
+        bool &needToRecomputeOutputData
         )
 {
     MStatus stat = MS::kSuccess;
@@ -108,7 +109,8 @@ OutputGeometryObject::compute(
                     data,
                     geoHandle,
                     options,
-                    needToSyncOutputs
+                    needToSyncOutputs,
+                    needToRecomputeOutputData
                     );
             CHECK_MSTATUS_AND_RETURN_IT(stat);
         }

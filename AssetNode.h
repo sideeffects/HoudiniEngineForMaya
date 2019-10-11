@@ -103,6 +103,7 @@ class AssetNode: public MPxTransform
 
         bool mySetAllParms;
         bool myNeedToMarshalInput;
+        bool myNeedToRecomputeOutputData;
 
         int myAutoSyncId;
 	int myExtraAutoSync;

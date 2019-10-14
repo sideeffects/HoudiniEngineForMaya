@@ -191,8 +191,9 @@ InputParticle::setInputGeo(
             MStringArray attributeNames;
             MGlobal::executeCommand(getAttributesCommand, attributeNames);
 
-	    for (const auto &attributeName : attributeNames)
+	    for (unsigned int ai = 0; ai < attributeNames.length(); ai++)
             {
+		const MString attributeName = attributeNames[ai];
                 MObject attributeObj = originalParticleFn.attribute(attributeName);
                 if(attributeObj.isNull())
                 {
@@ -292,9 +293,9 @@ InputParticle::setInputGeo(
             // aren't returned by the MEL command
             attributeNames.append("age");
 
-            for(unsigned int i = 0; i < attributeNames.length(); i++)
+            for(unsigned int ai = 0; ai < attributeNames.length(); ai++)
             {
-                const MString attributeName = attributeNames[i];
+                const MString attributeName = attributeNames[ai];
 
                 MObject attributeObj = originalParticleFn.attribute(attributeName);
                 if(attributeObj.isNull())

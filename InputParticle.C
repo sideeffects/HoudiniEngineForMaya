@@ -191,10 +191,8 @@ InputParticle::setInputGeo(
             MStringArray attributeNames;
             MGlobal::executeCommand(getAttributesCommand, attributeNames);
 
-            for(unsigned int i = 0; i < attributeNames.length(); i++)
+	    for (const auto &attributeName : attributeNames)
             {
-                const MString attributeName = attributeNames[i];
-
                 MObject attributeObj = originalParticleFn.attribute(attributeName);
                 if(attributeObj.isNull())
                 {

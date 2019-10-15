@@ -140,6 +140,7 @@ houdiniEngine_assetPicker(string $assetLibraryFilePath, string $message)
 
     textScrollList -e
         -doubleClickCommand ("layoutDialog -dismiss `textScrollList -q -selectItem " + $textScrollList + "`")
+	-height 200
         $textScrollList;
 
     string $assets[] = `houdiniAsset -listAssets $assetLibraryFilePath`;

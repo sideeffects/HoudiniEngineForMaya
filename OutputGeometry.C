@@ -77,7 +77,7 @@ OutputGeometry::compute(
         MDataHandle &geoHandle,
         AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs,
-        bool &needToRecomputeOutputData
+        const bool needToRecomputeOutputData
         )
 {
     MStatus stat;
@@ -163,8 +163,6 @@ OutputGeometry::compute(
     }
 
     myLastCookCount = myNodeInfo.totalCookCount;
-
-    needToRecomputeOutputData = false;
 
     return MS::kSuccess;
 }

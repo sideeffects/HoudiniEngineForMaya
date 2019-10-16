@@ -41,7 +41,7 @@ OutputGeometryObject::compute(
         const MStringArray &instancedObjNames,
         AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs,
-        bool &needToRecomputeOutputData
+        const bool needToRecomputeOutputData
         )
 {
     MStatus stat = MS::kSuccess;
@@ -123,7 +123,7 @@ OutputGeometryObject::compute(
     // HAPI_NodeInfo.totalCookCount would never be incremented - Andrew W.
     {
         MDataHandle transformHandle = objectHandle.child(AssetNode::outputObjectTransform);
-        updateTransform(transformHandle);
+        updateTransform(transformHandle, options.preserveScale());
 
         myLastCookCount = myNodeInfo.totalCookCount;
     }
@@ -187,7 +187,7 @@ void OutputGeometryObject::update()
     }
 }
 
-void OutputGeometryObject::updateTransform(MDataHandle& handle)
+void OutputGeometryObject::updateTransform(MDataHandle& handle, const bool preserveScale)
 {
     HAPI_Result hapiResult;
 
@@ -214,6 +214,13 @@ void OutputGeometryObject::updateTransform(MDataHandle& handle)
 #ifndef M_PI
 #define M_PI 3.14
 #endif
+    if (preserveScale)
+    {
+        trans.position[0] *= 100.0f;
+        trans.position[1] *= 100.0f;
+        trans.position[2] *= 100.0f;
+    }
+
     translateHandle.set3Double(
             trans.position[0],
             trans.position[1],

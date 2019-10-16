@@ -26,7 +26,7 @@ class OutputGeometryObject: public OutputObject
                 const MStringArray &instancedObjNames,
                 AssetNodeOptions::AccessorDataBlock &options,
                 bool &needToSyncOutputs,
-                bool &needToRecomputeOutputData
+                const bool needToRecomputeOutputData
                 );
 
         virtual ObjectType type();
@@ -34,7 +34,7 @@ class OutputGeometryObject: public OutputObject
     private:
         void update();
 
-        void updateTransform(MDataHandle& handle);
+        void updateTransform(MDataHandle& handle, const bool preserveScale);
 
     private:
         std::vector<OutputGeometry *> myGeos;

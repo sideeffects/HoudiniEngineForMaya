@@ -822,7 +822,8 @@ Asset::computeInstancerObjects(
         MIntArray &instancedObjIds,
         MStringArray &instancedObjNames,
         AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs
+        bool &needToSyncOutputs,
+        const bool needToRecomputeOutputData
         )
 {
     MStatus stat;
@@ -858,7 +859,8 @@ Asset::computeInstancerObjects(
                     data,
                     instancerHandle,
                     options,
-                    needToSyncOutputs
+                    needToSyncOutputs,
+                    needToRecomputeOutputData
                     );
             if(MS::kSuccess == stat)
             {
@@ -891,7 +893,7 @@ Asset::computeGeometryObjects(
         const MStringArray &instancedObjNames,
         AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs,
-        bool &needToRecomputeOutputData
+        const bool needToRecomputeOutputData
         )
 {
     MStatus stat;
@@ -1035,7 +1037,7 @@ Asset::compute(
         MDataBlock& data,
         AssetNodeOptions::AccessorDataBlock &options,
         bool &needToSyncOutputs,
-        bool &needToRecomputeOutputData
+        const bool needToRecomputeOutputData
         )
 {
     assert(myNodeInfo.id >= 0);
@@ -1140,7 +1142,8 @@ Asset::compute(
             instancedObjIds,
             instancedObjNames,
             options,
-            needToSyncOutputs);
+            needToSyncOutputs,
+            needToRecomputeOutputData);
 
     computeGeometryObjects(plug, data,
             instancedObjIds,

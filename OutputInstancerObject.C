@@ -175,7 +175,8 @@ OutputInstancerObject::compute(
         MDataBlock& data,
         MDataHandle& handle,
         AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs
+        bool &needToSyncOutputs,
+        const bool needToRecomputeOutputData
         )
 {
     update();
@@ -183,7 +184,7 @@ OutputInstancerObject::compute(
     if(myGeoInfo.partCount <= 0)
         return MS::kFailure;
 
-    if(mySopNodeInfo.totalCookCount > myLastSopCookCount)
+    if((mySopNodeInfo.totalCookCount > myLastSopCookCount) || needToRecomputeOutputData)
     {
         MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);

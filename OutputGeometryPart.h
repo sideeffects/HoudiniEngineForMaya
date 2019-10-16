@@ -67,7 +67,8 @@ class OutputGeometryPart
                 const MPlug &curvesIsBezierPlug,
                 MDataBlock& data,
                 MDataHandle &curvesHandle,
-                MDataHandle &curvesIsBezierHandle
+                MDataHandle &curvesIsBezierHandle,
+                AssetNodeOptions::AccessorDataBlock &options
                 );
         void computeVolume(
                 const MTime &time,

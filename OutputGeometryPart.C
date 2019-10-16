@@ -258,7 +258,8 @@ OutputGeometryPart::compute(
                 partPlug.child(AssetNode::outputPartCurves),
                 partPlug.child(AssetNode::outputPartCurvesIsBezier),
                 data,
-                curvesHandle, curvesIsBezierHandle);
+                curvesHandle, curvesIsBezierHandle,
+                options);
 
         // Instancer
         MDataHandle hasInstancerHandle = partHandle.child(AssetNode::outputPartHasInstancer);
@@ -312,7 +313,8 @@ OutputGeometryPart::computeCurves(
         const MPlug &curvesIsBezierPlug,
         MDataBlock& data,
         MDataHandle &curvesHandle,
-        MDataHandle &curvesIsBezierHandle
+        MDataHandle &curvesIsBezierHandle,
+        AssetNodeOptions::AccessorDataBlock &options
         )
 {
     MStatus status;
@@ -428,6 +430,17 @@ OutputGeometryPart::computeCurves(
                         pArray[iSrc * 3 + 2],
                         pwArray.empty() ? 1.0f : pwArray[iSrc]
                         );
+            }
+
+            if (options.preserveScale())
+            {
+                for (int i = 0; i < controlVertices.length(); i++)
+                {
+                    controlVertices[i].x *= 100.0;
+                    controlVertices[i].y *= 100.0;
+                    controlVertices[i].z *= 100.0;
+                    controlVertices[i].w *= 100.0;
+                }
             }
 
             MDoubleArray knotSequences;

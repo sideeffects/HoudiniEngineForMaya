@@ -123,8 +123,8 @@ if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
     set(
         compile_options
         -Wall
-        -g
-        -Og
+        -Wconversion
+        -O2
         )
 elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
     set(

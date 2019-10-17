@@ -107,4 +107,8 @@ If the asset has materials with procedural textures, the Maya plugin will render
 
 Each unit in Houdini is interpreted as 1 meter, while in Maya each unit is interpreted as 1 centimeter. If this option is enabled, outgoing assets from Maya will be scaled by a factor of 100, and outgoing assets from Houdini will be scaled by a factor of 0.01. This preserves the scale of the asset between both applications. If this is disabled, assets from Maya will come into Houdini 100x larger, and assets from Houdini will come into Maya 100x smaller than their intended scale. 
 
+@subsection Maya_Assets_Options_IgnoreTransform Ignore Transform
+
+When active, the incoming transformation will be ignored. This mimics the function of the Object Merges SOP's "Transform" parm being set to "None". 
+
 */

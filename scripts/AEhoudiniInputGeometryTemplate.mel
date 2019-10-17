@@ -24,8 +24,11 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
             -label "Point Component Group"
             -addControl "pointComponentGroup";
         editorTemplate
-            -label "Preserve Houdini scale"
+            -label "Preserve Houdini Scale"
             -addControl "preserveScale";
+        editorTemplate
+            -label "Ignore Transform"
+            -addControl "ignoreTransform";
     editorTemplate -endLayout;
     
     editorTemplate -beginLayout "Outputs" -collapse false;

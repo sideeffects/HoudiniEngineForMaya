@@ -771,16 +771,19 @@ houdiniEngineCreateUI()
 	-imageOverlayLabel "BA"
 	-annotation "Tear off a copy of the asset's current output nodes"
         -command "houdiniEngine_bakeSelectedAssets";
-    menuItem -label "Freeze Asset"
-	-imageOverlayLabel "BA"
-	-version $mayaVersion
-	-annotation "Disconnect the asset's output nodes and mark the asset frozen"
-        -command "houdiniEngine_freezeSelectedAssets";
-    menuItem -label "Unfreeze Asset"
-	-imageOverlayLabel "BA"
-	-version $mayaVersion
-	-annotation "Reconnect the asset's output nodes and mark the asset unfrozen"
-        -command "houdiniEngine_unfreezeSelectedAssets";
+    int $intVersion = $mayaVersion;
+    if($intVersion > 2016) {
+        menuItem -label "Freeze Asset"
+	    -imageOverlayLabel "BA"
+	    -version $mayaVersion
+	    -annotation "Disconnect the asset's output nodes and mark the asset frozen"
+            -command "houdiniEngine_freezeSelectedAssets";
+        menuItem -label "Unfreeze Asset"
+	    -imageOverlayLabel "BA"
+	    -version $mayaVersion
+	    -annotation "Reconnect the asset's output nodes and mark the asset unfrozen"
+            -command "houdiniEngine_unfreezeSelectedAssets";
+    }
     menuItem -label "Remove Asset From History"
 	-imageOverlayLabel "RAH"
         -annotation "Remove this asset and its inputGeometry nodes and reconnect history across the gap"

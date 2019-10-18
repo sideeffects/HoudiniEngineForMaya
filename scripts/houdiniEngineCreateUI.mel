@@ -771,8 +771,9 @@ houdiniEngineCreateUI()
 	-imageOverlayLabel "BA"
 	-annotation "Tear off a copy of the asset's current output nodes"
         -command "houdiniEngine_bakeSelectedAssets";
-    int $intVersion = $mayaVersion;
-    if($intVersion > 2016) {
+    
+    if( getApplicationVersionAsFloat() >= 2016.5 )
+    {
         menuItem -label "Freeze Asset"
 	    -imageOverlayLabel "BA"
 	    -version $mayaVersion

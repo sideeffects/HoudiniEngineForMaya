@@ -128,7 +128,7 @@ Used to assign UVs of the vertices. Each UV attribute is used for assigning a di
 
 This set of attributes is used to map the names of the Houdini UV attributes into the names of the UV set in Maya. The `maya_uv_name` is used to set the name of the UV set in Maya, and the `maya_uv_mapped_uv` is the name of the corresponding UV attribute in Houdini. The two strings must have the same number of elements.
 
-If you are adding mapping information to a mesh created in houdini, or adding new UVsets to output on a mesh created in maya, you can use a python sop to create or set the size of the string attributes.
+If you are adding mapping information to a mesh created in houdini, or adding new UVsets to output on a mesh created in maya, you can use a python node to create or set the size of the string attributes. (see the color example for more details)
 
 - `maya_uv_current` - detail string
 
@@ -147,7 +147,20 @@ Used to set the vertex color and alpha of each color set. The Alpha attribute is
 
 This set of attributes is used to map the names of the Houdini Color and Alpha attributes into color sets in Maya. The `maya_colorset_name` sets the name of the color sets in Maya, and `maya_colorset_mapped_Cd` and `maya_colorset_mapped_Alpha` are used to map the color and alpha attributes in Houdini to the corresponding color set in Maya.
 
-If you are adding mapping information to a mesh created in houdini, or adding new color sets to output on a mesh created in maya, you can use a python sop to create or set the size of the string attributes.
+If you are adding mapping information to a mesh created in houdini, or adding new color sets to output on a mesh created in maya, you can use a python node to create or set the size of the string attributes: e.g. 
+
+@verbatim
+cs_mapped_Cd = geo.addAttrib( hou.attribType.Global, "maya_colorset_mapped_Cd", "Cd")
+cs_name = geo.addAttrib( hou.attribType.Global, "maya_colorset_name", "NewCol")
+cs_mapped_Alpha = geo.addAttrib( hou.attribType.Global, "maya_colorset_mapped_Alpha", "Alpha")
+cs_mapped_Cd.setSize(2)
+cs_name.setSize(2)
+cs_mapped_Alpha.setSize(2)
+geo.setGlobalAttribValue( "maya_colorset_mapped_Cd", ("Cd", "Cd2") )
+geo.setGlobalAttribValue( "maya_colorset_name", ("NewCol","NewCol11"))
+geo.setGlobalAttribValue( "maya_colorset_mapped_Alpha", ("Alpha", "Alpha1"))
+@endverbatim
+
 
 - `maya_colorset_current` - detail string
 

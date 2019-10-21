@@ -212,8 +212,8 @@ OutputInstancerObject::compute(
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
         CHECK_HAPI(HAPI_GetInstanceTransformsOnPart(
                 Util::theHAPISession.get(),
-		0,
                 mySopNodeInfo.id,
+		0,
                 HAPI_SRT,
                 instTransforms,
                 0, size

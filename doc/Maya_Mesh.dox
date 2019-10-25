@@ -74,6 +74,7 @@ Note that while Maya supports empty and partial color sets, houdini does not, so
 
 Stores the name of the shading group that is assigned to the object, or to each polygon.
 
+
 @subsection Maya_Mesh_Input_Component_Selection Component Selection
 
 When mesh components are selected doing addToSelection on an input, the inputComponents attribute is set on the inputGeometry node, and corresponding groups are created on the input geo. The asset still needs to use the named component group for it to have any effect. The inputComponents attribute is a componentList attribute, so that while it doesn't show up in the attribute editor, it can be set like this:
@@ -170,11 +171,13 @@ Used to set the current color set.
 
 If you have added new color attributes that did not come from Maya, the maya_colorRep attribute can be used to set the color representation on the output color sets, and to determine which color channels to set on the output. It uses the Maya UI representation names:  RGBA, RGB, and A. If maya_colorRep is not found, or it's not valid,  or if there is no mapping specified for the color sets, the resulting color set will be RGBA.
 
-@subsection Maya_Mesh_Output_ShadingGroup Shading Groups
+@subsection Maya_Mesh_Output_ShadingGroup Shading Groups and Materials
 
 - `maya_shading_group` - primitive string
 
 Used to assign the named shading group in Maya to the polygon. The shading group must already exist in the scene.
+
+If your HDA has materials where file textures are being baked out for Maya, we recommend that in Maya's Display Preferences you set the MaterialLoadingMode to Immediate in order to be able to see the changes to the output textures updating.
 
 @subsection Maya_Mesh_Output_Sets Sets
 

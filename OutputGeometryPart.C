@@ -1407,12 +1407,18 @@ OutputGeometryPart::computeMesh(
     {
         bool mismatch_topology = false;
 
+        MString partName;
+        if(myPartInfo.nameSH != 0)
+        {
+            partName = Util::HAPIString(myPartInfo.nameSH);
+        }
         if(vertexArray.length() != (unsigned int) meshFn.numVertices())
         {
             DISPLAY_WARNING(
-                    "Attempted to create ^1s vertices, but only ^2s vertices "
+                    "Attempted to create ^1s vertices for ^2s, but only ^3s vertices "
                     "were created.",
                     MString() + vertexArray.length(),
+		    partName,
                     MString() + meshFn.numVertices()
                     );
             mismatch_topology = true;
@@ -1420,9 +1426,10 @@ OutputGeometryPart::computeMesh(
         if(polygonCounts.length() != (unsigned int) meshFn.numPolygons())
         {
             DISPLAY_WARNING(
-                    "Attempted to create ^1s polygons, but only ^2s polygons "
+                    "Attempted to create ^1s polygons for ^2s, but only ^3s polygons "
                     "were created.",
                     MString() + polygonCounts.length(),
+ 		    partName,
                     MString() + meshFn.numPolygons()
                     );
             mismatch_topology = true;
@@ -1430,9 +1437,10 @@ OutputGeometryPart::computeMesh(
         if(polygonConnects.length() != (unsigned int) meshFn.numFaceVertices())
         {
             DISPLAY_WARNING(
-                    "Attempted to create ^1s face-vertices, but only ^2s "
+                    "Attempted to create ^1s face-vertices for ^2s, but only ^3s "
                     "face-vertices were created.",
                     MString() + polygonConnects.length(),
+		    partName,
                     MString() + meshFn.numFaceVertices()
                     );
             mismatch_topology = true;

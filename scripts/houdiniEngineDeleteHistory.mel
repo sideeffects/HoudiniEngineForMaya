@@ -86,6 +86,19 @@ houdiniEngine_deleteHistory(string $node)
     // deletes it for all the objects parented under the asset, then deletes the asset
 
     string $assetNode = $upstreamAssets[0];
+    if($assetNode == "") {
+        print "Error: the selected node does not appear to have asset history: use the regular Delete History.\n";
+	return 0;
+    }
+    
+    // in 2019, if we do the delete history with the evaluationManager on
+    // it crashes in some EM operations on idle, so we go back to DG mode
+    string $prevEMMode = "off";
+    if(`about -apiVersion` >= 20190000) {
+        string $emMode[] = `evaluationManager -q -mode`;
+	$prevEMMode = $emMode[0];
+        evaluationManager -mode "off";
+    }
     
     // unparent children of asset (history asset should not have any)
     string $children[] = `listRelatives -c -f $assetNode`;
@@ -119,6 +132,9 @@ houdiniEngine_deleteHistory(string $node)
         delete -ch $object;
     delete_all_upstream_assets($assetNode);
     delete $assetNode;
+    if( $prevEMMode != "off") {
+        evaluationManager -mode $prevEMMode;
+    }
     
     return 0;
 }

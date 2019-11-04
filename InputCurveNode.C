@@ -18,6 +18,8 @@ MTypeId InputCurveNode::typeId = MayaTypeID_HoudiniInputCurveNode;
 MObject InputCurveNode::inputCurve;
 MObject InputCurveNode::outputNodeId;
 
+MObject InputCurveNode::preserveScale;
+
 void*
 InputCurveNode::creator()
 {
@@ -44,9 +46,19 @@ InputCurveNode::initialize()
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
+    InputCurveNode::preserveScale = nAttr.create(
+            "preserveScale", "preserveScale",
+            MFnNumericData::kBoolean,
+            false
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputCurveNode::preserveScale);
+
     addAttribute(InputCurveNode::outputNodeId);
 
     attributeAffects(InputCurveNode::inputCurve, InputCurveNode::outputNodeId);
+    attributeAffects(InputCurveNode::preserveScale, InputCurveNode::outputNodeId);
 
     return MS::kSuccess;
 }
@@ -100,6 +112,9 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
         MDataHandle metaDataHandle = data.outputValue(InputCurveNode::outputNodeId);
         metaDataHandle.setInt(myNodeId);
     }
+
+    MPlug preserveScalePlug(thisMObject(), InputCurveNode::preserveScale);
+    bool preserveScale = preserveScalePlug.asBool();
 
     MPlug inputCurveArrayPlug(thisMObject(), InputCurveNode::inputCurve);
 
@@ -175,7 +190,15 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
 
         for ( unsigned int iCV = 0; iCV < nCVs; ++iCV, ++curveInfo.vertexCount )
         {
-            const MPoint& cv = cvArray[iCV];
+            MPoint& cv = cvArray[iCV];
+
+            if (preserveScale)
+            {
+                cv.x *= 0.01f;
+                cv.y *= 0.01f;
+                cv.z *= 0.01f;
+            }
+
             cvP.push_back((float) cv.x);
             cvP.push_back((float) cv.y);
             cvP.push_back((float) cv.z);

@@ -43,4 +43,33 @@ It is possible to input any number of Maya geometries into a single asset input.
 
 If a group that contains multiple child objects is selected to use as input, the child objects will be expanded, and inputted as separate geometries. The group/transform hierarchy of the objects are not preserved.
 
+@section Maya_Inputs_Options Input Node Options
+
+There are now a number of options on the houdiniInputGeometry node. Most are only relevent for mesh inputs. Some are set automatically, otherwise the defaults are usually appropriate: so for the most part you'll never need to look at these options. But in case you do:
+
+@image html Maya_InputOptions.png
+
+@subsection Maya_Inputs_Options_UnlockNormals Unlock Normals
+
+For mesh inputs, to avoid sending custom normals to Houdini in the first place, turn on unlockNormals. This was a  more useful performance optimization back when PreserveMeshLockedNormals was slow (pre 2018/pre 17.0), but still potentially useful if you plan to work on normals in Houdini and want to ignore any previous Maya custom normals.
+
+@subsection Maya_Inputs_Options_MaterialPerFace Material Per Face
+If this option is set, attach shading group information as a primitive attribute when sending the mesh to Houdini, even if the input geo does not have shader assignment per face. When we assign materials to the output mesh , we do shader-per-face material assignment if the maya_shading_group is specified per primitive. This adds complexity to the output and reduces performace so generally you wouldn't want to do it unless there really are multiple materials on a single mesh. So this option is off by default; turn it on to  get the old (pre 17.0)  behavior where materials were always assigned to outputs shader-per_face.
+
+@subsection Maya_Inputs_Options_FacetOnlySets Allow Facet-Only Sets
+
+Facet-Only sets are one of a class of sets that Maya uses interally in some of its tools. Most of the time, you probably don't want to see these sets in houdini  since they represent some Maya tool's current internal state, and not persistent membership information. However, since it is possible to create these sets from the command line, you can turn on this option if you're using custom facet-only sets and wish to propogate the set membership.
+
+@subsection Maya_Inputs_Options_ObjectShadingGroup Object Shading Group
+
+The object level shading group of the input mesh. We  now have a script job that watches for changes to shader assignment on meshes feeding in to assets, then the shading group can be updated and passed through to the output geo. You should never need to set this manually.
+
+@subsection Maya_Inputs_Options_PrimitiveCompGroup Primitive Component Group
+
+If you want to use a non-default group for face selection input, specify the name here. Otherwise a primitive group called inputPrimitiveComponent will be created for maya face selection.
+
+@subsection Maya_Inputs_Options_PointCompGroup Point Component Group
+
+If you want to use a non-default group for maye vertex selection input, specify the name here. Otherwise a point group called inputPointComponent will be created for maya vertex selection.
+
 */

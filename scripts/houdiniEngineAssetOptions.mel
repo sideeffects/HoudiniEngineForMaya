@@ -19,6 +19,7 @@ houdiniEngine_preserveHoudiniScaleChanged(string $assetNode)
     string $upstreamInputGeos[]   = getUpstreamNodes($assetNode, "houdiniInputGeometry");
     string $upstreamAssets[]      = getUpstreamNodes($assetNode, "houdiniAsset");
     string $upstreamInputXforms[] = getUpstreamNodes($assetNode, "houdiniInputTransform");
+    string $upstreamInputCurves[] = getUpstreamNodes($assetNode, "houdiniInputCurve");
 
     int $preserveScale = `getAttr ($assetNode + ".preserveScale")`;
 
@@ -30,4 +31,7 @@ houdiniEngine_preserveHoudiniScaleChanged(string $assetNode)
 
     for ($upstreamInputXform in $upstreamInputXforms)
         setAttr ($upstreamInputXform + ".preserveScale") $preserveScale;
+
+    for ($upstreamInputCurve in $upstreamInputCurves)
+        setAttr ($upstreamInputCurve + ".preserveScale") $preserveScale;
 }

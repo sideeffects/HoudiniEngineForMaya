@@ -45,7 +45,11 @@ If a group that contains multiple child objects is selected to use as input, the
 
 @section Maya_Inputs_Options Input Node Options
 
-There are now a number of options on the houdiniInputGeometry node. Most are only relevent for mesh inputs. Some are set automatically, otherwise the defaults are usually appropriate: so for the most part you'll never need to look at these options. But in case you do:
+While the names of the maya input geometries are displayed on the asset node, the input geometry is actually connected by way of the houdiniInputGeometryNode (and sometimes the houdiniInputCurve, houdiniInputTransform and houdiniInputMerge nodes). These nodes will appear in related Attribute Editor tabs when the asset node is selected.
+
+@image html Maya_RelatedTabs.png
+
+The input nodes used to be so uninteresting that we didn't even have Attribute Editor templates for them, but that has changed over time. There are now a number of options on the houdiniInputGeometry node. Most are only relevent for mesh inputs. Some are set automatically, otherwise the defaults are usually appropriate: so for the most part you'll never need to look at these options. But in case you do:
 
 @image html Maya_InputOptions.png
 

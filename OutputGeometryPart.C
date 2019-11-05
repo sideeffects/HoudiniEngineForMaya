@@ -434,7 +434,7 @@ OutputGeometryPart::computeCurves(
 
             if (options.preserveScale())
             {
-                for (int i = 0; i < controlVertices.length(); i++)
+                for (unsigned int i = 0; i < controlVertices.length(); i++)
                 {
                     controlVertices[i].x *= 100.0;
                     controlVertices[i].y *= 100.0;

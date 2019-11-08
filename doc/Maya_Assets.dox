@@ -51,8 +51,6 @@ Deletes and recreates the attributes for the asset's parameters. If the asset's 
 
 @subsection Maya_Assets_Options_SplitGeosByGroup Split Geos By Group
 
-This option may soon become obsolete and removed, so relying on this option is not recommended.
-
 Normally, all the primitives of the same type are outputted together, and appear as one shape node in Maya. This option makes it possible to split the primitives of the same primitive type by Houdini groups. So primitives that belong to different groups will appear as separate shape nodes in Maya.
 
 For example, if half of a grid is in one group, and the other half is in another group, the entire grid will be outputted into one mesh node by default. However, if this option is enabled, one half of the grid will be one mesh node, and the other half will be another mesh node.

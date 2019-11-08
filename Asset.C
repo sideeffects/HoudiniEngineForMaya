@@ -622,6 +622,8 @@ Asset::Asset(
     CHECK_HAPI(hapiResult);
 
     myAssetName = Util::HAPIString(myAssetInfo.fullOpNameSH);
+    myAssetHelpText = Util::HAPIString(myAssetInfo.helpTextSH);
+    myAssetHelpURL = Util::HAPIString(myAssetInfo.helpURLSH);
 
     hapiResult = HAPI_GetNodeInfo(
             Util::theHAPISession.get(),
@@ -703,6 +705,26 @@ Asset::getAssetName() const
         return MString();
     }
     return myAssetName;
+}
+
+MString
+Asset::getAssetHelpText() const
+{
+    if(!isValid())
+    {
+        return MString();
+    }
+    return myAssetHelpText;
+}
+
+MString
+Asset::getAssetHelpURL() const
+{
+    if(!isValid())
+    {
+        return MString();
+    }
+    return myAssetHelpURL;
 }
 
 MString

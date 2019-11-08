@@ -33,6 +33,8 @@ MObject AssetNode::inTime;
 
 MObject AssetNode::otlFilePath;
 MObject AssetNode::assetName;
+MObject AssetNode::assetHelpText;
+MObject AssetNode::assetHelpURL;
 MObject AssetNode::assetConnectType;
 MObject AssetNode::postSyncCallback;
 MObject AssetNode::preSyncCallback;
@@ -232,6 +234,19 @@ AssetNode::initialize()
             );
     tAttr.setInternal(true);
     
+    AssetNode::assetHelpText = tAttr.create(
+            "assetHelpText", "assetHelpText",
+            MFnData::kString
+            );
+    tAttr.setInternal(true);
+    tAttr.setWritable(false);
+
+    AssetNode::assetHelpURL = tAttr.create(
+            "assetHelpURL", "assetHelpURL",
+            MFnData::kString
+            );
+    tAttr.setInternal(true);
+    tAttr.setWritable(false);
 
     AssetNode::postSyncCallback = tAttr.create(
             "postSyncCallback", "postSyncCallback",
@@ -1305,6 +1320,8 @@ AssetNode::initialize()
     addAttribute(AssetNode::inTime);
     addAttribute(AssetNode::otlFilePath);
     addAttribute(AssetNode::assetName);
+    addAttribute(AssetNode::assetHelpText);
+    addAttribute(AssetNode::assetHelpURL);
     addAttribute(AssetNode::assetConnectType);
     addAttribute(AssetNode::postSyncCallback);
     addAttribute(AssetNode::preSyncCallback);
@@ -1704,6 +1721,18 @@ AssetNode::getInternalValueInContext(
 
         return true;
     }
+    else if(plug == AssetNode::assetHelpText)
+    {
+        dataHandle.setString(myAssetHelpText);
+
+        return true;
+    }
+    else if(plug == AssetNode::assetHelpURL)
+    {
+        dataHandle.setString(myAssetHelpURL);
+
+        return true;
+    }
     MFnDependencyNode assetNodeFn(thisMObject());
     MPlug houdiniAssetParmPlug = assetNodeFn.findPlug("houdiniAssetParm", true);
 
@@ -1736,7 +1765,9 @@ AssetNode::setInternalValueInContext(
 {
     MStatus status;
     if(plugBeingSet == AssetNode::otlFilePath
-            || plugBeingSet == AssetNode::assetName)
+            || plugBeingSet == AssetNode::assetName
+            || plugBeingSet == AssetNode::assetHelpText
+            || plugBeingSet == AssetNode::assetHelpURL)
     {
         if(plugBeingSet == AssetNode::otlFilePath)
         {
@@ -1888,6 +1919,8 @@ AssetNode::copyInternalData(MPxNode* node)
 
     myOTLFilePath = assetNode->myOTLFilePath;
     myAssetName = assetNode->myAssetName;
+    myAssetHelpText = assetNode->myAssetHelpText;
+    myAssetHelpURL = assetNode->myAssetHelpURL;
 
     rebuildAsset();
 
@@ -1999,6 +2032,9 @@ AssetNode::createAsset()
         destroyAsset();
         return;
     }
+
+    myAssetHelpText = myAsset->getAssetHelpText();
+    myAssetHelpURL = myAsset->getAssetHelpURL();
 
     // We want to setParmValues() here because the state of the asset should be
     // restored to what it was before rebuildAsset() was called. This is

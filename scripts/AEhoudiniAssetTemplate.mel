@@ -923,6 +923,38 @@ global proc AEhoudiniAssetConnectReplace( string $attrName )
  	attrEnumOptionMenuGrp -e -attribute $attrName AEhoudiniAssetConnectEnum;
 }
 
+proc handleAssetHelpSection( string $nodeName )
+{
+    string $plugNode = `plugNode($nodeName)`;
+    int $hasHelpURL  = size(`getAttr($plugNode + ".assetHelpURL")`) > 0;
+    int $hasHelpText = size(`getAttr($plugNode + ".assetHelpText")`) > 0;
+
+    // set visibility
+    button      -e -visible $hasHelpURL AEhoudiniAssetHelpURLBtn;
+    scrollField -e -visible $hasHelpText AEhoudiniAssetHelpTextField;
+    text        -e -visible (!$hasHelpURL && !$hasHelpText) AEhoudiniAssetHelpEmptyLabel;
+
+    // set values
+    if ($hasHelpURL)
+        button -e -command ("launch -web \"" + getAttr($plugNode + ".assetHelpURL") + "\";") AEhoudiniAssetHelpURLBtn;
+    else if ($hasHelpText)
+        scrollField -e -text `getAttr($plugNode + ".assetHelpText")` AEhoudiniAssetHelpTextField;
+}
+
+global proc AEhoudiniAssetHelpNew( string $nodeName )
+{
+    button      -label "Open Help" AEhoudiniAssetHelpURLBtn;
+    scrollField -editable false AEhoudiniAssetHelpTextField;
+    text        -align "center" -label "No Help Found" AEhoudiniAssetHelpEmptyLabel;
+
+    handleAssetHelpSection($nodeName);
+}
+
+global proc AEhoudiniAssetHelpReplace( string $nodeName )
+{
+    handleAssetHelpSection($nodeName);
+}
+
 global proc AEhoudiniAssetTemplate(string $nodeName)
 {
     editorTemplate -beginScrollLayout;
@@ -943,6 +975,13 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -endLayout;
     }
 
+    editorTemplate -beginLayout ("Help for " + $nodeName) -collapse false;
+        editorTemplate -callCustom "AEhoudiniAssetHelpNew"  "AEhoudiniAssetHelpReplace" $nodeName;
+        // editorTemplate -callCustom "AEhoudiniAssetHelpTextNew"  "AEhoudiniAssetHelpTextReplace"  "assetHelpText";
+        // editorTemplate -callCustom "AEhoudiniAssetHelpURLNew"   "AEhoudiniAssetHelpURLReplace"   "assetHelpURL";
+        // editorTemplate -callCustom "AEhoudiniAssetHelpEmptyNew" "AEhoudiniAssetHelpEmptyReplace" "assetHelpEmpty";
+    editorTemplate -endLayout;
+
     editorTemplate -callCustom "AEhoudiniAssetParmNew" "AEhoudiniAssetParmReplace" "houdiniAssetParm";
 
     editorTemplate -beginLayout "Asset Information" -collapse false;
@@ -953,7 +992,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate
             -label "File Path"
             -addControl "otlFilePath";
-	    
+
         editorTemplate -beginLayout "Asset State" -collapse true;
             editorTemplate -callCustom "AEhoudiniAssetConnectNew" "AEhoudiniAssetConnectReplace" "assetConnectType";
             editorTemplate
@@ -992,6 +1031,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "ungroupOnBake";
         editorTemplate -suppress "updateParmsForEvalMode";
         editorTemplate -suppress "bakeOutputTextures";
+        editorTemplate -suppress "preserveScale";
         editorTemplate -suppress "connectGeoForAssetInputs";
 
         editorTemplate -suppress "useInstancerNode";

@@ -31,6 +31,8 @@ class Asset {
 
         MString getOTLFilePath() const;
         MString getAssetName() const;
+        MString getAssetHelpText() const;
+        MString getAssetHelpURL() const;
 
         HAPI_AssetInfo getAssetInfo() { return myAssetInfo; }
         HAPI_NodeInfo getNodeInfo() { return myNodeInfo; }
@@ -104,6 +106,8 @@ class Asset {
 
         MTime myTime;
         MString myAssetName;
+        MString myAssetHelpText;
+        MString myAssetHelpURL;
 
         HAPI_AssetInfo         myAssetInfo;
         bool myIsObjSubnet;

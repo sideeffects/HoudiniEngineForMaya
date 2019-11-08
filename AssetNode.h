@@ -100,6 +100,8 @@ class AssetNode: public MPxTransform
 
         MString myOTLFilePath;
         MString myAssetName;
+        MString myAssetHelpText;
+        MString myAssetHelpURL;
 
         bool mySetAllParms;
         bool myNeedToMarshalInput;
@@ -117,6 +119,8 @@ class AssetNode: public MPxTransform
 
         static MObject otlFilePath;
         static MObject assetName;
+        static MObject assetHelpText;
+        static MObject assetHelpURL;
 	static MObject assetConnectType;
 	static MObject preSyncCallback;
 	static MObject postSyncCallback;

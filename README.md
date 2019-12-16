@@ -31,6 +31,8 @@ For support and reporting bugs:
 ## Supported Maya versions
 Currently, the supported Maya versions are:
 
+* 2020
+* 2019
 * 2018
 * 2017
 * 2016.5

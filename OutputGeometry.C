@@ -76,7 +76,8 @@ OutputGeometry::compute(
         MDataBlock &data,
         MDataHandle &geoHandle,
         AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs
+        bool &needToSyncOutputs,
+        const bool needToRecomputeOutputData
         )
 {
     MStatus stat;
@@ -110,7 +111,7 @@ OutputGeometry::compute(
         needToSyncOutputs = true;
     }
 
-    bool forceCompute = false;
+    bool forceCompute = needToRecomputeOutputData;
     for(int i = 0; i < myGeoInfo.partCount; i++)
     {
         forceCompute |= myParts[i]->needCompute(options);

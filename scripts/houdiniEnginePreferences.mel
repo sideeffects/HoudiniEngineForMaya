@@ -10,7 +10,7 @@ houdiniEnginePreferences_refresh()
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineDeleteAfterBake"`
         delAfterBakeCheck;
-	
+
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineUnsetLLP"`
         unsetLLPCheck;

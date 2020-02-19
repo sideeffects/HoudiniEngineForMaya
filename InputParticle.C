@@ -180,6 +180,8 @@ InputParticle::setInputGeo(
         {
             MVectorArray vectorArray;
 
+            bool doPreserveAttrScale = false;
+
             // query the original particle for names of the per-particle
             // attributes
             MString getAttributesCommand = "particle -q -perParticleVector ";
@@ -189,10 +191,9 @@ InputParticle::setInputGeo(
             MStringArray attributeNames;
             MGlobal::executeCommand(getAttributesCommand, attributeNames);
 
-            for(unsigned int i = 0; i < attributeNames.length(); i++)
+	    for (unsigned int ai = 0; ai < attributeNames.length(); ai++)
             {
-                const MString attributeName = attributeNames[i];
-
+		const MString attributeName = attributeNames[ai];
                 MObject attributeObj = originalParticleFn.attribute(attributeName);
                 if(attributeObj.isNull())
                 {
@@ -238,18 +239,27 @@ InputParticle::setInputGeo(
                 if(strcmp(mappedAttributeName, "position") == 0)
                 {
                     mappedAttributeName = "P";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "velocity") == 0)
                 {
                     mappedAttributeName = "v";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "acceleration") == 0)
                 {
                     mappedAttributeName = "force";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "rgbPP") == 0)
                 {
                     mappedAttributeName = "Cd";
+                }
+
+                if (myPreserveScale && doPreserveAttrScale)
+                {
+                    for (unsigned int i = 0; i < vectorArray.length(); i++)
+                        vectorArray[i] *= 0.01;
                 }
 
                 CHECK_HAPI(hapiSetPointAttribute(
@@ -268,6 +278,8 @@ InputParticle::setInputGeo(
         {
             MDoubleArray doubleArray;
 
+            bool doPreserveAttrScale = false;
+
             // query the original particle for names of the per-particle
             // attributes
             MString getAttributesCommand = "particle -q -perParticleDouble ";
@@ -281,9 +293,9 @@ InputParticle::setInputGeo(
             // aren't returned by the MEL command
             attributeNames.append("age");
 
-            for(unsigned int i = 0; i < attributeNames.length(); i++)
+            for(unsigned int ai = 0; ai < attributeNames.length(); ai++)
             {
-                const MString attributeName = attributeNames[i];
+                const MString attributeName = attributeNames[ai];
 
                 MObject attributeObj = originalParticleFn.attribute(attributeName);
                 if(attributeObj.isNull())
@@ -325,10 +337,17 @@ InputParticle::setInputGeo(
                 else if(strcmp(mappedAttributeName, "radiusPP") == 0)
                 {
                     mappedAttributeName = "pscale";
+                    doPreserveAttrScale = true;
                 }
                 else if(strcmp(mappedAttributeName, "finalLifespanPP") == 0)
                 {
                     mappedAttributeName = "life";
+                }
+
+                if (myPreserveScale && doPreserveAttrScale)
+                {
+                    for (unsigned int i = 0; i < doubleArray.length(); i++)
+                        doubleArray[i] *= 0.01;
                 }
 
                 CHECK_HAPI(hapiSetPointAttribute(

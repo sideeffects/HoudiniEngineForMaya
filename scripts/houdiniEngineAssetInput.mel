@@ -628,6 +628,17 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
 
     connectAttr $finalInputAttr $inputAttr;
 
+    // set the preserveScale attribute of the new child node to the value of the
+    // parent's attribute
+    string $finalInputNode = plugNode($finalInputAttr);
+    string $inputNode = plugNode($inputAttr);
+
+    if (`attributeExists "preserveScale" $finalInputNode`)
+    {
+        int $isScalePreserved = `getAttr ($finalInputNode + ".preserveScale")`;
+        setAttr ($inputNode + ".preserveScale") $isScalePreserved;
+    }
+
     if(`getAttr ($assetNodeName + ".syncWhenInputConnects")`)
     {
         houdiniEngine_syncAssetOutput $assetNodeName;

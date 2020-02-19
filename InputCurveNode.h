@@ -21,6 +21,8 @@ class InputCurveNode: public MPxNode
         static MString typeName;
         static MTypeId typeId;
 
+        static MObject preserveScale;
+
     private:
         HAPI_NodeId myNodeId;
 

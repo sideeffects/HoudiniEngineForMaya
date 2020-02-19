@@ -4,6 +4,8 @@ source houdiniEngineUtils;
 source houdiniEngineBakeAsset;
 source houdiniEngineRemoveHistory;
 source houdiniEngineDeleteHistory;
+source houdiniEngineFreezeAsset;
+source houdiniEngineAssetOptions;
 
 global int $houdiniEngine_scriptJobId = -1;
 
@@ -138,6 +140,7 @@ houdiniEngine_assetPicker(string $assetLibraryFilePath, string $message)
 
     textScrollList -e
         -doubleClickCommand ("layoutDialog -dismiss `textScrollList -q -selectItem " + $textScrollList + "`")
+	-height 200
         $textScrollList;
 
     string $assets[] = `houdiniAsset -listAssets $assetLibraryFilePath`;
@@ -252,6 +255,62 @@ houdiniEngine_reloadSelectedAssets()
     for($assetNode in $assetNodes)
     {
         houdiniAsset -reloadAsset $assetNode;
+    }
+
+    catchQuiet(`select -replace $old_selection`);
+}
+
+global proc
+houdiniEngine_reloadNoSyncSelectedAssets()
+{
+    string $old_selection[] = `ls -selection -long`;
+
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) < 1)
+    {
+        error("Please select at least one houdiniAsset node to reload.");
+    }
+
+    for($assetNode in $assetNodes)
+    {
+        houdiniAsset -reloadNoSync $assetNode;
+    }
+
+    catchQuiet(`select -replace $old_selection`);
+}
+
+global proc
+houdiniEngine_freezeSelectedAssets()
+{
+    string $old_selection[] = `ls -selection -long`;
+
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) < 1)
+    {
+        error("Please select at least one houdiniAsset node to freeze.");
+    }
+
+    for($assetNode in $assetNodes)
+    {
+        houdiniEngine_freezeAsset($assetNode);
+    }
+
+    catchQuiet(`select -replace $old_selection`);
+}
+global proc
+houdiniEngine_unfreezeSelectedAssets()
+{
+    string $old_selection[] = `ls -selection -long`;
+
+    string $assetNodes[] = houdiniEngine_getSelectedAssetNodes();
+    if(size($assetNodes) < 1)
+    {
+        error("Please select at least one houdiniAsset node to unfreeze.");
+    }
+
+    for($assetNode in $assetNodes)
+    {
+          houdiniEngine_unfreezeAsset($assetNode);
     }
 
     catchQuiet(`select -replace $old_selection`);
@@ -712,6 +771,20 @@ houdiniEngineCreateUI()
 	-imageOverlayLabel "BA"
 	-annotation "Tear off a copy of the asset's current output nodes"
         -command "houdiniEngine_bakeSelectedAssets";
+    
+    if( getApplicationVersionAsFloat() >= 2016.5 )
+    {
+        menuItem -label "Freeze Asset"
+	    -imageOverlayLabel "BA"
+	    -version $mayaVersion
+	    -annotation "Disconnect the asset's output nodes and mark the asset frozen"
+            -command "houdiniEngine_freezeSelectedAssets";
+        menuItem -label "Unfreeze Asset"
+	    -imageOverlayLabel "BA"
+	    -version $mayaVersion
+	    -annotation "Reconnect the asset's output nodes and mark the asset unfrozen"
+            -command "houdiniEngine_unfreezeSelectedAssets";
+    }
     menuItem -label "Remove Asset From History"
 	-imageOverlayLabel "RAH"
         -annotation "Remove this asset and its inputGeometry nodes and reconnect history across the gap"

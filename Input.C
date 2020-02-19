@@ -95,6 +95,7 @@ Input::Input() :
     myUnlockNormals(0),
     myMatPerFace(0),
     myAllowFacetSet(0),
+    myPreserveScale(false),
     myGeometryNodeId(-1)
 {
 }
@@ -231,13 +232,30 @@ void Input::setAllowFacetSet(bool allowFacetSet)
     myAllowFacetSet = allowFacetSet;
 }
 
+void Input::setPreserveScale(bool preserveScale)
+{
+    myPreserveScale = preserveScale;
+}
+
 void
 Input::setInputTransform(MDataHandle &dataHandle)
 {
     MMatrix transformMatrix = dataHandle.asMatrix();
 
     float matrix[16];
-    transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
+
+    if (myPreserveScale)
+    {
+        MTransformationMatrix tmat(transformMatrix);
+        MVector translation = tmat.getTranslation(MSpace::kWorld) * 0.01;
+        tmat.setTranslation(translation, MSpace::kWorld);
+        
+        tmat.asMatrix().get(reinterpret_cast<float(*)[4]>(matrix));
+    }
+    else
+    {
+        transformMatrix.get(reinterpret_cast<float(*)[4]>(matrix));
+    }
 
     HAPI_TransformEuler transformEuler;
     HAPI_ConvertMatrixToEuler(

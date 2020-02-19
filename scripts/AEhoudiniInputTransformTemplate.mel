@@ -5,6 +5,9 @@ global proc AEhoudiniInputTransformTemplate(string $nodeName)
         editorTemplate
             -label "Input Matrix"
             -addControl "inputMatrix";
+        editorTemplate
+            -label "Preserve Houdini Scale"
+            -addControl "preserveScale";
     editorTemplate -endLayout;
     
     editorTemplate -beginLayout "Outputs" -collapse false;

@@ -14,6 +14,7 @@ MTypeId InputTransformNode::typeId(MayaTypeID_HoudiniInputTransformNode);
 
 MObject InputTransformNode::inputTransform;
 MObject InputTransformNode::inputMatrix;
+MObject InputTransformNode::preserveScale;
 MObject InputTransformNode::outputNodeId;
 
 void*
@@ -42,6 +43,13 @@ InputTransformNode::initialize()
     mAttr.setDisconnectBehavior(MFnAttribute::kDelete);
     addAttribute(InputTransformNode::inputMatrix);
 
+    InputTransformNode::preserveScale = nAttr.create(
+            "preserveScale", "preserveScale",
+            MFnNumericData::kBoolean, false
+            );
+    nAttr.setCached(false);
+    addAttribute(InputTransformNode::preserveScale);
+
     InputTransformNode::outputNodeId = nAttr.create(
             "outputNodeId", "outputNodeId",
             MFnNumericData::kInt,
@@ -53,6 +61,7 @@ InputTransformNode::initialize()
 
     attributeAffects(InputTransformNode::inputTransform, InputTransformNode::outputNodeId);
     attributeAffects(InputTransformNode::inputMatrix, InputTransformNode::outputNodeId);
+    attributeAffects(InputTransformNode::preserveScale, InputTransformNode::outputNodeId);
 
     return MStatus::kSuccess;
 }
@@ -113,6 +122,9 @@ InputTransformNode::compute(
         std::vector<float> scale(pointCount * 3);
         MStringArray name(pointCount, MString());
 
+	MPlug preserveScalePlug(thisMObject(), InputTransformNode::preserveScale);
+	bool preserveScale = preserveScalePlug.asBool();
+
         for(unsigned int i = 0; i < pointCount; i++)
         {
             MPlug inputMatrixPlug = inputMatrixArrayPlug.elementByPhysicalIndex(i);
@@ -125,6 +137,10 @@ InputTransformNode::compute(
             MTransformationMatrix transformation = inputMatrixHandle.asMatrix();
 
             MVector t = transformation.getTranslation(MSpace::kWorld);
+
+            if (preserveScale)
+                t *= 0.01;
+
             P[i * 3 + 0] = t[0];
             P[i * 3 + 1] = t[1];
             P[i * 3 + 2] = t[2];

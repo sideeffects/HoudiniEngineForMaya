@@ -58,7 +58,8 @@ class OutputGeometryPart
                 const MPlug &particlePlug,
                 MDataBlock& data,
                 MDataHandle &hasParticlesHandle,
-                MDataHandle &particleHandle
+                MDataHandle &particleHandle,
+                AssetNodeOptions::AccessorDataBlock &options
                 );
         void computeCurves(
                 const MTime &time,
@@ -66,17 +67,20 @@ class OutputGeometryPart
                 const MPlug &curvesIsBezierPlug,
                 MDataBlock& data,
                 MDataHandle &curvesHandle,
-                MDataHandle &curvesIsBezierHandle
+                MDataHandle &curvesIsBezierHandle,
+                AssetNodeOptions::AccessorDataBlock &options
                 );
         void computeVolume(
                 const MTime &time,
                 const MPlug &volumePlug,
                 MDataBlock& data,
-                MDataHandle &volumeHandle
+                MDataHandle &volumeHandle,
+                const bool preserveScale
                 );
         void computeVolumeTransform(
                 const MTime &time,
-                MDataHandle &volumeTransformHandle
+                MDataHandle &volumeTransformHandle,
+                const bool preserveScale
                 );
         void computeInstancer(
                 const MTime &time,
@@ -84,7 +88,8 @@ class OutputGeometryPart
                 const MPlug &instancePlug,
                 MDataBlock& data,
                 MDataHandle &hasInstancerHandle,
-                MDataHandle &instanceHandle
+                MDataHandle &instanceHandle,
+                const bool preserveScale
                 );
         void computeExtraAttributes(
                 const MTime &time,
@@ -113,7 +118,8 @@ class OutputGeometryPart
         template<typename T>
         bool convertParticleAttribute(
                 T arrayDataFn,
-                const char* houdiniName
+                const char* houdiniName,
+                bool preserveScale
                 );
 
         bool computeExtraAttribute(

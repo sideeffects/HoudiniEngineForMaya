@@ -23,6 +23,8 @@ public:
     static MObject unlockNormals;
     static MObject materialPerFace;
     static MObject allowFacetSet;
+    static MObject preserveScale;
+    static MObject ignoreTransform;
     static MObject objectShadingGroup;
 
     static MObject outputNodeId;

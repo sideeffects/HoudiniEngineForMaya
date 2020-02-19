@@ -271,7 +271,37 @@ InputMesh::processPoints(
         const MFnMesh &meshFn
         )
 {
-    CHECK_HAPI(hapiSetPointAttribute(
+    const float *rawPoints = meshFn.getRawPoints(NULL);
+
+    if (myPreserveScale)
+    {
+        float *scaledPoints = new float[meshFn.numVertices() * 3];
+
+        for (int i = 0; i < meshFn.numVertices(); i++)
+        {
+        //     float *scaledPoint = scaledPoints[i + 3];
+            
+            scaledPoints[(i * 3) + 0] = rawPoints[(i * 3) + 0] * 0.01f;
+            scaledPoints[(i * 3) + 1] = rawPoints[(i * 3) + 1] * 0.01f;
+            scaledPoints[(i * 3) + 2] = rawPoints[(i * 3) + 2] * 0.01f;
+        }
+
+        // send scaled points to houdini
+        CHECK_HAPI(hapiSetPointAttribute(
+            geometryNodeId(), 0,
+            3,
+            "P",
+            rawArray(
+                scaledPoints,
+                meshFn.numVertices() * 3
+                )
+            ));
+
+        delete[] scaledPoints;
+    }
+    else
+    {
+        CHECK_HAPI(hapiSetPointAttribute(
             geometryNodeId(), 0,
             3,
             "P",
@@ -280,6 +310,7 @@ InputMesh::processPoints(
                 meshFn.numVertices() * 3
                 )
             ));
+    }
 
     return true;
 }

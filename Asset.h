@@ -54,7 +54,8 @@ class Asset {
                 const MPlug& plug,
                 MDataBlock& data,
                 AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs
+                bool &needToSyncOutputs,
+                const bool needToRecomputeOutputData
                 );
         void computeMaterial(
                 const MPlug& plug,
@@ -89,7 +90,8 @@ class Asset {
                 MIntArray &instancedObjIds,
                 MStringArray &instancedObjNames,
                 AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs
+                bool &needToSyncOutputs,
+                const bool needToRecomputeOutputData
                 );
         void computeGeometryObjects(
                 const MPlug& plug,
@@ -97,7 +99,8 @@ class Asset {
                 const MIntArray &instancedObjIds,
                 const MStringArray &instancedObjNames,
                 AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs
+                bool &needToSyncOutputs,
+                const bool needToRecomputeOutputData
                 );
 
     private:

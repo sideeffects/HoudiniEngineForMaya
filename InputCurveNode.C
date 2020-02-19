@@ -18,6 +18,8 @@ MTypeId InputCurveNode::typeId = MayaTypeID_HoudiniInputCurveNode;
 MObject InputCurveNode::inputCurve;
 MObject InputCurveNode::outputNodeId;
 
+MObject InputCurveNode::preserveScale;
+
 void*
 InputCurveNode::creator()
 {
@@ -44,9 +46,19 @@ InputCurveNode::initialize()
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
+    InputCurveNode::preserveScale = nAttr.create(
+            "preserveScale", "preserveScale",
+            MFnNumericData::kBoolean,
+            false
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputCurveNode::preserveScale);
+
     addAttribute(InputCurveNode::outputNodeId);
 
     attributeAffects(InputCurveNode::inputCurve, InputCurveNode::outputNodeId);
+    attributeAffects(InputCurveNode::preserveScale, InputCurveNode::outputNodeId);
 
     return MS::kSuccess;
 }
@@ -100,6 +112,9 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
         MDataHandle metaDataHandle = data.outputValue(InputCurveNode::outputNodeId);
         metaDataHandle.setInt(myNodeId);
     }
+
+    MPlug preserveScalePlug(thisMObject(), InputCurveNode::preserveScale);
+    bool preserveScale = preserveScalePlug.asBool();
 
     MPlug inputCurveArrayPlug(thisMObject(), InputCurveNode::inputCurve);
 
@@ -175,7 +190,15 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
 
         for ( unsigned int iCV = 0; iCV < nCVs; ++iCV, ++curveInfo.vertexCount )
         {
-            const MPoint& cv = cvArray[iCV];
+            MPoint& cv = cvArray[iCV];
+
+            if (preserveScale)
+            {
+                cv.x *= 0.01f;
+                cv.y *= 0.01f;
+                cv.z *= 0.01f;
+            }
+
             cvP.push_back((float) cv.x);
             cvP.push_back((float) cv.y);
             cvP.push_back((float) cv.z);
@@ -204,6 +227,20 @@ InputCurveNode::compute(const MPlug& plug, MDataBlock& data)
             curveInfo.knotCount += knotsArray.length() + 2;
 
             knots.push_back( static_cast<float>(knotsArray[0]) );
+
+	    // Maya seems ok with having end knots of multiplicity > order
+	    // (counting the 1st and last knots added above)
+	    // so if we detect this, warn the user to rebuild their curves
+
+	    if(fabs(knotsArray[0] - knotsArray[order - 1]) < .0001) {
+	        MPlug curveSrcPlug = Util::plugSource(inputCurvePlug);
+	        MFnDependencyNode curveSrcObj(curveSrcPlug.node());
+	        DISPLAY_WARNING(
+                "Curve ^1s has knots with higher multiplicity than the order of the curve."
+                "You may need to rebuild the curve in order to see it in Houdini",
+                curveSrcObj.name()
+                );
+	    }
 
             for ( unsigned int iKnot = 0; iKnot < knotsArray.length(); ++iKnot )
             {

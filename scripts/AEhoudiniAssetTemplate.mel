@@ -809,6 +809,11 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 "Bake Output Textures",
                 "When an Output Material has a Texture, bake to a file texture. Turn this off to improve performace when the texture is not needed."
                 );
+        createAttrCheckBox(
+                "preserveScale",
+                "Preserve Houdini Scale",
+                "Interpret HDA Units as centimeters in Maya."
+                );
 
 
     setParent ..;
@@ -903,6 +908,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|useInstancerNode",
             $nodeName + ".useInstancerNode",
             "houdiniEngine_syncAssetOutput \"" + $nodeName + "\";");
+    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|preserveScale",
+            $nodeName + ".preserveScale",
+            "houdiniEngine_preserveHoudiniScaleChanged \"" + $nodeName + "\";");
 }
 
 global proc AEhoudiniAssetConnectNew( string $attrName )

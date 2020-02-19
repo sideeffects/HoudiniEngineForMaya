@@ -21,7 +21,8 @@ class OutputInstancerObject: public OutputObject
                 MDataBlock& data,
                 MDataHandle& handle,
                 AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs
+                bool &needToSyncOutputs,
+                const bool needToRecomputeOutputData
                 );
 
         virtual ObjectType type();

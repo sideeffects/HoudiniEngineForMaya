@@ -20,6 +20,8 @@ MObject InputGeometryNode::primComponentGroup;
 MObject InputGeometryNode::unlockNormals;
 MObject InputGeometryNode::materialPerFace;
 MObject InputGeometryNode::allowFacetSet;
+MObject InputGeometryNode::preserveScale;
+MObject InputGeometryNode::ignoreTransform;
 MObject InputGeometryNode::objectShadingGroup;
 MObject InputGeometryNode::outputNodeId;
 
@@ -105,6 +107,24 @@ InputGeometryNode::initialize()
     nAttr.setStorable(true);
     addAttribute(InputGeometryNode::allowFacetSet);
 
+    InputGeometryNode::preserveScale = nAttr.create(
+            "preserveScale", "preserveScale",
+            MFnNumericData::kBoolean,
+            false
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputGeometryNode::preserveScale);
+
+    InputGeometryNode::ignoreTransform = nAttr.create(
+            "ignoreTransform", "ignoreTransform",
+            MFnNumericData::kBoolean,
+            false
+            );
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputGeometryNode::ignoreTransform);
+
     InputGeometryNode::objectShadingGroup = tAttr.create(
             "objectShadingGroup", "objectShadingGroup",
             MFnData::kString
@@ -130,6 +150,8 @@ InputGeometryNode::initialize()
     attributeAffects(InputGeometryNode::unlockNormals, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::materialPerFace, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::allowFacetSet, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::preserveScale, InputGeometryNode::outputNodeId);
+    attributeAffects(InputGeometryNode::ignoreTransform, InputGeometryNode::outputNodeId);
     attributeAffects(InputGeometryNode::objectShadingGroup, InputGeometryNode::outputNodeId);
 
     return MStatus::kSuccess;
@@ -152,10 +174,22 @@ InputGeometryNode::compute(
             return MStatus::kFailure;
         }
 
-        // set input transform
-        MPlug transformPlug(thisMObject(), InputGeometryNode::inputTransform);
-        MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
-        myInput->setInputTransform(transformHandle);
+        // this must be set before the call to setInputTransform if the scale is
+        // to be preserved properly
+        MPlug preserveScalePlug(thisMObject(), InputGeometryNode::preserveScale);
+        bool preserveScale = preserveScalePlug.asBool();
+        myInput->setPreserveScale(preserveScale);
+
+        MPlug ignoreTransformPlug(thisMObject(), InputGeometryNode::ignoreTransform);
+        bool ignoreTransform = ignoreTransformPlug.asBool();
+
+        if (!ignoreTransform)
+        {
+            // set input transform
+            MPlug transformPlug(thisMObject(), InputGeometryNode::inputTransform);
+            MDataHandle transformHandle = dataBlock.inputValue(transformPlug);
+            myInput->setInputTransform(transformHandle);
+        }
 
         // set input geo
         MPlug geometryPlug(thisMObject(), InputGeometryNode::inputGeometry);

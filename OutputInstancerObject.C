@@ -175,7 +175,8 @@ OutputInstancerObject::compute(
         MDataBlock& data,
         MDataHandle& handle,
         AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs
+        bool &needToSyncOutputs,
+        const bool needToRecomputeOutputData
         )
 {
     update();
@@ -183,7 +184,7 @@ OutputInstancerObject::compute(
     if(myGeoInfo.partCount <= 0)
         return MS::kFailure;
 
-    if(mySopNodeInfo.totalCookCount > myLastSopCookCount)
+    if((mySopNodeInfo.totalCookCount > myLastSopCookCount) || needToRecomputeOutputData)
     {
         MDataHandle instancerDataHandle = handle.child(AssetNode::outputInstancerData);
         MArrayDataHandle instancedObjectNamesHandle = handle.child(AssetNode::outputInstancedObjectNames);
@@ -209,9 +210,10 @@ OutputInstancerObject::compute(
 
         unsigned int size = myPartInfo.pointCount;
         HAPI_Transform * instTransforms = new HAPI_Transform[size];
-        CHECK_HAPI(HAPI_GetInstanceTransforms(
+        CHECK_HAPI(HAPI_GetInstanceTransformsOnPart(
                 Util::theHAPISession.get(),
                 mySopNodeInfo.id,
+		0,
                 HAPI_SRT,
                 instTransforms,
                 0, size
@@ -241,6 +243,9 @@ OutputInstancerObject::compute(
             MVector s(it.scale[0], it.scale[1], it.scale[2]);
 
             int objIndex = myInstancedObjectIndices[j];
+
+            if (options.preserveScale())
+                p *= 100.0;
 
             positions[j] = p;
             rotations[j] = r;

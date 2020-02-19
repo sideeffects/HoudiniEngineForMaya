@@ -128,7 +128,6 @@ if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
 elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
     set(
         compile_options
-        -O2
         -W4
         # Enabled warnings
         -w14101 # unreferenced local variable

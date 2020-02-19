@@ -12,28 +12,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Set session type to socket" 
+        -annotation "Set session type to socket"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Sync Asset" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Sync Asset"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "SoS" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "SoS"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "optionVar -iv \"houdiniEngineSessionType\" 1;" 
-        -sourceType "mel" 
+        -command "optionVar -iv \"houdiniEngineSessionType\" 1;"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -45,28 +45,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Set session type to autostart named pipe" 
+        -annotation "Set session type to autostart named pipe"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Sync Asset" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Sync Asset"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "ApS" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "ApS"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "optionVar -iv \"houdiniEngineSessionType\" 2;\noptionVar -iv \"houdiniEngineSessionPipeCustom\" 0;" 
-        -sourceType "mel" 
+        -command "optionVar -iv \"houdiniEngineSessionType\" 2;\noptionVar -iv \"houdiniEngineSessionPipeCustom\" 0;"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -78,28 +78,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Set session type to custom named pipe" 
+        -annotation "Set session type to custom named pipe"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Sync Asset" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Sync Asset"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "NpS" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "NpS"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "optionVar -iv \"houdiniEngineSessionType\" 2;\noptionVar -iv \"houdiniEngineSessionPipeCustom\" 1;" 
-        -sourceType "mel" 
+        -command "optionVar -iv \"houdiniEngineSessionType\" 2;\noptionVar -iv \"houdiniEngineSessionPipeCustom\" 1;"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -111,28 +111,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Load the houdiniEngine plugin" 
+        -annotation "Load the houdiniEngine plugin"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Load Asset..." 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Load Asset..."
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "LP" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "LP"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;" 
-        -sourceType "mel" 
+        -command "if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -144,9 +144,9 @@ global proc shelf_Houdini () {
         -visible 1
         -preventOverride 0
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -style "shelf" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -style "shelf"
         -horizontal 0
     ;
     shelfButton
@@ -157,28 +157,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Delete existing output nodes and rebuild the output hierarchy for the asset's current outputs" 
+        -annotation "Delete existing output nodes and rebuild the output hierarchy for the asset's current outputs"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Sync Asset" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Sync Asset"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "SA" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "SA"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "houdiniEngine_syncSelectedAsset" 
-        -sourceType "mel" 
+        -command "houdiniEngine_syncSelectedAsset"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -190,28 +190,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Tear off a copy of the asset's current output nodes" 
+        -annotation "Tear off a copy of the asset's current output nodes"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Bake Asset" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Bake Asset"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "BA" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "BA"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "houdiniEngine_bakeSelectedAssets" 
-        -sourceType "mel" 
+        -command "houdiniEngine_bakeSelectedAssets"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -223,28 +223,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Remove this asset and its inputGeometry nodes and reconnect history across the gap" 
+        -annotation "Remove this asset and its inputGeometry nodes and reconnect history across the gap"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Remove Asset From History" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Remove Asset From History"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "RAH" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "RAH"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "houdiniEngine_removeSelectedHistory" 
-        -sourceType "mel" 
+        -command "houdiniEngine_removeSelectedHistory"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -256,28 +256,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Apply the selected asset as construction history to the selected mesh" 
+        -annotation "Apply the selected asset as construction history to the selected mesh"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Add Asset To Mesh History" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Add Asset To Mesh History"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "AAH" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "AAH"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "houdiniEngine_addSelectedHistory" 
-        -sourceType "mel" 
+        -command "houdiniEngine_addSelectedHistory"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -289,28 +289,28 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Delete construction history including any houdiniAsset nodes\n" 
+        -annotation "Delete construction history including any houdiniAsset nodes\n"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Delete History" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Delete History"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "DH" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "DH"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "houdiniEngine_deleteSelectedHistory" 
-        -sourceType "mel" 
+        -command "houdiniEngine_deleteSelectedHistory"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
@@ -322,30 +322,30 @@ global proc shelf_Houdini () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "Reload the definition of the selected asset" 
+        -annotation "Reload the definition of the selected asset"
         -enableBackground 0
-        -backgroundColor 0 0 0 
-        -highlightColor 0.321569 0.521569 0.65098 
-        -align "center" 
-        -label "Reload Asset" 
+        -backgroundColor 0 0 0
+        -highlightColor 0.321569 0.521569 0.65098
+        -align "center"
+        -label "Reload Asset"
         -labelOffset 0
         -rotation 0
         -flipX 0
         -flipY 0
         -useAlpha 1
-        -font "plainLabelFont" 
-        -imageOverlayLabel "RA" 
-        -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.5 
-        -image "houdiniAsset.png" 
-        -image1 "houdiniAsset.png" 
-        -style "iconOnly" 
+        -font "plainLabelFont"
+        -imageOverlayLabel "RA"
+        -overlayLabelColor 0.8 0.8 0.8
+        -overlayLabelBackColor 0 0 0 0.5
+        -image "houdiniAsset.png"
+        -image1 "houdiniAsset.png"
+        -style "iconOnly"
         -marginWidth 1
         -marginHeight 1
-        -command "houdiniEngine_reloadSelectedAssets" 
-        -sourceType "mel" 
+        -command "houdiniEngine_reloadSelectedAssets"
+        -sourceType "mel"
         -commandRepeatable 1
         -flat 1
     ;
 
-} 
+}

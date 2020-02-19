@@ -8,6 +8,6 @@ global proc houdiniEngineDeleteUI()
     }
     if($houdiniEngine_scriptJobId > 0) {
         scriptJob -kill  $houdiniEngine_scriptJobId;
-	$houdiniEngine_scriptJobId = -1;
+        $houdiniEngine_scriptJobId = -1;
     }
 }

@@ -15,10 +15,10 @@ containsComponents(string $objects[])
 {
     for($object in $objects)
     {
-	    string $buffer[];
-	    int $numTokens = `tokenize $object "." $buffer`;
-	    if($numTokens > 1)
-	        return 1;	    
+        string $buffer[];
+        int $numTokens = `tokenize $object "." $buffer`;
+        if($numTokens > 1)
+            return 1;
     }
     return 0;
 }
@@ -28,15 +28,15 @@ isComponent(string $object)
     string $buffer[];
     int $numTokens = `tokenize $object "." $buffer`;
     if($numTokens > 1)
-	return 1;	    
+        return 1;
     return 0;
 }
 
 proc int
 validateInputObjects(string $inputObjects[],
-	string $targetAsset,
+        string $targetAsset,
         string $validObjects[],
-	string $validComponents[],
+        string $validComponents[],
         string $multiObjects[],
         string $invalidObjects[])
 {
@@ -50,11 +50,11 @@ validateInputObjects(string $inputObjects[],
 
     string $objects[];
     if(containsComponents($inputObjects)) {
-	 $objects = `sort $inputObjects`;
+        $objects = `sort $inputObjects`;
     } else {
          $objects = $inputObjects;
     }
-	 
+
     string $objectsToProcess[];
     int $objectsToProcessEnd = stringArrayReverseAppend(
             $objectsToProcess, 0, $objects);
@@ -77,18 +77,18 @@ validateInputObjects(string $inputObjects[],
             $invalidObjects[size($invalidObjects)] = $object;
             continue;
         }
-	// if object is the target asset or below the target asset skip it
-	// sure, the expected workflow was to select the inputs and maybe the asset last
-	// but it's easy enough to select the asset outputs or the asset by mistake.
-	// This does assume that the asset outputs are still parented under the asset
-	// where we left them (history assets are connected by a different code path)
+        // if object is the target asset or below the target asset skip it
+        // sure, the expected workflow was to select the inputs and maybe the asset last
+        // but it's easy enough to select the asset outputs or the asset by mistake.
+        // This does assume that the asset outputs are still parented under the asset
+        // where we left them (history assets are connected by a different code path)
 
-	if($object == $targetAsset) {
-	    continue;
-	}
-	if(isParentOf($targetAsset, $object)) {
-	    continue;
-	}
+        if($object == $targetAsset) {
+            continue;
+        }
+        if(isParentOf($targetAsset, $object)) {
+            continue;
+        }
 
         if(`objectType -isAType "houdiniAsset" $object`)
         {
@@ -113,39 +113,39 @@ validateInputObjects(string $inputObjects[],
         }
         else if(`objectType -isAType "mesh" $object` )
         {
-	    if(isComponent($object)) {
-		string $buffer[];
+            if(isComponent($object)) {
+                string $buffer[];
                 int $numTokens = `tokenize $object "." $buffer`;
-		if($buffer[0] != $lastCompMesh) {
-		    if(size($componentList) > 0) {
-		        string $cmd =  size($componentList);
-		        for($comp in $componentList) {
-	                     $cmd += " " + $comp;	    
-                 	}
-	                // if there is a non empty component list, append the mesh to validObjects
-			// and the component count and list to validComponents - to be used with setAttr later
-			// e.g.  "2 f[95:98]  f[125:128]" for adding 2 sequences of faces
+                if($buffer[0] != $lastCompMesh) {
+                    if(size($componentList) > 0) {
+                        string $cmd =  size($componentList);
+                        for($comp in $componentList) {
+                             $cmd += " " + $comp;
+                        }
+                        // if there is a non empty component list, append the mesh to validObjects
+                        // and the component count and list to validComponents - to be used with setAttr later
+                        // e.g.  "2 f[95:98]  f[125:128]" for adding 2 sequences of faces
                         // reset the compObjectName (to the current mesh) and the component list
 
-			string $meshShapes[] = `listRelatives -fullPath -shapes $lastCompMesh`;
-			$validObjects[size($validObjects)] = $meshShapes[0];
-			$validComponents[size($validComponents)] = $cmd;
+                        string $meshShapes[] = `listRelatives -fullPath -shapes $lastCompMesh`;
+                        $validObjects[size($validObjects)] = $meshShapes[0];
+                        $validComponents[size($validComponents)] = $cmd;
                         $validObjectsCount++;
-			string $emptyArray[];
-			$componentList = $emptyArray;
-		    }
-		    $lastCompMesh = $buffer[0];
-		}
-		 $componentList[size($componentList)] = $buffer[1];
-	        // add the component to the current component list
+                        string $emptyArray[];
+                        $componentList = $emptyArray;
+                    }
+                    $lastCompMesh = $buffer[0];
+                }
+                 $componentList[size($componentList)] = $buffer[1];
+                // add the component to the current component list
 
-	    } else {
-	        // if it's not a component, just keep going
-	        // we'll process any pending component list
-		// when we hit the next component or at the end.
+            } else {
+                // if it's not a component, just keep going
+                // we'll process any pending component list
+                // when we hit the next component or at the end.
                 $validObjects[size($validObjects)] = $object;
                 $validObjectsCount++;
-	    }
+            }
         }
         else if( `objectType -isAType "particle" $object`
                 || `objectType -isAType "hairSystem" $object`
@@ -166,25 +166,25 @@ validateInputObjects(string $inputObjects[],
         {
             $invalidObjects[size($invalidObjects)] = $object;
         }
-	
-	if(size($validComponents) < size($validObjects)) {
-	    // if we got here there wasn't any component selection on this object
-	    // so just put in an emty string
-	    $validComponents[size($validComponents)] = "";
-	}
+
+        if(size($validComponents) < size($validObjects)) {
+            // if we got here there wasn't any component selection on this object
+            // so just put in an emty string
+            $validComponents[size($validComponents)] = "";
+        }
     }
 
     $validObjects = stringArrayRemoveDuplicates($validObjects);
 
     // if there is still a pending component list, process it too
     if(size($componentList) > 0) {
-	string $cmd = size($componentList);
-	for($comp in $componentList) {
-	    $cmd += " " + $comp;	    
+        string $cmd = size($componentList);
+        for($comp in $componentList) {
+            $cmd += " " + $comp;
         }
-	string $meshShapes[] = `listRelatives -fullPath -shapes $lastCompMesh`;
-	$validObjects[size($validObjects)] = $meshShapes[0];
-	$validComponents[size($validComponents)] = $cmd;
+        string $meshShapes[] = `listRelatives -fullPath -shapes $lastCompMesh`;
+        $validObjects[size($validObjects)] = $meshShapes[0];
+        $validComponents[size($validComponents)] = $cmd;
         $validObjectsCount++;
     }
 
@@ -238,12 +238,12 @@ getInputNodeForSingle(string $object, string $components, int $connectGeoForAsse
 
     if(`objectType -isAType "houdiniAsset" $object` && $connectGeoForAsset) {
         // if an asset was selected, but we wanted to connect on the output geo
-	// so that it can be edited, replace $object with the first output geo
-	// to connect once or more specific output geos, select them explicitly
-	string $outputGeos[] = `listConnections -sh true  -t geometryShape $object`;
-	if($connectGeoForAsset && size($outputGeos) > 0) {
-	    $object = $outputGeos[0];
-	}
+        // so that it can be edited, replace $object with the first output geo
+        // to connect once or more specific output geos, select them explicitly
+        string $outputGeos[] = `listConnections -sh true  -t geometryShape $object`;
+        if($connectGeoForAsset && size($outputGeos) > 0) {
+            $object = $outputGeos[0];
+        }
     }
     if(`objectType -isAType "houdiniAsset" $object`)
     {
@@ -261,8 +261,8 @@ getInputNodeForSingle(string $object, string $components, int $connectGeoForAsse
     {
         string $histPlug = `connectionInfo -sfd ($object + ".inMesh")`;
         string $histNode = plugNode($histPlug);
-	// if we're connecting on the geo so that it can be edited
-	// ignore any upstream history asset
+        // if we're connecting on the geo so that it can be edited
+        // ignore any upstream history asset
 
         if($histNode != ""
                 && `nodeType $histNode` == "houdiniAsset"  && !$connectGeoForAsset)
@@ -280,29 +280,29 @@ getInputNodeForSingle(string $object, string $components, int $connectGeoForAsse
             string $geometryAttr = $object + ".outMesh";
             string $inputNodeIdAttr  = createInputGeometryNode($transformAttr, $geometryAttr);
 
-	    
-	    // keep track of object level shader assignment so that we can dirty the geo input if needed
-	    string $shadingGroupAttr = ($object + ".instObjGroups");
-	    scriptJob -kws -connectionChange $shadingGroupAttr houdiniEngine_objectShaderChanged;
-	    string $inputNode = plugNode($inputNodeIdAttr);
 
-	    // set the component list if there are some, otherwise clear it
-	    string $cmd = "setAttr " + $inputNode + ".inputComponents -type componentList ";
-	    if(size($components) > 0) {
-		$cmd += $components;
-	    } else {
-		$cmd += 0;
-	    }
-	    eval $cmd;
+            // keep track of object level shader assignment so that we can dirty the geo input if needed
+            string $shadingGroupAttr = ($object + ".instObjGroups");
+            scriptJob -kws -connectionChange $shadingGroupAttr houdiniEngine_objectShaderChanged;
+            string $inputNode = plugNode($inputNodeIdAttr);
 
-	    string $objectShader[] = `listConnections -type shadingEngine ($object + ".instObjGroups")`;
-	    if(size($objectShader) > 0) {
-	        string $oldShadingGroup = `getAttr ($inputNode + ".objectShadingGroup")`;
-	        if($oldShadingGroup != $objectShader[0]) {
-		    setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
-		}
-	    }
-	    return $inputNodeIdAttr;
+            // set the component list if there are some, otherwise clear it
+            string $cmd = "setAttr " + $inputNode + ".inputComponents -type componentList ";
+            if(size($components) > 0) {
+                $cmd += $components;
+            } else {
+                $cmd += 0;
+            }
+            eval $cmd;
+
+            string $objectShader[] = `listConnections -type shadingEngine ($object + ".instObjGroups")`;
+            if(size($objectShader) > 0) {
+                string $oldShadingGroup = `getAttr ($inputNode + ".objectShadingGroup")`;
+                if($oldShadingGroup != $objectShader[0]) {
+                    setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
+                }
+            }
+            return $inputNodeIdAttr;
         }
     }
     else if(`objectType -isAType "nurbsCurve" $object`)
@@ -318,12 +318,12 @@ getInputNodeForSingle(string $object, string $components, int $connectGeoForAsse
         if($histNode != ""
                 && `nodeType $histNode` == "houdiniAsset" )
         {
-	    // no point checking $connectGeoForAsset cause instancers don't have geo
+            // no point checking $connectGeoForAsset cause instancers don't have geo
             string $obj = plugNode(plugAttr($histPlug));
             return ($histNode + "." + $obj + ".outputObjectMetaData");
         }
-	print("Error: Unable to use object as input:" + $object + "\n");
-	return "";
+        print("Error: Unable to use object as input:" + $object + "\n");
+        return "";
     }
     else if(`objectType -isAType "particle" $object`)
     {
@@ -444,10 +444,10 @@ houdiniEngine_getDownstreamAssets( string $inputNode)
     string $downstreamAssets[] = `listConnections -s false -type "houdiniAsset" $inputNode`;
     string $downstreamMerges[] =  `listConnections -s false -type "houdiniInputMerge" $inputNode`;
     for ($merge in $downstreamMerges) {
-    	string $moreAssets[] = `listConnections -s false -type "houdiniAsset" $merge`;
-	for($asset in $moreAssets) {
-	    $downstreamAssets[size($downstreamAssets)] = $asset;
-	}
+        string $moreAssets[] = `listConnections -s false -type "houdiniAsset" $merge`;
+        for($asset in $moreAssets) {
+            $downstreamAssets[size($downstreamAssets)] = $asset;
+        }
     }
 
     string $assets[] = stringArrayRemoveDuplicates($downstreamAssets);
@@ -459,7 +459,7 @@ houdiniEngine_objectShaderChanged()
 {
     // This is primarily used as a script job on shader connection changed
     // for meshes that are inputs to assets
-    
+
     // detect if the object shader on the inputGeo has changed
     // and dirty the inputGeometry node if it has
     // if the inputGeo does not come from a shape:
@@ -469,36 +469,36 @@ houdiniEngine_objectShaderChanged()
     string $inputNodes[] = `ls -type "houdiniInputGeometry"`;
     for($inputNode in $inputNodes) {
         string $inputGeos[] = `listConnections -sh true -type mesh $inputNode`;
-	if(size($inputGeos) == 0)
-	     continue;
-	string $inputGeo =  $inputGeos[0];
-	int $numObjGroups = `getAttr -size  ($inputGeo + ".instObjGroups")`;
-	int $hasShader = 0;
-	int $changedShader = 0;
-	if($numObjGroups > 0) {
-	    string $objectShader[] = `listConnections -type shadingEngine ($inputGeo + ".instObjGroups")`;
-	    if(size($objectShader) > 0) {
-	        $hasShader = 1;
-	        string $oldShadingGroup = `getAttr ($inputNode + ".objectShadingGroup")`;
-	        if($oldShadingGroup != $objectShader[0]) {
-		    setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
-		    $changedShader = 1;
-		}
-	    }		     
-	}
-	if(!$hasShader){
-	    if(`getAttr ($inputNode + ".objectShadingGroup")` != "") {
-	        setAttr -type "string" ($inputNode + ".objectShadingGroup") "";
-		$changedShader = 1;
-	    }
+        if(size($inputGeos) == 0)
+             continue;
+        string $inputGeo =  $inputGeos[0];
+        int $numObjGroups = `getAttr -size  ($inputGeo + ".instObjGroups")`;
+        int $hasShader = 0;
+        int $changedShader = 0;
+        if($numObjGroups > 0) {
+            string $objectShader[] = `listConnections -type shadingEngine ($inputGeo + ".instObjGroups")`;
+            if(size($objectShader) > 0) {
+                $hasShader = 1;
+                string $oldShadingGroup = `getAttr ($inputNode + ".objectShadingGroup")`;
+                if($oldShadingGroup != $objectShader[0]) {
+                    setAttr -type "string" ($inputNode + ".objectShadingGroup") $objectShader[0];
+                    $changedShader = 1;
+                }
+            }
+        }
+        if(!$hasShader){
+            if(`getAttr ($inputNode + ".objectShadingGroup")` != "") {
+                setAttr -type "string" ($inputNode + ".objectShadingGroup") "";
+                $changedShader = 1;
+            }
         }
         string $affectedAssets[] = `houdiniEngine_getDownstreamAssets($inputNode)`;
-	if($changedShader) {
-	    for($affectedAsset in $affectedAssets) {
-	        if(`getAttr ($affectedAsset + ".autoSyncOutputs")` == 1)
-	            houdiniEngine_syncAssetOutput $affectedAsset;
-	    }
-	}
+        if($changedShader) {
+            for($affectedAsset in $affectedAssets) {
+                if(`getAttr ($affectedAsset + ".autoSyncOutputs")` == 1)
+                    houdiniEngine_syncAssetOutput $affectedAsset;
+            }
+        }
     }
 
 
@@ -533,7 +533,7 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     for($i = 0; $i < size($validObjects); $i++)
     {
         string $validObject = $validObjects[$i];
-	string $validComponent = $validComponents[$i];
+        string $validComponent = $validComponents[$i];
         $sourceInputAttr[size($sourceInputAttr)] =
             getInputNodeForSingle($validObject, $validComponent, $connectGeoForAsset);
     }
@@ -557,20 +557,20 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     }
     else if(size($sourceInputAttr) == 1)
     {
-	// the materialPerFace attr means, "store shading group per face even if
-	// the input geo does not have shaderPerFace" - if it does have shaderPerFace
-	// this flag has no effect
-	
+        // the materialPerFace attr means, "store shading group per face even if
+        // the input geo does not have shaderPerFace" - if it does have shaderPerFace
+        // this flag has no effect
+
         $finalInputAttr = $sourceInputAttr[0];
-	// don't promote shading to primitives
-	// if there is one input, or if the input has no primitives
-	string $inputNode = plugNode($finalInputAttr);
+        // don't promote shading to primitives
+        // if there is one input, or if the input has no primitives
+        string $inputNode = plugNode($finalInputAttr);
         if(`nodeType $inputNode` == "houdiniInputGeometry") {
- 	    string $matOverrideAttr = $inputNode + ".materialPerFace";
-	    int $oldMatPerFace = `getAttr($matOverrideAttr)`;
-	    if($oldMatPerFace > 0)
-	        setAttr $matOverrideAttr 0;
-	}
+            string $matOverrideAttr = $inputNode + ".materialPerFace";
+            int $oldMatPerFace = `getAttr($matOverrideAttr)`;
+            if($oldMatPerFace > 0)
+                setAttr $matOverrideAttr 0;
+        }
     }
     else
     {
@@ -579,17 +579,17 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
         for($i = 0; $i < size($sourceInputAttr); $i++)
         {
             connectAttr $sourceInputAttr[$i] ($mergeNode + ".inputNode[" + $i + "]");
-	    // if we are merging, set shading group per prim
-	    // so that the shading group info survives the merge
-	    // unless the input has no primitives - i.e. its not a geo
- 	    string $inputNode = plugNode($sourceInputAttr[$i]);
+            // if we are merging, set shading group per prim
+            // so that the shading group info survives the merge
+            // unless the input has no primitives - i.e. its not a geo
+            string $inputNode = plugNode($sourceInputAttr[$i]);
             if(`nodeType $inputNode` == "houdiniInputGeometry") {
-	        string $matOverrideAttr =  $inputNode + ".materialPerFace";
-	        int $oldMatPerFace = `getAttr($matOverrideAttr)`;
-	        if($oldMatPerFace == 0)
-	            setAttr $matOverrideAttr 1;
-	    }
-	}
+                string $matOverrideAttr =  $inputNode + ".materialPerFace";
+                int $oldMatPerFace = `getAttr($matOverrideAttr)`;
+                if($oldMatPerFace == 0)
+                    setAttr $matOverrideAttr 1;
+            }
+        }
 
         $finalInputAttr = $mergeNode + ".outputNodeId";
     }
@@ -603,24 +603,24 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
     // it means we're replacing a merged input with a single input that used to be part of the merge
     // so we disconnect the one we're going to keep from the target assets merge to keep it safe
     // and then let clearAssetInput get rid of all the other input
-    
+
     // Note that the input geometry could be connected to multiple inputs or merges on multiple assets
     // we only want to disconnect it from the merge on the input we're modifying
-    
+
     string $outConnections[] = `listConnections -type "houdiniInputMerge" -plugs true $finalInputAttr`;
     if(size($outConnections) > 0) {
         for( $outConAttr in $outConnections ) {
-	    string $outCon = plugNode($outConAttr);
+            string $outCon = plugNode($outConAttr);
             string $assetConnections[] = `listConnections -source false -type "houdiniAsset" -plugs true  $outCon`;
-	    for($outAssetCon in $assetConnections) {
-	        // there should only be one asset connection on the merge
-	        // you'd think that you could just compare the original strings
-	        // but the attribute names could be in different formats, epecially leaf vs compound hierarchy
-	        if(plugNode($outAssetCon) == plugNode($inputAttr) && `attributeName -long $outAssetCon` == `attributeName -long $inputAttr`)  {
-		    disconnectAttr $finalInputAttr $outConAttr;
-		    break;
-	        }
-	    }
+            for($outAssetCon in $assetConnections) {
+                // there should only be one asset connection on the merge
+                // you'd think that you could just compare the original strings
+                // but the attribute names could be in different formats, epecially leaf vs compound hierarchy
+                if(plugNode($outAssetCon) == plugNode($inputAttr) && `attributeName -long $outAssetCon` == `attributeName -long $inputAttr`)  {
+                    disconnectAttr $finalInputAttr $outConAttr;
+                    break;
+                }
+            }
         }
     }
 

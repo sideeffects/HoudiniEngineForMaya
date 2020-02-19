@@ -8,19 +8,15 @@
 #include "AssetSubCommandSync.h"
 #include "util.h"
 
-AssetSubCommandLoadAsset::AssetSubCommandLoadAsset(
-        const MString &otlFilePath,
-        const MString &assetName
-        ) :
-    myOTLFilePath(otlFilePath),
-    myAssetName(assetName),
-    myAssetSubCommandSync(NULL)
+AssetSubCommandLoadAsset::AssetSubCommandLoadAsset(const MString &otlFilePath,
+                                                   const MString &assetName)
+    : myOTLFilePath(otlFilePath),
+      myAssetName(assetName),
+      myAssetSubCommandSync(NULL)
 {
 }
 
-AssetSubCommandLoadAsset::~AssetSubCommandLoadAsset()
-{
-}
+AssetSubCommandLoadAsset::~AssetSubCommandLoadAsset() {}
 
 MStatus
 AssetSubCommandLoadAsset::doIt()
@@ -29,24 +25,22 @@ AssetSubCommandLoadAsset::doIt()
 
     // create houdiniAsset node
     MObject assetNodeObj = myDagModifier.createNode(
-            AssetNode::typeId, MObject::kNullObj, &status);
+        AssetNode::typeId, MObject::kNullObj, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename houdiniAsset node
     {
         int slashPosition = myAssetName.index('/');
         MString nodeName;
-        if(slashPosition >= 0)
+        if (slashPosition >= 0)
         {
-            const char* tempName = myAssetName.asChar();
+            const char *tempName = myAssetName.asChar();
             // keep the part that's before the node table name
             // i.e. namespace
-            for(int i = slashPosition; i-- > 0;)
+            for (int i = slashPosition; i-- > 0;)
             {
-                if(!(('A' <= tempName[i] &&
-                        tempName[i] <= 'Z') ||
-                        ('a' <= tempName[i] &&
-                         tempName[i] <= 'z')))
+                if (!(('A' <= tempName[i] && tempName[i] <= 'Z') ||
+                      ('a' <= tempName[i] && tempName[i] <= 'z')))
                 {
                     nodeName += myAssetName.substring(0, i);
                     break;
@@ -55,9 +49,8 @@ AssetSubCommandLoadAsset::doIt()
 
             // keep everything that's after the slash
             nodeName += myAssetName.substring(
-                    slashPosition + 1,
-                    myAssetName.length() - 1
-                    )  + "1";
+                            slashPosition + 1, myAssetName.length() - 1) +
+                        "1";
         }
         else
         {
@@ -65,7 +58,7 @@ AssetSubCommandLoadAsset::doIt()
             nodeName = myAssetName;
         }
         nodeName = Util::sanitizeStringForNodeName(nodeName);
-        status = myDagModifier.renameNode(assetNodeObj, nodeName);
+        status   = myDagModifier.renameNode(assetNodeObj, nodeName);
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
@@ -86,7 +79,7 @@ AssetSubCommandLoadAsset::doIt()
     // time1.outTime -> houdiniAsset.inTime
     {
         MObject srcNode = Util::findNodeByName("time1");
-        MPlug srcPlug = MFnDependencyNode(srcNode).findPlug("outTime", true);
+        MPlug srcPlug   = MFnDependencyNode(srcNode).findPlug("outTime", true);
         MPlug dstPlug(assetNodeObj, AssetNode::inTime);
 
         status = myDagModifier.connect(srcPlug, dstPlug);
@@ -104,8 +97,9 @@ AssetSubCommandLoadAsset::doIt()
     // instantiate the asset, then don't operate on the asset any further. This
     // avoids generating repeated errors.
     {
-        AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
-        if(!assetNode->getAsset())
+        AssetNode *assetNode =
+            dynamic_cast<AssetNode *>(assetNodeFn.userNode());
+        if (!assetNode->getAsset())
         {
             // If we couldn't instantiate the asset, then an error message
             // should have displayed already. No need to display error here.
@@ -114,7 +108,7 @@ AssetSubCommandLoadAsset::doIt()
     }
 
     // Only attempt to sync if the node is valid
-    if(!MFAIL(status))
+    if (!MFAIL(status))
     {
         myAssetSubCommandSync = new AssetSubCommandSync(assetNodeObj);
         myAssetSubCommandSync->doIt();
@@ -137,7 +131,7 @@ AssetSubCommandLoadAsset::redoIt()
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    if(myAssetSubCommandSync)
+    if (myAssetSubCommandSync)
     {
         status = myAssetSubCommandSync->redoIt();
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -151,7 +145,7 @@ AssetSubCommandLoadAsset::undoIt()
 {
     MStatus status;
 
-    if(myAssetSubCommandSync)
+    if (myAssetSubCommandSync)
     {
         status = myAssetSubCommandSync->undoIt();
         CHECK_MSTATUS_AND_RETURN_IT(status);
@@ -163,7 +157,8 @@ AssetSubCommandLoadAsset::undoIt()
     return MStatus::kSuccess;
 }
 
-bool AssetSubCommandLoadAsset::isUndoable() const
+bool
+AssetSubCommandLoadAsset::isUndoable() const
 {
     return true;
 }

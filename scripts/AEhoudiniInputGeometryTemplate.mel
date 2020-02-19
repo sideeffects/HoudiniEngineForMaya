@@ -3,7 +3,7 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
     editorTemplate -beginScrollLayout;
     editorTemplate -beginLayout "Inputs" -collapse false;
         editorTemplate
-	    -label "Unlock Normals"
+            -label "Unlock Normals"
             -addControl "unlockNormals";
         editorTemplate
             -label "Material Per Face"
@@ -30,13 +30,13 @@ global proc AEhoudiniInputGeometryTemplate(string $nodeName)
             -label "Ignore Transform"
             -addControl "ignoreTransform";
     editorTemplate -endLayout;
-    
+
     editorTemplate -beginLayout "Outputs" -collapse false;
         editorTemplate
             -label "Output Node Id"
             -addControl "outputNodeId";
     editorTemplate -endLayout;
-    
+
     editorTemplate -suppress "inputGeometry";
     editorTemplate -suppress "inputComponents";
 

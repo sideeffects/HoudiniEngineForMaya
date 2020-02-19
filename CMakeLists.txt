@@ -152,6 +152,7 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
     set(
         compile_options
         -Wall
+        -O2
         )
 endif ()
 target_compile_options( plugin PRIVATE ${compile_options} )

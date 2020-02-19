@@ -8,37 +8,37 @@ houdiniEngine_bakeAsset(string $assetNode)
 
     // disconnect output objects
     string $children[] = `listRelatives -c -f $assetNode`;
-       
+
     // if an output was completely empty (only has transforms) delete it
     // delete construction history on mesh shapes: which doesn't delete plugin history
-    // but will deal with sets and groups (i.e. complex material assignement) 
+    // but will deal with sets and groups (i.e. complex material assignement)
     for($child in $children) {
         string $allDescendents[] = `listRelatives -ad -f $child`;
         int $hasShape = 0;
         for($desc in $allDescendents) {
-	    if(`objectType -isAType "shape" $desc`) {
-	        delete -ch $desc;
-	        $hasShape = 1;
-		break;
-	    }
-	    if(`objectType -isAType "instancer" $desc`) {
-	        $hasShape = 1;
-		break;
-	    }
-	}
-	if($hasShape) {
-	    if( `getAttr ($assetNode + ".ungroupOnBake")`)
-	        ungroup -a -w $child;
-	    else
+            if(`objectType -isAType "shape" $desc`) {
+                delete -ch $desc;
+                $hasShape = 1;
+                break;
+            }
+            if(`objectType -isAType "instancer" $desc`) {
+                $hasShape = 1;
+                break;
+            }
+        }
+        if($hasShape) {
+            if( `getAttr ($assetNode + ".ungroupOnBake")`)
+                ungroup -a -w $child;
+            else
                 parent -a -w  $child;
-	}
-	else
-	    delete $child;
+        }
+        else
+            delete $child;
     }
     string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
     for($con in $outputObjCon) {
         string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
+        disconnectAttr $src $con;
     }
 
     // disconnect output materials
@@ -46,15 +46,15 @@ houdiniEngine_bakeAsset(string $assetNode)
 
     for($con in $outputMatCon) {
         string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
+        disconnectAttr $src $con;
     }
-    
+
     // disconnect output instancers
     string $outputInstCon[] = `listConnections -p on ($assetNode + ".outputInstancers")`;
 
     for($con in $outputInstCon) {
         string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
+        disconnectAttr $src $con;
     }
 
     // don't disconnect output transforms, since they connect back to the asset
@@ -71,7 +71,7 @@ houdiniEngine_bakeAsset(string $assetNode)
         delete $assetNode;
     else
         houdiniEngine_syncAssetOutput $assetNode;
-    
+
     return 1;
 }
 

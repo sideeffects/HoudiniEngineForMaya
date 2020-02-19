@@ -37,7 +37,7 @@ struct HAPITypeTrait<double>
 };
 
 template <>
-struct HAPITypeTrait<const char*>
+struct HAPITypeTrait<const char *>
 {
     static const HAPI_StorageType storageType = HAPI_STORAGETYPE_STRING;
 };
@@ -56,308 +56,235 @@ struct HAPITypeTrait<MString>
 
 #define HAPITYPETRAIT(T) HAPITypeTrait<REMOVECONST(T)>
 
-template<HAPI_StorageType storageType>
+template <HAPI_StorageType storageType>
 struct HAPIAttributeTrait
 {
     typedef void SetType;
     typedef void GetType;
 
-    static HAPI_Result setAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            const HAPI_AttributeInfo* attrInfo,
-            const SetType* dataArray,
-            int start, int length
-            ) { return HAPI_RESULT_FAILURE; }
+    static HAPI_Result setAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    const HAPI_AttributeInfo *attrInfo,
+                                    const SetType *dataArray,
+                                    int start,
+                                    int length)
+    {
+        return HAPI_RESULT_FAILURE;
+    }
 
-    static HAPI_Result getAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            HAPI_AttributeInfo* attrInfo,
-            GetType* dataArray,
-            int start, int length
-            ) { return HAPI_RESULT_FAILURE; }
+    static HAPI_Result getAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    HAPI_AttributeInfo *attrInfo,
+                                    GetType *dataArray,
+                                    int start,
+                                    int length)
+    {
+        return HAPI_RESULT_FAILURE;
+    }
 };
 
-template<>
+template <>
 struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
 {
     typedef int SetType;
     typedef int GetType;
 
-    static HAPI_Result setAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            const HAPI_AttributeInfo* attrInfo,
-            const SetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result setAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    const HAPI_AttributeInfo *attrInfo,
+                                    const SetType *dataArray,
+                                    int start,
+                                    int length)
     {
         return HAPI_SetAttributeIntData(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                dataArray,
-                start, length
-                );
+            session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
-    static HAPI_Result getAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            HAPI_AttributeInfo* attrInfo,
-            GetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result getAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    HAPI_AttributeInfo *attrInfo,
+                                    GetType *dataArray,
+                                    int start,
+                                    int length)
     {
-        return HAPI_GetAttributeIntData(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                -1,
-                dataArray,
-                start, length
-                );
+        return HAPI_GetAttributeIntData(session, nodeId, partId, name, attrInfo,
+                                        -1, dataArray, start, length);
     }
 };
 
-template<>
+template <>
 struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
 {
     typedef long long SetType;
     typedef long long GetType;
 
-    static HAPI_Result setAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            const HAPI_AttributeInfo* attrInfo,
-            const SetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result setAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    const HAPI_AttributeInfo *attrInfo,
+                                    const SetType *dataArray,
+                                    int start,
+                                    int length)
     {
         return HAPI_SetAttributeInt64Data(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                dataArray,
-                start, length
-                );
+            session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
-    static HAPI_Result getAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            HAPI_AttributeInfo* attrInfo,
-            GetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result getAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    HAPI_AttributeInfo *attrInfo,
+                                    GetType *dataArray,
+                                    int start,
+                                    int length)
     {
-        return HAPI_GetAttributeInt64Data(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                -1,
-                dataArray,
-                start, length
-                );
+        return HAPI_GetAttributeInt64Data(session, nodeId, partId, name,
+                                          attrInfo, -1, dataArray, start,
+                                          length);
     }
 };
 
-template<>
+template <>
 struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
 {
     typedef float SetType;
     typedef float GetType;
 
-    static HAPI_Result setAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            const HAPI_AttributeInfo* attrInfo,
-            const SetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result setAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    const HAPI_AttributeInfo *attrInfo,
+                                    const SetType *dataArray,
+                                    int start,
+                                    int length)
     {
         return HAPI_SetAttributeFloatData(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                dataArray,
-                start, length
-                );
+            session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
-    static HAPI_Result getAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            HAPI_AttributeInfo* attrInfo,
-            GetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result getAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    HAPI_AttributeInfo *attrInfo,
+                                    GetType *dataArray,
+                                    int start,
+                                    int length)
     {
-        return HAPI_GetAttributeFloatData(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                -1,
-                dataArray,
-                start, length
-                );
+        return HAPI_GetAttributeFloatData(session, nodeId, partId, name,
+                                          attrInfo, -1, dataArray, start,
+                                          length);
     }
 };
 
-template<>
+template <>
 struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
 {
     typedef double SetType;
     typedef double GetType;
 
-    static HAPI_Result setAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            const HAPI_AttributeInfo* attrInfo,
-            const SetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result setAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    const HAPI_AttributeInfo *attrInfo,
+                                    const SetType *dataArray,
+                                    int start,
+                                    int length)
     {
         return HAPI_SetAttributeFloat64Data(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                dataArray,
-                start, length
-                );
+            session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
-    static HAPI_Result getAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            HAPI_AttributeInfo* attrInfo,
-            GetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result getAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    HAPI_AttributeInfo *attrInfo,
+                                    GetType *dataArray,
+                                    int start,
+                                    int length)
     {
-        return HAPI_GetAttributeFloat64Data(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                -1,
-                dataArray,
-                start, length
-                );
+        return HAPI_GetAttributeFloat64Data(session, nodeId, partId, name,
+                                            attrInfo, -1, dataArray, start,
+                                            length);
     }
 };
 
-template<>
+template <>
 struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
 {
-    typedef const char* SetType;
+    typedef const char *SetType;
     typedef int GetType;
 
-    static HAPI_Result setAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            const HAPI_AttributeInfo* attrInfo,
-            const SetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result setAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    const HAPI_AttributeInfo *attrInfo,
+                                    const SetType *dataArray,
+                                    int start,
+                                    int length)
     {
-        return HAPI_SetAttributeStringData(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                (const char**) dataArray,
-                start, length
-                );
+        return HAPI_SetAttributeStringData(session, nodeId, partId, name,
+                                           attrInfo, (const char **)dataArray,
+                                           start, length);
     }
 
-    static HAPI_Result getAttribute(
-            const HAPI_Session* session,
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* name,
-            HAPI_AttributeInfo* attrInfo,
-            GetType* dataArray,
-            int start, int length
-            )
+    static HAPI_Result getAttribute(const HAPI_Session *session,
+                                    HAPI_NodeId nodeId,
+                                    HAPI_PartId partId,
+                                    const char *name,
+                                    HAPI_AttributeInfo *attrInfo,
+                                    GetType *dataArray,
+                                    int start,
+                                    int length)
     {
         return HAPI_GetAttributeStringData(
-                session,
-                nodeId, partId,
-                name,
-                attrInfo,
-                dataArray,
-                start, length
-                );
+            session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 };
 
-template<typename T, typename U>
+template <typename T, typename U>
 struct SameType
 {
     static const bool value = false;
 };
 
-template<typename T>
+template <typename T>
 struct SameType<T, T>
 {
     static const bool value = true;
 };
 
-template<
-    HAPI_StorageType storageType,
-    typename T,
-    bool canUseData
-        = ARRAYTRAIT(T)::canGetData
-        && SameType<
-            REMOVECONST(ELEMENTTYPE(T)),
-            typename HAPIAttributeTrait<
-                HAPITYPETRAIT(ELEMENTTYPE(T))::storageType>::SetType
-            >::value
-    >
+template <HAPI_StorageType storageType,
+          typename T,
+          bool canUseData = ARRAYTRAIT(T)::canGetData
+              &&SameType<REMOVECONST(ELEMENTTYPE(T)),
+                         typename HAPIAttributeTrait<HAPITYPETRAIT(
+                             ELEMENTTYPE(T))::storageType>::SetType>::value>
 struct HAPISetAttribute
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            HAPI_AttributeOwner owner,
-            size_t tupleSize,
-            const char* attributeName,
-            const T &dataArray
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            HAPI_AttributeOwner owner,
+                            size_t tupleSize,
+                            const char *attributeName,
+                            const T &dataArray)
     {
         HAPI_Result hapiResult;
-        if(tupleSize == 0)
+        if (tupleSize == 0)
             return HAPI_RESULT_SUCCESS;
 
         size_t dataArraySize = ARRAYTRAIT(T)::size(dataArray);
@@ -366,57 +293,49 @@ struct HAPISetAttribute
 
         HAPI_AttributeInfo attributeInfo;
         HAPI_AttributeInfo_Init(&attributeInfo);
-        attributeInfo.exists = true;
-        attributeInfo.owner = owner;
-        attributeInfo.storage = storageType;
-        attributeInfo.count = count;
+        attributeInfo.exists    = true;
+        attributeInfo.owner     = owner;
+        attributeInfo.storage   = storageType;
+        attributeInfo.count     = count;
         attributeInfo.tupleSize = tupleSize;
-	// identify UV and colorSet parms (later we'll check for matching uvNumber
-	// or Alpha if they if they exist)
-	if(!strncmp(attributeName, "uv", 2)  && strncmp(attributeName, "uvNumber", 8)  )
-	   attributeInfo.typeInfo = HAPI_AttributeTypeInfo::HAPI_ATTRIBUTE_TYPE_TEXTURE;
-	if(!strncmp(attributeName, "Cd", 2))
-	    attributeInfo.typeInfo = HAPI_AttributeTypeInfo::HAPI_ATTRIBUTE_TYPE_COLOR;
+        // identify UV and colorSet parms (later we'll check for matching
+        // uvNumber or Alpha if they if they exist)
+        if (!strncmp(attributeName, "uv", 2) &&
+            strncmp(attributeName, "uvNumber", 8))
+            attributeInfo.typeInfo =
+                HAPI_AttributeTypeInfo::HAPI_ATTRIBUTE_TYPE_TEXTURE;
+        if (!strncmp(attributeName, "Cd", 2))
+            attributeInfo.typeInfo =
+                HAPI_AttributeTypeInfo::HAPI_ATTRIBUTE_TYPE_COLOR;
 
-        hapiResult = HAPI_AddAttribute(
-                Util::theHAPISession.get(),
-                nodeId, partId,
-                attributeName,
-                &attributeInfo
-                );
+        hapiResult = HAPI_AddAttribute(Util::theHAPISession.get(), nodeId,
+                                       partId, attributeName, &attributeInfo);
         CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
 
         // Even when the count is zero, we still need to call
         // HAPI_AddAttribute(). This is needed to clear out any existing data
         // that was left over from the previous input geometry.
-        if(count == 0)
+        if (count == 0)
             return HAPI_RESULT_SUCCESS;
 
         hapiResult = HAPIAttributeTrait<storageType>::setAttribute(
-                    Util::theHAPISession.get(),
-                    nodeId, partId,
-                    attributeName,
-                    &attributeInfo,
-                    ARRAYTRAIT(T)::data(dataArray),
-                    0, count
-                    );
+            Util::theHAPISession.get(), nodeId, partId, attributeName,
+            &attributeInfo, ARRAYTRAIT(T)::data(dataArray), 0, count);
         CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
 
         return HAPI_RESULT_SUCCESS;
     }
 };
 
-template<HAPI_StorageType storageType, typename T>
+template <HAPI_StorageType storageType, typename T>
 struct HAPISetAttribute<storageType, T, false>
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            HAPI_AttributeOwner owner,
-            size_t tupleSize,
-            const char* attributeName,
-            const T &dataArray
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            HAPI_AttributeOwner owner,
+                            size_t tupleSize,
+                            const char *attributeName,
+                            const T &dataArray)
     {
         typedef typename HAPIAttributeTrait<storageType>::SetType SetType;
         typedef std::vector<SetType> ConvertedDataArray;
@@ -425,306 +344,220 @@ struct HAPISetAttribute<storageType, T, false>
         Util::convertArray(convertedDataArray, dataArray);
 
         return HAPISetAttribute<storageType, ConvertedDataArray>::impl(
-                nodeId, partId,
-                owner,
-                tupleSize,
-                attributeName,
-                convertedDataArray
-                );
+            nodeId, partId, owner, tupleSize, attributeName,
+            convertedDataArray);
     }
 };
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiSetAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        HAPI_AttributeOwner owner,
-        size_t tupleSize,
-        const char* attributeName,
-        const T &dataArray
-        )
+hapiSetAttribute(HAPI_NodeId nodeId,
+                 HAPI_PartId partId,
+                 HAPI_AttributeOwner owner,
+                 size_t tupleSize,
+                 const char *attributeName,
+                 const T &dataArray)
 {
-    return HAPISetAttribute<
-        HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
-        T
-        >::impl(
-            nodeId, partId,
-            owner,
-            tupleSize,
-            attributeName,
-            dataArray
-            );
+    return HAPISetAttribute<HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
+                            T>::impl(nodeId, partId, owner, tupleSize,
+                                     attributeName, dataArray);
 }
 
-template<
-    typename T,
-    bool isArray = ARRAYTRAIT(T)::isArray
-    >
-struct
-HAPISetDetailAttribute
+template <typename T, bool isArray = ARRAYTRAIT(T)::isArray>
+struct HAPISetDetailAttribute
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* attributeName,
-            const T &dataArray
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            const char *attributeName,
+                            const T &dataArray)
     {
-        return hapiSetAttribute(
-                nodeId, partId,
-                HAPI_ATTROWNER_DETAIL,
-                ARRAYTRAIT(T)::size(dataArray),
-                attributeName,
-                dataArray
-                );
+        return hapiSetAttribute(nodeId, partId, HAPI_ATTROWNER_DETAIL,
+                                ARRAYTRAIT(T)::size(dataArray), attributeName,
+                                dataArray);
     }
 };
 
-template<typename T>
-struct
-HAPISetDetailAttribute<T, false>
+template <typename T>
+struct HAPISetDetailAttribute<T, false>
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* attributeName,
-            T &value
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            const char *attributeName,
+                            T &value)
     {
-        return hapiSetAttribute(
-                nodeId, partId,
-                HAPI_ATTROWNER_DETAIL,
-                1,
-                attributeName,
-                rawArray(&value, 1)
-                );
+        return hapiSetAttribute(nodeId, partId, HAPI_ATTROWNER_DETAIL, 1,
+                                attributeName, rawArray(&value, 1));
     }
 };
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiSetDetailAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        const char* attributeName,
-        T &value
-        )
+hapiSetDetailAttribute(HAPI_NodeId nodeId,
+                       HAPI_PartId partId,
+                       const char *attributeName,
+                       T &value)
 {
     return HAPISetDetailAttribute<T>::impl(
-            nodeId, partId,
-            attributeName,
-            value
-            );
+        nodeId, partId, attributeName, value);
 }
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiSetPrimAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        size_t tupleSize,
-        const char* attributeName,
-        const T &dataArray
-        )
+hapiSetPrimAttribute(HAPI_NodeId nodeId,
+                     HAPI_PartId partId,
+                     size_t tupleSize,
+                     const char *attributeName,
+                     const T &dataArray)
 {
-    return hapiSetAttribute(
-            nodeId, partId,
-            HAPI_ATTROWNER_PRIM,
-            tupleSize,
-            attributeName,
-            dataArray
-            );
+    return hapiSetAttribute(nodeId, partId, HAPI_ATTROWNER_PRIM, tupleSize,
+                            attributeName, dataArray);
 }
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiSetVertexAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        size_t tupleSize,
-        const char* attributeName,
-        const T &dataArray
-        )
+hapiSetVertexAttribute(HAPI_NodeId nodeId,
+                       HAPI_PartId partId,
+                       size_t tupleSize,
+                       const char *attributeName,
+                       const T &dataArray)
 {
-    return hapiSetAttribute(
-            nodeId, partId,
-            HAPI_ATTROWNER_VERTEX,
-            tupleSize,
-            attributeName,
-            dataArray
-            );
+    return hapiSetAttribute(nodeId, partId, HAPI_ATTROWNER_VERTEX, tupleSize,
+                            attributeName, dataArray);
 }
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiSetPointAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        size_t tupleSize,
-        const char* attributeName,
-        const T &dataArray
-        )
+hapiSetPointAttribute(HAPI_NodeId nodeId,
+                      HAPI_PartId partId,
+                      size_t tupleSize,
+                      const char *attributeName,
+                      const T &dataArray)
 {
-    return hapiSetAttribute(
-            nodeId, partId,
-            HAPI_ATTROWNER_POINT,
-            tupleSize,
-            attributeName,
-            dataArray
-            );
+    return hapiSetAttribute(nodeId, partId, HAPI_ATTROWNER_POINT, tupleSize,
+                            attributeName, dataArray);
 }
 
-template<
-    HAPI_StorageType storageType,
-    typename T,
-    bool canUseData
-        = ARRAYTRAIT(T)::canGetData
-        && SameType<
-            ELEMENTTYPE(T),
-            typename HAPIAttributeTrait<
-                HAPITYPETRAIT(ELEMENTTYPE(T))::storageType>::GetType
-            >::value
-    >
+template <HAPI_StorageType storageType,
+          typename T,
+          bool canUseData = ARRAYTRAIT(T)::canGetData
+              &&SameType<ELEMENTTYPE(T),
+                         typename HAPIAttributeTrait<HAPITYPETRAIT(
+                             ELEMENTTYPE(T))::storageType>::GetType>::value>
 struct HAPIGetAttribute
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            HAPI_AttributeOwner owner,
-            const char* attributeName,
-            HAPI_AttributeInfo &attrInfo,
-            T &dataArray
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            HAPI_AttributeOwner owner,
+                            const char *attributeName,
+                            HAPI_AttributeInfo &attrInfo,
+                            T &dataArray)
     {
         HAPI_Result hapiResult;
 
-        hapiResult = HAPI_GetAttributeInfo(
-                Util::theHAPISession.get(),
-                nodeId, partId,
-                attributeName,
-                owner,
-                &attrInfo
-                );
-        if(HAPI_FAIL(hapiResult))
+        hapiResult = HAPI_GetAttributeInfo(Util::theHAPISession.get(), nodeId,
+                                           partId, attributeName, owner,
+                                           &attrInfo);
+        if (HAPI_FAIL(hapiResult))
         {
             return HAPI_RESULT_FAILURE;
         }
 
-        if(!attrInfo.exists)
+        if (!attrInfo.exists)
         {
             return HAPI_RESULT_FAILURE;
         }
 
-
-        if(attrInfo.storage != storageType)
+        if (attrInfo.storage != storageType)
         {
-            switch(attrInfo.storage)
+            switch (attrInfo.storage)
             {
-                case HAPI_STORAGETYPE_INT:
-                    {
-                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_INT>::GetType ComponentType;
-                        typedef std::vector<ComponentType> BufferType;
-                        BufferType buffer;
-                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_INT, BufferType>::impl(
-                                nodeId, partId,
-                                owner,
-                                attributeName,
-                                attrInfo,
-                                buffer
-                                );
-                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
-                        Util::convertArray(dataArray, buffer);
+            case HAPI_STORAGETYPE_INT:
+            {
+                typedef HAPIAttributeTrait<HAPI_STORAGETYPE_INT>::GetType
+                    ComponentType;
+                typedef std::vector<ComponentType> BufferType;
+                BufferType buffer;
+                hapiResult =
+                    HAPIGetAttribute<HAPI_STORAGETYPE_INT, BufferType>::impl(
+                        nodeId, partId, owner, attributeName, attrInfo, buffer);
+                CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                Util::convertArray(dataArray, buffer);
 
-                        return HAPI_RESULT_SUCCESS;
-                    }
-                    break;
-                case HAPI_STORAGETYPE_INT64:
-                    {
-                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>::GetType ComponentType;
-                        typedef std::vector<ComponentType> BufferType;
-                        BufferType buffer;
-                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_INT64, BufferType>::impl(
-                                nodeId, partId,
-                                owner,
-                                attributeName,
-                                attrInfo,
-                                buffer
-                                );
-                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
-                        Util::convertArray(dataArray, buffer);
+                return HAPI_RESULT_SUCCESS;
+            }
+            break;
+            case HAPI_STORAGETYPE_INT64:
+            {
+                typedef HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>::GetType
+                    ComponentType;
+                typedef std::vector<ComponentType> BufferType;
+                BufferType buffer;
+                hapiResult =
+                    HAPIGetAttribute<HAPI_STORAGETYPE_INT64, BufferType>::impl(
+                        nodeId, partId, owner, attributeName, attrInfo, buffer);
+                CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                Util::convertArray(dataArray, buffer);
 
-                        return HAPI_RESULT_SUCCESS;
-                    }
-                    break;
-                case HAPI_STORAGETYPE_FLOAT:
-                    {
-                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>::GetType ComponentType;
-                        typedef std::vector<ComponentType> BufferType;
-                        BufferType buffer;
-                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT, BufferType>::impl(
-                                nodeId, partId,
-                                owner,
-                                attributeName,
-                                attrInfo,
-                                buffer
-                                );
-                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
-                        Util::convertArray(dataArray, buffer);
+                return HAPI_RESULT_SUCCESS;
+            }
+            break;
+            case HAPI_STORAGETYPE_FLOAT:
+            {
+                typedef HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>::GetType
+                    ComponentType;
+                typedef std::vector<ComponentType> BufferType;
+                BufferType buffer;
+                hapiResult =
+                    HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT, BufferType>::impl(
+                        nodeId, partId, owner, attributeName, attrInfo, buffer);
+                CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                Util::convertArray(dataArray, buffer);
 
-                        return HAPI_RESULT_SUCCESS;
-                    }
-                    break;
-                case HAPI_STORAGETYPE_FLOAT64:
-                    {
-                        typedef HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>::GetType ComponentType;
-                        typedef std::vector<ComponentType> BufferType;
-                        BufferType buffer;
-                        hapiResult = HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT64, BufferType>::impl(
-                                nodeId, partId,
-                                owner,
-                                attributeName,
-                                attrInfo,
-                                buffer
-                                );
-                        CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
-                        Util::convertArray(dataArray, buffer);
+                return HAPI_RESULT_SUCCESS;
+            }
+            break;
+            case HAPI_STORAGETYPE_FLOAT64:
+            {
+                typedef HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>::GetType
+                    ComponentType;
+                typedef std::vector<ComponentType> BufferType;
+                BufferType buffer;
+                hapiResult =
+                    HAPIGetAttribute<HAPI_STORAGETYPE_FLOAT64,
+                                     BufferType>::impl(nodeId, partId, owner,
+                                                       attributeName, attrInfo,
+                                                       buffer);
+                CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
+                Util::convertArray(dataArray, buffer);
 
-                        return HAPI_RESULT_SUCCESS;
-                    }
-                    break;
-                default:
-                    return HAPI_RESULT_FAILURE;
-                    break;
+                return HAPI_RESULT_SUCCESS;
+            }
+            break;
+            default:
+                return HAPI_RESULT_FAILURE;
+                break;
             }
         }
 
         ARRAYTRAIT(T)::resize(dataArray, attrInfo.count * attrInfo.tupleSize);
         hapiResult = HAPIAttributeTrait<storageType>::getAttribute(
-                Util::theHAPISession.get(),
-                nodeId, partId,
-                attributeName,
-                &attrInfo,
-                ARRAYTRAIT(T)::data(dataArray),
-                0, attrInfo.count
-                );
+            Util::theHAPISession.get(), nodeId, partId, attributeName,
+            &attrInfo, ARRAYTRAIT(T)::data(dataArray), 0, attrInfo.count);
         CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
 
         return HAPI_RESULT_SUCCESS;
     }
 };
 
-template<HAPI_StorageType storageType, typename T>
+template <HAPI_StorageType storageType, typename T>
 struct HAPIGetAttribute<storageType, T, false>
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            HAPI_AttributeOwner owner,
-            const char* attributeName,
-            HAPI_AttributeInfo &attrInfo,
-            T &dataArray
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            HAPI_AttributeOwner owner,
+                            const char *attributeName,
+                            HAPI_AttributeInfo &attrInfo,
+                            T &dataArray)
     {
         typedef typename HAPIAttributeTrait<storageType>::GetType GetType;
         typedef std::vector<GetType> ConvertedDataArray;
@@ -734,13 +567,8 @@ struct HAPIGetAttribute<storageType, T, false>
         ConvertedDataArray convertedDataArray;
 
         hapiResult = HAPIGetAttribute<storageType, ConvertedDataArray>::impl(
-                nodeId, partId,
-                owner,
-                attributeName,
-                attrInfo,
-                convertedDataArray
-                );
-        if(HAPI_FAIL(hapiResult))
+            nodeId, partId, owner, attributeName, attrInfo, convertedDataArray);
+        if (HAPI_FAIL(hapiResult))
         {
             return HAPI_RESULT_FAILURE;
         }
@@ -751,202 +579,129 @@ struct HAPIGetAttribute<storageType, T, false>
     }
 };
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiGetAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        HAPI_AttributeOwner owner,
-        const char* attributeName,
-        HAPI_AttributeInfo &attrInfo,
-        T &dataArray
-        )
+hapiGetAttribute(HAPI_NodeId nodeId,
+                 HAPI_PartId partId,
+                 HAPI_AttributeOwner owner,
+                 const char *attributeName,
+                 HAPI_AttributeInfo &attrInfo,
+                 T &dataArray)
 {
-    return HAPIGetAttribute<
-        HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
-        T
-        >::impl(
-            nodeId, partId,
-            owner,
-            attributeName,
-            attrInfo,
-            dataArray
-            );
+    return HAPIGetAttribute<HAPITYPETRAIT(ELEMENTTYPE(T))::storageType,
+                            T>::impl(nodeId, partId, owner, attributeName,
+                                     attrInfo, dataArray);
 }
 
-template<
-    typename T,
-    bool isArray = ARRAYTRAIT(T)::isArray
-    >
-struct
-HAPIGetDetailAttribute
+template <typename T, bool isArray = ARRAYTRAIT(T)::isArray>
+struct HAPIGetDetailAttribute
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* attributeName,
-            HAPI_AttributeInfo &attrInfo,
-            T &dataArray
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            const char *attributeName,
+                            HAPI_AttributeInfo &attrInfo,
+                            T &dataArray)
     {
-        return hapiGetAttribute(
-                nodeId, partId,
-                HAPI_ATTROWNER_DETAIL,
-                attributeName,
-                attrInfo,
-                dataArray
-                );
+        return hapiGetAttribute(nodeId, partId, HAPI_ATTROWNER_DETAIL,
+                                attributeName, attrInfo, dataArray);
     }
 };
 
-template<typename T>
-struct
-HAPIGetDetailAttribute<T, false>
+template <typename T>
+struct HAPIGetDetailAttribute<T, false>
 {
-    static HAPI_Result impl(
-            HAPI_NodeId nodeId,
-            HAPI_PartId partId,
-            const char* attributeName,
-            HAPI_AttributeInfo &attrInfo,
-            T &value
-            )
+    static HAPI_Result impl(HAPI_NodeId nodeId,
+                            HAPI_PartId partId,
+                            const char *attributeName,
+                            HAPI_AttributeInfo &attrInfo,
+                            T &value)
     {
         RawArray<T> array(&value, 1);
-        return hapiGetAttribute(
-                nodeId, partId,
-                HAPI_ATTROWNER_DETAIL,
-                attributeName,
-                attrInfo,
-                array
-                );
+        return hapiGetAttribute(nodeId, partId, HAPI_ATTROWNER_DETAIL,
+                                attributeName, attrInfo, array);
     }
 };
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiGetDetailAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        const char* attributeName,
-        HAPI_AttributeInfo &attrInfo,
-        T &value
-        )
+hapiGetDetailAttribute(HAPI_NodeId nodeId,
+                       HAPI_PartId partId,
+                       const char *attributeName,
+                       HAPI_AttributeInfo &attrInfo,
+                       T &value)
 {
     return HAPIGetDetailAttribute<T>::impl(
-            nodeId, partId,
-            attributeName,
-            attrInfo,
-            value
-            );
+        nodeId, partId, attributeName, attrInfo, value);
 }
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiGetPrimAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        const char* attributeName,
-        HAPI_AttributeInfo &attrInfo,
-        T &dataArray
-        )
+hapiGetPrimAttribute(HAPI_NodeId nodeId,
+                     HAPI_PartId partId,
+                     const char *attributeName,
+                     HAPI_AttributeInfo &attrInfo,
+                     T &dataArray)
 {
-    return hapiGetAttribute(
-            nodeId, partId,
-            HAPI_ATTROWNER_PRIM,
-            attributeName,
-            attrInfo,
-            dataArray
-            );
+    return hapiGetAttribute(nodeId, partId, HAPI_ATTROWNER_PRIM, attributeName,
+                            attrInfo, dataArray);
 }
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiGetVertexAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        const char* attributeName,
-        HAPI_AttributeInfo &attrInfo,
-        T &dataArray
-        )
+hapiGetVertexAttribute(HAPI_NodeId nodeId,
+                       HAPI_PartId partId,
+                       const char *attributeName,
+                       HAPI_AttributeInfo &attrInfo,
+                       T &dataArray)
 {
-    return hapiGetAttribute(
-            nodeId, partId,
-            HAPI_ATTROWNER_VERTEX,
-            attributeName,
-            attrInfo,
-            dataArray
-            );
+    return hapiGetAttribute(nodeId, partId, HAPI_ATTROWNER_VERTEX,
+                            attributeName, attrInfo, dataArray);
 }
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiGetPointAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        const char* attributeName,
-        HAPI_AttributeInfo &attrInfo,
-        T &dataArray
-        )
+hapiGetPointAttribute(HAPI_NodeId nodeId,
+                      HAPI_PartId partId,
+                      const char *attributeName,
+                      HAPI_AttributeInfo &attrInfo,
+                      T &dataArray)
 {
-    return hapiGetAttribute(
-            nodeId, partId,
-            HAPI_ATTROWNER_POINT,
-            attributeName,
-            attrInfo,
-            dataArray
-            );
+    return hapiGetAttribute(nodeId, partId, HAPI_ATTROWNER_POINT, attributeName,
+                            attrInfo, dataArray);
 }
 
-template<typename T>
+template <typename T>
 HAPI_Result
-hapiGetAnyAttribute(
-        HAPI_NodeId nodeId,
-        HAPI_PartId partId,
-        const char* attributeName,
-        HAPI_AttributeInfo &attrInfo,
-        T &dataArray
-        )
+hapiGetAnyAttribute(HAPI_NodeId nodeId,
+                    HAPI_PartId partId,
+                    const char *attributeName,
+                    HAPI_AttributeInfo &attrInfo,
+                    T &dataArray)
 {
     bool found = false;
 
-    if(!HAPI_FAIL(hapiGetVertexAttribute(
-                    nodeId, partId,
-                    attributeName,
-                    attrInfo,
-                    dataArray
-                    )))
+    if (!HAPI_FAIL(hapiGetVertexAttribute(
+            nodeId, partId, attributeName, attrInfo, dataArray)))
     {
         found = true;
     }
-    else if(!HAPI_FAIL(hapiGetPointAttribute(
-                    nodeId, partId,
-                    attributeName,
-                    attrInfo,
-                    dataArray
-                    )))
+    else if (!HAPI_FAIL(hapiGetPointAttribute(
+                 nodeId, partId, attributeName, attrInfo, dataArray)))
     {
         found = true;
     }
-    else if(!HAPI_FAIL(hapiGetPrimAttribute(
-                    nodeId, partId,
-                    attributeName,
-                    attrInfo,
-                    dataArray
-                    )))
+    else if (!HAPI_FAIL(hapiGetPrimAttribute(
+                 nodeId, partId, attributeName, attrInfo, dataArray)))
     {
         found = true;
     }
-    else if(!HAPI_FAIL(hapiGetDetailAttribute(
-                    nodeId, partId,
-                    attributeName,
-                    attrInfo,
-                    dataArray
-                    )))
+    else if (!HAPI_FAIL(hapiGetDetailAttribute(
+                 nodeId, partId, attributeName, attrInfo, dataArray)))
     {
         found = true;
     }
 
-    if(!found)
+    if (!found)
     {
         return HAPI_RESULT_FAILURE;
     }

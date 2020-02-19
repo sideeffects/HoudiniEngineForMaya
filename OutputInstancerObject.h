@@ -4,48 +4,45 @@
 #include "AssetNodeOptions.h"
 #include "OutputObject.h"
 
-class OutputInstancerObject: public OutputObject
+class OutputInstancerObject : public OutputObject
 {
-    public:
-        OutputInstancerObject(
-                HAPI_NodeId nodeId
-                );
-        virtual ~OutputInstancerObject();
+public:
+    OutputInstancerObject(HAPI_NodeId nodeId);
+    virtual ~OutputInstancerObject();
 
-        MIntArray getInstancedObjIds();
-        MStringArray getUniqueInstObjNames();
+    MIntArray getInstancedObjIds();
+    MStringArray getUniqueInstObjNames();
 
-        virtual MStatus compute(
-                const MTime &time,
-                const MPlug &plug,
-                MDataBlock& data,
-                MDataHandle& handle,
-                AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs,
-                const bool needToRecomputeOutputData
-                );
+    virtual MStatus compute(const MTime &time,
+                            const MPlug &plug,
+                            MDataBlock &data,
+                            MDataHandle &handle,
+                            AssetNodeOptions::AccessorDataBlock &options,
+                            bool &needToSyncOutputs,
+                            const bool needToRecomputeOutputData);
 
-        virtual ObjectType type();
+    virtual ObjectType type();
 
-    protected:
-        void update();
+protected:
+    void update();
 
-        MStringArray getAttributeStringData(HAPI_AttributeOwner owner, MString name);
+    MStringArray getAttributeStringData(HAPI_AttributeOwner owner,
+                                        MString name);
 
-    private:
-        HAPI_NodeInfo mySopNodeInfo;
+private:
+    HAPI_NodeInfo mySopNodeInfo;
 
-        HAPI_GeoInfo myGeoInfo;
-        HAPI_PartInfo myPartInfo;
+    HAPI_GeoInfo myGeoInfo;
+    HAPI_PartInfo myPartInfo;
 
-        int myLastSopCookCount;
+    int myLastSopCookCount;
 
-        MStringArray myInstancedObjectNames;
-        MStringArray myUniqueInstObjNames;
-        MIntArray myInstancedObjectIndices;
+    MStringArray myInstancedObjectNames;
+    MStringArray myUniqueInstObjNames;
+    MIntArray myInstancedObjectIndices;
 
-        MStringArray myHoudiniInstanceAttribute;
-        MStringArray myHoudiniNameAttribute;
+    MStringArray myHoudiniInstanceAttribute;
+    MStringArray myHoudiniNameAttribute;
 };
 
 #endif

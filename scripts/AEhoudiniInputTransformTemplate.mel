@@ -9,13 +9,13 @@ global proc AEhoudiniInputTransformTemplate(string $nodeName)
             -label "Preserve Houdini Scale"
             -addControl "preserveScale";
     editorTemplate -endLayout;
-    
+
     editorTemplate -beginLayout "Outputs" -collapse false;
         editorTemplate
             -label "Output Node Id"
             -addControl "outputNodeId";
     editorTemplate -endLayout;
-    
+
     editorTemplate -suppress "inputGeometry";
     editorTemplate -suppress "inputComponents";
     editorTemplate -suppress "inputTransform";

@@ -26,7 +26,7 @@ AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
         $fileMode = 0;
     if(stringArrayFind("hapiParmFile_directory", 0, $categories) != -1) {
         $fileMode = 3;
-	$fileFilter = "";
+        $fileFilter = "";
     }
 
     string $fileDialogResults[] = `fileDialog2
@@ -461,29 +461,29 @@ AEhoudiniAssetOperationNew(string $attr)
                 -backgroundColor 1 1 0;
         rowLayout
             -numberOfColumns 3
-	    -columnAttach 1 both 0 
-	    -columnAttach 2 both 0 
-	    -columnAttach 3 both 0
-	    -columnAlign 1 center
-	    -columnAlign 2 center
-	    -columnAlign 3 center	    
-	    -columnWidth3 143 143 140;
-		
+            -columnAttach 1 both 0
+            -columnAttach 2 both 0
+            -columnAttach 3 both 0
+            -columnAlign 1 center
+            -columnAlign 2 center
+            -columnAlign 3 center
+            -columnWidth3 143 143 140;
+
         button -label "Bake Asset"
-	-h 27
+            -h 27
             -annotation "Sync this asset, then unparent and disconnect outputs"
              bakeButton;
 
         button -label "Sync Asset"
-	-h 27
+            -h 27
             -annotation "Recreates all the parameters and output nodes."
             syncButton;
-	    
+
         button -label "Add Asset to History"
-	-h 27
+            -h 27
             -annotation "Connect this asset as history to the selected mesh"
-             historyButton;
-	     
+            historyButton;
+
        setParent ..;
     setParent ..;
 
@@ -500,15 +500,14 @@ AEhoudiniAssetOperationReplace(string $attr)
     button -e
         -c ("houdiniEngine_syncAsset " + $nodeName)
         syncButton;
-	
+
     button -e
         -c ("houdiniEngine_addHistory " + $nodeName)
         historyButton;
-	
+
     button -e
         -c ("houdiniEngine_bakeAsset " + $nodeName)
         bakeButton;
-	
 }
 
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)
@@ -685,14 +684,14 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
             -annotation "Resets all the simulation caches."
             resetSimulationButton;
 
-	rowLayout
-	    -numberOfColumns 2
-	    -columnAttach 1 both 0 
-	    -columnAttach 2 both 0 
-	    -columnAlign 1 center
-	    -columnAlign 2 center
-	    -columnWidth2 130 130
-	    reloadLayout;
+        rowLayout
+            -numberOfColumns 2
+            -columnAttach 1 both 0
+            -columnAttach 2 both 0
+            -columnAlign 1 center
+            -columnAlign 2 center
+            -columnWidth2 130 130
+            reloadLayout;
 
             button -label "Reload Asset"
                 -annotation "Reloads this asset to use the updated asset definition."
@@ -716,15 +715,15 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
         createAttrCheckBox("autoSyncOutputs", "Auto Sync Outputs",
                 "Attemps to automatically sync the output nodes when necessary.");
 
-	rowLayout
-	    -numberOfColumns 2
-	    -columnAttach 1 both 0 
-	    -columnAttach 2 both 0 
-	    -columnAlign 1 center
-	    -columnAlign 2 center
-	    -columnWidth2 130 130
-	    syncButtonLayout;
-	    
+        rowLayout
+            -numberOfColumns 2
+            -columnAttach 1 both 0
+            -columnAttach 2 both 0
+            -columnAlign 1 center
+            -columnAlign 2 center
+            -columnWidth2 130 130
+            syncButtonLayout;
+
             button -label "Sync Asset"
                 -annotation "Recreates all the parameters and output nodes"
                 syncButton;
@@ -915,20 +914,20 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
 
 global proc AEhoudiniAssetConnectNew( string $attrName )
 {
-	setUITemplate -pst attributeEditorTemplate;	
- 	attrEnumOptionMenuGrp -attribute $attrName 
-		-enumeratedItem 0 "Classic Asset"
-		-enumeratedItem 1 "History Asset"
-		-enumeratedItem 2 "Bake Asset"
-		-label "Connect Type" AEhoudiniAssetConnectEnum;
+    setUITemplate -pst attributeEditorTemplate;
+    attrEnumOptionMenuGrp -attribute $attrName
+        -enumeratedItem 0 "Classic Asset"
+        -enumeratedItem 1 "History Asset"
+        -enumeratedItem 2 "Bake Asset"
+        -label "Connect Type" AEhoudiniAssetConnectEnum;
     setUITemplate -ppt;
 
-	AEhoudiniAssetConnectReplace $attrName;
+    AEhoudiniAssetConnectReplace $attrName;
 }
 
 global proc AEhoudiniAssetConnectReplace( string $attrName )
 {
- 	attrEnumOptionMenuGrp -e -attribute $attrName AEhoudiniAssetConnectEnum;
+    attrEnumOptionMenuGrp -e -attribute $attrName AEhoudiniAssetConnectEnum;
 }
 
 proc handleAssetHelpSection( string $nodeName )
@@ -985,9 +984,6 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
 
     editorTemplate -beginLayout ("Help for " + $nodeName) -collapse false;
         editorTemplate -callCustom "AEhoudiniAssetHelpNew"  "AEhoudiniAssetHelpReplace" $nodeName;
-        // editorTemplate -callCustom "AEhoudiniAssetHelpTextNew"  "AEhoudiniAssetHelpTextReplace"  "assetHelpText";
-        // editorTemplate -callCustom "AEhoudiniAssetHelpURLNew"   "AEhoudiniAssetHelpURLReplace"   "assetHelpURL";
-        // editorTemplate -callCustom "AEhoudiniAssetHelpEmptyNew" "AEhoudiniAssetHelpEmptyReplace" "assetHelpEmpty";
     editorTemplate -endLayout;
 
     editorTemplate -callCustom "AEhoudiniAssetParmNew" "AEhoudiniAssetParmReplace" "houdiniAssetParm";
@@ -1005,7 +1001,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
             editorTemplate -callCustom "AEhoudiniAssetConnectNew" "AEhoudiniAssetConnectReplace" "assetConnectType";
             editorTemplate
                 -label "Frozen"
-                -addControl "frozen";	
+                -addControl "frozen";
         editorTemplate -endLayout;
 
     editorTemplate -endLayout;
@@ -1013,16 +1009,16 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
     editorTemplate -beginLayout "Asset Options" -collapse false;
 
         editorTemplate -callCustom "AEhoudiniAssetOptionsNew" "AEhoudiniAssetOptionsReplace" "unused";
-	editorTemplate -beginLayout "Asset Callbacks" -collapse true;
+        editorTemplate -beginLayout "Asset Callbacks" -collapse true;
             editorTemplate
                 -label "Pre Sync Callback"
-                -addControl "preSyncCallback";	
+                -addControl "preSyncCallback";
 
             editorTemplate
                 -label "Post Sync Callback"
-                -addControl "postSyncCallback";	
+                -addControl "postSyncCallback";
 
-	editorTemplate -endLayout;
+        editorTemplate -endLayout;
 
         editorTemplate -suppress "syncWhenInputConnects";
         editorTemplate -suppress "autoSyncOutputs";
@@ -1035,7 +1031,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "outputCustomAttributes";
         editorTemplate -suppress "outputMeshPreserveHardEdges";
         editorTemplate -suppress "outputMeshPreserveLockedNormals";
-	editorTemplate -suppress "output";
+        editorTemplate -suppress "output";
         editorTemplate -suppress "ungroupOnBake";
         editorTemplate -suppress "updateParmsForEvalMode";
         editorTemplate -suppress "bakeOutputTextures";
@@ -1043,9 +1039,9 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "connectGeoForAssetInputs";
 
         editorTemplate -suppress "useInstancerNode";
-	editorTemplate -suppress "cachedSrcAttr";
-	editorTemplate -suppress "cachedDstAttr";
-	editorTemplate -suppress "cachedDstNode";
+        editorTemplate -suppress "cachedSrcAttr";
+        editorTemplate -suppress "cachedDstAttr";
+        editorTemplate -suppress "cachedDstNode";
 
     editorTemplate -endLayout;
 

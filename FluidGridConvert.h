@@ -14,9 +14,9 @@ public:
     FluidGridConvert();
     virtual ~FluidGridConvert();
 
-    virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+    virtual MStatus compute(const MPlug &plug, MDataBlock &data);
 
-    static void* creator();
+    static void *creator();
     static MStatus initialize();
 
     static MString typeName;

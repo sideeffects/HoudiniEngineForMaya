@@ -7,29 +7,29 @@
 
 class SubCommand;
 
-class EngineCommand: public MPxCommand
+class EngineCommand : public MPxCommand
 {
-    public:
-        static const char* commandName;
+public:
+    static const char *commandName;
 
-    public:
-        static void* creator();
-        static MSyntax newSyntax();
+public:
+    static void *creator();
+    static MSyntax newSyntax();
 
-    public:
-        EngineCommand();
-        virtual ~EngineCommand();
+public:
+    EngineCommand();
+    virtual ~EngineCommand();
 
-        MStatus doIt(const MArgList& args);
-        MStatus redoIt();
-        MStatus undoIt();
-        bool isUndoable() const;
+    MStatus doIt(const MArgList &args);
+    MStatus redoIt();
+    MStatus undoIt();
+    bool isUndoable() const;
 
-    private:
-        MStatus parseArgs(const MArgList &args);
+private:
+    MStatus parseArgs(const MArgList &args);
 
-    private:
-        SubCommand* mySubCommand;
+private:
+    SubCommand *mySubCommand;
 };
 
 #endif

@@ -10,20 +10,18 @@
 
 class SyncAttribute : public SubCommandAsset
 {
-    public:
-        SyncAttribute(
-                const MObject &assetNodeObj
-                );
-        virtual ~SyncAttribute();
+public:
+    SyncAttribute(const MObject &assetNodeObj);
+    virtual ~SyncAttribute();
 
-        virtual MStatus doIt();
-        virtual MStatus undoIt();
-        virtual MStatus redoIt();
+    virtual MStatus doIt();
+    virtual MStatus undoIt();
+    virtual MStatus redoIt();
 
-        virtual bool isUndoable() const;
+    virtual bool isUndoable() const;
 
-    protected:
-        MDGModifier myDGModifier;
+protected:
+    MDGModifier myDGModifier;
 };
 
 #endif

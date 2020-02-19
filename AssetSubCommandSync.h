@@ -3,44 +3,42 @@
 
 #include "SubCommand.h"
 
-#include <maya/MObject.h>
 #include <maya/MDagModifier.h>
+#include <maya/MObject.h>
 #include <maya/MPlug.h>
 
 #include <vector>
 
 class AssetSubCommandSync : public SubCommandAsset
 {
-    public:
-        AssetSubCommandSync(
-                const MObject &assetNodeObj
-                );
-        virtual ~AssetSubCommandSync();
+public:
+    AssetSubCommandSync(const MObject &assetNodeObj);
+    virtual ~AssetSubCommandSync();
 
-        void setSyncAttributes();
-        void setSyncOutputs();
+    void setSyncAttributes();
+    void setSyncOutputs();
 
-        void setSyncOutputHidden();
-        void setSyncOutputTemplatedGeos();
-	void deleteMaterials(MPlug &materialPlug);
+    void setSyncOutputHidden();
+    void setSyncOutputTemplatedGeos();
+    void deleteMaterials(MPlug &materialPlug);
 
-        virtual MStatus doIt();
-        virtual MStatus redoIt();
-        virtual MStatus undoIt();
-        virtual bool isUndoable() const;
+    virtual MStatus doIt();
+    virtual MStatus redoIt();
+    virtual MStatus undoIt();
+    virtual bool isUndoable() const;
 
-    protected:
-        bool mySyncAll;
-        bool mySyncAttributes;
-        bool mySyncOutputs;
+protected:
+    bool mySyncAll;
+    bool mySyncAttributes;
+    bool mySyncOutputs;
 
-        bool mySyncOutputHidden;
-        bool mySyncOutputTemplatedGeos;
+    bool mySyncOutputHidden;
+    bool mySyncOutputTemplatedGeos;
 
-        MDagModifier myDagModifier;
+    MDagModifier myDagModifier;
 
-        typedef std::vector<SubCommand*> AssetSyncs;
-        AssetSyncs myAssetSyncs;
+    typedef std::vector<SubCommand *> AssetSyncs;
+    AssetSyncs myAssetSyncs;
 };
 
 #endif

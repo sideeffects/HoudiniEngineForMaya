@@ -1,26 +1,26 @@
-#include <maya/MFnGenericAttribute.h>
-#include <maya/MFnNumericAttribute.h>
+#include <maya/MDataHandle.h>
 #include <maya/MFnCompoundAttribute.h>
+#include <maya/MFnDependencyNode.h>
+#include <maya/MFnGenericAttribute.h>
+#include <maya/MFnMessageAttribute.h>
+#include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnUnitAttribute.h>
-#include <maya/MFnMessageAttribute.h>
-#include <maya/MDataHandle.h>
-#include <maya/MFnDependencyNode.h>
 #if MAYA_API_VERSION >= 201600
-#include <maya/MEvaluationNode.h>
-#include <maya/MEvaluationNodeIterator.h>
+    #include <maya/MEvaluationNode.h>
+    #include <maya/MEvaluationNodeIterator.h>
 #endif
+#include <maya/MAnimControl.h>
 #include <maya/MFileIO.h>
 #include <maya/MFileObject.h>
-#include <maya/MTime.h>
 #include <maya/MGlobal.h>
 #include <maya/MModelMessage.h>
 #include <maya/MPlugArray.h>
-#include <maya/MAnimControl.h>
+#include <maya/MTime.h>
 
 #include "Asset.h"
-#include "Input.h"
 #include "AssetNode.h"
+#include "Input.h"
 #include "MayaTypeID.h"
 #include "util.h"
 
@@ -38,7 +38,6 @@ MObject AssetNode::assetHelpURL;
 MObject AssetNode::assetConnectType;
 MObject AssetNode::postSyncCallback;
 MObject AssetNode::preSyncCallback;
-
 
 MObject AssetNode::input;
 MObject AssetNode::inputName;
@@ -77,9 +76,11 @@ MObject AssetNode::outputObjectScale;
 MObject AssetNode::outputObjectScaleX;
 MObject AssetNode::outputObjectScaleY;
 MObject AssetNode::outputObjectScaleZ;
+
 #if MAYA_API_VERSION >= 201400
-MObject AssetNode::outputObjectFluidFromAsset;
+    MObject AssetNode::outputObjectFluidFromAsset;
 #endif
+
 MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputGeos;
@@ -107,25 +108,23 @@ MObject AssetNode::outputPartCurves;
 MObject AssetNode::outputPartCurvesIsBezier;
 
 #if MAYA_API_VERSION >= 201400
-
-MObject AssetNode::outputPartVolume;
-MObject AssetNode::outputPartVolumeName;
-MObject AssetNode::outputPartVolumeGrid;
-MObject AssetNode::outputPartVolumeRes;
-MObject AssetNode::outputPartVolumeTransform;
-MObject AssetNode::outputPartVolumeTranslate;
-MObject AssetNode::outputPartVolumeTranslateX;
-MObject AssetNode::outputPartVolumeTranslateY;
-MObject AssetNode::outputPartVolumeTranslateZ;
-MObject AssetNode::outputPartVolumeRotate;
-MObject AssetNode::outputPartVolumeRotateX;
-MObject AssetNode::outputPartVolumeRotateY;
-MObject AssetNode::outputPartVolumeRotateZ;
-MObject AssetNode::outputPartVolumeScale;
-MObject AssetNode::outputPartVolumeScaleX;
-MObject AssetNode::outputPartVolumeScaleY;
-MObject AssetNode::outputPartVolumeScaleZ;
-
+    MObject AssetNode::outputPartVolume;
+    MObject AssetNode::outputPartVolumeName;
+    MObject AssetNode::outputPartVolumeGrid;
+    MObject AssetNode::outputPartVolumeRes;
+    MObject AssetNode::outputPartVolumeTransform;
+    MObject AssetNode::outputPartVolumeTranslate;
+    MObject AssetNode::outputPartVolumeTranslateX;
+    MObject AssetNode::outputPartVolumeTranslateY;
+    MObject AssetNode::outputPartVolumeTranslateZ;
+    MObject AssetNode::outputPartVolumeRotate;
+    MObject AssetNode::outputPartVolumeRotateX;
+    MObject AssetNode::outputPartVolumeRotateY;
+    MObject AssetNode::outputPartVolumeRotateZ;
+    MObject AssetNode::outputPartVolumeScale;
+    MObject AssetNode::outputPartVolumeScaleX;
+    MObject AssetNode::outputPartVolumeScaleY;
+    MObject AssetNode::outputPartVolumeScaleZ;
 #endif
 
 MObject AssetNode::outputPartInstancer;
@@ -192,10 +191,10 @@ MObject AssetNode::outputMaterialDiffuseColor;
 MObject AssetNode::outputMaterialSpecularColor;
 MObject AssetNode::outputMaterialAlphaColor;
 
-void*
+void *
 AssetNode::creator()
 {
-    AssetNode* ret = new AssetNode();
+    AssetNode *ret = new AssetNode();
     return ret;
 }
 
@@ -212,83 +211,59 @@ AssetNode::initialize()
 
     // time input
     // For time dpendence.
-    AssetNode::inTime = uAttr.create(
-            "inTime", "inTime",
-            MTime()
-            );
+    AssetNode::inTime = uAttr.create("inTime", "inTime", MTime());
     uAttr.setStorable(true);
     uAttr.setHidden(true);
 
     // otl file path
     AssetNode::otlFilePath = tAttr.create(
-            "otlFilePath", "otlFilePath",
-            MFnData::kString
-            );
+        "otlFilePath", "otlFilePath", MFnData::kString);
     tAttr.setInternal(true);
     tAttr.setUsedAsFilename(true);
 
     // asset name
     AssetNode::assetName = tAttr.create(
-            "assetName", "assetName",
-            MFnData::kString
-            );
+        "assetName", "assetName", MFnData::kString);
     tAttr.setInternal(true);
-    
+
     AssetNode::assetHelpText = tAttr.create(
-            "assetHelpText", "assetHelpText",
-            MFnData::kString
-            );
+        "assetHelpText", "assetHelpText", MFnData::kString);
     tAttr.setInternal(true);
     tAttr.setWritable(false);
 
     AssetNode::assetHelpURL = tAttr.create(
-            "assetHelpURL", "assetHelpURL",
-            MFnData::kString
-            );
+        "assetHelpURL", "assetHelpURL", MFnData::kString);
     tAttr.setInternal(true);
     tAttr.setWritable(false);
 
     AssetNode::postSyncCallback = tAttr.create(
-            "postSyncCallback", "postSyncCallback",
-            MFnData::kString
-            );
+        "postSyncCallback", "postSyncCallback", MFnData::kString);
     tAttr.setStorable(true);
-  
+
     AssetNode::preSyncCallback = tAttr.create(
-            "preSyncCallback", "preSyncCallback",
-            MFnData::kString
-            );
+        "preSyncCallback", "preSyncCallback", MFnData::kString);
     tAttr.setStorable(true);
-    
+
     // asset usage type: classic = 0, history = 1, bake = 2
     AssetNode::assetConnectType = nAttr.create(
-            "assetConnectType", "assetConnectType",
-            MFnNumericData::kInt,
-            0
-            );
+        "assetConnectType", "assetConnectType", MFnNumericData::kInt, 0);
     nAttr.setCached(false);
     nAttr.setStorable(true);
     nAttr.setDisconnectBehavior(MFnAttribute::kReset);
 
     // input
     AssetNode::inputName = tAttr.create(
-            "inputName", "inputName",
-            MFnData::kString);
+        "inputName", "inputName", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     AssetNode::inputNodeId = nAttr.create(
-            "inputNodeId", "inputNodeId",
-            MFnNumericData::kInt,
-            -1
-            );
+        "inputNodeId", "inputNodeId", MFnNumericData::kInt, -1);
     nAttr.setCached(false);
     nAttr.setStorable(false);
     nAttr.setDisconnectBehavior(MFnAttribute::kReset);
 
-    AssetNode::input = cAttr.create(
-            "input", "input"
-            );
+    AssetNode::input = cAttr.create("input", "input");
     cAttr.addChild(AssetNode::inputName);
     cAttr.addChild(AssetNode::inputNodeId);
     cAttr.setArray(true);
@@ -298,115 +273,85 @@ AssetNode::initialize()
 
     // translate
     AssetNode::outputAssetTranslateX = uAttr.create(
-            "outputAssetTranslateX", "outputAssetTranslateX",
-            MFnUnitAttribute::kDistance
-            );
+        "outputAssetTranslateX", "outputAssetTranslateX",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputAssetTranslateY = uAttr.create(
-            "outputAssetTranslateY", "outputAssetTranslateY",
-            MFnUnitAttribute::kDistance
-            );
+        "outputAssetTranslateY", "outputAssetTranslateY",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputAssetTranslateZ = uAttr.create(
-            "outputAssetTranslateZ", "outputAssetTranslateZ",
-            MFnUnitAttribute::kDistance
-            );
+        "outputAssetTranslateZ", "outputAssetTranslateZ",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputAssetTranslate = nAttr.create(
-            "outputAssetTranslate", "outputAssetTranslate",
-            AssetNode::outputAssetTranslateX,
-            AssetNode::outputAssetTranslateY,
-            AssetNode::outputAssetTranslateZ
-            );
+        "outputAssetTranslate", "outputAssetTranslate",
+        AssetNode::outputAssetTranslateX, AssetNode::outputAssetTranslateY,
+        AssetNode::outputAssetTranslateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // rotate
     AssetNode::outputAssetRotateX = uAttr.create(
-            "outputAssetRotateX", "outputAssetRotateX",
-            MFnUnitAttribute::kAngle
-            );
+        "outputAssetRotateX", "outputAssetRotateX", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputAssetRotateY = uAttr.create(
-            "outputAssetRotateY", "outputAssetRotateY",
-            MFnUnitAttribute::kAngle
-            );
+        "outputAssetRotateY", "outputAssetRotateY", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputAssetRotateZ = uAttr.create(
-            "outputAssetRotateZ", "outputAssetRotateZ",
-            MFnUnitAttribute::kAngle
-            );
+        "outputAssetRotateZ", "outputAssetRotateZ", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputAssetRotate = nAttr.create(
-            "outputAssetRotate", "outputAssetRotate",
-            AssetNode::outputAssetRotateX,
-            AssetNode::outputAssetRotateY,
-            AssetNode::outputAssetRotateZ
-            );
+        "outputAssetRotate", "outputAssetRotate", AssetNode::outputAssetRotateX,
+        AssetNode::outputAssetRotateY, AssetNode::outputAssetRotateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // scale
     AssetNode::outputAssetScaleX = nAttr.create(
-            "outputAssetScaleX", "outputAssetScaleX",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputAssetScaleX", "outputAssetScaleX", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputAssetScaleY = nAttr.create(
-            "outputAssetScaleY", "outputAssetScaleY",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputAssetScaleY", "outputAssetScaleY", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputAssetScaleZ = nAttr.create(
-            "outputAssetScaleZ", "outputAssetScaleZ",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputAssetScaleZ", "outputAssetScaleZ", MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputAssetScale = nAttr.create(
-            "outputAssetScale", "outputAssetScale",
-            AssetNode::outputAssetScaleX,
-            AssetNode::outputAssetScaleY,
-            AssetNode::outputAssetScaleZ
-            );
+        "outputAssetScale", "outputAssetScale", AssetNode::outputAssetScaleX,
+        AssetNode::outputAssetScaleY, AssetNode::outputAssetScaleZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // transform
     AssetNode::outputAssetTransform = cAttr.create(
-            "outputAssetTransform", "outputAssetTransform"
-            );
+        "outputAssetTransform", "outputAssetTransform");
     cAttr.addChild(AssetNode::outputAssetTranslate);
     cAttr.addChild(AssetNode::outputAssetRotate);
     cAttr.addChild(AssetNode::outputAssetScale);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
-    //----------------------------------  instancer compound multi----------------------------------------------
+    //------------------------instancer compound multi------------------------
     // instancer data
     AssetNode::outputInstancerData = tAttr.create(
-            "outputInstancerData", "outputInstancerData",
-            MFnData::kDynArrayAttrs
-            );
+        "outputInstancerData", "outputInstancerData", MFnData::kDynArrayAttrs);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     // instanced object names
     AssetNode::outputInstancedObjectNames = tAttr.create(
-            "outputInstancedObjectNames", "outputInstancedObjectNames",
-            MFnData::kString
-            );
+        "outputInstancedObjectNames", "outputInstancedObjectNames",
+        MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     tAttr.setArray(true);
@@ -415,9 +360,8 @@ AssetNode::initialize()
 
     // houdini instance attribute
     AssetNode::outputHoudiniInstanceAttribute = tAttr.create(
-            "outputHoudiniInstanceAttribute", "outputHoudiniInstanceAttribute",
-            MFnData::kString
-            );
+        "outputHoudiniInstanceAttribute", "outputHoudiniInstanceAttribute",
+        MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     tAttr.setArray(true);
@@ -426,9 +370,8 @@ AssetNode::initialize()
 
     // houdini name attribute
     AssetNode::outputHoudiniNameAttribute = tAttr.create(
-            "outputHoudiniNameAttribute", "outputHoudiniNameAttribute",
-            MFnData::kString
-            );
+        "outputHoudiniNameAttribute", "outputHoudiniNameAttribute",
+        MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     tAttr.setArray(true);
@@ -437,95 +380,77 @@ AssetNode::initialize()
 
     // translate
     AssetNode::outputInstanceTranslateX = uAttr.create(
-            "outputInstanceTranslateX", "outputInstanceTranslateX",
-            MFnUnitAttribute::kDistance
-            );
+        "outputInstanceTranslateX", "outputInstanceTranslateX",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputInstanceTranslateY = uAttr.create(
-            "outputInstanceTranslateY", "outputInstanceTranslateY",
-            MFnUnitAttribute::kDistance
-            );
+        "outputInstanceTranslateY", "outputInstanceTranslateY",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputInstanceTranslateZ = uAttr.create(
-            "outputInstanceTranslateZ", "outputInstanceTranslateZ",
-            MFnUnitAttribute::kDistance
-            );
+        "outputInstanceTranslateZ", "outputInstanceTranslateZ",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputInstanceTranslate = nAttr.create(
-            "outputInstanceTranslate", "outputInstanceTranslate",
-            AssetNode::outputInstanceTranslateX,
-            AssetNode::outputInstanceTranslateY,
-            AssetNode::outputInstanceTranslateZ
-            );
+        "outputInstanceTranslate", "outputInstanceTranslate",
+        AssetNode::outputInstanceTranslateX,
+        AssetNode::outputInstanceTranslateY,
+        AssetNode::outputInstanceTranslateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // rotate
-    AssetNode::outputInstanceRotateX = uAttr.create(
-            "outputInstanceRotateX", "outputInstanceRotateX",
-            MFnUnitAttribute::kAngle
-            );
+    AssetNode::outputInstanceRotateX = uAttr.create("outputInstanceRotateX",
+                                                    "outputInstanceRotateX",
+                                                    MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNode::outputInstanceRotateY = uAttr.create(
-            "outputInstanceRotateY", "outputInstanceRotateY",
-            MFnUnitAttribute::kAngle
-            );
+    AssetNode::outputInstanceRotateY = uAttr.create("outputInstanceRotateY",
+                                                    "outputInstanceRotateY",
+                                                    MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNode::outputInstanceRotateZ = uAttr.create(
-            "outputInstanceRotateZ", "outputInstanceRotateZ",
-            MFnUnitAttribute::kAngle
-            );
+    AssetNode::outputInstanceRotateZ = uAttr.create("outputInstanceRotateZ",
+                                                    "outputInstanceRotateZ",
+                                                    MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputInstanceRotate = nAttr.create(
-            "outputInstanceRotate", "outputInstanceRotate",
-            AssetNode::outputInstanceRotateX,
-            AssetNode::outputInstanceRotateY,
-            AssetNode::outputInstanceRotateZ
-            );
+        "outputInstanceRotate", "outputInstanceRotate",
+        AssetNode::outputInstanceRotateX, AssetNode::outputInstanceRotateY,
+        AssetNode::outputInstanceRotateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // scale
     AssetNode::outputInstanceScaleX = nAttr.create(
-            "outputInstanceScaleX", "outputInstanceScaleX",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputInstanceScaleX", "outputInstanceScaleX", MFnNumericData::kDouble,
+        1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputInstanceScaleY = nAttr.create(
-            "outputInstanceScaleY", "outputInstanceScaleY",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputInstanceScaleY", "outputInstanceScaleY", MFnNumericData::kDouble,
+        1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputInstanceScaleZ = nAttr.create(
-            "outputInstanceScaleZ", "outputInstanceScaleZ",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputInstanceScaleZ", "outputInstanceScaleZ", MFnNumericData::kDouble,
+        1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputInstanceScale = nAttr.create(
-            "outputInstanceScale", "outputInstanceScale",
-            AssetNode::outputInstanceScaleX,
-            AssetNode::outputInstanceScaleY,
-            AssetNode::outputInstanceScaleZ
-            );
+        "outputInstanceScale", "outputInstanceScale",
+        AssetNode::outputInstanceScaleX, AssetNode::outputInstanceScaleY,
+        AssetNode::outputInstanceScaleZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // transform
     AssetNode::outputInstanceTransform = cAttr.create(
-            "outputInstanceTransform", "outputInstanceTransform"
-            );
+        "outputInstanceTransform", "outputInstanceTransform");
     cAttr.addChild(AssetNode::outputInstanceTranslate);
     cAttr.addChild(AssetNode::outputInstanceRotate);
     cAttr.addChild(AssetNode::outputInstanceScale);
@@ -536,8 +461,7 @@ AssetNode::initialize()
 
     // instancers
     AssetNode::outputInstancers = cAttr.create(
-            "outputInstancers", "outputInstancers"
-            );
+        "outputInstancers", "outputInstancers");
     cAttr.addChild(AssetNode::outputInstancerData);
     cAttr.addChild(AssetNode::outputInstancedObjectNames);
     cAttr.addChild(AssetNode::outputHoudiniInstanceAttribute);
@@ -548,101 +472,78 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
 
-    //--------------------------------End instancer compound multi----------------------------------------------
+    //----------------------End instancer compound multi----------------------
 
-    //----------------------------------  objects compound multi------------------------------------------------
+    //-------------------------objects compound multi-------------------------
 
     // translate
     AssetNode::outputObjectTranslateX = uAttr.create(
-            "outputObjectTranslateX", "outputObjectTranslateX",
-            MFnUnitAttribute::kDistance
-            );
+        "outputObjectTranslateX", "outputObjectTranslateX",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputObjectTranslateY = uAttr.create(
-            "outputObjectTranslateY", "outputObjectTranslateY",
-            MFnUnitAttribute::kDistance
-            );
+        "outputObjectTranslateY", "outputObjectTranslateY",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputObjectTranslateZ = uAttr.create(
-            "outputObjectTranslateZ", "outputObjectTranslateZ",
-            MFnUnitAttribute::kDistance
-            );
+        "outputObjectTranslateZ", "outputObjectTranslateZ",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputObjectTranslate = nAttr.create(
-            "outputObjectTranslate", "outputObjectTranslate",
-            AssetNode::outputObjectTranslateX,
-            AssetNode::outputObjectTranslateY,
-            AssetNode::outputObjectTranslateZ
-            );
+        "outputObjectTranslate", "outputObjectTranslate",
+        AssetNode::outputObjectTranslateX, AssetNode::outputObjectTranslateY,
+        AssetNode::outputObjectTranslateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // rotate
     AssetNode::outputObjectRotateX = uAttr.create(
-            "outputObjectRotateX", "outputObjectRotateX",
-            MFnUnitAttribute::kAngle
-            );
+        "outputObjectRotateX", "outputObjectRotateX", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputObjectRotateY = uAttr.create(
-            "outputObjectRotateY", "outputObjectRotateY",
-            MFnUnitAttribute::kAngle
-            );
+        "outputObjectRotateY", "outputObjectRotateY", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputObjectRotateZ = uAttr.create(
-            "outputObjectRotateZ", "outputObjectRotateZ",
-            MFnUnitAttribute::kAngle
-            );
+        "outputObjectRotateZ", "outputObjectRotateZ", MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputObjectRotate = nAttr.create(
-            "outputObjectRotate", "outputObjectRotate",
-            AssetNode::outputObjectRotateX,
-            AssetNode::outputObjectRotateY,
-            AssetNode::outputObjectRotateZ
-            );
+        "outputObjectRotate", "outputObjectRotate",
+        AssetNode::outputObjectRotateX, AssetNode::outputObjectRotateY,
+        AssetNode::outputObjectRotateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // scale
-    AssetNode::outputObjectScaleX = nAttr.create(
-            "outputObjectScaleX", "outputObjectScaleX",
-            MFnNumericData::kDouble,
-            1.0
-            );
+    AssetNode::outputObjectScaleX = nAttr.create("outputObjectScaleX",
+                                                 "outputObjectScaleX",
+                                                 MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    AssetNode::outputObjectScaleY = nAttr.create(
-            "outputObjectScaleY", "outputObjectScaleY",
-            MFnNumericData::kDouble,
-            1.0
-            );
+    AssetNode::outputObjectScaleY = nAttr.create("outputObjectScaleY",
+                                                 "outputObjectScaleY",
+                                                 MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-    AssetNode::outputObjectScaleZ = nAttr.create(
-            "outputObjectScaleZ", "outputObjectScaleZ",
-            MFnNumericData::kDouble,
-            1.0
-            );
+    AssetNode::outputObjectScaleZ = nAttr.create("outputObjectScaleZ",
+                                                 "outputObjectScaleZ",
+                                                 MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputObjectScale = nAttr.create(
-            "outputObjectScale", "outputObjectScale",
-            AssetNode::outputObjectScaleX,
-            AssetNode::outputObjectScaleY,
-            AssetNode::outputObjectScaleZ
-            );
+        "outputObjectScale", "outputObjectScale", AssetNode::outputObjectScaleX,
+        AssetNode::outputObjectScaleY, AssetNode::outputObjectScaleZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // transform
     AssetNode::outputObjectTransform = cAttr.create(
-            "outputObjectTransform", "outputObjectTransform"
-            );
+        "outputObjectTransform", "outputObjectTransform");
     cAttr.addChild(AssetNode::outputObjectTranslate);
     cAttr.addChild(AssetNode::outputObjectRotate);
     cAttr.addChild(AssetNode::outputObjectScale);
@@ -652,73 +553,55 @@ AssetNode::initialize()
 #if MAYA_API_VERSION >= 201400
     // object fluid from asset
     AssetNode::outputObjectFluidFromAsset = nAttr.create(
-            "outputObjectFluidFromAsset", "outputObjectFluidFromAsset",
-            MFnNumericData::kBoolean,
-            true
-            );
+        "outputObjectFluidFromAsset", "outputObjectFluidFromAsset",
+        MFnNumericData::kBoolean, true);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 #endif
 
     // meta data
     AssetNode::outputObjectMetaData = nAttr.create(
-            "outputObjectMetaData", "outputObjectMetaData",
-            MFnNumericData::kInt
-            );
+        "outputObjectMetaData", "outputObjectMetaData", MFnNumericData::kInt);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // part name
     AssetNode::outputPartName = tAttr.create(
-            "outputPartName", "outputPartName",
-            MFnData::kString
-            );
+        "outputPartName", "outputPartName", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     AssetNode::outputPartHasMesh = nAttr.create(
-            "outputPartHasMesh", "outputPartHasMesh",
-            MFnNumericData::kBoolean,
-            false
-            );
+        "outputPartHasMesh", "outputPartHasMesh", MFnNumericData::kBoolean,
+        false);
 
     AssetNode::outputPartHasParticles = nAttr.create(
-            "outputPartHasParticles", "outputPartHasParticles",
-            MFnNumericData::kBoolean,
-            false
-            );
+        "outputPartHasParticles", "outputPartHasParticles",
+        MFnNumericData::kBoolean, false);
 
     AssetNode::outputPartHasInstancer = nAttr.create(
-            "outputPartHasInstancer", "outputPartHasInstancer",
-            MFnNumericData::kBoolean,
-            false
-            );
+        "outputPartHasInstancer", "outputPartHasInstancer",
+        MFnNumericData::kBoolean, false);
 
     // mesh
     AssetNode::outputPartMeshCurrentColorSet = tAttr.create(
-            "outputPartMeshCurrentColorSet", "outputPartMeshCurrentColorSet",
-            MFnData::kString
-            );
+        "outputPartMeshCurrentColorSet", "outputPartMeshCurrentColorSet",
+        MFnData::kString);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     AssetNode::outputPartMeshCurrentUV = tAttr.create(
-            "outputPartMeshCurrentUV", "outputPartMeshCurrentUV",
-            MFnData::kString
-            );
+        "outputPartMeshCurrentUV", "outputPartMeshCurrentUV", MFnData::kString);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     AssetNode::outputPartMeshData = tAttr.create(
-            "outputPartMeshData", "outputPartMeshData",
-            MFnData::kMesh
-            );
+        "outputPartMeshData", "outputPartMeshData", MFnData::kMesh);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     AssetNode::outputPartMesh = cAttr.create(
-            "outputPartMesh", "outputPartMesh"
-            );
+        "outputPartMesh", "outputPartMesh");
     cAttr.addChild(AssetNode::outputPartMeshCurrentColorSet);
     cAttr.addChild(AssetNode::outputPartMeshCurrentUV);
     cAttr.addChild(AssetNode::outputPartMeshData);
@@ -727,29 +610,25 @@ AssetNode::initialize()
 
     // particle
     AssetNode::outputPartParticleCurrentTime = uAttr.create(
-            "outputPartParticleCurrentTime", "outputPartParticleCurrentTime",
-            MFnUnitAttribute::kTime
-            );
+        "outputPartParticleCurrentTime", "outputPartParticleCurrentTime",
+        MFnUnitAttribute::kTime);
     uAttr.setWritable(false);
     uAttr.setStorable(false);
 
     AssetNode::outputPartParticlePositions = tAttr.create(
-            "outputPartParticlePositions", "outputPartParticlePositions",
-            MFnData::kVectorArray
-            );
+        "outputPartParticlePositions", "outputPartParticlePositions",
+        MFnData::kVectorArray);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     AssetNode::outputPartParticleArrayData = tAttr.create(
-            "outputPartParticleArrayData", "outputPartParticleArrayData",
-            MFnData::kDynArrayAttrs
-            );
+        "outputPartParticleArrayData", "outputPartParticleArrayData",
+        MFnData::kDynArrayAttrs);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     AssetNode::outputPartParticle = cAttr.create(
-            "outputPartParticle", "outputPartParticle"
-            );
+        "outputPartParticle", "outputPartParticle");
     cAttr.addChild(AssetNode::outputPartParticleCurrentTime);
     cAttr.addChild(AssetNode::outputPartParticlePositions);
     cAttr.addChild(AssetNode::outputPartParticleArrayData);
@@ -758,9 +637,7 @@ AssetNode::initialize()
 
     // curves
     AssetNode::outputPartCurves = tAttr.create(
-            "outputPartCurves", "outputPartCurves",
-            MFnData::kNurbsCurve
-            );
+        "outputPartCurves", "outputPartCurves", MFnData::kNurbsCurve);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
     tAttr.setArray(true);
@@ -768,127 +645,101 @@ AssetNode::initialize()
     tAttr.setUsesArrayDataBuilder(true);
 
     AssetNode::outputPartCurvesIsBezier = nAttr.create(
-            "outputPartCurvesIsBezier", "outputPartCurvesIsBezier",
-            MFnNumericData::kBoolean,
-            false
-            );
+        "outputPartCurvesIsBezier", "outputPartCurvesIsBezier",
+        MFnNumericData::kBoolean, false);
     nAttr.setWritable(false);
     nAttr.setStorable(false);
 
 #if MAYA_API_VERSION >= 201400
     // Volumes ---------
     AssetNode::outputPartVolumeName = tAttr.create(
-            "outputPartVolumeName", "outputPartVolumeName",
-            MFnData::kString
-            );
+        "outputPartVolumeName", "outputPartVolumeName", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     AssetNode::outputPartVolumeGrid = tAttr.create(
-            "outputPartVolumeGrid", "outputPartVolumeGrid",
-            MFnData::kFloatArray
-            );
+        "outputPartVolumeGrid", "outputPartVolumeGrid", MFnData::kFloatArray);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     // Volume resolution
     AssetNode::outputPartVolumeRes = tAttr.create(
-            "outputPartVolumeRes", "outputPartVolumeRes",
-            MFnData::kFloatArray
-            );
+        "outputPartVolumeRes", "outputPartVolumeRes", MFnData::kFloatArray);
     nAttr.setWritable(false);
     nAttr.setStorable(false);
 
     // volume transform
     // translate
     AssetNode::outputPartVolumeTranslateX = uAttr.create(
-            "outputPartVolumeTranslateX", "outputPartVolumeTranslateX",
-            MFnUnitAttribute::kDistance
-            );
+        "outputPartVolumeTranslateX", "outputPartVolumeTranslateX",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartVolumeTranslateY = uAttr.create(
-            "outputPartVolumeTranslateY", "outputPartVolumeTranslateY",
-            MFnUnitAttribute::kDistance
-            );
+        "outputPartVolumeTranslateY", "outputPartVolumeTranslateY",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartVolumeTranslateZ = uAttr.create(
-            "outputPartVolumeTranslateZ", "outputPartVolumeTranslateZ",
-            MFnUnitAttribute::kDistance
-            );
+        "outputPartVolumeTranslateZ", "outputPartVolumeTranslateZ",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartVolumeTranslate = nAttr.create(
-            "outputPartVolumeTranslate", "outputPartVolumeTranslate",
-            AssetNode::outputPartVolumeTranslateX,
-            AssetNode::outputPartVolumeTranslateY,
-            AssetNode::outputPartVolumeTranslateZ
-            );
+        "outputPartVolumeTranslate", "outputPartVolumeTranslate",
+        AssetNode::outputPartVolumeTranslateX,
+        AssetNode::outputPartVolumeTranslateY,
+        AssetNode::outputPartVolumeTranslateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // rotate
-    AssetNode::outputPartVolumeRotateX = uAttr.create(
-            "outputPartVolumeRotateX", "outputPartVolumeRotateX",
-            MFnUnitAttribute::kAngle
-            );
+    AssetNode::outputPartVolumeRotateX = uAttr.create("outputPartVolumeRotateX",
+                                                      "outputPartVolumeRotateX",
+                                                      MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNode::outputPartVolumeRotateY = uAttr.create(
-            "outputPartVolumeRotateY", "outputPartVolumeRotateY",
-            MFnUnitAttribute::kAngle
-            );
+    AssetNode::outputPartVolumeRotateY = uAttr.create("outputPartVolumeRotateY",
+                                                      "outputPartVolumeRotateY",
+                                                      MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
-    AssetNode::outputPartVolumeRotateZ = uAttr.create(
-            "outputPartVolumeRotateZ", "outputPartVolumeRotateZ",
-            MFnUnitAttribute::kAngle
-            );
+    AssetNode::outputPartVolumeRotateZ = uAttr.create("outputPartVolumeRotateZ",
+                                                      "outputPartVolumeRotateZ",
+                                                      MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartVolumeRotate = nAttr.create(
-            "outputPartVolumeRotate", "outputPartVolumeRotate",
-            AssetNode::outputPartVolumeRotateX,
-            AssetNode::outputPartVolumeRotateY,
-            AssetNode::outputPartVolumeRotateZ
-            );
+        "outputPartVolumeRotate", "outputPartVolumeRotate",
+        AssetNode::outputPartVolumeRotateX, AssetNode::outputPartVolumeRotateY,
+        AssetNode::outputPartVolumeRotateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // scale
     AssetNode::outputPartVolumeScaleX = nAttr.create(
-            "outputPartVolumeScaleX", "outputPartVolumeScaleX",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputPartVolumeScaleX", "outputPartVolumeScaleX",
+        MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartVolumeScaleY = nAttr.create(
-            "outputPartVolumeScaleY", "outputPartVolumeScaleY",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputPartVolumeScaleY", "outputPartVolumeScaleY",
+        MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartVolumeScaleZ = nAttr.create(
-            "outputPartVolumeScaleZ", "outputPartVolumeScaleZ",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputPartVolumeScaleZ", "outputPartVolumeScaleZ",
+        MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartVolumeScale = nAttr.create(
-            "outputPartVolumeScale", "outputPartVolumeScale",
-            AssetNode::outputPartVolumeScaleX,
-            AssetNode::outputPartVolumeScaleY,
-            AssetNode::outputPartVolumeScaleZ
-            );
+        "outputPartVolumeScale", "outputPartVolumeScale",
+        AssetNode::outputPartVolumeScaleX, AssetNode::outputPartVolumeScaleY,
+        AssetNode::outputPartVolumeScaleZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartVolumeTransform = cAttr.create(
-            "outputPartVolumeTransform", "outputPartVolumeTransform"
-            );
+        "outputPartVolumeTransform", "outputPartVolumeTransform");
     cAttr.addChild(AssetNode::outputPartVolumeTranslate);
     cAttr.addChild(AssetNode::outputPartVolumeRotate);
     cAttr.addChild(AssetNode::outputPartVolumeScale);
@@ -897,8 +748,7 @@ AssetNode::initialize()
 
     // volume
     AssetNode::outputPartVolume = cAttr.create(
-            "outputPartVolume", "outputPartVolume"
-            );
+        "outputPartVolume", "outputPartVolume");
     cAttr.addChild(AssetNode::outputPartVolumeName);
     cAttr.addChild(AssetNode::outputPartVolumeGrid);
     cAttr.addChild(AssetNode::outputPartVolumeTransform);
@@ -909,109 +759,91 @@ AssetNode::initialize()
 
     // instancer
     AssetNode::outputPartInstancerArrayData = tAttr.create(
-            "outputPartInstancerArrayData", "outputPartInstancerArrayData",
-            MFnData::kDynArrayAttrs
-            );
+        "outputPartInstancerArrayData", "outputPartInstancerArrayData",
+        MFnData::kDynArrayAttrs);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     AssetNode::outputPartInstancerParts = tAttr.create(
-            "outputPartInstancerParts", "outputPartInstancerParts",
-            MFnData::kIntArray
-            );
+        "outputPartInstancerParts", "outputPartInstancerParts",
+        MFnData::kIntArray);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     AssetNode::outputPartInstancerTranslateX = uAttr.create(
-            "outputPartInstancerTranslateX", "outputPartInstancerTranslateX",
-            MFnUnitAttribute::kDistance
-            );
+        "outputPartInstancerTranslateX", "outputPartInstancerTranslateX",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartInstancerTranslateY = uAttr.create(
-            "outputPartInstancerTranslateY", "outputPartInstancerTranslateY",
-            MFnUnitAttribute::kDistance
-            );
+        "outputPartInstancerTranslateY", "outputPartInstancerTranslateY",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartInstancerTranslateZ = uAttr.create(
-            "outputPartInstancerTranslateZ", "outputPartInstancerTranslateZ",
-            MFnUnitAttribute::kDistance
-            );
+        "outputPartInstancerTranslateZ", "outputPartInstancerTranslateZ",
+        MFnUnitAttribute::kDistance);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartInstancerTranslate = nAttr.create(
-            "outputPartInstancerTranslate", "outputPartInstancerTranslate",
-            AssetNode::outputPartInstancerTranslateX,
-            AssetNode::outputPartInstancerTranslateY,
-            AssetNode::outputPartInstancerTranslateZ
-            );
+        "outputPartInstancerTranslate", "outputPartInstancerTranslate",
+        AssetNode::outputPartInstancerTranslateX,
+        AssetNode::outputPartInstancerTranslateY,
+        AssetNode::outputPartInstancerTranslateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // rotate
     AssetNode::outputPartInstancerRotateX = uAttr.create(
-            "outputPartInstancerRotateX", "outputPartInstancerRotateX",
-            MFnUnitAttribute::kAngle
-            );
+        "outputPartInstancerRotateX", "outputPartInstancerRotateX",
+        MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartInstancerRotateY = uAttr.create(
-            "outputPartInstancerRotateY", "outputPartInstancerRotateY",
-            MFnUnitAttribute::kAngle
-            );
+        "outputPartInstancerRotateY", "outputPartInstancerRotateY",
+        MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartInstancerRotateZ = uAttr.create(
-            "outputPartInstancerRotateZ", "outputPartInstancerRotateZ",
-            MFnUnitAttribute::kAngle
-            );
+        "outputPartInstancerRotateZ", "outputPartInstancerRotateZ",
+        MFnUnitAttribute::kAngle);
     uAttr.setStorable(false);
     uAttr.setWritable(false);
     AssetNode::outputPartInstancerRotate = nAttr.create(
-            "outputPartInstancerRotate", "outputPartInstancerRotate",
-            AssetNode::outputPartInstancerRotateX,
-            AssetNode::outputPartInstancerRotateY,
-            AssetNode::outputPartInstancerRotateZ
-            );
+        "outputPartInstancerRotate", "outputPartInstancerRotate",
+        AssetNode::outputPartInstancerRotateX,
+        AssetNode::outputPartInstancerRotateY,
+        AssetNode::outputPartInstancerRotateZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // scale
     AssetNode::outputPartInstancerScaleX = nAttr.create(
-            "outputPartInstancerScaleX", "outputPartInstancerScaleX",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputPartInstancerScaleX", "outputPartInstancerScaleX",
+        MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartInstancerScaleY = nAttr.create(
-            "outputPartInstancerScaleY", "outputPartInstancerScaleY",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputPartInstancerScaleY", "outputPartInstancerScaleY",
+        MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartInstancerScaleZ = nAttr.create(
-            "outputPartInstancerScaleZ", "outputPartInstancerScaleZ",
-            MFnNumericData::kDouble,
-            1.0
-            );
+        "outputPartInstancerScaleZ", "outputPartInstancerScaleZ",
+        MFnNumericData::kDouble, 1.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartInstancerScale = nAttr.create(
-            "outputPartInstancerScale", "outputPartInstancerScale",
-            AssetNode::outputPartInstancerScaleX,
-            AssetNode::outputPartInstancerScaleY,
-            AssetNode::outputPartInstancerScaleZ
-            );
+        "outputPartInstancerScale", "outputPartInstancerScale",
+        AssetNode::outputPartInstancerScaleX,
+        AssetNode::outputPartInstancerScaleY,
+        AssetNode::outputPartInstancerScaleZ);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     // transform
     AssetNode::outputPartInstancerTransform = cAttr.create(
-            "outputPartInstancerTransform", "outputPartInstancerTransform"
-            );
+        "outputPartInstancerTransform", "outputPartInstancerTransform");
     cAttr.addChild(AssetNode::outputPartInstancerTranslate);
     cAttr.addChild(AssetNode::outputPartInstancerRotate);
     cAttr.addChild(AssetNode::outputPartInstancerScale);
@@ -1021,8 +853,7 @@ AssetNode::initialize()
     cAttr.setUsesArrayDataBuilder(true);
 
     AssetNode::outputPartInstancer = cAttr.create(
-            "outputPartInstancer", "outputPartInstancer"
-            );
+        "outputPartInstancer", "outputPartInstancer");
     cAttr.addChild(AssetNode::outputPartInstancerArrayData);
     cAttr.addChild(AssetNode::outputPartInstancerParts);
     cAttr.addChild(AssetNode::outputPartInstancerTransform);
@@ -1031,41 +862,33 @@ AssetNode::initialize()
 
     // material id
     AssetNode::outputPartMaterialIds = tAttr.create(
-            "outputPartMaterialIds", "outputPartMaterialIds",
-            MFnData::kIntArray
-            );
+        "outputPartMaterialIds", "outputPartMaterialIds", MFnData::kIntArray);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     // extra attributes
     AssetNode::outputPartExtraAttributeName = tAttr.create(
-            "outputPartExtraAttributeName", "outputPartExtraAttributeName",
-            MFnData::kString
-            );
+        "outputPartExtraAttributeName", "outputPartExtraAttributeName",
+        MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     AssetNode::outputPartExtraAttributeOwner = tAttr.create(
-            "outputPartExtraAttributeOwner", "outputPartExtraAttributeOwner",
-            MFnData::kString
-            );
+        "outputPartExtraAttributeOwner", "outputPartExtraAttributeOwner",
+        MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     AssetNode::outputPartExtraAttributeDataType = tAttr.create(
-            "outputPartExtraAttributeDataType", "outputPartExtraAttributeDataType",
-            MFnData::kString
-            );
+        "outputPartExtraAttributeDataType", "outputPartExtraAttributeDataType",
+        MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     AssetNode::outputPartExtraAttributeTuple = nAttr.create(
-            "outputPartExtraAttributeTuple", "outputPartExtraAttributeTuple",
-            MFnNumericData::kInt,
-            0.0
-            );
+        "outputPartExtraAttributeTuple", "outputPartExtraAttributeTuple",
+        MFnNumericData::kInt, 0.0);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     AssetNode::outputPartExtraAttributeData = gAttr.create(
-            "outputPartExtraAttributeData", "outputPartExtraAttributeData"
-            );
+        "outputPartExtraAttributeData", "outputPartExtraAttributeData");
     // float
     gAttr.addNumericDataAccept(MFnNumericData::kFloat);
     gAttr.addNumericDataAccept(MFnNumericData::k2Float);
@@ -1090,8 +913,7 @@ AssetNode::initialize()
     gAttr.setStorable(false);
     gAttr.setWritable(false);
     AssetNode::outputPartExtraAttributes = cAttr.create(
-            "outputPartExtraAttributes", "outputPartExtraAttributes"
-            );
+        "outputPartExtraAttributes", "outputPartExtraAttributes");
     cAttr.addChild(AssetNode::outputPartExtraAttributeName);
     cAttr.addChild(AssetNode::outputPartExtraAttributeOwner);
     cAttr.addChild(AssetNode::outputPartExtraAttributeDataType);
@@ -1103,29 +925,22 @@ AssetNode::initialize()
     cAttr.setUsesArrayDataBuilder(true);
 
     AssetNode::outputPartGroupName = tAttr.create(
-            "outputPartGroupName", "outputPartGroupName",
-            MFnData::kString
-            );
+        "outputPartGroupName", "outputPartGroupName", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     AssetNode::outputPartGroupType = nAttr.create(
-            "outputPartGroupType", "outputPartGroupType",
-            MFnNumericData::kInt
-            );
+        "outputPartGroupType", "outputPartGroupType", MFnNumericData::kInt);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     AssetNode::outputPartGroupMembers = tAttr.create(
-            "outputPartGroupMembers", "outputPartGroupMembers",
-            MFnData::kIntArray
-            );
+        "outputPartGroupMembers", "outputPartGroupMembers", MFnData::kIntArray);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     AssetNode::outputPartGroups = cAttr.create(
-            "outputPartGroups", "outputPartGroups"
-            );
+        "outputPartGroups", "outputPartGroups");
     cAttr.addChild(AssetNode::outputPartGroupName);
     cAttr.addChild(AssetNode::outputPartGroupType);
     cAttr.addChild(AssetNode::outputPartGroupMembers);
@@ -1134,9 +949,7 @@ AssetNode::initialize()
     cAttr.setArray(true);
     cAttr.setUsesArrayDataBuilder(true);
 
-    AssetNode::outputParts = cAttr.create(
-            "outputParts", "outputParts"
-            );
+    AssetNode::outputParts = cAttr.create("outputParts", "outputParts");
     cAttr.addChild(AssetNode::outputPartName);
     cAttr.addChild(AssetNode::outputPartHasMesh);
     cAttr.addChild(AssetNode::outputPartHasParticles);
@@ -1149,7 +962,7 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartMaterialIds);
     cAttr.addChild(AssetNode::outputPartExtraAttributes);
     cAttr.addChild(AssetNode::outputPartGroups);
-    
+
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
 #endif
@@ -1161,31 +974,23 @@ AssetNode::initialize()
 
     // output geos
     AssetNode::outputGeoName = tAttr.create(
-            "outputGeoName", "outputGeoName",
-            MFnData::kString
-            );
+        "outputGeoName", "outputGeoName", MFnData::kString);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
     AssetNode::outputGeoIsTemplated = nAttr.create(
-            "outputGeoIsTemplated", "outputGeoIsTemplated",
-            MFnNumericData::kBoolean,
-            false
-            );
+        "outputGeoIsTemplated", "outputGeoIsTemplated",
+        MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     AssetNode::outputGeoIsDisplayGeo = nAttr.create(
-            "outputGeoIsDisplayGeo", "outputGeoIsDisplayGeo",
-            MFnNumericData::kBoolean,
-            false
-            );
+        "outputGeoIsDisplayGeo", "outputGeoIsDisplayGeo",
+        MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
-    AssetNode::outputGeos = cAttr.create(
-            "outputGeos", "outputGeos"
-            );
+    AssetNode::outputGeos = cAttr.create("outputGeos", "outputGeos");
     cAttr.addChild(AssetNode::outputGeoName);
     cAttr.addChild(AssetNode::outputGeoIsTemplated);
     cAttr.addChild(AssetNode::outputGeoIsDisplayGeo);
@@ -1196,32 +1001,24 @@ AssetNode::initialize()
     cAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
 
-    AssetNode::outputVisibility = nAttr.create(
-            "outputVisibility", "outputVisibility",
-            MFnNumericData::kBoolean,
-            false
-            );
+    AssetNode::outputVisibility = nAttr.create("outputVisibility",
+                                               "outputVisibility",
+                                               MFnNumericData::kBoolean, false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     AssetNode::outputIsInstanced = nAttr.create(
-            "outputIsInstanced", "outputIsInstanced",
-            MFnNumericData::kBoolean,
-            false
-            );
+        "outputIsInstanced", "outputIsInstanced", MFnNumericData::kBoolean,
+        false);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
 
     AssetNode::outputObjectName = tAttr.create(
-            "outputObjectName", "outputObjectName",
-            MFnData::kString
-            );
+        "outputObjectName", "outputObjectName", MFnData::kString);
     tAttr.setWritable(false);
     tAttr.setStorable(false);
 
-    AssetNode::outputObjects = cAttr.create(
-            "outputObjects", "outputObjects"
-            );
+    AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputObjectMetaData);
 #if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputObjectFluidFromAsset);
@@ -1238,63 +1035,51 @@ AssetNode::initialize()
     cAttr.setIndexMatters(true);
     cAttr.setUsesArrayDataBuilder(true);
 
-    //------------------------------- END  objects compound multi------------------------------------------------
+    //-----------------------END objects compound multi-----------------------
 
     // material path
     AssetNode::outputMaterialPath = tAttr.create(
-            "outputMaterialPath", "outputMaterialPath",
-            MFnData::kString
-            );
+        "outputMaterialPath", "outputMaterialPath", MFnData::kString);
     // material name
     AssetNode::outputMaterialName = tAttr.create(
-            "outputMaterialName", "outputMaterialName",
-            MFnData::kString
-            );
+        "outputMaterialName", "outputMaterialName", MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
     // material node id
     AssetNode::outputMaterialNodeId = nAttr.create(
-            "outputMaterialNodeId", "outputMaterialNodeId",
-            MFnNumericData::kInt
-            );
+        "outputMaterialNodeId", "outputMaterialNodeId", MFnNumericData::kInt);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // material ambient
     AssetNode::outputMaterialAmbientColor = nAttr.createColor(
-            "outputMaterialAmbientColor", "outputMaterialAmbientColor"
-            );
+        "outputMaterialAmbientColor", "outputMaterialAmbientColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // material diffuse
     AssetNode::outputMaterialDiffuseColor = nAttr.createColor(
-            "outputMaterialDiffuseColor", "outputMaterialDiffuseColor"
-            );
+        "outputMaterialDiffuseColor", "outputMaterialDiffuseColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // material specular
     AssetNode::outputMaterialSpecularColor = nAttr.createColor(
-            "outputMaterialSpecularColor", "outputMaterialSpecularColor"
-            );
+        "outputMaterialSpecularColor", "outputMaterialSpecularColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // material alpha
     AssetNode::outputMaterialAlphaColor = nAttr.createColor(
-            "outputMaterialAlphaColor", "outputMaterialAlphaColor"
-            );
+        "outputMaterialAlphaColor", "outputMaterialAlphaColor");
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     // texture path
     AssetNode::outputMaterialTexturePath = tAttr.create(
-            "outputMaterialTexturePath", "outputMaterialTexturePath",
-            MFnData::kString
-            );
+        "outputMaterialTexturePath", "outputMaterialTexturePath",
+        MFnData::kString);
     tAttr.setStorable(false);
     tAttr.setWritable(false);
 
     // material
     AssetNode::outputMaterials = cAttr.create(
-            "outputMaterials", "outputMaterials"
-            );
+        "outputMaterials", "outputMaterials");
     cAttr.addChild(AssetNode::outputMaterialPath);
     cAttr.addChild(AssetNode::outputMaterialName);
     cAttr.addChild(AssetNode::outputMaterialNodeId);
@@ -1306,9 +1091,7 @@ AssetNode::initialize()
     cAttr.setArray(true);
 
     // output
-    AssetNode::output = cAttr.create(
-            "output", "out"
-            );
+    AssetNode::output = cAttr.create("output", "out");
     cAttr.addChild(AssetNode::outputAssetTransform);
     cAttr.addChild(AssetNode::outputObjects);
     cAttr.addChild(AssetNode::outputInstancers);
@@ -1328,8 +1111,9 @@ AssetNode::initialize()
     addAttribute(AssetNode::input);
     addAttribute(AssetNode::output);
 
-    //most of the dependencies between attrs are set via the AssetNode::setDependentsDirty() call
-    //this call may not even be necessary.
+    // most of the dependencies between attrs are set via the
+    // AssetNode::setDependentsDirty() call  this call may not even be
+    // necessary.
     attributeAffects(AssetNode::otlFilePath, AssetNode::output);
     attributeAffects(AssetNode::assetName, AssetNode::output);
 
@@ -1339,28 +1123,28 @@ AssetNode::initialize()
 }
 
 void
-AssetNode::nodeAdded(MObject& node,void *clientData)
+AssetNode::nodeAdded(MObject &node, void *clientData)
 {
-    if(MGlobal::isUndoing())
+    if (MGlobal::isUndoing())
     {
-        AssetNode* assetNode = static_cast<AssetNode*>(clientData);
+        AssetNode *assetNode = static_cast<AssetNode *>(clientData);
         assetNode->createAsset();
     }
 }
 
 void
-AssetNode::nodeRemoved(MObject& node,void *clientData)
+AssetNode::nodeRemoved(MObject &node, void *clientData)
 {
-    AssetNode* assetNode = static_cast<AssetNode*>(clientData);
+    AssetNode *assetNode = static_cast<AssetNode *>(clientData);
     assetNode->destroyAsset();
 }
 
-AssetNode::AssetNode() :
-    myNeedToMarshalInput(false),
-    myNeedToRecomputeOutputData(false),
-    myAutoSyncId(-1),
-    myExtraAutoSync(false),
-    mySetAllParmsForEM(false)
+AssetNode::AssetNode()
+    : myNeedToMarshalInput(false),
+      myNeedToRecomputeOutputData(false),
+      myAutoSyncId(-1),
+      myExtraAutoSync(false),
+      mySetAllParmsForEM(false)
 {
     myAsset = NULL;
 
@@ -1369,9 +1153,8 @@ AssetNode::AssetNode() :
     // which is set by setDependentsDirty().  This is because when the asset
     // node is first created, we want to pull all the parameter values from
     // the asset, but myDirtyParmAttributes is also empty.
-    mySetAllParms = MFileIO::isOpeningFile()
-        || MFileIO::isImportingFile()
-        || MFileIO::isReferencingFile();
+    mySetAllParms = MFileIO::isOpeningFile() || MFileIO::isImportingFile() ||
+                    MFileIO::isReferencingFile();
 }
 
 AssetNode::~AssetNode()
@@ -1385,51 +1168,47 @@ AssetNode::postConstructor()
     MObject object = thisMObject();
 
     MModelMessage::addNodeAddedToModelCallback(
-            object,
-            AssetNode::nodeAdded,
-            this
-            );
+        object, AssetNode::nodeAdded, this);
     MModelMessage::addNodeRemovedFromModelCallback(
-            object,
-            AssetNode::nodeRemoved,
-            this
-            );
+        object, AssetNode::nodeRemoved, this);
 }
 
 MStatus
-AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
-        MPlugArray& affectedPlugs)
+AssetNode::setDependentsDirty(const MPlug &plugBeingDirtied,
+                              MPlugArray &affectedPlugs)
 {
     MStatus status;
-    bool isTime = plugBeingDirtied == inTime;
-    bool isInput = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
-    bool isParameter = false;
+    bool isTime       = plugBeingDirtied == inTime;
+    bool isInput      = Util::isPlugBelow(plugBeingDirtied, AssetNode::input);
+    bool isParameter  = false;
     bool isTextureOpt = false;
-    bool isButton = false;
+    bool isButton     = false;
     bool isPreserveScale = false;
     {
         MFnDependencyNode assetNodeFn(thisMObject());
-        MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix(), &status);
+        MObject parmAttrObj = assetNodeFn.attribute(
+            Util::getParmAttrPrefix(), &status);
         isParameter = Util::isPlugBelow(plugBeingDirtied, parmAttrObj);
-	
-        MPlug bakeOutputTexturesPlug = assetNodeFn.findPlug("bakeOutputTextures", true);
-        if(plugBeingDirtied == bakeOutputTexturesPlug ) {
-	    isTextureOpt = true;
+
+        MPlug bakeOutputTexturesPlug = assetNodeFn.findPlug(
+            "bakeOutputTextures", true);
+        if (plugBeingDirtied == bakeOutputTexturesPlug)
+        {
+            isTextureOpt = true;
         }
 
         MPlug preserveScalePlug = assetNodeFn.findPlug("preserveScale", true);
-        if(plugBeingDirtied == preserveScalePlug)
+        if (plugBeingDirtied == preserveScalePlug)
             isPreserveScale = true;
 
-        if(Util::endsWith(plugBeingDirtied.name(), "__button"))
+        if (Util::endsWith(plugBeingDirtied.name(), "__button"))
         {
             isButton = true;
         }
-   
     }
     bool isMaterialPath = plugBeingDirtied == outputMaterialPath;
 
-    if(isParameter)
+    if (isParameter)
     {
         myDirtyParmAttributes.push_back(plugBeingDirtied.attribute());
 
@@ -1438,17 +1217,17 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         // values. So we mark them all dirty.
         {
             MPlug rampPlug;
-            if(plugBeingDirtied.isElement())
+            if (plugBeingDirtied.isElement())
             {
                 MPlug arrayPlug = plugBeingDirtied.array();
-                if(Util::endsWith(arrayPlug.name(), "__ramp"))
+                if (Util::endsWith(arrayPlug.name(), "__ramp"))
                 {
                     rampPlug = arrayPlug;
                 }
 
-                if(!rampPlug.isNull())
+                if (!rampPlug.isNull())
                 {
-                    for(unsigned int i = 0; i < arrayPlug.numElements(); i++)
+                    for (unsigned int i = 0; i < arrayPlug.numElements(); i++)
                     {
                         MPlug elemPlug = arrayPlug.elementByPhysicalIndex(i);
                         myDirtyParmAttributes.push_back(elemPlug.child(0));
@@ -1463,49 +1242,46 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
         {
             MPlug plug;
             MString attrName;
-            if(plugBeingDirtied.isChild())
+            if (plugBeingDirtied.isChild())
             {
                 MPlug parentPlug = plugBeingDirtied.parent();
-                if(parentPlug.isElement())
+                if (parentPlug.isElement())
                 {
-                    plug = parentPlug.array();
+                    plug     = parentPlug.array();
                     attrName = plug.name();
                 }
             }
 
-            if(Util::endsWith(attrName, "__ramp"))
+            if (Util::endsWith(attrName, "__ramp"))
             {
                 myDirtyParmAttributes.push_back(plug);
             }
         }
     }
 
-    if(isInput)
+    if (isInput)
     {
         myNeedToMarshalInput = true;
     }
 
     // if bakeOutputTextures was toggled and the texture was rebaked
     // the texture file path may have changed
-    if(isTextureOpt) {
-        affectedPlugs.append(MPlug(thisMObject(),AssetNode::outputMaterialTexturePath));
+    if (isTextureOpt)
+    {
+        affectedPlugs.append(
+            MPlug(thisMObject(), AssetNode::outputMaterialTexturePath));
     }
     // Changing time or parameters will dirty the output
-    if(isTime || isInput || isParameter || isPreserveScale)
+    if (isTime || isInput || isParameter || isPreserveScale)
     {
         Util::getChildPlugs(
-                affectedPlugs,
-                MPlug(thisMObject(), AssetNode::output)
-                );
+            affectedPlugs, MPlug(thisMObject(), AssetNode::output));
     }
 
     // Changing outputMaterialPath will dirty outputMaterials[i]
-    if(isMaterialPath)
+    if (isMaterialPath)
     {
-        Util::getChildPlugs(
-                affectedPlugs,
-                plugBeingDirtied.parent()
-                );
+        Util::getChildPlugs(affectedPlugs, plugBeingDirtied.parent());
     }
     // if autoSyncOutputs got into a bad no-output state
     // and we're doing dirty propagation outside of playback
@@ -1517,24 +1293,29 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
     // if a button was pressed and there were no outputs, we might as
     // well sync, because the button press will have no effect otherwise
-    
+
     bool textureOptOn = false;
-    if(isTextureOpt) {
+    if (isTextureOpt)
+    {
         // the plug value is still the previous value
         // so we're really checking if it's being  toggled on
         // no need to sync if we are turning it off
-         textureOptOn = !plugBeingDirtied.asBool();
+        textureOptOn = !plugBeingDirtied.asBool();
     }
-    if(((isInput || isParameter) && myExtraAutoSync) || textureOptOn ) {
-        if(!MAnimControl::isPlaying()) {
+    if (((isInput || isParameter) && myExtraAutoSync) || textureOptOn)
+    {
+        if (!MAnimControl::isPlaying())
+        {
             MDataBlock data = forceCache();
-            AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
-	    if(options.autoSyncOutputs() || isButton)
+            AssetNodeOptions::AccessorDataBlock options(
+                assetNodeOptionsDefinition, data);
+            if (options.autoSyncOutputs() || isButton)
             {
-	        myAutoSyncId++;
-	        MGlobal::executeCommandOnIdle("houdiniEngine_autoSyncAssetOutput "
-	            + MFnDagNode(thisMObject()).fullPathName() + " "
-	            + myAutoSyncId);
+                myAutoSyncId++;
+                MGlobal::executeCommandOnIdle(
+                    "houdiniEngine_autoSyncAssetOutput " +
+                    MFnDagNode(thisMObject()).fullPathName() + " " +
+                    myAutoSyncId);
             }
         }
     }
@@ -1543,38 +1324,35 @@ AssetNode::setDependentsDirty(const MPlug& plugBeingDirtied,
 
 #if MAYA_API_VERSION >= 201600
 MStatus
-AssetNode::preEvaluation(
-        const MDGContext& context,
-        const MEvaluationNode& evaluationNode
-        )
+AssetNode::preEvaluation(const MDGContext &context,
+                         const MEvaluationNode &evaluationNode)
 {
     MFnDependencyNode assetNodeFn(thisMObject());
     MObject parmAttrObj = assetNodeFn.attribute(Util::getParmAttrPrefix());
     MPlug parmAttrPlug(thisMObject(), parmAttrObj);
 
-    if(parmAttrObj.isNull())
+    if (parmAttrObj.isNull())
     {
         return MStatus::kSuccess;
     }
 
-    for(MEvaluationNodeIterator nodeIt = evaluationNode.iterator();
-            !nodeIt.isDone();
-            nodeIt.next())
+    for (MEvaluationNodeIterator nodeIt = evaluationNode.iterator();
+         !nodeIt.isDone(); nodeIt.next())
     {
-        if(Util::isPlugBelow(nodeIt.plug(), parmAttrObj))
+        if (Util::isPlugBelow(nodeIt.plug(), parmAttrObj))
         {
-	    // we currently never get here, because the evaluation manager
-	    // only looks at the root of the plug tree
-	    // but if they ever change this, the code is ready and waiting
+            // we currently never get here, because the evaluation manager
+            // only looks at the root of the plug tree
+            // but if they ever change this, the code is ready and waiting
             myDirtyParmAttributes.push_back(nodeIt.plug().attribute());
         }
-	if(nodeIt.plug() == parmAttrPlug)
-	{
-	    // updateing all the parms can be slow
-	    // but we don't have enough information to update individual parms
-	    mySetAllParmsForEM = true;
-	}
-        if(Util::isPlugBelow(nodeIt.plug(), AssetNode::input))
+        if (nodeIt.plug() == parmAttrPlug)
+        {
+            // updateing all the parms can be slow
+            // but we don't have enough information to update individual parms
+            mySetAllParmsForEM = true;
+        }
+        if (Util::isPlugBelow(nodeIt.plug(), AssetNode::input))
         {
             myNeedToMarshalInput = true;
         }
@@ -1607,40 +1385,38 @@ AssetNode::getParmValues()
 }
 
 MStatus
-AssetNode::compute(const MPlug& plug, MDataBlock& data)
+AssetNode::compute(const MPlug &plug, MDataBlock &data)
 {
     MStatus status;
 
     // We don't want to compute outputMaterialPath. This could be triggered
     // from SyncOutputMaterial::createOutputMaterialPlug() when trying to set
     // the value through MDGModifier.
-    if(plug == outputMaterialPath)
+    if (plug == outputMaterialPath)
     {
         return MPxTransform::compute(plug, data);
     }
 
-    if(Util::isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output)))
+    if (Util::isPlugBelow(plug, MPlug(thisMObject(), AssetNode::output)))
     {
         // make sure asset was created properly
-        if(!isAssetValid())
+        if (!isAssetValid())
         {
-	    if(!isAssetFrozen())
+            if (!isAssetFrozen())
                 DISPLAY_ERROR("^1s: Could not instantiate asset: ^2s\n"
-                    "in OTL file: ^3s\n",
-                    name(),
-                    myAssetName,
-                    myOTLFilePath);
+                              "in OTL file: ^3s\n",
+                              name(), myAssetName, myOTLFilePath);
 
             return MStatus::kFailure;
         }
 
         // Set the time
         MDataHandle inTimeHandle = data.inputValue(AssetNode::inTime);
-        MTime mayaTime = inTimeHandle.asTime();
+        MTime mayaTime           = inTimeHandle.asTime();
         myAsset->setTime(mayaTime);
 
         // push the inputs to Houdini, such as transforms and geometries
-        if(myNeedToMarshalInput)
+        if (myNeedToMarshalInput)
         {
             myNeedToMarshalInput = false;
 
@@ -1650,37 +1426,33 @@ AssetNode::compute(const MPlug& plug, MDataBlock& data)
 
         setParmValues(data);
 
-        AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
+        AssetNodeOptions::AccessorDataBlock options(
+            assetNodeOptionsDefinition, data);
 
         MPlug outputPlug(thisMObject(), AssetNode::output);
         bool needToSyncOutputs = false;
 
-        status = myAsset->compute(
-                outputPlug,
-                data,
-                options,
-                needToSyncOutputs,
-                myNeedToRecomputeOutputData
-                );
+        status = myAsset->compute(outputPlug, data, options, needToSyncOutputs,
+                                  myNeedToRecomputeOutputData);
 
-	// this gets parm properties as well as values
-	// do this after the compute in case stuff like disable has changed
-	// or expressions have been evaulated
-	getParmValues(data);
-	
+        // this gets parm properties as well as values
+        // do this after the compute in case stuff like disable has changed
+        // or expressions have been evaulated
+        getParmValues(data);
+
         // No need to print error messages from Asset::compute(). It should
         // have been printed already.
-        if(MFAIL(status))
+        if (MFAIL(status))
         {
             return status;
         }
 
-        if(options.autoSyncOutputs() && needToSyncOutputs)
+        if (options.autoSyncOutputs() && needToSyncOutputs)
         {
             myAutoSyncId++;
-            MGlobal::executeCommandOnIdle("houdiniEngine_autoSyncAssetOutput "
-                    + MFnDagNode(thisMObject()).fullPathName() + " "
-                    + myAutoSyncId);
+            MGlobal::executeCommandOnIdle(
+                "houdiniEngine_autoSyncAssetOutput " +
+                MFnDagNode(thisMObject()).fullPathName() + " " + myAutoSyncId);
         }
 
         data.setClean(plug);
@@ -1701,41 +1473,37 @@ AssetNode::setExtraAutoSync(bool needs)
     myExtraAutoSync = needs;
 }
 
-
 #if MAYA_API_VERSION >= 201800
 bool
-AssetNode::getInternalValue(
-        const MPlug &plug,
-        MDataHandle &dataHandle)
+AssetNode::getInternalValue(const MPlug &plug, MDataHandle &dataHandle)
 #else
 bool
-AssetNode::getInternalValueInContext(
-        const MPlug &plug,
-        MDataHandle &dataHandle,
-        MDGContext &ctx)
+AssetNode::getInternalValueInContext(const MPlug &plug,
+                                     MDataHandle &dataHandle,
+                                     MDGContext &ctx)
 #endif
 {
     MStatus status;
 
-    if(plug == AssetNode::otlFilePath)
+    if (plug == AssetNode::otlFilePath)
     {
         dataHandle.setString(myOTLFilePath);
 
         return true;
     }
-    else if(plug == AssetNode::assetName)
+    else if (plug == AssetNode::assetName)
     {
         dataHandle.setString(myAssetName);
 
         return true;
     }
-    else if(plug == AssetNode::assetHelpText)
+    else if (plug == AssetNode::assetHelpText)
     {
         dataHandle.setString(myAssetHelpText);
 
         return true;
     }
-    else if(plug == AssetNode::assetHelpURL)
+    else if (plug == AssetNode::assetHelpURL)
     {
         dataHandle.setString(myAssetHelpURL);
 
@@ -1744,10 +1512,11 @@ AssetNode::getInternalValueInContext(
     MFnDependencyNode assetNodeFn(thisMObject());
     MPlug houdiniAssetParmPlug = assetNodeFn.findPlug("houdiniAssetParm", true);
 
-    if(Util::isPlugBelow(plug, houdiniAssetParmPlug))
+    if (Util::isPlugBelow(plug, houdiniAssetParmPlug))
     {
-	// return false to indicate that the value data block value should be used.
-	return false;
+        // return false to indicate that the value data block value should be
+        // used.
+        return false;
     }
 
 #if MAYA_API_VERSION >= 201800
@@ -1759,29 +1528,26 @@ AssetNode::getInternalValueInContext(
 
 #if MAYA_API_VERSION >= 201800
 bool
-AssetNode::setInternalValue(
-        const MPlug &plugBeingSet,
-        const MDataHandle &dataHandle)
+AssetNode::setInternalValue(const MPlug &plugBeingSet,
+                            const MDataHandle &dataHandle)
 #else
 bool
-AssetNode::setInternalValueInContext(
-        const MPlug &plugBeingSet,
-        const MDataHandle &dataHandle,
-        MDGContext &ctx
-        )
+AssetNode::setInternalValueInContext(const MPlug &plugBeingSet,
+                                     const MDataHandle &dataHandle,
+                                     MDGContext &ctx)
 #endif
 {
     MStatus status;
-    if(plugBeingSet == AssetNode::otlFilePath
-            || plugBeingSet == AssetNode::assetName
-            || plugBeingSet == AssetNode::assetHelpText
-            || plugBeingSet == AssetNode::assetHelpURL)
+    if (plugBeingSet == AssetNode::otlFilePath ||
+        plugBeingSet == AssetNode::assetName ||
+        plugBeingSet == AssetNode::assetHelpText ||
+        plugBeingSet == AssetNode::assetHelpURL)
     {
-        if(plugBeingSet == AssetNode::otlFilePath)
+        if (plugBeingSet == AssetNode::otlFilePath)
         {
             myOTLFilePath = dataHandle.asString();
         }
-        else if(plugBeingSet == AssetNode::assetName)
+        else if (plugBeingSet == AssetNode::assetName)
         {
             myAssetName = dataHandle.asString();
         }
@@ -1794,17 +1560,18 @@ AssetNode::setInternalValueInContext(
     }
 
     // If a parm attribute was set, mark it dirty, so that the parm get updated
-    // This used to be done in setDependentsDirty, but as of maya2019, they're using
-    // the evaluation manager for (some) interactive manipulation, and then we don't
-    // get dirty propagation, but we still get the setInternalValue for the individual attr plugs.
-    // Note that during playback in EM mode (in 2019 and earlier anyway),
-    // we only get the setInternalValue call for the parent plug, which we handle
-    // in the preEvaluation callback, and not here
-    
+    // This used to be done in setDependentsDirty, but as of maya2019, they're
+    // using the evaluation manager for (some) interactive manipulation, and
+    // then we don't get dirty propagation, but we still get the
+    // setInternalValue for the individual attr plugs. Note that during playback
+    // in EM mode (in 2019 and earlier anyway), we only get the setInternalValue
+    // call for the parent plug, which we handle in the preEvaluation callback,
+    // and not here
+
     MFnDependencyNode assetNodeFn(thisMObject());
     MPlug houdiniAssetParmPlug = assetNodeFn.findPlug("houdiniAssetParm", true);
 
-    if(Util::isPlugBelow(plugBeingSet, houdiniAssetParmPlug))
+    if (Util::isPlugBelow(plugBeingSet, houdiniAssetParmPlug))
     {
         myDirtyParmAttributes.push_back(plugBeingSet.attribute());
 
@@ -1813,17 +1580,17 @@ AssetNode::setInternalValueInContext(
         // values. So we mark them all dirty.
         {
             MPlug rampPlug;
-            if(plugBeingSet.isElement())
+            if (plugBeingSet.isElement())
             {
                 MPlug arrayPlug = plugBeingSet.array();
-                if(Util::endsWith(arrayPlug.name(), "__ramp"))
+                if (Util::endsWith(arrayPlug.name(), "__ramp"))
                 {
                     rampPlug = arrayPlug;
                 }
 
-                if(!rampPlug.isNull())
+                if (!rampPlug.isNull())
                 {
-                    for(unsigned int i = 0; i < arrayPlug.numElements(); i++)
+                    for (unsigned int i = 0; i < arrayPlug.numElements(); i++)
                     {
                         MPlug elemPlug = arrayPlug.elementByPhysicalIndex(i);
                         myDirtyParmAttributes.push_back(elemPlug.child(0));
@@ -1838,25 +1605,25 @@ AssetNode::setInternalValueInContext(
         {
             MPlug plug;
             MString attrName;
-            if(plugBeingSet.isChild())
+            if (plugBeingSet.isChild())
             {
                 MPlug parentPlug = plugBeingSet.parent();
-                if(parentPlug.isElement())
+                if (parentPlug.isElement())
                 {
-                    plug = parentPlug.array();
+                    plug     = parentPlug.array();
                     attrName = plug.name();
                 }
             }
 
-            if(Util::endsWith(attrName, "__ramp"))
+            if (Util::endsWith(attrName, "__ramp"))
             {
                 myDirtyParmAttributes.push_back(plug);
             }
         }
 
-	// return false to indicate that the value should be stored
-	// in the data block too.
-	return false;
+        // return false to indicate that the value should be stored
+        // in the data block too.
+        return false;
     }
 
     // if we've turned on the bakeTextures option, we may need to actually
@@ -1865,26 +1632,23 @@ AssetNode::setInternalValueInContext(
     // although if the fileTexture node doesn't exist at all it will
     // still need syncing
     MPlug optionPlug = assetNodeFn.findPlug("bakeOutputTextures", true);
-    if(plugBeingSet == optionPlug ) {
+    if (plugBeingSet == optionPlug)
+    {
         int bakeTexture = dataHandle.asBool();
-        if(bakeTexture) {
-	    // recompute output textures
-	     MPlug outputPlug(thisMObject(), AssetNode::output);
-	     MDataBlock data = forceCache(); 
+        if (bakeTexture)
+        {
+            // recompute output textures
+            MPlug outputPlug(thisMObject(), AssetNode::output);
+            MDataBlock data = forceCache();
 
-	     // note that we need to be careful accessing the data block here
-	     // the new value for the plug being set has not updated the data block yet
-	     // other data not related to that plug should be OK though
-	     bool needToSyncOutputs;
-	     myAsset->computeMaterial(
-                outputPlug,
-                data,
-                bakeTexture,
-                needToSyncOutputs
-                );
-	
+            // note that we need to be careful accessing the data block here
+            // the new value for the plug being set has not updated the data
+            // block yet other data not related to that plug should be OK though
+            bool needToSyncOutputs;
+            myAsset->computeMaterial(
+                outputPlug, data, bakeTexture, needToSyncOutputs);
         }
-    } 
+    }
 
     // asset doesn't need to cook, but it does need to recompute the output data
     // to properly redraw the asset in the viewport
@@ -1896,7 +1660,8 @@ AssetNode::setInternalValueInContext(
 #if MAYA_API_VERSION >= 201800
     return MPxTransform::setInternalValue(plugBeingSet, dataHandle);
 #else
-    return MPxTransform::setInternalValueInContext(plugBeingSet, dataHandle, ctx);
+    return MPxTransform::setInternalValueInContext(
+        plugBeingSet, dataHandle, ctx);
 #endif
 }
 
@@ -1908,9 +1673,9 @@ int
 AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
 #endif
 {
-    if(plug == AssetNode::input)
+    if (plug == AssetNode::input)
     {
-        if(!isAssetValid())
+        if (!isAssetValid())
         {
             return 0;
         }
@@ -1926,63 +1691,65 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
 }
 
 void
-AssetNode::copyInternalData(MPxNode* node)
+AssetNode::copyInternalData(MPxNode *node)
 {
     MStatus status;
 
-    AssetNode* assetNode = dynamic_cast<AssetNode*>(node);
+    AssetNode *assetNode = dynamic_cast<AssetNode *>(node);
 
-    myOTLFilePath = assetNode->myOTLFilePath;
-    myAssetName = assetNode->myAssetName;
+    myOTLFilePath   = assetNode->myOTLFilePath;
+    myAssetName     = assetNode->myAssetName;
     myAssetHelpText = assetNode->myAssetHelpText;
-    myAssetHelpURL = assetNode->myAssetHelpURL;
+    myAssetHelpURL  = assetNode->myAssetHelpURL;
 
     rebuildAsset();
 
     MPxTransform::copyInternalData(node);
 }
 MStatus
-AssetNode:: shouldSave(
-		const MPlug & plug,
-		bool & isSaving )
+AssetNode::shouldSave(const MPlug &plug, bool &isSaving)
 {
-    // Since we went to all the trouble to make sure that inputs (nodeIds) were storable
-    // to get around the numeric compound file save optimization (bug),
-    // and that the attrs get reset to default on disconnect so we don't have bogus inputs,
-    // just want to make sure that default values also get stored
-    // In Maya2018 it looks like default values in multi compounds are written anyway
-    // but I don't want to take my chances with older versions, so make sure they  get written
-   
+    // Since we went to all the trouble to make sure that inputs (nodeIds) were
+    // storable to get around the numeric compound file save optimization (bug),
+    // and that the attrs get reset to default on disconnect so we don't have
+    // bogus inputs, just want to make sure that default values also get stored
+    // In Maya2018 it looks like default values in multi compounds are written
+    // anyway but I don't want to take my chances with older versions, so make
+    // sure they  get written
+
     int nameSize = plug.name().numChars();
     MString tail = plug.name().substring(nameSize - 6, nameSize - 1);
-    if(tail == "__node") {
+    if (tail == "__node")
+    {
         isSaving = true;
         return MS::kSuccess;
-    } else {
-        return MPxNode::shouldSave( plug, isSaving );
+    }
+    else
+    {
+        return MPxNode::shouldSave(plug, isSaving);
     }
 }
 MStatus
-AssetNode::connectionBroken (
-    const MPlug & plug,
-    const MPlug & otherPlug,
-    bool asSrc )
+AssetNode::connectionBroken(const MPlug &plug,
+                            const MPlug &otherPlug,
+                            bool asSrc)
 {
-    // setting the disconnect behavior to reset doesn't seem to work for elements of multi compounds
-    // and we particularly want to make sure that it is correct for node id's
-    // since they are now storable, so we do a brute force reset to -1 in that case
-  
+    // setting the disconnect behavior to reset doesn't seem to work for
+    // elements of multi compounds and we particularly want to make sure that it
+    // is correct for node id's since they are now storable, so we do a brute
+    // force reset to -1 in that case
+
     int nameSize = plug.name().numChars();
     MString tail = plug.name().substring(nameSize - 6, nameSize - 1);
-    if(tail == "__node") {
-        MPlug ncPlug( plug);
+    if (tail == "__node")
+    {
+        MPlug ncPlug(plug);
         ncPlug.setValue(-1);
     }
-    return(MPxTransform::connectionBroken(plug,otherPlug, asSrc));
+    return (MPxTransform::connectionBroken(plug, otherPlug, asSrc));
 }
 
-
-Asset*
+Asset *
 AssetNode::getAsset() const
 {
     return myAsset;
@@ -1991,8 +1758,7 @@ AssetNode::getAsset() const
 bool
 AssetNode::isAssetValid() const
 {
-    return getAsset() != NULL
-        && getAsset()->getAssetName() == myAssetName;
+    return getAsset() != NULL && getAsset()->getAssetName() == myAssetName;
 }
 
 bool
@@ -2002,7 +1768,7 @@ AssetNode::isAssetFrozen() const
     // and the attributes are accessible
     MFnDependencyNode assetNodeFn(thisMObject());
     MPlug frozenPlug = assetNodeFn.findPlug("frozen", true);
-    bool frozen =  frozenPlug.asBool();
+    bool frozen      = frozenPlug.asBool();
     return frozen;
 }
 
@@ -2013,28 +1779,27 @@ AssetNode::createAsset()
 
     MStatus status;
 
-    if(isAssetValid())
+    if (isAssetValid())
     {
         return;
     }
 
     // Make sure the asset name is set before trying to create the asset.
-    if(!myAssetName.length())
+    if (!myAssetName.length())
     {
         return;
     }
-    
+
     // if the asset has been frozen
     // and we're reading a file, don't load the assets
     MFnDependencyNode assetNodeFn(thisMObject());
     MPlug frozenPlug = assetNodeFn.findPlug("frozen", true);
-    bool frozen =  frozenPlug.asBool();
+    bool frozen      = frozenPlug.asBool();
 
-    if((MFileIO::isOpeningFile()
-            || MFileIO::isImportingFile()
-            || MFileIO::isReferencingFile()))
+    if ((MFileIO::isOpeningFile() || MFileIO::isImportingFile() ||
+         MFileIO::isReferencingFile()))
     {
-        if(frozen)
+        if (frozen)
             return;
     }
 
@@ -2042,14 +1807,14 @@ AssetNode::createAsset()
     file.setRawFullName(myOTLFilePath);
     myAsset = new Asset(file.resolvedFullName(), myAssetName);
 
-    if(!myAsset->isValid())
+    if (!myAsset->isValid())
     {
         destroyAsset();
         return;
     }
 
     myAssetHelpText = myAsset->getAssetHelpText();
-    myAssetHelpURL = myAsset->getAssetHelpURL();
+    myAssetHelpURL  = myAsset->getAssetHelpURL();
 
     // We want to setParmValues() here because the state of the asset should be
     // restored to what it was before rebuildAsset() was called. This is
@@ -2059,9 +1824,8 @@ AssetNode::createAsset()
     // However, during a file load, setInternalValueInContext() calls
     // rebuildAsset(), and we must not setParmValues(), because the parameter
     // values haven't been restored form the file yet.
-    if(!(MFileIO::isOpeningFile()
-                || MFileIO::isImportingFile()
-                || MFileIO::isReferencingFile()))
+    if (!(MFileIO::isOpeningFile() || MFileIO::isImportingFile() ||
+          MFileIO::isReferencingFile()))
     {
         MDataBlock data = forceCache();
         setParmValues(data, false);
@@ -2073,7 +1837,7 @@ AssetNode::createAsset()
 void
 AssetNode::destroyAsset()
 {
-    if(myAsset)
+    if (myAsset)
     {
         delete myAsset;
         myAsset = NULL;
@@ -2085,7 +1849,7 @@ AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
 {
     MStatus status;
 
-    if(!isAssetValid())
+    if (!isAssetValid())
     {
         return;
     }
@@ -2094,39 +1858,35 @@ AssetNode::setParmValues(MDataBlock &data, bool onlyDirtyParms)
     CHECK_MSTATUS(status);
 
     MObject parmAttrObj = assetNodeFn.attribute(
-            Util::getParmAttrPrefix(), &status);
-    if(parmAttrObj.isNull())
+        Util::getParmAttrPrefix(), &status);
+    if (parmAttrObj.isNull())
     {
         return;
     }
 
-    MObjectVector cache = myDirtyParmAttributes;
-    MObjectVector* attrs = &cache;
+    MObjectVector cache  = myDirtyParmAttributes;
+    MObjectVector *attrs = &cache;
     myDirtyParmAttributes.clear();
 
-    if(!onlyDirtyParms || mySetAllParms)
+    if (!onlyDirtyParms || mySetAllParms)
     {
         mySetAllParms = false;
 
         attrs = NULL;
     }
-    AssetNodeOptions::AccessorDataBlock options(assetNodeOptionsDefinition, data);
-    if(options.updateParmsForEvalMode() && mySetAllParmsForEM)
+    AssetNodeOptions::AccessorDataBlock options(
+        assetNodeOptionsDefinition, data);
+    if (options.updateParmsForEvalMode() && mySetAllParmsForEM)
     {
-	mySetAllParmsForEM  = false; 
-        attrs = NULL;
+        mySetAllParmsForEM = false;
+        attrs              = NULL;
     }
 
     bool checkMismatch = !mySetAllParmsForEM && !onlyDirtyParms;
 
     myAsset->fillParmNameCache();
 
-    myAsset->setParmValues(
-            data,
-            assetNodeFn,
-            attrs,
-	    checkMismatch
-            );
+    myAsset->setParmValues(data, assetNodeFn, attrs, checkMismatch);
 }
 
 void
@@ -2134,7 +1894,7 @@ AssetNode::getParmValues(MDataBlock &data)
 {
     MStatus status;
 
-    if(!isAssetValid())
+    if (!isAssetValid())
     {
         return;
     }
@@ -2143,15 +1903,11 @@ AssetNode::getParmValues(MDataBlock &data)
     CHECK_MSTATUS(status);
 
     MObject parmAttrObj = assetNodeFn.attribute(
-            Util::getParmAttrPrefix(), &status);
-    if(parmAttrObj.isNull())
+        Util::getParmAttrPrefix(), &status);
+    if (parmAttrObj.isNull())
     {
         return;
     }
 
-    myAsset->getParmValues(
-            data,
-            assetNodeFn,
-            NULL
-            );
+    myAsset->getParmValues(data, assetNodeFn, NULL);
 }

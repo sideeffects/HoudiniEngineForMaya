@@ -5,7 +5,7 @@ only_geo_upstream(string $dstNode) {
     // and set/group membership
     string $historyInput = "";
     if(`nodeType $dstNode` == "mesh") {
-    	$historyInput = ($dstNode + ".inMesh");	    
+        $historyInput = ($dstNode + ".inMesh");
     } else if(`nodeType $dstNode` == "groupParts") {
         $historyInput = ($dstNode + ".inputGeometry");
     } else {
@@ -25,10 +25,10 @@ skip_downstream_sets(string $node)
     // and the chain ends in a groupParts node, we return it anyway
     if(`nodeType $node` == "groupParts") {
         string $dstNodes[] = `listConnections -sh true -s false ($node + ".outputGeometry")`;
-	if(size($dstNodes) > 0)
-	    return( skip_downstream_sets($dstNodes[0]));
-	else
-	    return $node;
+        if(size($dstNodes) > 0)
+            return( skip_downstream_sets($dstNodes[0]));
+        else
+            return $node;
     }
     else
         return $node;
@@ -42,7 +42,7 @@ houdiniEngine_removeHistory(string $assetNode)
         print("Error: assetConnectType suggests that this is not  a history asset\n");
         return 1;
     }
-    
+
     // find the outMesh connection on the asset and the inMesh connection on the inputGeometry
     // reconnect those plugs, discard the inputGeometry but leave the asset and any other inputs it has
     // in case you want to reuse it elsewhere
@@ -56,7 +56,7 @@ houdiniEngine_removeHistory(string $assetNode)
     // we do not expect a merge or curve or transform, since history nodes apply to a single mesh
     // does not yet collapse 2 contiguous shape:
     //     previous non-history case (where we had shape->inputGeo->asset->shape)
-    
+
 
     // the node that is downstream from the asset determines the upstream attr to connect on
     // and whether or not we need to delete the houdiniInputGeometry as well
@@ -68,50 +68,50 @@ houdiniEngine_removeHistory(string $assetNode)
         $dstPlugs = `listConnections -s false -p true $outPlug`;
     }
     if(size($dstPlugs) > 0) {
-	$dstNode = plugNode($dstPlugs[0]);
+        $dstNode = plugNode($dstPlugs[0]);
     } else {
         print "Error, this asset's output  is not connected as construction history\n";
-	return 1;
+        return 1;
     }
-    
+
     string $srcPlugs[];
     string $inputGeos[] = `listConnections -d false -type "houdiniInputGeometry" $assetNode`;
     if(size($inputGeos) > 0) {
         // input is mesh
         if(`nodeType $dstNode` == "houdiniAsset") {
-	    //output is asset
-	    string $dstNodeIdPlugs[] = `listConnections -s false -p true ($inputGeos[0]+".outputNodeId")`;
-	    $srcPlugs[0] = ($inputGeos[0]+".outputNodeId");
-	    disconnectAttr $srcPlugs[0]  $dstNodeIdPlugs[0];
-	} else {
-	    // output is mesh
+            //output is asset
+            string $dstNodeIdPlugs[] = `listConnections -s false -p true ($inputGeos[0]+".outputNodeId")`;
+            $srcPlugs[0] = ($inputGeos[0]+".outputNodeId");
+            disconnectAttr $srcPlugs[0]  $dstNodeIdPlugs[0];
+        } else {
+            // output is mesh
             $srcPlugs = `listConnections -s true -p true ($inputGeos[0]+".inputGeometry")`;
             string $srcXformPlugs[] = `listConnections -d false -p true ($inputGeos[0]+".inputTransform")`;
             disconnectAttr $srcPlugs[0]  ($inputGeos[0]+".inputGeometry");
-	    if(size($srcXformPlugs) > 0)
-                disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");  
+            if(size($srcXformPlugs) > 0)
+                disconnectAttr $srcXformPlugs[0]  ($inputGeos[0]+".inputTransform");
             delete $inputGeos[0];
-	}
+        }
     } else {
          string $srcDataPlugs[] = `listConnections -d false -p true  -type "houdiniAsset" $assetNode`;
-	 if(size($srcDataPlugs) > 0) {
-	     // input is asset
-	     string $dstNodeIdPlugs[] = `listConnections -s false -p true $srcDataPlugs[0]`;
-	     if(`nodeType $dstNode` == "houdiniAsset") {	     
-	         // output is asset
- 	         $srcPlugs[0] = $srcDataPlugs[0];
-	         disconnectAttr $srcDataPlugs[0] $dstNodeIdPlugs[0]; 
+         if(size($srcDataPlugs) > 0) {
+             // input is asset
+             string $dstNodeIdPlugs[] = `listConnections -s false -p true $srcDataPlugs[0]`;
+             if(`nodeType $dstNode` == "houdiniAsset") {
+                 // output is asset
+                 $srcPlugs[0] = $srcDataPlugs[0];
+                 disconnectAttr $srcDataPlugs[0] $dstNodeIdPlugs[0];
 
-	     } else {
-	         // output is mesh
-		 string $srcNode = plugNode($srcDataPlugs[0]);
-		 $srcPlugs[0] = $srcNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData";
-	         disconnectAttr $srcDataPlugs[0] $dstNodeIdPlugs[0]; 
-	     }	
-	 } else {
-	      print "Error, this asset's input is not connected as construction history\n";
-	      return 1;
-	 }
+             } else {
+                 // output is mesh
+                 string $srcNode = plugNode($srcDataPlugs[0]);
+                 $srcPlugs[0] = $srcNode + ".outputObjects[0].outputGeos[0].outputParts[0].outputPartMeshData";
+                 disconnectAttr $srcDataPlugs[0] $dstNodeIdPlugs[0];
+             }
+         } else {
+              print "Error, this asset's input is not connected as construction history\n";
+              return 1;
+         }
     }
     disconnectAttr $outPlug $dstPlugs[0];
     connectAttr $srcPlugs[0]  $dstPlugs[0];
@@ -122,11 +122,11 @@ houdiniEngine_removeHistory(string $assetNode)
     // we delete history, which will bake the set membership down on the remaining shape.
     // Set membership that existed downstream from the asset may no longer be valid
     // but leaving the set in place is consistent with regular maya history
-    
-    $dstNode = skip_downstream_sets($dstNode);	
+
+    $dstNode = skip_downstream_sets($dstNode);
     if((`nodeType $dstNode` == "mesh") && only_geo_upstream($dstNode))
         delete -ch $dstNode;
-    
+
     return 0;
 }
 

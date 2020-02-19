@@ -128,6 +128,7 @@ if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
 elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
     set(
         compile_options
+        -O2
         -W4
         # Enabled warnings
         -w14101 # unreferenced local variable
@@ -152,6 +153,7 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
     set(
         compile_options
         -Wall
+        -O2
         )
 endif ()
 target_compile_options( plugin PRIVATE ${compile_options} )

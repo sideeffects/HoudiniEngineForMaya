@@ -8,7 +8,7 @@ class Input;
 class InputGeometryNode : public MPxNode
 {
 public:
-    static void* creator();
+    static void *creator();
     static MStatus initialize();
 
 public:
@@ -33,17 +33,14 @@ public:
     InputGeometryNode();
     virtual ~InputGeometryNode();
 
-    virtual MStatus compute(
-            const MPlug &plug,
-            MDataBlock &dataBlock
-            );
+    virtual MStatus compute(const MPlug &plug, MDataBlock &dataBlock);
 
 private:
     void clearInput();
     bool checkInput(MDataBlock &dataBlock);
 
 private:
-    Input* myInput;
+    Input *myInput;
 };
 
 #endif

@@ -6,7 +6,7 @@ houdiniEnginePreferences_refresh()
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineAsynchronousMode"`
         asynchronousModeCheck;
-        
+
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineDeleteAfterBake"`
         delAfterBakeCheck;
@@ -14,7 +14,7 @@ houdiniEnginePreferences_refresh()
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineUnsetLLP"`
         unsetLLPCheck;
-        
+
     int $sessionType = int(`optionVar -query "houdiniEngineSessionType"`);
 
     // if the optionvars still refer to an in-process session,
@@ -22,30 +22,30 @@ houdiniEnginePreferences_refresh()
     // we set the prefs UI the new defaults (auto-start named pipe). so that if the
     // prefs are saved they will be consisten
     // with the way we overrode the in-process settings internally
-    
+
     int $originalSessionType = $sessionType;
     if($sessionType == 0) {
         $sessionType = 2;
     }
-        
+
     switch ( $sessionType )
     {
     case 0:
         radioCollection -edit -select sessionTypePipe
             sessionTypeList;
         break;
-        
+
     case 1:
         radioCollection -edit -select sessionTypeSocket
             sessionTypeList;
         break;
-        
+
     case 2:
         radioCollection -edit -select sessionTypePipe
             sessionTypeList;
         break;
     }
-    
+
     textField -edit
         -text `optionVar -query "houdiniEngineThriftServer"`
         sessionSocketHost;
@@ -85,25 +85,25 @@ houdiniEnginePreferences_save()
     optionVar
         -intValue "houdiniEngineUnsetLLP"
         `checkBoxGrp -q -value1 unsetLLPCheck`;
-        
+
     if (`radioButton -query -select sessionTypeSocket`)
-    {    
+    {
         optionVar -intValue "houdiniEngineSessionType" 1;
     }
     else if (`radioButton -query -select sessionTypePipe`)
-    {    
+    {
         optionVar -intValue "houdiniEngineSessionType" 2;
     }
-        
+
     optionVar
         -stringValue "houdiniEngineThriftServer"
         `textField -query -text sessionSocketHost`;
-	
+
     int $portVal = `textField -query -text sessionSocketPort`;
     optionVar
         -intValue "houdiniEngineThriftPort"
         $portVal;
-        
+
     optionVar
         -intValue "houdiniEngineSessionPipeCustom"
         `radioButton -query -select sessionPipeCustom`;
@@ -213,14 +213,14 @@ houdiniEnginePreferences()
         -label "Global"`;
         formLayout
             globalPreferences;
-    
+
             checkBoxGrp
                 -numberOfCheckBoxes 1
                 -label "Asynchronous Mode:"
                 -label1 "(requires restart)"
                 -changeCommand "houdiniEnginePreferences_toggleAsynchronousMode #1"
                 asynchronousModeCheck;
-    
+
             button
                 -label "?"
                 -command ("confirmDialog -title \"Houdini Engine Preferences\"" +
@@ -237,10 +237,10 @@ houdiniEnginePreferences()
                 -label "Delete Asset After Baking:"
                 -changeCommand "houdiniEnginePreferences_toggleDelAfterBake #1"
                 delAfterBakeCheck;
-    
+
         setParent ..;
     setParent ..;
-    
+
     formLayout -e
         -attachForm asynchronousModeCheck "top" 5
         -attachForm asynchronousModeCheck "left" 5
@@ -250,14 +250,14 @@ houdiniEnginePreferences()
         -attachForm asynchronousModeHelp "right" 5
         -attachControl delAfterBakeCheck "top" 5 asynchronousModeCheck
         -attachForm delAfterBakeCheck "left" 5
-        globalPreferences;    
-    
+        globalPreferences;
+
     // Sessions
     int $isLinux = `about -linux`;
 
     string $sessionLayout = `frameLayout -label "Back End (requires restart)"`;
         radioCollection sessionTypeList;
-            
+
         formLayout sessionLayout;
             radioButton
                 -collection sessionTypeList
@@ -269,10 +269,10 @@ houdiniEnginePreferences()
 
             text -label "Host:" sessionSocketHostLabel;
             textField -width 200 sessionSocketHost;
-            
+
             text -label "Port:" sessionSocketPortLabel;
             textField -width 50 sessionSocketPort;
-            
+
             radioButton
                 -collection sessionTypeList
                 -label "Named Pipe"
@@ -298,78 +298,78 @@ houdiniEnginePreferences()
             checkBoxGrp
                 -numberOfCheckBoxes 1
                 -label "Unset LD_LIBRARY_PATH:"
-		-label1 "(for Linux auto-start)"
+                -label1 "(for Linux auto-start)"
                 -changeCommand "houdiniEnginePreferences_toggleUnsetLLP #1"
                 unsetLLPCheck;
-	    if(!$isLinux)
-	        checkBoxGrp -edit -visible 0  unsetLLPCheck;
+            if(!$isLinux)
+                checkBoxGrp -edit -visible 0  unsetLLPCheck;
 
         setParent ..;
-	if($isLinux)
-	{
-	    formLayout -e
-            -attachForm sessionTypeSocket "top" 5
-            -attachForm sessionTypeSocket "left" 5
+        if($isLinux)
+        {
+            formLayout -e
+                -attachForm sessionTypeSocket "top" 5
+                -attachForm sessionTypeSocket "left" 5
+    
+                -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
+                -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
+    
+                -attachControl sessionSocketHost "top" 5 sessionTypeSocket
+                -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
+    
+                -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
+                -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
+    
+                -attachControl sessionSocketPort "top" 5 sessionTypeSocket
+                -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
+    
+                -attachControl sessionTypePipe "top" 5 sessionSocketPort
+                -attachForm sessionTypePipe "left" 5
+    
+                -attachControl sessionPipeAuto "top" 5 sessionTypePipe
+                -attachForm sessionPipeAuto "left" 20
+    
+                -attachControl unsetLLPCheck "top" 5 sessionPipeAuto
+                -attachForm unsetLLPCheck "left" 20
+    
+                -attachControl sessionPipeCustom "top" 5 unsetLLPCheck
+                -attachForm sessionPipeCustom "left" 20
+    
+                -attachControl sessionPipeName "top" 5 unsetLLPCheck
+                -attachControl sessionPipeName "left" 5 sessionPipeCustom
+    
+                sessionLayout;
+        } else {
+            formLayout -e
+                -attachForm sessionTypeSocket "top" 5
+                -attachForm sessionTypeSocket "left" 5
 
-            -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
-            -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
+                -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
+                -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
 
-            -attachControl sessionSocketHost "top" 5 sessionTypeSocket
-            -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
+                -attachControl sessionSocketHost "top" 5 sessionTypeSocket
+                -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
 
-            -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
-            -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
+                -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
+                -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
 
-            -attachControl sessionSocketPort "top" 5 sessionTypeSocket
-            -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
+                -attachControl sessionSocketPort "top" 5 sessionTypeSocket
+                -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
 
-            -attachControl sessionTypePipe "top" 5 sessionSocketPort
-            -attachForm sessionTypePipe "left" 5
-            
-            -attachControl sessionPipeAuto "top" 5 sessionTypePipe
-            -attachForm sessionPipeAuto "left" 20
-	    
-	    -attachControl unsetLLPCheck "top" 5 sessionPipeAuto
-            -attachForm unsetLLPCheck "left" 20
+                -attachControl sessionTypePipe "top" 5 sessionSocketPort
+                -attachForm sessionTypePipe "left" 5
 
-            -attachControl sessionPipeCustom "top" 5 unsetLLPCheck
-            -attachForm sessionPipeCustom "left" 20
+                -attachControl sessionPipeAuto "top" 5 sessionTypePipe
+                -attachForm sessionPipeAuto "left" 20
 
-            -attachControl sessionPipeName "top" 5 unsetLLPCheck
-            -attachControl sessionPipeName "left" 5 sessionPipeCustom
-	    
-            sessionLayout;
-	} else {
-	    formLayout -e
-            -attachForm sessionTypeSocket "top" 5
-            -attachForm sessionTypeSocket "left" 5
+                -attachControl sessionPipeCustom "top" 5 sessionPipeAuto
+                -attachForm sessionPipeCustom "left" 20
 
-            -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
-            -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
+                -attachControl sessionPipeName "top" 5 sessionPipeAuto
+                -attachControl sessionPipeName "left" 5 sessionPipeCustom
 
-            -attachControl sessionSocketHost "top" 5 sessionTypeSocket
-            -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
-
-            -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
-            -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
-
-            -attachControl sessionSocketPort "top" 5 sessionTypeSocket
-            -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
-
-            -attachControl sessionTypePipe "top" 5 sessionSocketPort
-            -attachForm sessionTypePipe "left" 5
-            
-            -attachControl sessionPipeAuto "top" 5 sessionTypePipe
-            -attachForm sessionPipeAuto "left" 20
-	    
-            -attachControl sessionPipeCustom "top" 5 sessionPipeAuto
-            -attachForm sessionPipeCustom "left" 20
-
-            -attachControl sessionPipeName "top" 5 sessionPipeAuto
-            -attachControl sessionPipeName "left" 5 sessionPipeCustom
-	    
-            sessionLayout;
-	}
+                sessionLayout;
+        }
     setParent ..;
 
     // Buttons
@@ -411,7 +411,7 @@ houdiniEnginePreferences()
         -attachControl $globalLayout "top" 5 $versionText
         -attachForm $globalLayout "left" 5
         -attachForm $globalLayout "right" 5
-        
+
         -attachControl $sessionLayout "top" 5 $globalLayout
         -attachForm $sessionLayout "left" 5
         -attachControl $sessionLayout "bottom" 5 $buttonLayout

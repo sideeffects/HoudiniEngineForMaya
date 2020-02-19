@@ -79,35 +79,35 @@ houdiniEngine_findAsset(string $assetFileName)
     string $pathenv = `getenv "HOUDINI_MAYA_ASSET_PATH"`;
     if($isLinux || $isMac)
     {
-	string $path[]; 
-	if($pathenv != "") {
-	     int $pathLen = `tokenize $pathenv ":" $path`;
-	     for ($dir in $path) {
-	         $assetPath = $dir;
-	         if(!endsWith($dir, "/"))
-	             $assetPath += "/";
-	         $assetPath += $assetFileName;
-		 if(`filetest -e $assetPath`) {
-		      break;
-		 }
-	     }
-	} 
+        string $path[];
+        if($pathenv != "") {
+            int $pathLen = `tokenize $pathenv ":" $path`;
+            for ($dir in $path) {
+                $assetPath = $dir;
+                if(!endsWith($dir, "/"))
+                    $assetPath += "/";
+                $assetPath += $assetFileName;
+                if(`filetest -e $assetPath`) {
+                    break;
+                }
+            }
+        }
     }
     else if($isWindows)
     {
-	string $path[]; 
-	if($pathenv != "") {
-	     int $pathLen = `tokenize $pathenv ";" $path`;
-	     for ($dir in $path) {
-	     	 $assetPath = $dir;
-	         if(!endsWith($dir, "\\"))
-		     $assetPath += "\\";
-	         $assetPath +=  $assetFileName;
-		 if(`filetest -e $assetPath`) {
-		      break;
-		 }
-	     }
-	} 
+        string $path[];
+        if($pathenv != "") {
+            int $pathLen = `tokenize $pathenv ";" $path`;
+            for ($dir in $path) {
+                $assetPath = $dir;
+                if(!endsWith($dir, "\\"))
+                    $assetPath += "\\";
+                $assetPath +=  $assetFileName;
+                if(`filetest -e $assetPath`) {
+                    break;
+                }
+            }
+        }
     }
     return $assetPath;
 }

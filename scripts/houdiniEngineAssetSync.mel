@@ -21,7 +21,7 @@ proc
 syncAsset(string $assetNode, int $syncAttributes, int $syncOutputs)
 {
     string $cmd;
-    // pre and post sync callbacks have been moved inside the houdiniAsset command    
+    // pre and post sync callbacks have been moved inside the houdiniAsset command
     $cmd += "houdiniAsset ";
 
     if($syncAttributes)

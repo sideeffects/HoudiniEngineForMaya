@@ -8,7 +8,7 @@
 class InputMergeNode : public MPxNode
 {
 public:
-    static void* creator();
+    static void *creator();
     static MStatus initialize();
 
 public:
@@ -24,10 +24,7 @@ public:
     InputMergeNode();
     virtual ~InputMergeNode();
 
-    virtual MStatus compute(
-            const MPlug &plug,
-            MDataBlock &dataBlock
-            );
+    virtual MStatus compute(const MPlug &plug, MDataBlock &dataBlock);
 
 private:
     void clearInput();

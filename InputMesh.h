@@ -9,53 +9,35 @@
 
 class InputMesh : public Input
 {
-    public:
-        InputMesh();
-        virtual ~InputMesh();
+public:
+    InputMesh();
+    virtual ~InputMesh();
 
-        virtual AssetInputType assetInputType() const;
+    virtual AssetInputType assetInputType() const;
 
-        virtual void setInputGeo(
-                MDataBlock &dataBlock,
-                const MPlug &plug
-                );
+    virtual void setInputGeo(MDataBlock &dataBlock, const MPlug &plug);
 
-        virtual void setInputComponents(
-                MDataBlock &dataBlock,
-                const MPlug &geoPlug,
-                const MPlug &compPlug,	
-                const MPlug &primGroupPlug,
-                const MPlug &pointGroupPlug
-                );
+    virtual void setInputComponents(MDataBlock &dataBlock,
+                                    const MPlug &geoPlug,
+                                    const MPlug &compPlug,
+                                    const MPlug &primGroupPlug,
+                                    const MPlug &pointGroupPlug);
 
-    protected:
-        bool processPoints(
-                const MFnMesh &meshFn
-                );
-        bool processNormals(
-                const MObject &meshObj,
-                const MFnMesh &meshFn,
-                std::vector<int> vertexCount
-                );
-        bool processUVs(
-                const MFnMesh &meshFn,
-                std::vector<int> vertexCount,
-                std::vector<int> vertexList
-                );
-        bool processColorSets(
-                const MFnMesh &meshFn,
-                std::vector<int> vertexCount,
-                std::vector<int> vertexList
-                );
-        bool processSets(
-                const MPlug &plug,
-                const MFnMesh &meshFn
-                );
-        bool processShadingGroups(
-                const MFnMesh &meshFn,
-                const MStringArray &sgNames,
-                const MObjectArray &sgCompObjs
-                );
+protected:
+    bool processPoints(const MFnMesh &meshFn);
+    bool processNormals(const MObject &meshObj,
+                        const MFnMesh &meshFn,
+                        std::vector<int> vertexCount);
+    bool processUVs(const MFnMesh &meshFn,
+                    std::vector<int> vertexCount,
+                    std::vector<int> vertexList);
+    bool processColorSets(const MFnMesh &meshFn,
+                          std::vector<int> vertexCount,
+                          std::vector<int> vertexList);
+    bool processSets(const MPlug &plug, const MFnMesh &meshFn);
+    bool processShadingGroups(const MFnMesh &meshFn,
+                              const MStringArray &sgNames,
+                              const MObjectArray &sgCompObjs);
 };
 
 #endif

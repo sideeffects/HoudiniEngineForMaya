@@ -5,23 +5,22 @@
 
 #include <string>
 
-#include <maya/MTime.h>
 #include <maya/MDataBlock.h>
 #include <maya/MDataHandle.h>
 #include <maya/MStatus.h>
+#include <maya/MTime.h>
 
 class OutputMaterial
 {
 public:
     OutputMaterial(HAPI_NodeId assetId);
 
-    MStatus compute(
-            const MTime &time,
-            const MPlug &materialPlug,
-            MDataBlock &data,
-            MDataHandle &materialHandle,
-	    bool bakeTexture
-            );
+    MStatus compute(const MTime &time,
+                    const MPlug &materialPlug,
+                    MDataBlock &data,
+                    MDataHandle &materialHandle,
+                    bool bakeTexture);
+
 private:
     void update(MDataHandle &materialHandle);
 

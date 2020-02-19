@@ -140,7 +140,7 @@ houdiniEngine_assetPicker(string $assetLibraryFilePath, string $message)
 
     textScrollList -e
         -doubleClickCommand ("layoutDialog -dismiss `textScrollList -q -selectItem " + $textScrollList + "`")
-	-height 200
+        -height 200
         $textScrollList;
 
     string $assets[] = `houdiniAsset -listAssets $assetLibraryFilePath`;
@@ -234,7 +234,7 @@ houdiniEngine_buildRecentAssetsMenu(string $menuItem)
 
         menuItem
             -label ($assetType + " - " + $assetLibraryFilePath)
-	    -imageOverlayLabel "LRU"
+            -imageOverlayLabel "LRU"
             -command ("houdiniEngine_loadAsset"
                     + " \"" + encodeString($assetLibraryFilePath) + "\""
                     + " \"" + encodeString($assetType) + "\"");
@@ -390,14 +390,14 @@ houdiniEngine_updateToolsShelf()
     // Note - don't put this command on the Tools shelf itself - it will crash
     if(`shelfLayout -exists "HoudiniTools"`)
         deleteShelfTab "HoudiniTools";
-	
+
     // shared tools are installed under engine - i.e. $MODULE_PATH/../../tools/
     string $MODULE_PATH=`getModulePath -moduleName "houdiniEngine"`;
     string $toolsLocation = `dirname $MODULE_PATH`;
     $toolsLocation = `dirname $toolsLocation`;
     $toolsLocation += "/tools/";
     if(!`shelfLayout -exists "HoudiniTools"`)
-    	catchQuiet(houdiniEngine_buildToolsShelf ($toolsLocation));	     
+        catchQuiet(houdiniEngine_buildToolsShelf ($toolsLocation));
        // catchQuiet(houdiniEngine_buildToolsShelf ($MODULE_PATH + "/../../tools/"));
 }
 
@@ -413,60 +413,60 @@ houdiniEngine_buildToolsShelf(string $toolsLocation)
 
     string $currentShelf = `tabLayout -query -selectTab $gShelfTopLevel`;
     setParent $currentShelf;
-    
+
     string $tools[] = `getFileList -folder $toolsLocation - filespec "*.hda"`;
 
     for($tool in $tools) {
-    	string $toolName = basename($tool, ".hda");
-	string $toolImage = ( $toolName + ".png");
-	string $toolJson = ($toolsLocation + $toolName + ".json");
+        string $toolName = basename($tool, ".hda");
+        string $toolImage = ( $toolName + ".png");
+        string $toolJson = ($toolsLocation + $toolName + ".json");
 
-	// brute force parse of the simple json asset properties
-	// we know apriori, for initial set of tools anyway, that
-	// assetProps[0] == name
-	// assetProps[1] == toolType
-	// assetProps[2] == toolTip
-	// actual json parsing will follow as needed
-	
-	string $assetProps[];
-	string $assetKeys[];
-	string $toolDesc[] = freadAllLines($toolJson);
-	for($desc in $toolDesc) {
-		  string $buffer[];
-		  string $num = `tokenize $desc "\"" $buffer`;
-		  if($num == 5) {
-		      $assetKeys[size($assetKeys)] = $buffer[1];
-		      $assetProps[size($assetProps)] = $buffer[3];
-		  }
-	}
-	
+        // brute force parse of the simple json asset properties
+        // we know apriori, for initial set of tools anyway, that
+        // assetProps[0] == name
+        // assetProps[1] == toolType
+        // assetProps[2] == toolTip
+        // actual json parsing will follow as needed
+
+        string $assetProps[];
+        string $assetKeys[];
+        string $toolDesc[] = freadAllLines($toolJson);
+        for($desc in $toolDesc) {
+            string $buffer[];
+            string $num = `tokenize $desc "\"" $buffer`;
+            if($num == 5) {
+                $assetKeys[size($assetKeys)] = $buffer[1];
+                $assetProps[size($assetProps)] = $buffer[3];
+            }
+        }
+
         string $toolPath = ($toolsLocation + $tool);
-	string $assets[] = `houdiniAsset -listAssets $toolPath`;
-	if(size($assets) == 0) continue;
+        string $assets[] = `houdiniAsset -listAssets $toolPath`;
+        if(size($assets) == 0) continue;
         string $script = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\" \"" + $assetProps[1] + "\"" );
-	string $rmbHistoryScript = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\" \"" + "HISTORY" + "\"" );
-	if($assetProps[1]== "OPERATOR_SINGLE") {
-	       shelfButton 
-			-command $script
-			-sourceType "mel"
-			-label $tool
-			-annotation $assetProps[2]
-			-image1 $toolImage
-			-style "iconOnly"
-			-mi "Apply As History" $rmbHistoryScript
-			-width 32
-			-height 32;
-	} else {
-	       shelfButton 
-			-command $script
-			-sourceType "mel"
-			-label $tool
-			-annotation $assetProps[2]
-			-image1 $toolImage
-			-style "iconOnly"
-			-width 32
-			-height 32;
-	}
+        string $rmbHistoryScript = ("if(!`pluginInfo -query -loaded houdiniEngine`)\n     loadPlugin houdiniEngine;\nif(!`exists houdiniEngine_loadAndAddAsset`)\n     source houdiniEngineHistoryAsset;\n houdiniEngine_loadAndAddAsset \"" + $toolPath + "\" \"" + $assets[0] + "\" \"" + "HISTORY" + "\"" );
+        if($assetProps[1]== "OPERATOR_SINGLE") {
+            shelfButton
+                -command $script
+                -sourceType "mel"
+                -label $tool
+                -annotation $assetProps[2]
+                -image1 $toolImage
+                -style "iconOnly"
+                -mi "Apply As History" $rmbHistoryScript
+                -width 32
+                -height 32;
+        } else {
+            shelfButton
+                -command $script
+                -sourceType "mel"
+                -label $tool
+                -annotation $assetProps[2]
+                -image1 $toolImage
+                -style "iconOnly"
+                -width 32
+                -height 32;
+        }
 
     }
 }
@@ -586,14 +586,14 @@ houdiniEngine_showOutliner(int $show, int $history)
     string $assets[] = `ls -type houdiniAsset`;
     for ($asset in $assets) {
         if($show) {
-	    setAttr ($asset + ".hiddenInOutliner") false;
-	} else {
-	    if(!$history || (`getAttr ($asset + ".assetConnectType")` == 1))
-	        setAttr ($asset + ".hiddenInOutliner") true;
-	}
+            setAttr ($asset + ".hiddenInOutliner") false;
+        } else {
+            if(!$history || (`getAttr ($asset + ".assetConnectType")` == 1))
+                setAttr ($asset + ".hiddenInOutliner") true;
+        }
     }
     AEdagNodeCommonRefreshOutliners();
-    
+
 }
 
 global proc
@@ -664,15 +664,15 @@ houdiniEngine_shaderChangeCallbacks()
 {
     // This is used to set up the shader changed script jobs on file open
     // for meshes that are inputs to assets
-    
+
     string $inputNodes[] = `ls -type "houdiniInputGeometry"`;
     for($inputNode in $inputNodes) {
         string $inputGeos[] = `listConnections -sh true -type mesh $inputNode`;
-	if(size($inputGeos) == 0)
-	     continue;
-	string $shadingGroupAttr =  ($inputGeos[0] + ".instObjGroups");
-	scriptJob -kws -connectionChange $shadingGroupAttr houdiniEngine_objectShaderChanged;	
-    }   
+        if(size($inputGeos) == 0)
+             continue;
+        string $shadingGroupAttr =  ($inputGeos[0] + ".instObjGroups");
+        scriptJob -kws -connectionChange $shadingGroupAttr houdiniEngine_objectShaderChanged;
+    }
 }
 
 global proc
@@ -690,27 +690,27 @@ houdiniEngineCreateUI()
 
     // maya2019 has playbackCaching (which we check for by seeing if the cacheEvaluator command exists)
     // If playback caching on idle results in cooking, interactive performance can be impacted
-    // If there AutoSync outputs is ON, caching on idle can trigger an infinite loop 
+    // If there AutoSync outputs is ON, caching on idle can trigger an infinite loop
     // So we strongly advise only doing playback caching on playback, if at all.
-    
+
     if(`exists cacheEvaluator`)
     {
-	if(`optionVar -q cachedPlaybackEnable` == 1
+        if(`optionVar -q cachedPlaybackEnable` == 1
              && `optionVar -q cachedPlaybackFillType` != "syncOnly" ) {
-	    string $result = "No";
+            string $result = "No";
             if(!`about -batch`)
                 $result = `confirmDialog -title "Warning"
-	        -message "Maya's Cached Playback is on, and filling on idle. This can conflict with houdiniEngine's AutoSync Output, and can impact interactive performance. Switch to fill on playback only? "
-	        -button "Yes" -button "No" -defaultButton "Yes"
+                -message "Maya's Cached Playback is on, and filling on idle. This can conflict with houdiniEngine's AutoSync Output, and can impact interactive performance. Switch to fill on playback only? "
+                -button "Yes" -button "No" -defaultButton "Yes"
                 -cancelButton "No" -dismissString "No"`;
-	    if( $result == "Yes" )
-	        optionVar -sv cachedPlaybackFillType "syncOnly";	     
+            if( $result == "Yes" )
+                optionVar -sv cachedPlaybackFillType "syncOnly";
         }
     }
 
     global string $gMainWindow;
     setParent $gMainWindow;
-    
+
     string $mayaVersionString = `about -version`;
     string $mayaVersionStrings[];
     int $verLen = `tokenize $mayaVersionString " " $mayaVersionStrings`;
@@ -723,18 +723,18 @@ houdiniEngineCreateUI()
 
     menuItem
         -label "Load Asset..."
-	-imageOverlayLabel "LA"
-	-annotation "Browse for assets or asset libraries"
+        -imageOverlayLabel "LA"
+        -annotation "Browse for assets or asset libraries"
         -command "houdiniEngine_browseAssetLibrary";
 
     $recentAssetsMenu = `menuItem
         -label "Recent Assets"
-	-annotation "Load a recently used asset"
+        -annotation "Load a recently used asset"
         -subMenu true`;
     setParent -menu ..;
 
-    menuItem -label "Asset Library Manager" 
-	-imageOverlayLabel "ALM"
+    menuItem -label "Asset Library Manager"
+        -imageOverlayLabel "ALM"
         -annotation "See which libraries and which asset versions are loaded"
         -command "houdiniEngineAssetLibraryManager";
 
@@ -751,54 +751,54 @@ houdiniEngineCreateUI()
     menuItem -divider true;
 
     menuItem -label "Orbolt Asset Browser"
-	-imageOverlayLabel "OAB"
+        -imageOverlayLabel "OAB"
         -sourceType "python"
-	-annotation "Load assets that have been installed locally from the asset store"
+        -annotation "Load assets that have been installed locally from the asset store"
         -command "import houdini_engine_for_maya.asset_store\nhoudini_engine_for_maya.asset_store.show_asset_store_window()";
 
     menuItem -label "Get Assets from Orbolt"
-	-imageOverlayLabel "GOB"
-    	-annotation "Visit the asset store to download assets for use in Maya"
+        -imageOverlayLabel "GOB"
+        -annotation "Visit the asset store to download assets for use in Maya"
         -command "houdiniEngine_launchOrboltPageClick";
 
     menuItem -divider true;
 
     menuItem -label "Sync Asset"
-	-imageOverlayLabel "SA"
+        -imageOverlayLabel "SA"
         -annotation "Delete existing output nodes and rebuild the output hierarchy for the asset's current outputs"
         -command "houdiniEngine_syncSelectedAsset";
     menuItem -label "Bake Asset"
-	-imageOverlayLabel "BA"
-	-annotation "Tear off a copy of the asset's current output nodes"
+        -imageOverlayLabel "BA"
+        -annotation "Tear off a copy of the asset's current output nodes"
         -command "houdiniEngine_bakeSelectedAssets";
-    
+
     if( getApplicationVersionAsFloat() >= 2016.5 )
     {
         menuItem -label "Freeze Asset"
-	    -imageOverlayLabel "BA"
-	    -version $mayaVersion
-	    -annotation "Disconnect the asset's output nodes and mark the asset frozen"
+            -imageOverlayLabel "BA"
+            -version $mayaVersion
+            -annotation "Disconnect the asset's output nodes and mark the asset frozen"
             -command "houdiniEngine_freezeSelectedAssets";
         menuItem -label "Unfreeze Asset"
-	    -imageOverlayLabel "BA"
-	    -version $mayaVersion
-	    -annotation "Reconnect the asset's output nodes and mark the asset unfrozen"
+            -imageOverlayLabel "BA"
+            -version $mayaVersion
+            -annotation "Reconnect the asset's output nodes and mark the asset unfrozen"
             -command "houdiniEngine_unfreezeSelectedAssets";
     }
     menuItem -label "Remove Asset From History"
-	-imageOverlayLabel "RAH"
+        -imageOverlayLabel "RAH"
         -annotation "Remove this asset and its inputGeometry nodes and reconnect history across the gap"
         -command "houdiniEngine_removeSelectedHistory";
     menuItem -label "Add Asset To Mesh History"
-	-imageOverlayLabel "AAH"
-	-annotation "Apply the selected asset as construction history to the selected mesh"
+        -imageOverlayLabel "AAH"
+        -annotation "Apply the selected asset as construction history to the selected mesh"
         -command "houdiniEngine_addSelectedHistory";
     menuItem -label "Delete History"
-	-imageOverlayLabel "DH"
-	-annotation "Delete construction history including any houdiniAsset nodes\n"
+        -imageOverlayLabel "DH"
+        -annotation "Delete construction history including any houdiniAsset nodes\n"
         -command "houdiniEngine_deleteSelectedHistory";
     menuItem -label "Reload Asset"
-	-imageOverlayLabel "RA"
+        -imageOverlayLabel "RA"
         -annotation "Reload the definition of the selected asset"
         -command "houdiniEngine_reloadSelectedAssets";
 
@@ -810,13 +810,13 @@ houdiniEngineCreateUI()
         -tearOff true;
 
         menuItem -label "View Assets in Houdini"
-	    -imageOverlayLabel "VAH"
-	    -annotation "Start houdini and load the current assets along with any input geometry"
+            -imageOverlayLabel "VAH"
+            -annotation "Start houdini and load the current assets along with any input geometry"
             -command "houdiniEngine_viewInHoudini";
 
         menuItem -label "Save Assets to Houdini Scene..."
-	    -imageOverlayLabel "SHS"
-	    -annotation "Save the current assets and input geometry to a houdini scene"
+            -imageOverlayLabel "SHS"
+            -annotation "Save the current assets and input geometry to a houdini scene"
             -command "houdiniEngine_saveHipFile";
 
     setParent -menu ..;
@@ -833,18 +833,18 @@ houdiniEngineCreateUI()
         -tearOff true;
 
         menuItem -label "Hide All Assets in Outliner"
-	    -imageOverlayLabel "HAO"
-	    -annotation "Mark all asset nodes as hidden in the outliner"
+            -imageOverlayLabel "HAO"
+            -annotation "Mark all asset nodes as hidden in the outliner"
             -command "houdiniEngine_showOutliner 0 0";
 
         menuItem -label "Hide History Assets in Outliner"
-	    -imageOverlayLabel "HHO"
-	    -annotation "Mark all history asset nodes as hidden in the outliner"
+            -imageOverlayLabel "HHO"
+            -annotation "Mark all history asset nodes as hidden in the outliner"
             -command "houdiniEngine_showOutliner 0 1";
-	    
+
         menuItem -label "Show All Assets in Outliner"
-	    -imageOverlayLabel "SAO"
-	    -annotation "Mark all asset nodes as visible in the outliner"
+            -imageOverlayLabel "SAO"
+            -annotation "Mark all asset nodes as visible in the outliner"
             -command "houdiniEngine_showOutliner 1 0";
 
     setParent -menu ..;
@@ -856,37 +856,37 @@ houdiniEngineCreateUI()
         -subMenu true;
 
         menuItem -label "Online documentation"
-	    -imageOverlayLabel "OLD"
-	    -annotation "Online Documentation for the current version"
+            -imageOverlayLabel "OLD"
+            -annotation "Online Documentation for the current version"
             -command "houdiniEngine_onlineDocumentation";
 
         menuItem -divider true;
 
         menuItem -label "Visit Houdini Engine for Maya forum"
-	    -imageOverlayLabel "FO"
-	    -annotation "Houdini Engine for Maya forum"
+            -imageOverlayLabel "FO"
+            -annotation "Houdini Engine for Maya forum"
             -command "houdiniEngine_launchForum";
 
         menuItem -label "Submit Bugs and RFEs"
-	    -imageOverlayLabel "SBR"
-	    -annotation "Submission form  for Bugs and RFSs"
+            -imageOverlayLabel "SBR"
+            -annotation "Submission form  for Bugs and RFSs"
             -command "houdiniEngine_launchSubmitBugs";
 
         menuItem -label "View Change Log"
-	    -imageOverlayLabel "VCL"
-	    -annotation "View Change Log for Maya plugin specific changes"
+            -imageOverlayLabel "VCL"
+            -annotation "View Change Log for Maya plugin specific changes"
             -command "houdiniEngine_launchChangeLog";
 
         menuItem -label "Contribute on GitHub"
-	    -imageOverlayLabel "GH"
-	    -annotation "Plugin code is available on GitHub for customization"
+            -imageOverlayLabel "GH"
+            -annotation "Plugin code is available on GitHub for customization"
             -command "houdiniEngine_launchGitHub";
 
         menuItem -divider true;
 
         menuItem -label "Houdini License Administrator"
-	    -imageOverlayLabel "LA"
-	    -annotation "information about the license server and available licenses"
+            -imageOverlayLabel "LA"
+            -annotation "information about the license server and available licenses"
             -command "houdiniEngine_runHKey";
 
     setParent -menu ..;

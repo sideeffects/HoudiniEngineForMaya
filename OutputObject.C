@@ -1,8 +1,8 @@
+#include <maya/MEulerRotation.h>
+#include <maya/MFnArrayAttrsData.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFnMeshData.h>
-#include <maya/MEulerRotation.h>
 #include <maya/MQuaternion.h>
-#include <maya/MFnArrayAttrsData.h>
 
 #include "Asset.h"
 #include "OutputGeometryObject.h"
@@ -10,23 +10,19 @@
 #include "OutputObject.h"
 #include "util.h"
 
-OutputObject*
-OutputObject::createObject(
-        HAPI_NodeId nodeId
-        )
+OutputObject *
+OutputObject::createObject(HAPI_NodeId nodeId)
 {
     HAPI_Result hapiResult;
 
     HAPI_ObjectInfo objectInfo;
     hapiResult = HAPI_GetObjectInfo(
-            Util::theHAPISession.get(),
-            nodeId, &objectInfo
-            );
+        Util::theHAPISession.get(), nodeId, &objectInfo);
     CHECK_HAPI(hapiResult);
 
-    OutputObject* obj;
+    OutputObject *obj;
 
-    if(objectInfo.isInstancer)
+    if (objectInfo.isInstancer)
         obj = new OutputInstancerObject(nodeId);
     else
     {
@@ -38,11 +34,8 @@ OutputObject::createObject(
 
 OutputObject::~OutputObject() {}
 
-OutputObject::OutputObject(
-        HAPI_NodeId nodeId
-        ) :
-    myNodeId(nodeId),
-    myLastCookCount(0)
+OutputObject::OutputObject(HAPI_NodeId nodeId)
+    : myNodeId(nodeId), myLastCookCount(0)
 {
 }
 

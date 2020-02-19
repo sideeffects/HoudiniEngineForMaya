@@ -7,7 +7,7 @@ proc string[] getUpstreamNodes(string $node, string $type)
     for ($upstreamNode in $upstreamNodes)
     {
         if (`nodeType $upstreamNode` == $type)
-            $filteredNodes[size($filteredNodes)] = $upstreamNode; 
+            $filteredNodes[size($filteredNodes)] = $upstreamNode;
     }
 
     return $filteredNodes;

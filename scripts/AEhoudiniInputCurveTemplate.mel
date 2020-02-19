@@ -11,7 +11,7 @@ global proc AEhoudiniInputCurveTemplate(string $nodeName)
             -addControl "preserveScale";
 
         editorTemplate -suppress "inputCurve";
-	editorTemplate -endLayout;
+        editorTemplate -endLayout;
 
     editorTemplate -addExtraControls;
 

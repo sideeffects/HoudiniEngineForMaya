@@ -24,209 +24,171 @@
 #define kSaveHIPFlag "-sh"
 #define kSaveHIPFlagLong "-saveHIP"
 
-const char* EngineCommand::commandName = "houdiniEngine";
+const char *EngineCommand::commandName = "houdiniEngine";
 
 class EngineSubCommandLicense : public SubCommand
 {
-    public:
-        virtual MStatus doIt()
+public:
+    virtual MStatus doIt()
+    {
+        int license;
+
+        HAPI_GetSessionEnvInt(
+            Util::theHAPISession.get(), HAPI_SESSIONENVINT_LICENSE, &license);
+
+        MString version_string;
+        switch (license)
         {
-            int license;
-
-            HAPI_GetSessionEnvInt(
-                    Util::theHAPISession.get(),
-                    HAPI_SESSIONENVINT_LICENSE,
-                    &license
-                    );
-
-            MString version_string;
-            switch(license)
-            {
-                case HAPI_LICENSE_NONE:
-                    version_string = "none";
-                    break;
-                case HAPI_LICENSE_HOUDINI_ENGINE:
-                    version_string = "Houdini-Engine";
-                    break;
-                case HAPI_LICENSE_HOUDINI:
-                    version_string = "Houdini-Escape";
-                    break;
-                case HAPI_LICENSE_HOUDINI_FX:
-                    version_string = "Houdini-Master";
-                    break;
-                case HAPI_LICENSE_HOUDINI_ENGINE_INDIE:
-                    version_string = "Houdini-Engine-Indie";
-                    break;
-                case HAPI_LICENSE_HOUDINI_INDIE:
-                    version_string = "Houdini-Indie";
-                    break;
-                default:
-                    version_string = "Unknown";
-                    break;
-            }
-
-            MPxCommand::setResult(version_string);
-
-            return MStatus::kSuccess;
+        case HAPI_LICENSE_NONE:
+            version_string = "none";
+            break;
+        case HAPI_LICENSE_HOUDINI_ENGINE:
+            version_string = "Houdini-Engine";
+            break;
+        case HAPI_LICENSE_HOUDINI:
+            version_string = "Houdini-Escape";
+            break;
+        case HAPI_LICENSE_HOUDINI_FX:
+            version_string = "Houdini-Master";
+            break;
+        case HAPI_LICENSE_HOUDINI_ENGINE_INDIE:
+            version_string = "Houdini-Engine-Indie";
+            break;
+        case HAPI_LICENSE_HOUDINI_INDIE:
+            version_string = "Houdini-Indie";
+            break;
+        default:
+            version_string = "Unknown";
+            break;
         }
+
+        MPxCommand::setResult(version_string);
+
+        return MStatus::kSuccess;
+    }
 };
 
 class EngineSubCommandSaveHIPFile : public SubCommand
 {
-    public:
-        EngineSubCommandSaveHIPFile(const MString &hipFilePath) :
-            myHIPFilePath(hipFilePath)
-        {
-        }
+public:
+    EngineSubCommandSaveHIPFile(const MString &hipFilePath)
+        : myHIPFilePath(hipFilePath)
+    {
+    }
 
-        virtual MStatus doIt()
-        {
-            HAPI_SaveHIPFile(
-                    Util::theHAPISession.get(),
-                    myHIPFilePath.asChar(),
-                    false
-                    );
+    virtual MStatus doIt()
+    {
+        HAPI_SaveHIPFile(
+            Util::theHAPISession.get(), myHIPFilePath.asChar(), false);
 
-            return MStatus::kSuccess;
-        }
+        return MStatus::kSuccess;
+    }
 
-    protected:
-        MString myHIPFilePath;
+protected:
+    MString myHIPFilePath;
 };
 
 class EngineSubCommandHoudiniVersion : public SubCommand
 {
-    public:
-        virtual MStatus doIt()
-        {
-            int major, minor, build;
+public:
+    virtual MStatus doIt()
+    {
+        int major, minor, build;
 
-            HAPI_GetEnvInt(
-                    HAPI_ENVINT_VERSION_HOUDINI_MAJOR,
-                    &major
-                    );
-            HAPI_GetEnvInt(
-                    HAPI_ENVINT_VERSION_HOUDINI_MINOR,
-                    &minor
-                    );
-            HAPI_GetEnvInt(
-                    HAPI_ENVINT_VERSION_HOUDINI_BUILD,
-                    &build
-                    );
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &major);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &minor);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &build);
 
-            MString version_string;
-            version_string.format(
-                    "^1s.^2s.^3s",
-                    MString() + major,
-                    MString() + minor,
-                    MString() + build
-                    );
+        MString version_string;
+        version_string.format("^1s.^2s.^3s", MString() + major,
+                              MString() + minor, MString() + build);
 
-            MPxCommand::setResult(version_string);
+        MPxCommand::setResult(version_string);
 
-            return MStatus::kSuccess;
-        }
+        return MStatus::kSuccess;
+    }
 };
 
 class EngineSubCommandHoudiniEngineVersion : public SubCommand
 {
-    public:
-        virtual MStatus doIt()
-        {
-            int major, minor, api;
+public:
+    virtual MStatus doIt()
+    {
+        int major, minor, api;
 
-            HAPI_GetEnvInt(
-                    HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR,
-                    &major
-                    );
-            HAPI_GetEnvInt(
-                    HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR,
-                    &minor
-                    );
-            HAPI_GetEnvInt(
-                    HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API,
-                    &api
-                    );
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &major);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &minor);
+        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &api);
 
-            MString version_string;
-            version_string.format(
-                    "^1s.^2s (API: ^3s)",
-                    MString() + major,
-                    MString() + minor,
-                    MString() + api
-                    );
+        MString version_string;
+        version_string.format("^1s.^2s (API: ^3s)", MString() + major,
+                              MString() + minor, MString() + api);
 
-            MPxCommand::setResult(version_string);
+        MPxCommand::setResult(version_string);
 
-            return MStatus::kSuccess;
-        }
+        return MStatus::kSuccess;
+    }
 };
 
 class EngineSubCommandBuildHoudiniVersion : public SubCommand
 {
-    public:
-        virtual MStatus doIt()
-        {
-            int major = HAPI_VERSION_HOUDINI_MAJOR;
-            int minor = HAPI_VERSION_HOUDINI_MINOR;
-            int build = HAPI_VERSION_HOUDINI_BUILD;
+public:
+    virtual MStatus doIt()
+    {
+        int major = HAPI_VERSION_HOUDINI_MAJOR;
+        int minor = HAPI_VERSION_HOUDINI_MINOR;
+        int build = HAPI_VERSION_HOUDINI_BUILD;
 
-            MString version_string;
-            version_string.format(
-                    "^1s.^2s.^3s",
-                    MString() + major,
-                    MString() + minor,
-                    MString() + build
-                    );
+        MString version_string;
+        version_string.format("^1s.^2s.^3s", MString() + major,
+                              MString() + minor, MString() + build);
 
-            MPxCommand::setResult(version_string);
+        MPxCommand::setResult(version_string);
 
-            return MStatus::kSuccess;
-        }
+        return MStatus::kSuccess;
+    }
 };
 
 class EngineSubCommandBuildHoudiniEngineVersion : public SubCommand
 {
-    public:
-        virtual MStatus doIt()
-        {
-            int major = HAPI_VERSION_HOUDINI_ENGINE_MAJOR;
-            int minor = HAPI_VERSION_HOUDINI_ENGINE_MINOR;
-            int api = HAPI_VERSION_HOUDINI_ENGINE_API;
+public:
+    virtual MStatus doIt()
+    {
+        int major = HAPI_VERSION_HOUDINI_ENGINE_MAJOR;
+        int minor = HAPI_VERSION_HOUDINI_ENGINE_MINOR;
+        int api   = HAPI_VERSION_HOUDINI_ENGINE_API;
 
-            MString version_string;
-            version_string.format(
-                    "^1s.^2s (API: ^3s)",
-                    MString() + major,
-                    MString() + minor,
-                    MString() + api
-                    );
+        MString version_string;
+        version_string.format("^1s.^2s (API: ^3s)", MString() + major,
+                              MString() + minor, MString() + api);
 
-            MPxCommand::setResult(version_string);
+        MPxCommand::setResult(version_string);
 
-            return MStatus::kSuccess;
-        }
+        return MStatus::kSuccess;
+    }
 };
 
 class EngineSubCommandTempDir : public SubCommand
 {
-    public:
-        virtual MStatus doIt()
+public:
+    virtual MStatus doIt()
+    {
+        std::string tempdir = Util::getTempDir();
+
+        if (!Util::mkpath(tempdir))
         {
-            std::string tempdir = Util::getTempDir();
-
-            if(!Util::mkpath(tempdir))
-            {
-                DISPLAY_ERROR("Error creating temporary directory: ^1s", tempdir.c_str());
-            }
-
-            MPxCommand::setResult(tempdir.c_str());
-
-            return MStatus::kSuccess;
+            DISPLAY_ERROR(
+                "Error creating temporary directory: ^1s", tempdir.c_str());
         }
+
+        MPxCommand::setResult(tempdir.c_str());
+
+        return MStatus::kSuccess;
+    }
 };
 
-void* EngineCommand::creator()
+void *
+EngineCommand::creator()
 {
     return new EngineCommand();
 }
@@ -244,37 +206,29 @@ EngineCommand::newSyntax()
 
     // -houdiniEngineVersion returns the Houdini Engine version that's being
     // used.
-    CHECK_MSTATUS(syntax.addFlag(kHoudiniEngineVersionFlag, kHoudiniEngineVersionFlagLong));
+    CHECK_MSTATUS(syntax.addFlag(
+        kHoudiniEngineVersionFlag, kHoudiniEngineVersionFlagLong));
 
     // -buildHoudiniVersion returns the Houdini version that was built with.
-    CHECK_MSTATUS(syntax.addFlag(
-                kBuildHoudiniVersionFlag,
-                kBuildHoudiniVersionFlagLong
-                ));
+    CHECK_MSTATUS(
+        syntax.addFlag(kBuildHoudiniVersionFlag, kBuildHoudiniVersionFlagLong));
 
     // -buildHoudiniEngineVersion returns the Houdini Engine version that was
     // built with.
     CHECK_MSTATUS(syntax.addFlag(
-                kBuildHoudiniEngineVersionFlag,
-                kBuildHoudiniEngineVersionFlagLong
-                ));
+        kBuildHoudiniEngineVersionFlag, kBuildHoudiniEngineVersionFlagLong));
 
-    CHECK_MSTATUS(syntax.addFlag(
-                kTempDirFlag,
-                kTempDirFlagLong
-                ));
+    CHECK_MSTATUS(syntax.addFlag(kTempDirFlag, kTempDirFlagLong));
 
     // -saveHIP saves the contents of the current Houdini scene as a hip file
     // expected arguments: hip_file_name - the name of the hip file to save
-    CHECK_MSTATUS(syntax.addFlag(kSaveHIPFlag, kSaveHIPFlagLong, MSyntax::kString));
+    CHECK_MSTATUS(
+        syntax.addFlag(kSaveHIPFlag, kSaveHIPFlagLong, MSyntax::kString));
 
     return syntax;
 }
 
-EngineCommand::EngineCommand() :
-    mySubCommand(NULL)
-{
-}
+EngineCommand::EngineCommand() : mySubCommand(NULL) {}
 
 EngineCommand::~EngineCommand()
 {
@@ -286,63 +240,60 @@ EngineCommand::parseArgs(const MArgList &args)
 {
     MStatus status;
     MArgDatabase argData(syntax(), args, &status);
-    if(!status)
+    if (!status)
     {
         return status;
     }
 
-    if(!(
-                argData.isFlagSet(kLicenseFlag)
-                ^ argData.isFlagSet(kHoudiniVersionFlag)
-                ^ argData.isFlagSet(kHoudiniEngineVersionFlag)
-                ^ argData.isFlagSet(kBuildHoudiniVersionFlag)
-                ^ argData.isFlagSet(kBuildHoudiniEngineVersionFlag)
-                ^ argData.isFlagSet(kTempDirFlag)
-                ^ argData.isFlagSet(kSaveHIPFlag)
-        ))
+    if (!(argData.isFlagSet(kLicenseFlag) ^
+          argData.isFlagSet(kHoudiniVersionFlag) ^
+          argData.isFlagSet(kHoudiniEngineVersionFlag) ^
+          argData.isFlagSet(kBuildHoudiniVersionFlag) ^
+          argData.isFlagSet(kBuildHoudiniEngineVersionFlag) ^
+          argData.isFlagSet(kTempDirFlag) ^ argData.isFlagSet(kSaveHIPFlag)))
     {
-        displayError("Exactly one of these flags must be specified:\n"
-                kSaveHIPFlagLong "\n"
-                );
+        displayError(
+            "Exactly one of these flags must be specified:\n" kSaveHIPFlagLong
+            "\n");
         return MStatus::kInvalidParameter;
     }
 
-    if(argData.isFlagSet(kLicenseFlag))
+    if (argData.isFlagSet(kLicenseFlag))
     {
         mySubCommand = new EngineSubCommandLicense();
     }
 
-    if(argData.isFlagSet(kHoudiniVersionFlag))
+    if (argData.isFlagSet(kHoudiniVersionFlag))
     {
         mySubCommand = new EngineSubCommandHoudiniVersion();
     }
 
-    if(argData.isFlagSet(kHoudiniEngineVersionFlag))
+    if (argData.isFlagSet(kHoudiniEngineVersionFlag))
     {
         mySubCommand = new EngineSubCommandHoudiniEngineVersion();
     }
 
-    if(argData.isFlagSet(kBuildHoudiniVersionFlag))
+    if (argData.isFlagSet(kBuildHoudiniVersionFlag))
     {
         mySubCommand = new EngineSubCommandBuildHoudiniVersion();
     }
 
-    if(argData.isFlagSet(kBuildHoudiniEngineVersionFlag))
+    if (argData.isFlagSet(kBuildHoudiniEngineVersionFlag))
     {
         mySubCommand = new EngineSubCommandBuildHoudiniEngineVersion();
     }
 
-    if(argData.isFlagSet(kTempDirFlag))
+    if (argData.isFlagSet(kTempDirFlag))
     {
         mySubCommand = new EngineSubCommandTempDir();
     }
 
-    if(argData.isFlagSet(kSaveHIPFlag))
+    if (argData.isFlagSet(kSaveHIPFlag))
     {
         MString hipFilePath;
         {
             status = argData.getFlagArgument(kSaveHIPFlag, 0, hipFilePath);
-            if(!status)
+            if (!status)
             {
                 displayError("Invalid argument for \"" kSaveHIPFlagLong "\".");
                 return status;
@@ -355,12 +306,13 @@ EngineCommand::parseArgs(const MArgList &args)
     return MStatus::kSuccess;
 }
 
-MStatus EngineCommand::doIt(const MArgList& args)
+MStatus
+EngineCommand::doIt(const MArgList &args)
 {
     MStatus status;
 
     status = parseArgs(args);
-    if(!status)
+    if (!status)
     {
         return status;
     }
@@ -368,17 +320,20 @@ MStatus EngineCommand::doIt(const MArgList& args)
     return mySubCommand->doIt();
 }
 
-MStatus EngineCommand::redoIt()
+MStatus
+EngineCommand::redoIt()
 {
     return mySubCommand->redoIt();
 }
 
-MStatus EngineCommand::undoIt()
+MStatus
+EngineCommand::undoIt()
 {
     return mySubCommand->undoIt();
 }
 
-bool EngineCommand::isUndoable() const
+bool
+EngineCommand::isUndoable() const
 {
     return mySubCommand->isUndoable();
 }

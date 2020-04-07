@@ -42,6 +42,14 @@ AEhoudiniAssetTemplate_fileAttributeBrowse(string $plug)
     }
 }
 
+global proc AEhoudiniAssetTemplate_setComponentSelection(string $plug, string $componentType)
+{
+    string $components = `python("from houdiniEngineSelection import get_selected_components; " + 
+                                 "get_selected_components(\'" + $componentType + "\')")`;
+
+    setAttr -type "string" $plug $components;
+}
+
 global proc
 AEhoudiniAssetTemplate_textEdit(string $plug)
 {
@@ -239,26 +247,102 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
             }
             else if($type == "string")
             {
+                string $plug = $fullAttrName + "." + $child;
                 string $niceName = `attributeQuery -node $nodeName -niceName $child`;
-                string $text = `getAttr ($fullAttrName + "." + $child)`;
+                string $text = `getAttr ($plug)`;
 
-                string $textField = `textFieldButtonGrp
-                    -label $niceName
-                    -buttonLabel "Edit"
-                    -text $text`;
+                string $categories[] = `addAttr -q -category ($plug)`;
 
-                scriptJob
-                    -parent $textField
-                    -attributeChange ($fullAttrName + "." + $child)
-                    ("textFieldButtonGrp -e -text `getAttr " + $fullAttrName + "." + $child + "`"
-                     + " \"" + $textField + "\"");
+                string $textField = "";
+
+                int    $treatAsSelection = false;
+                string $selectionType = "";
+                string $niceSelectionType = "";
+
+                // See if we need to handle this string parm differently
+                for ($category in $categories)
+                {
+                    string $prefix = "hapiParmString_select";
+
+                    if (startsWith($category, $prefix))
+                    {
+                        $selectionType = tolower(stringRemovePrefix($category, $prefix));
+
+                        if ($selectionType == "vertex")
+                        {
+                            $niceSelectionType = "Vertices";
+                        }
+                        else if ($selectionType == "edge")
+                        {
+                            $niceSelectionType = "Edges";
+                        }
+                        else if ($selectionType == "face")
+                        {
+                            $niceSelectionType = "Faces";
+                        }
+                        else if ($selectionType == "uv")
+                        {
+                            $niceSelectionType = "UVs";
+                        }
+                        else
+                        {
+                            // Fall back to a traditional string attribute
+                            warning("Unknown selection type \"" + $selectionType +
+                                    "\" on \"" + $plug + "\". This attribute " +
+                                    "will be interpreted as a normal string.");
+                            
+                            // There still may be a valid selection type provided
+                            // in another category. Keep looking.
+                            continue;
+                        }
+
+                        $treatAsSelection = true;
+
+                        // We don't support multiple selection types, so bail
+                        // out here.
+                        break;
+                    }
+                }
+
+                if ($treatAsSelection == true)
+                {
+                    $textField = `textFieldButtonGrp
+                        -label $niceName
+                        -buttonLabel ("Use Selected " + $niceSelectionType)
+                        -text $text`;
+
+                    textFieldButtonGrp -e
+                        -buttonCommand ("AEhoudiniAssetTemplate_setComponentSelection "
+                                + "\"" + $fullAttrName + "." + $child + "\" "
+                                + "\"" + $selectionType + "\"")
+                        $textField;
+                }
+                else
+                {
+                    $textField = `textFieldButtonGrp
+                        -label $niceName
+                        -buttonLabel "Edit"
+                        -text $text`;
+
+                    textFieldButtonGrp -e
+                        -buttonCommand ("AEhoudiniAssetTemplate_textEdit "
+                                + "\"" + $fullAttrName + "." + $child + "\"")
+                        $textField;
+                }
+
+                // Value changed in UI callback. Update engine.
                 textFieldButtonGrp -e
                     -changeCommand ("setAttr -type \"string\""
                             + " \"" + $fullAttrName + "." + $child + "\""
                             + " `textFieldButtonGrp -q -text " + $textField + "`")
-                    -buttonCommand ("AEhoudiniAssetTemplate_textEdit "
-                            + "\"" + $fullAttrName + "." + $child + "\"")
                     $textField;
+
+                // Value changed in engine callback. Update UI.
+                scriptJob
+                    -parent $textField
+                    -attributeChange ($fullAttrName + "." + $child)
+                    ("textFieldButtonGrp -e -text `getAttr " + $fullAttrName + "." + $child + "`"
+                    + " \"" + $textField + "\"");
             }
             else
             {

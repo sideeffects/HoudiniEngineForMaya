@@ -18,15 +18,19 @@ Dynamic options such as `Disable When` and `Hide When` are not supported.
 
 Float, integer, and string type parameters are supported. Tuples are also supported. For float and integer type parameters, range and locked range are also supported.
 
-@image html Maya_Parameters_Basic_MultiLineString.png
-
-For string parameters, clicking the `Edit` button will pop up a separate dialog for editing the string. This can be used to multi-line strings.
-
 Note that for logarithmic float and integer parameters, they are treated as regular float and integer parameters. So the UI sliders for the parameters are linear, and not logarithmic.
 
 Color parameters are supported, and the standard Maya color widget is shown in the Attribute Editor. However, Color and Alpha parameters does not have a color widget, and are displayed as a 4-tuple float.
 
 Toggle parameters are supported.
+
+@image html Maya_Parameters_Basic_MultiLineString.png
+
+For string parameters, clicking the `Edit` button will pop up a separate dialog for editing the string. This can be used to multi-line strings.
+
+@image html Maya_Parameters_Basic_ComponentSelection.png
+
+Adding the "sidefx::maya_component_selection_type" tag to the parameter will instruct Maya that it should accept component selections of the given type. Supported types are "vertex", "edge", "face" and "uv". In this case, the `Edit` button will be replaced with a `Use Selected ____` button.
 
 @section Maya_Parameters_Ramp Ramp
 

@@ -4,7 +4,11 @@
 
 Houdini geometries can contain geometry groups, like primitive groups and point groups. A geometry group contains a subset of components of a geometry. For example, in a Houdini geometry, a subset of the polygons can belong to a primitive group. This is somewhat similar to Maya sets, where a subset of polygons can belong to a certain Maya set.
 
-When Maya geometries that belong to certain Maya sets are input into an asset, Houdini groups will be created according to the Maya sets. When an asset outputs geometries that contain Houdini groups, Maya sets will be created according to the Houdini groups.
+There are two ways that groups can be interacted with in Maya:
+- With Maya sets
+    - When Maya geometries that belong to certain Maya sets are input into an asset, Houdini groups will be created according to the Maya sets. When an asset outputs geometries that contain Houdini groups, Maya sets will be created according to the Houdini groups.
+- With promoted parameters
+    - If a group node's "Base Group" parameter has been promoted to an HDA's parameters, you are able to define the group contents by component selection in Maya. To do so, you must add the "sidefx::maya_component_selection_type" tag to the promoted parameter. Valid selection types are "vertex", "edge", "face" and "uv".
 
 At the moment, Maya mesh, and Houdini polygons are the only geometry types that support Maya sets and Houdini groups.
 

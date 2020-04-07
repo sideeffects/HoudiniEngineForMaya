@@ -370,6 +370,45 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
     tAttr.setStorable(true);
     configureStringAttribute(tAttr, parm);
 
+    // Go through each tag on this string parm and see if we have to handle it
+    // differently. For example, if this string parm corresponds to a group
+    // definition and should support component selection.
+    for (int i = 0; i < parm.tagCount; i++)
+    {
+        HAPI_StringHandle tagNameSH;
+        HAPI_GetParmTagName(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
+                            i, &tagNameSH);
+
+        MString tagName = Util::HAPIString(tagNameSH);
+
+        HAPI_StringHandle tagValueSH;
+        HAPI_GetParmTagValue(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
+                             tagName.asChar(), &tagValueSH);
+
+        MString tagValue = Util::HAPIString(tagValueSH);
+
+        MString tagNameLower  = tagName.toLowerCase();
+        MString tagValueLower = tagValue.toLowerCase();
+
+        if (tagNameLower == "sidefx::maya_component_selection_type")
+        {
+            if (tagValueLower == "vertex")
+                tAttr.addToCategory("hapiParmString_selectVertex");
+            else if (tagValueLower == "edge")
+                tAttr.addToCategory("hapiParmString_selectEdge");
+            else if (tagValueLower == "face")
+                tAttr.addToCategory("hapiParmString_selectFace");
+            else if (tagValueLower == "uv")
+                tAttr.addToCategory("hapiParmString_selectUV");
+            else
+            {
+                DISPLAY_WARNING("Unknown selection type \"^1s\" requested for "
+                                "\"^2s\". Valid types are: \"vertex\", \"edge\", "
+                                "\"face\" and \"uv\".\n", tagValue, attrName);
+            }
+        }
+    }
+
     return result;
 }
 

@@ -90,6 +90,7 @@ houdiniAsset
 [-syncHidden]
 [-syncTemplatedGeos]
 [-autoSyncId string]
+[-parmHelp string]
 
 <table>
 <tr>
@@ -157,6 +158,11 @@ houdiniAsset
     <td>assetNode </td>
     <td>Returns the current autoSyncId for this asset, used internally to determine whether there is already an autoSync running, or whether another one should be triggered </td>       
 </tr>
+<tr>
+    <td>-parmHelp(-ph)</td>
+    <td>parmName assetNode</td>
+    <td>Returns the specified parameter's help string.</td>
+</tr>
 </table>
 <br>
 
@@ -170,6 +176,8 @@ houdiniAsset -loadAsset "/home/myHomeDir/houdini17.0/otls/extrudeFaces.hda" "Obj
 // Result: |extrudeFaces1 //
 
 houdiniAsset -sync |extrudeFaces1 -syncOutputs;
+
+houdiniAsset -parmHelp "percentage" hengine__he_polyreduce1;
 @endverbatim
 <br>
 

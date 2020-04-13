@@ -34,6 +34,8 @@
 #define kSyncTemplatedGeosFlagLong "-syncTemplatedGeos"
 #define kAutoSyncIdFlag "-asi"
 #define kAutoSyncIdFlagLong "-autoSyncId"
+#define kParmHelpFlag "-ph"
+#define kParmHelpFlagLong "-parmHelp"
 
 const char* AssetCommand::commandName = "houdiniAsset";
 
@@ -145,6 +147,41 @@ class AssetSubCommandAutoSyncId : public SubCommandAsset
         }
 };
 
+class AssetSubCommandGetParmHelp : public SubCommandAsset
+{
+public:
+    AssetSubCommandGetParmHelp(const MObject &assetNodeObj,
+                               const MString &parmName)
+        : SubCommandAsset(assetNodeObj), myParmName(parmName)
+    {
+    }
+
+    virtual MStatus doIt()
+    {
+        HAPI_Result hapiResult;
+        HAPI_ParmInfo parmInfo;
+
+        MString helpString = "";
+
+        GET_COMMAND_ASSET_OR_RETURN_FAIL();
+
+        int nodeId = asset->getNodeInfo().id;
+
+        hapiResult = HAPI_GetParmInfoFromName(Util::theHAPISession.get(), nodeId,
+                                              myParmName.asChar(), &parmInfo);
+
+        if (parmInfo.helpSH != 0)
+            helpString = Util::HAPIString(parmInfo.helpSH);
+
+        MPxCommand::setResult(helpString);
+
+        return MStatus::kSuccess;
+    }
+
+protected:
+    MString myParmName;
+};
+
 void* AssetCommand::creator()
 {
     return new AssetCommand();
@@ -217,6 +254,12 @@ AssetCommand::newSyntax()
                                  kAutoSyncIdFlagLong,
                                  MSyntax::kSelectionItem));
 
+    // -parmHelp will return the help string of the specified parm
+    CHECK_MSTATUS(syntax.addFlag(kParmHelpFlag,
+                                 kParmHelpFlagLong,
+                                 MSyntax::kString,
+                                 MSyntax::kSelectionItem));
+
     return syntax;
 }
 
@@ -225,10 +268,11 @@ AssetCommand::getMObjectFromFlag(
         const MArgDatabase &argData,
         const char* flag,
         MObject &obj,
-        MStatus &status)
+        MStatus &status,
+        const int index)
 {
     MSelectionList selection;
-    status = argData.getFlagArgument(flag, 0, selection);
+    status = argData.getFlagArgument(flag, index, selection);
     if(!status)
     {
         MString error_message;
@@ -270,7 +314,8 @@ AssetCommand::parseArgs(const MArgList &args)
                 ^ argData.isFlagSet(kCookMessagesFlag)
                 ^ argData.isFlagSet(kReloadAssetFlag)
                 ^ argData.isFlagSet(kReloadNoSyncFlag)
-                ^ argData.isFlagSet(kAutoSyncIdFlag)))
+                ^ argData.isFlagSet(kAutoSyncIdFlag)
+                ^ argData.isFlagSet(kParmHelpFlag)))
     {
         displayError("Exactly one of these flags must be specified:\n"
                 kLoadAssetFlagLong "\n"
@@ -278,7 +323,8 @@ AssetCommand::parseArgs(const MArgList &args)
                 kResetSimulationFlagLong "\n"
                 kCookMessagesFlagLong "\n"
                 kReloadNoSyncFlagLong "\n"
-                kReloadAssetFlagLong "\n");
+                kReloadAssetFlagLong "\n"
+                kParmHelpFlag "\n");
         return MStatus::kInvalidParameter;
     }
 
@@ -411,6 +457,26 @@ AssetCommand::parseArgs(const MArgList &args)
             return status;
 
         mySubCommand = new AssetSubCommandCookMessages(assetNodeObj);
+    }
+
+    if (argData.isFlagSet(kParmHelpFlag))
+    {
+        MString parmName;
+        {
+            status = argData.getFlagArgument(kParmHelpFlag, 0, parmName);
+            if (!status)
+            {
+                displayError("Invalid argument for \"" kParmHelpFlagLong "\".");
+                return status;
+            }
+        }
+
+        MObject assetNodeObj;
+        if (!getMObjectFromFlag(
+                argData, kParmHelpFlag, assetNodeObj, status, 1))
+            return status;
+
+        mySubCommand = new AssetSubCommandGetParmHelp(assetNodeObj, parmName);
     }
 
     return MStatus::kSuccess;

@@ -21,7 +21,8 @@ private:
     static bool getMObjectFromFlag(const MArgDatabase &argData,
                                    const char *flag,
                                    MObject &obj,
-                                   MStatus &status);
+                                   MStatus &status,
+                                   const int index=0);
 
 public:
     AssetCommand();

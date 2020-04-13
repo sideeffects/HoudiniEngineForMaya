@@ -187,6 +187,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
     {
         int $isFolder = endsWith($child, "__folder");
 
+        // get info about parm
         string $type = `getAttr -type ($fullAttrName + "." + $child)`;
         int $isCompound = ($type == "TdataCompound");
         int $isMulti = `attributeQuery -node $nodeName -multi $child`;
@@ -194,6 +195,10 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
         string $multiparm_suffix = "__multiSize";
         int $isMultiSize = endsWith($child, $multiparm_suffix);
+
+        // get parm help string
+        string $parmName = stringRemovePrefix($child, "houdiniAssetParm_");
+        string $parmHelp = `houdiniAsset -parmHelp $parmName $nodeName`;
 
         int $isSimpleAttribute = `attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`
             && !$isMultiSize
@@ -211,7 +216,8 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         else if(endsWith($child, "__button"))
         {
             string $niceName = `attributeQuery -node $nodeName -niceName $child`;
-            button -label $niceName -command ("setAttr " + $fullAttrName + "." + $child + " 1");
+            button -label $niceName -command ("setAttr " + $fullAttrName + "." + $child + " 1")
+                   -annotation $parmHelp;
         }
         else if(endsWith($child, "__node"))
         {
@@ -230,7 +236,8 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                 string $textField = `textFieldButtonGrp
                     -label $niceName
                     -buttonLabel "..."
-                    -text $text`;
+                    -text $text
+                    -annotation $parmHelp`;
 
                 scriptJob
                     -parent $textField
@@ -290,7 +297,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                             warning("Unknown selection type \"" + $selectionType +
                                     "\" on \"" + $plug + "\". This attribute " +
                                     "will be interpreted as a normal string.");
-                            
+
                             // There still may be a valid selection type provided
                             // in another category. Keep looking.
                             continue;
@@ -330,6 +337,9 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                         $textField;
                 }
 
+                // Set annotation
+                textFieldButtonGrp -e -annotation $parmHelp $textField;
+
                 // Value changed in UI callback. Update engine.
                 textFieldButtonGrp -e
                     -changeCommand ("setAttr -type \"string\""
@@ -346,7 +356,8 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
             }
             else
             {
-                attrControlGrp -attribute ($fullAttrName + "." + $child);
+                attrControlGrp -attribute ($fullAttrName + "." + $child)
+                               -annotation $parmHelp;
             }
         }
         // a folder is represented by a compound attribute
@@ -415,6 +426,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
             attrControlGrp
                 -attribute ($fullAttrName + "." + $child)
+                -annotate $parmHelp
                 // Forcing evaluation here ensures the element attribute is
                 // created before houdiniAssetAdjustMulti() is executed. This
                 // prevents the UI from a completel rebuild when

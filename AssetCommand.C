@@ -161,6 +161,14 @@ public:
         hapiResult = HAPI_GetParmInfoFromName(Util::theHAPISession.get(), nodeId,
                                               myParmName.asChar(), &parmInfo);
 
+        if (HAPI_FAIL(hapiResult))
+        {
+            DISPLAY_ERROR("Could not get info of parm name \"^1s\"", myParmName);
+            DISPLAY_ERROR_HAPI_STATUS_CALL();
+
+            return MStatus::kFailure;
+        }
+
         if (parmInfo.helpSH != 0)
             helpString = Util::HAPIString(parmInfo.helpSH);
 

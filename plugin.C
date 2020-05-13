@@ -226,7 +226,7 @@ initializeSession(const OptionVars& optionVars)
     }
 
     Util::theHAPISession.reset( new Util::HAPISession );
-    HAPI_Result sessionResult = HAPI_RESULT_FAILURE;
+    HAPI_Result sessionResult = HAPI_ClearConnectionError();
 
     switch (actualSessionType)
     {
@@ -267,10 +267,24 @@ initializeSession(const OptionVars& optionVars)
             }
             else
             {
-                MGlobal::displayInfo(
+                int errorLength = 0;
+ 
+                HAPI_GetConnectionErrorLength(&errorLength);
+ 
+                if (errorLength > 0)
+                {
+                    char *msg = new char[errorLength];
+                    HAPI_GetConnectionError(msg, errorLength, true);
+                    MGlobal::displayError(msg);
+                    delete[] msg;
+                }
+                else
+                {
+                    MGlobal::displayInfo(
                         "Failed to connected to Houdini Engine server using "
                         "TCP socket at " + msgHostPort + "."
                         );
+                }
             }
         }
         break;
@@ -331,10 +345,25 @@ initializeSession(const OptionVars& optionVars)
 		
                 if( HAPI_FAIL(sessionResult) )
                 {
-                    MGlobal::displayError(
-                            "Failed to automatically start Houdini Engine "
-                            "server using named pipe."
-                            );
+                    int errorLength = 0;
+
+                    HAPI_GetConnectionErrorLength(&errorLength);
+
+                    if (errorLength > 0)
+                    {
+                        char *msg = new char[errorLength];
+                        HAPI_GetConnectionError(msg, errorLength, true);
+                        MGlobal::displayError(msg);
+                        delete[] msg;
+                    }
+                    else
+                    {
+                        MGlobal::displayError(
+                                "Failed to automatically start Houdini Engine "
+                                "server using named pipe."
+                                );
+                    }
+
                     return HAPI_RESULT_FAILURE;
                 }
 
@@ -366,10 +395,24 @@ initializeSession(const OptionVars& optionVars)
             }
             else
             {
-                MGlobal::displayInfo(
-                        "Failed to connected to Houdini Engine server using "
-                        "named pipe at \"" + msgPipe + "\"."
-                        );
+                int errorLength = 0;
+
+                HAPI_GetConnectionErrorLength(&errorLength);
+    
+                if (errorLength > 0)
+                {
+                    char *msg = new char[errorLength];
+                    HAPI_GetConnectionError(msg, errorLength, true);
+                    MGlobal::displayError(msg);
+                    delete[] msg;
+                }
+                else
+                {
+                    MGlobal::displayInfo(
+                            "Failed to connected to Houdini Engine server using "
+                            "named pipe at \"" + msgPipe + "\"."
+                            );
+                }
             }
         }
         break;

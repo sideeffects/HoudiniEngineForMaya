@@ -161,8 +161,6 @@ public:
         HAPI_Result hapiResult;
         HAPI_ParmInfo parmInfo;
 
-        MString helpString = "";
-
         GET_COMMAND_ASSET_OR_RETURN_FAIL();
 
         int nodeId = asset->getNodeInfo().id;
@@ -170,18 +168,15 @@ public:
         hapiResult = HAPI_GetParmInfoFromName(Util::theHAPISession.get(), nodeId,
                                               myParmName.asChar(), &parmInfo);
 
-        if (HAPI_FAIL(hapiResult))
+        if (!HAPI_FAIL(hapiResult))
         {
-            DISPLAY_ERROR("Could not get info of parm name \"^1s\"", myParmName);
-            DISPLAY_ERROR_HAPI_STATUS_CALL();
+            MString helpString = "";
 
-            return MStatus::kFailure;
+            if (parmInfo.helpSH != 0)
+                helpString = Util::HAPIString(parmInfo.helpSH);
+
+            MPxCommand::setResult(helpString);
         }
-
-        if (parmInfo.helpSH != 0)
-            helpString = Util::HAPIString(parmInfo.helpSH);
-
-        MPxCommand::setResult(helpString);
 
         return MStatus::kSuccess;
     }

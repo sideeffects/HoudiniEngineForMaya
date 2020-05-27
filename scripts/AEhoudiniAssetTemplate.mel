@@ -426,7 +426,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
 
             attrControlGrp
                 -attribute ($fullAttrName + "." + $child)
-                -annotate $parmHelp
+                -annotation $parmHelp
                 // Forcing evaluation here ensures the element attribute is
                 // created before houdiniAssetAdjustMulti() is executed. This
                 // prevents the UI from a completel rebuild when

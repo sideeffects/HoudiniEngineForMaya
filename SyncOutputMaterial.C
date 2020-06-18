@@ -12,8 +12,7 @@
 #include <algorithm>
 
 MObject
-SyncOutputMaterial::createOutputMaterial(
-        MDGModifier &dgModifier,
+SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
         const MObject &assetObj,
         int nodeId)
 {
@@ -25,10 +24,7 @@ SyncOutputMaterial::createOutputMaterial(
         return Util::findNodeByName("initialShadingGroup");
     }
 
-    MPlug materialPlug = createOutputMaterialPlug(
-            dgModifier,
-            assetObj,
-            nodeId);
+    MPlug materialPlug = createOutputMaterialPlug(dgModifier, assetObj, nodeId);
     if(materialPlug.isNull())
     {
         return MObject::kNullObj;
@@ -37,17 +33,15 @@ SyncOutputMaterial::createOutputMaterial(
     // check if the ambient output has a shader already (checking diffuse
     // would force us to check the file texture connections as well)
     
-    MPlug shadingPlug = materialPlug.child(AssetNode::outputMaterialAmbientColor);	    
+    MPlug shadingPlug =
+        materialPlug.child(AssetNode::outputMaterialAmbientColor);
     MObject shaderObj = findShader(shadingPlug);
 
     if(shaderObj.isNull())
     {
         // create shader
         status = Util::createNodeByModifierCommand(
-                dgModifier,
-                "shadingNode -asShader phong",
-                shaderObj
-                );
+            dgModifier, "shadingNode -asShader phong", shaderObj);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
         // rename the shader
@@ -67,61 +61,87 @@ SyncOutputMaterial::createOutputMaterial(
                 dgModifier,
                 "select -noExpand `sets -renderable true "
                 "-noSurfaceShader true -empty "
-                "-name \"" + shaderFn.name() + "SG\"`",
-                shadingGroupObj
-                );
+            "-name \"" +
+                shaderFn.name() + "SG\"`",
+            shadingGroupObj);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
         MFnDependencyNode shadingGroupFn(shadingGroupObj);
 
         // connect shader to shading group
         dgModifier.commandToExecute("defaultNavigation -connectToExisting "
-                "-source \"" + shaderFn.name() + "\" "
-                "-destination \"" + shadingGroupFn.name() + "\"");
+                                    "-source \"" +
+                                    shaderFn.name() +
+                                    "\" "
+                                    "-destination \"" +
+                                    shadingGroupFn.name() + "\"");
         status = dgModifier.doIt();
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
     }
 
     // create file node if texture exists
-    MPlug texturePathPlug = materialPlug.child(AssetNode::outputMaterialTexturePath);
+    MPlug texturePathPlug =
+        materialPlug.child(AssetNode::outputMaterialTexturePath);
     MString texturePath = texturePathPlug.asString();
     MFnDependencyNode textureFileFn;
     if(texturePath.length())
     {
         MObject textureFile;
         status = Util::createNodeByModifierCommand(
-                dgModifier,
-                "shadingNode -asTexture file",
-                textureFile
-                );
+            dgModifier, "shadingNode -asTexture file", textureFile);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
         status = textureFileFn.setObject(textureFile);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
     }
 
-    // connect shader attributse
+    // connect shader attributes
     {
         MPlug srcPlug;
         MPlug dstPlug;
+        MPlug colorPlug(shaderFn.findPlug("color", true));
 
         // color
         if(textureFileFn.object().isNull())
         {
             srcPlug = materialPlug.child(AssetNode::outputMaterialDiffuseColor);
-            dstPlug = shaderFn.findPlug("color", true);
-            status = dgModifier.connect(srcPlug, dstPlug);
+            status  = dgModifier.connect(srcPlug, colorPlug);
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
         }
         else
         {
+            if (!colorPlug.isConnected())
+            {
+                // Nothing is connected to the shader's color, so we can connect
+                // the file node
             dstPlug = textureFileFn.findPlug("fileTextureName", true);
             status = dgModifier.connect(texturePathPlug, dstPlug);
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
             srcPlug = textureFileFn.findPlug("outColor", true);
-            dstPlug = shaderFn.findPlug("color", true);
-            status = dgModifier.connect(srcPlug, dstPlug);
+                status  = dgModifier.connect(srcPlug, colorPlug);
+                CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
+            }
+            else
+            {
+                // Something else is connected to this plug. Remove the file
+                // node so that we don't leave it floating.
+                MPlugArray sourcePlugs;
+                colorPlug.connectedTo(sourcePlugs, true, false, &status);
+
+                MString warning("\"" + colorPlug.name() + 
+                                "\" is already connected to the following:");
+
+                for (unsigned int i = 0; i < sourcePlugs.length(); i++)
+                    warning += " \"" + sourcePlugs[i].name() + "\"";
+
+                warning += ". Ignoring new connection.";
+
+                MGlobal::displayWarning(warning);
+
+                status = dgModifier.deleteNode(textureFileFn.object());
+            }
+
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
         }
 

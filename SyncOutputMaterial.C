@@ -95,28 +95,53 @@ SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
     }
 
-    // connect shader attributse
+    // connect shader attributes
     {
         MPlug srcPlug;
         MPlug dstPlug;
+        MPlug colorPlug(shaderFn.findPlug("color", true));
 
         // color
         if (textureFileFn.object().isNull())
         {
             srcPlug = materialPlug.child(AssetNode::outputMaterialDiffuseColor);
-            dstPlug = shaderFn.findPlug("color", true);
-            status  = dgModifier.connect(srcPlug, dstPlug);
+            status  = dgModifier.connect(srcPlug, colorPlug);
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
         }
         else
         {
-            dstPlug = textureFileFn.findPlug("fileTextureName", true);
-            status  = dgModifier.connect(texturePathPlug, dstPlug);
-            CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
+            if (!colorPlug.isConnected())
+            {
+                // Nothing is connected to the shader's color, so we can connect
+                // the file node
+                dstPlug = textureFileFn.findPlug("fileTextureName", true);
+                status  = dgModifier.connect(texturePathPlug, dstPlug);
+                CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
-            srcPlug = textureFileFn.findPlug("outColor", true);
-            dstPlug = shaderFn.findPlug("color", true);
-            status  = dgModifier.connect(srcPlug, dstPlug);
+                srcPlug = textureFileFn.findPlug("outColor", true);
+                status  = dgModifier.connect(srcPlug, colorPlug);
+                CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
+            }
+            else
+            {
+                // Something else is connected to this plug. Remove the file
+                // node so that we don't leave it floating.
+                MPlugArray sourcePlugs;
+                colorPlug.connectedTo(sourcePlugs, true, false, &status);
+
+                MString warning("\"" + colorPlug.name() + 
+                                "\" is already connected to the following:");
+
+                for (unsigned int i = 0; i < sourcePlugs.length(); i++)
+                    warning += " \"" + sourcePlugs[i].name() + "\"";
+
+                warning += ". Ignoring new connection.";
+
+                MGlobal::displayWarning(warning);
+
+                status = dgModifier.deleteNode(textureFileFn.object());
+            }
+
             CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
         }
 

@@ -110,6 +110,48 @@ CreateAttrOperation::popFolder()
     }
 }
 
+static void getParmTags(const HAPI_NodeInfo &myNodeInfo, const HAPI_ParmInfo &parm,
+                        std::vector<MString> &tagNames, std::vector<MString> &tagValues)
+{
+    tagNames.reserve(parm.tagCount);
+    tagValues.reserve(parm.tagCount);
+
+    for (int i = 0; i < parm.tagCount; i++)
+    {
+        HAPI_StringHandle tagNameSH;
+        HAPI_GetParmTagName(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
+                            i, &tagNameSH);
+
+        MString tagName = Util::HAPIString(tagNameSH);
+
+        HAPI_StringHandle tagValueSH;
+        HAPI_GetParmTagValue(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
+                             tagName.asChar(), &tagValueSH);
+
+        MString tagValue = Util::HAPIString(tagValueSH);
+
+        tagNames.emplace_back(tagName.toLowerCase());
+        tagValues.emplace_back(tagValue.toLowerCase());
+    }
+}
+
+static void handleAffectsOthersTag(const HAPI_NodeInfo &myNodeInfo, const HAPI_ParmInfo &parm, MFnAttribute &attr)
+{
+    std::vector<MString> tagNames;
+    std::vector<MString> tagValues;
+
+    getParmTags(myNodeInfo, parm, tagNames, tagValues);
+
+    for (size_t i = 0; i < tagNames.size(); i++)
+    {
+        if (tagNames[i] == "sidefx::maya_parm_affects_others")
+        {
+            // Parm affects others, so we must force an attribute sync
+            attr.addToCategory("hapiParm_affectsOthers");
+        }
+    }
+}
+
 void
 CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
 {
@@ -170,6 +212,9 @@ CreateAttrOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
             attrFn->setArray(true);
             attrFn->setUsesArrayDataBuilder(true);
         }
+
+        if (attrFn)
+            handleAffectsOthersTag(myNodeInfo, parmInfo, *attrFn);
     }
 
     myAttrFns.push_back(attrFn);
@@ -345,6 +390,7 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
             tAttr.setNiceNameOverride(childNiceName);
             tAttr.setStorable(true);
             configureStringAttribute(tAttr, parm);
+            handleAffectsOthersTag(myNodeInfo, parm, tAttr);
 
             cAttr.addChild(child);
         }
@@ -356,42 +402,37 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
     tAttr.setStorable(true);
     configureStringAttribute(tAttr, parm);
 
-    // Go through each tag on this string parm and see if we have to handle it
-    // differently. For example, if this string parm corresponds to a group
-    // definition and should support component selection.
-    for (int i = 0; i < parm.tagCount; i++)
+    std::vector<MString> tagNames;
+    std::vector<MString> tagValues;
+
+    getParmTags(myNodeInfo, parm, tagNames, tagValues);
+
+    for (size_t i = 0; i < tagNames.size(); i++)
     {
-        HAPI_StringHandle tagNameSH;
-        HAPI_GetParmTagName(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
-                            i, &tagNameSH);
-
-        MString tagName = Util::HAPIString(tagNameSH);
-
-        HAPI_StringHandle tagValueSH;
-        HAPI_GetParmTagValue(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
-                             tagName.asChar(), &tagValueSH);
-
-        MString tagValue = Util::HAPIString(tagValueSH);
-
-        MString tagNameLower  = tagName.toLowerCase();
-        MString tagValueLower = tagValue.toLowerCase();
-
-        if (tagNameLower == "sidefx::maya_component_selection_type")
+        // Go through each tag on this string parm and see if we have to handle it
+        // differently.
+        if (tagNames[i] == "sidefx::maya_component_selection_type")
         {
-            if (tagValueLower == "vertex")
+            // Parm supports component selection
+            if (tagValues[i] == "vertex")
                 tAttr.addToCategory("hapiParmString_selectVertex");
-            else if (tagValueLower == "edge")
+            else if (tagValues[i] == "edge")
                 tAttr.addToCategory("hapiParmString_selectEdge");
-            else if (tagValueLower == "face")
+            else if (tagValues[i] == "face")
                 tAttr.addToCategory("hapiParmString_selectFace");
-            else if (tagValueLower == "uv")
+            else if (tagValues[i] == "uv")
                 tAttr.addToCategory("hapiParmString_selectUV");
             else
             {
                 DISPLAY_WARNING("Unknown selection type \"^1s\" requested for "
                                 "\"^2s\". Valid types are: \"vertex\", \"edge\", "
-                                "\"face\" and \"uv\".\n", tagValue, attrName);
+                                "\"face\" and \"uv\".\n", tagValues[i], attrName);
             }
+        }
+        else if (tagNames[i] == "sidefx::maya_parm_affects_others")
+        {
+            // Parm affects others, so we must force an attribute sync
+            tAttr.addToCategory("hapiParm_affectsOthers");
         }
     }
 
@@ -438,6 +479,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
         result = nAttr.createColor(attrName, attrName);
         nAttr.setNiceNameOverride(niceName);
         nAttr.setChannelBox(true);
+        handleAffectsOthersTag(myNodeInfo, parm, nAttr);
         return result;
     }
 
@@ -452,6 +494,7 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
             MObject child = nAttr.create(childAttrName, childAttrName, type);
             nAttr.setNiceNameOverride(childNiceName);
             nAttr.setChannelBox(true);
+            handleAffectsOthersTag(myNodeInfo, parm, nAttr);
             cAttr.addChild(child);
         }
         return result;
@@ -483,6 +526,8 @@ CreateAttrOperation::createNumericAttr(const HAPI_ParmInfo &parm)
         nAttr.setSoftMin(parm.UIMin);
     if (parm.hasUIMax)
         nAttr.setSoftMax(parm.UIMax);
+
+    handleAffectsOthersTag(myNodeInfo, parm, nAttr);
 
     return result;
 }
@@ -518,6 +563,7 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
         eAttr.addField(field, static_cast<short>(enumIndex++));
     }
     eAttr.setChannelBox(true);
+    handleAffectsOthersTag(myNodeInfo, parm, eAttr);
     delete[] choiceInfos;
     return result;
 }

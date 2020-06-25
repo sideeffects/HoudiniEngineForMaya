@@ -207,6 +207,9 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
             // will return true.
             && !$isFolder;
 
+        string $plug = $fullAttrName + "." + $child;
+        string $categories[] = `addAttr -q -category ($plug)`;
+
         // separator
         if($type == ""
                 && `attributeQuery -node $nodeName -niceName $child` == "Separator")
@@ -254,11 +257,8 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
             }
             else if($type == "string")
             {
-                string $plug = $fullAttrName + "." + $child;
                 string $niceName = `attributeQuery -node $nodeName -niceName $child`;
                 string $text = `getAttr ($plug)`;
-
-                string $categories[] = `addAttr -q -category ($plug)`;
 
                 string $textField = "";
 
@@ -457,6 +457,17 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         else
         {
             buildAttrTree($nodeName, $child, $fullAttr + "." + $child);
+        }
+
+        for ($category in $categories)
+        {
+            if ($category == "hapiParm_affectsOthers")
+            {
+                // force a full attribute sync whenever this attribute changes
+                scriptJob -parent `setParent -q`
+                          -attributeChange $plug
+                          ("houdiniEngine_syncAssetAttributes " + $nodeName + ";");
+            }
         }
     }
 }

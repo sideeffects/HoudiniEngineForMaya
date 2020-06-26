@@ -2,8 +2,8 @@ global proc int
 houdiniEngine_freezeAsset(string $assetNode)
 {
     if( `getAttr ( $assetNode + ".frozen")` ) {
-    	print "Error: Asset is already frozen\n";
-	return 0;
+        print "Error: Asset is already frozen\n";
+        return 0;
     }
     // add string attributes for caching attribute names for output connections
     // add message attributes for proxy connections to keep track of output nodes
@@ -21,43 +21,43 @@ houdiniEngine_freezeAsset(string $assetNode)
         deleteAttr ( $assetNode + ".cachedDstNode");
     select $assetNode;
     addAttr -longName "cachedDstNode" -at "message" -multi;
-    
+
     setAttr  ( $assetNode + ".frozen" ) 1;
     // disconnect output objects
-       
+
     string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
     int $attrIndex = 0;
     for($con in $outputObjCon) {
         string $src = `connectionInfo -sfd $con`;
-	string $discon = $con;
+        string $discon = $con;
 
-	// if a mesh output has auxiliary nodes or downstream history
-	// need a temporary mesh shape to backstop the history
-	if(endsWith($src, "outputPartMeshData")) {
-	    if(nodeType(plugNode($con)) != "mesh") {
-		string $proxyMesh = `createNode mesh -n "houdiniAssetProxyMesh#" -parent $assetNode`;
-		connectAttr $src ($proxyMesh + ".inMesh");
+        // if a mesh output has auxiliary nodes or downstream history
+        // need a temporary mesh shape to backstop the history
+        if(endsWith($src, "outputPartMeshData")) {
+            if(nodeType(plugNode($con)) != "mesh") {
+                string $proxyMesh = `createNode mesh -n "houdiniAssetProxyMesh#" -parent $assetNode`;
+                connectAttr $src ($proxyMesh + ".inMesh");
 
-		// force a compute of the mesh before disconnecting so that it has data
-		polyEvaluate $proxyMesh;
-		$discon = $proxyMesh + ".inMesh";
-		connectAttr -f  ($proxyMesh + ".outMesh") $con;
-		setAttr ($proxyMesh + ".intermediateObject") 1;
-	    }
-	}
-	string $srcAttr = plugAttr($src);
-	string $dstAttr = plugAttr($con);
-	setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
-	setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
-	string $dstNode = plugNode($con);
-	select $dstNode;
-	if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
-	    addAttr -longName "houdiniAssetOutput" -at "message" -multi;
-	}
-	int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
-	connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
-	disconnectAttr $src $discon;
-	$attrIndex++;
+                // force a compute of the mesh before disconnecting so that it has data
+                polyEvaluate $proxyMesh;
+                $discon = $proxyMesh + ".inMesh";
+                connectAttr -f  ($proxyMesh + ".outMesh") $con;
+                setAttr ($proxyMesh + ".intermediateObject") 1;
+            }
+        }
+        string $srcAttr = plugAttr($src);
+        string $dstAttr = plugAttr($con);
+        setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
+        setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
+        string $dstNode = plugNode($con);
+        select $dstNode;
+        if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
+            addAttr -longName "houdiniAssetOutput" -at "message" -multi;
+        }
+        int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
+        connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
+        disconnectAttr $src $discon;
+        $attrIndex++;
     }
 
     // disconnect output materials
@@ -65,43 +65,43 @@ houdiniEngine_freezeAsset(string $assetNode)
 
     for($con in $outputMatCon) {
         string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
-	
-	string $srcAttr = plugAttr($src);
-	string $dstAttr = plugAttr($con);
-	setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
-	setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
-	string $dstNode = plugNode($con);
-	select $dstNode;
-	if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
-	    addAttr -longName "houdiniAssetOutput" -at "message" -multi;
-	}
-	int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
-	connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
-	
-	$attrIndex++;
+        disconnectAttr $src $con;
+
+        string $srcAttr = plugAttr($src);
+        string $dstAttr = plugAttr($con);
+        setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
+        setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
+        string $dstNode = plugNode($con);
+        select $dstNode;
+        if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
+            addAttr -longName "houdiniAssetOutput" -at "message" -multi;
+        }
+        int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
+        connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
+
+        $attrIndex++;
     }
-    
+
     // disconnect output instancers
     string $outputInstCon[] = `listConnections -p on ($assetNode + ".outputInstancers")`;
 
     for($con in $outputInstCon) {
         string $src = `connectionInfo -sfd $con`;
-	disconnectAttr $src $con;
-	
-	string $srcAttr = plugAttr($src);
-	string $dstAttr = plugAttr($con);
-	setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
-	setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
-	string $dstNode = plugNode($con);
-	select $dstNode;
-	if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
-	    addAttr -longName "houdiniAssetOutput" -at "message" -multi;
-	}
-	int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
-	connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
-	
-	$attrIndex++;
+        disconnectAttr $src $con;
+
+        string $srcAttr = plugAttr($src);
+        string $dstAttr = plugAttr($con);
+        setAttr ( $assetNode + ".cachedSrcAttr[" + $attrIndex +"]") -type "string" $srcAttr;
+        setAttr ( $assetNode + ".cachedDstAttr[" + $attrIndex +"]") -type "string" $dstAttr;
+        string $dstNode = plugNode($con);
+        select $dstNode;
+        if(!`attributeExists "houdiniAssetOutput" $dstNode`) {
+            addAttr -longName "houdiniAssetOutput" -at "message" -multi;
+        }
+        int $dstIndex = `getAttr -size ($dstNode + ".houdiniAssetOutput")`;
+        connectAttr ( $assetNode + ".cachedDstNode[" + $attrIndex +"]") ($dstNode + ".houdiniAssetOutput[" + $dstIndex +"]" );
+
+        $attrIndex++;
     }
 
     // don't disconnect output transforms, since they connect back to the asset
@@ -115,7 +115,7 @@ houdiniEngine_freezeAsset(string $assetNode)
     }
 
     setAttr -l true ($assetNode + ".houdiniAssetParm");
-    
+
     return 1;
 }
 
@@ -123,13 +123,13 @@ global proc int
 houdiniEngine_unfreezeAsset(string $assetNode)
 {
     if( !`getAttr ( $assetNode + ".frozen")` ) {
-    	print "Error: Asset is not frozen\n";
-	return 0;
+        print "Error: Asset is not frozen\n";
+        return 0;
     }
 
     setAttr -l false ($assetNode + ".houdiniAssetParm");
     // can't restore the connections if one of the cached connection atts isn't there
-    // not sure if we should remove the 
+    // not sure if we should remove the
     if(   !`attributeExists "cachedSrcAttr" $assetNode`
        || !`attributeExists "cachedDstAttr" $assetNode`
        || !`attributeExists "cachedDstNode" $assetNode` ) {
@@ -149,41 +149,41 @@ houdiniEngine_unfreezeAsset(string $assetNode)
     // set the asset node to blocking - we don't want it to cook on each connectAttr
     setAttr  ( $assetNode + ".nodeState") 2;
     // disconnect output objects
-       
+
     string $dstNodes[];
     int $ai = 0;
-    
+
     int $numCon = `getAttr -size  ($assetNode + ".cachedSrcAttr")`;
-    
+
     for($ai = 0; $ai  < $numCon; $ai++) {
-	string $srcAttr = `getAttr ( $assetNode + ".cachedSrcAttr[" + $ai +"]")`;
-	string $dstAttr = `getAttr ( $assetNode + ".cachedDstAttr[" + $ai +"]")`;
+        string $srcAttr = `getAttr ( $assetNode + ".cachedSrcAttr[" + $ai +"]")`;
+        string $dstAttr = `getAttr ( $assetNode + ".cachedDstAttr[" + $ai +"]")`;
 
-	string $dstNodesOut[] = listConnections  ( $assetNode + ".cachedDstNode[" + $ai +"]");
-	if(size($dstNodesOut) > 0) {
-	    string $dstNode = $dstNodesOut[0];
-	    $dstNodes[size($dstNodes)] = $dstNode;
+        string $dstNodesOut[] = listConnections  ( $assetNode + ".cachedDstNode[" + $ai +"]");
+        if(size($dstNodesOut) > 0) {
+            string $dstNode = $dstNodesOut[0];
+            $dstNodes[size($dstNodes)] = $dstNode;
 
-	    // if an output that needs reconnecting has an input mesh it had better be the 
-	    // the mesh we added to backstop downstream history when we did the freeze
-	    string $inputProxies[] = `listConnections -type "mesh" -d off -shapes on $dstNode`;
-	
-	    // need the -f flag in case there is a proxy upstream mesh connected.
-	    connectAttr -f ($assetNode + "." + $srcAttr) ($dstNode + "." + $dstAttr);
-	
-	    // delete the proxies only after they're been forced to disconnect, otherwise
-	    // maya's delete might take some of the downstream history with it
-	    for($proxy in  $inputProxies) {
+            // if an output that needs reconnecting has an input mesh it had better be the
+            // the mesh we added to backstop downstream history when we did the freeze
+            string $inputProxies[] = `listConnections -type "mesh" -d off -shapes on $dstNode`;
+
+            // need the -f flag in case there is a proxy upstream mesh connected.
+            connectAttr -f ($assetNode + "." + $srcAttr) ($dstNode + "." + $dstAttr);
+
+            // delete the proxies only after they're been forced to disconnect, otherwise
+            // maya's delete might take some of the downstream history with it
+            for($proxy in  $inputProxies) {
                 delete $proxy;
-	    }
-	}
+            }
+        }
     }
 
     // once we're restored all the connections, delete the placeholder
     // message attributes from the output nodes
     string $uniqueDstNodes[] = stringArrayRemoveDuplicates($dstNodes);
     for($dstNode in $uniqueDstNodes) {
-    	deleteAttr( $dstNode + ".houdiniAssetOutput");
+        deleteAttr( $dstNode + ".houdiniAssetOutput");
     }
 
     // set the asset node's state back to normal so that it can cook again.
@@ -192,7 +192,6 @@ houdiniEngine_unfreezeAsset(string $assetNode)
     deleteAttr ( $assetNode + ".cachedSrcAttr");
     deleteAttr ( $assetNode + ".cachedDstAttr");
     deleteAttr ( $assetNode + ".cachedDstNode");
-    
 
     return 1;
 }

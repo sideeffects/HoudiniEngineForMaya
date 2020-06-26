@@ -123,6 +123,7 @@ if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
     set(
         compile_options
         -Wall
+        -O2
         )
 elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
     set(
@@ -151,6 +152,7 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
     set(
         compile_options
         -Wall
+        -O2
         )
 endif ()
 target_compile_options( plugin PRIVATE ${compile_options} )
@@ -197,7 +199,7 @@ set(
 # Block out Houdini plugins that would load Houdini's UI libraries.
 set(
     houdini_dso_exclude_pattern
-    "HOUDINI_DSO_EXCLUDE_PATTERN={ROP_OpenGL,CHOP_Mouse3D,COP2_GPULighting,COP2_GPUFog,COP2_GPUEnvironment,COP2_GPUZComposite,COP2_EnableGPU,SHOP_OGL,SOP_VDBUI,OBJ_ReLight,VEX_OpRender,USD_Ops}*"
+    "HOUDINI_DSO_EXCLUDE_PATTERN={CHOP_Mouse3D,COP2_GPULighting,COP2_GPUFog,COP2_GPUEnvironment,COP2_GPUZComposite,COP2_EnableGPU,SHOP_OGL,SOP_VDBUI,VEX_OpRender,USD_Ops}*"
     )
 set(
     MODULE_DESCRIPTION_ENVIRONMENTS

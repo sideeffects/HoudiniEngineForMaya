@@ -35,6 +35,9 @@ houdiniEngine_bakeAsset(string $assetNode)
 	else
 	    delete $child;
     }
+
+    refresh;
+
     string $outputObjCon[] = `listConnections -p on ($assetNode + ".outputObjects")`;
     for($con in $outputObjCon) {
         string $src = `connectionInfo -sfd $con`;

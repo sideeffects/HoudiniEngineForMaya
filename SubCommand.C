@@ -4,13 +4,9 @@
 
 #include "AssetNode.h"
 
-SubCommand::SubCommand()
-{
-}
+SubCommand::SubCommand() {}
 
-SubCommand::~SubCommand()
-{
-}
+SubCommand::~SubCommand() {}
 
 MStatus
 SubCommand::doIt()
@@ -36,25 +32,25 @@ SubCommand::isUndoable() const
     return false;
 }
 
-SubCommandAsset::SubCommandAsset(const MObject &assetNodeObj) :
-    myAssetNodeObj(assetNodeObj)
+SubCommandAsset::SubCommandAsset(const MObject &assetNodeObj)
+    : myAssetNodeObj(assetNodeObj)
 {
 }
 
-AssetNode*
+AssetNode *
 SubCommandAsset::getAssetNode() const
 {
     MFnDependencyNode assetNodeFn(myAssetNodeObj);
 
-    AssetNode* assetNode = dynamic_cast<AssetNode*>(assetNodeFn.userNode());
+    AssetNode *assetNode = dynamic_cast<AssetNode *>(assetNodeFn.userNode());
 
     return assetNode;
 }
 
-Asset*
+Asset *
 SubCommandAsset::getAsset() const
 {
-    Asset* asset = getAssetNode()->getAsset();
+    Asset *asset = getAssetNode()->getAsset();
 
     return asset;
 }

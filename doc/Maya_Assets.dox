@@ -51,8 +51,6 @@ Deletes and recreates the attributes for the asset's parameters. If the asset's 
 
 @subsection Maya_Assets_Options_SplitGeosByGroup Split Geos By Group
 
-This option may soon become obsolete and removed, so relying on this option is not recommended.
-
 Normally, all the primitives of the same type are outputted together, and appear as one shape node in Maya. This option makes it possible to split the primitives of the same primitive type by Houdini groups. So primitives that belong to different groups will appear as separate shape nodes in Maya.
 
 For example, if half of a grid is in one group, and the other half is in another group, the entire grid will be outputted into one mesh node by default. However, if this option is enabled, one half of the grid will be one mesh node, and the other half will be another mesh node.
@@ -102,5 +100,10 @@ Normally, when you use the Attribute Editor to connect another asset as an input
 @subsection Maya_Assets_Options_BakeOutputTextures Bake Output Textures
 
 If the asset has materials with procedural textures, the Maya plugin will render the texture, bake it out to a file and use that file in a file texture. This can significantly impact the plugin's performance, especially if the texture needs to be recomputed often. Turning off Bake Output Textures will disable the rebaking of the texture files. The file texture nodes will persist with the correct file names during the maya session, however if the scene is reopened with the texture baking still turned off, you will need to turn it on again and sync the asset to see the texture in Maya again. We recommend that in Maya's Display Preferences you set the MaterialLoadingMode to Immediate in order to be able to see the changes to the output textures updating.
+
+
+@subsection Maya_Assets_Options_PreserveHoudiniScale Preserve Houdini Scale
+
+Each unit in Houdini is 1 meter, while in Maya each internal unit is interpreted as 1 centimeter. If this option is enabled, geometry coming from Maya into Houdini will be scaled by a factor of .01, and geometry going from Houdini to Maya will be scaled by a factor of 100. This preserves the scale of the asset between both applications. If this is disabled, assets from Maya will come into Houdini 100x larger, and assets from Houdini will come into Maya 100x smaller than their intended scale, which was the behavior prior to 18.0, and is still the default for backward compatibility. If this option is set the corresponding options on upstream houdiniAsset, houdiniInputGeometry, houdiniInputTransform and houdiniInputCurve nodes will also be set to control the geometry going from Maya to Houdini.
 
 */

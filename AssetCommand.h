@@ -8,37 +8,36 @@
 
 class SubCommand;
 
-class AssetCommand: public MPxCommand
+class AssetCommand : public MPxCommand
 {
-    public:
-        static const char* commandName;
+public:
+    static const char *commandName;
 
-    public:
-        static void* creator();
-        static MSyntax newSyntax();
+public:
+    static void *creator();
+    static MSyntax newSyntax();
 
-    private:
-        static bool getMObjectFromFlag(
-                const MArgDatabase &argData,
-                const char* flag,
-                MObject &obj,
-                MStatus &status,
-                const int index=0);
+private:
+    static bool getMObjectFromFlag(const MArgDatabase &argData,
+                                   const char *flag,
+                                   MObject &obj,
+                                   MStatus &status,
+                                   const int index=0);
 
-    public:
-        AssetCommand();
-        virtual ~AssetCommand();
+public:
+    AssetCommand();
+    virtual ~AssetCommand();
 
-        MStatus doIt(const MArgList& args);
-        MStatus redoIt();
-        MStatus undoIt();
-        bool isUndoable() const;
+    MStatus doIt(const MArgList &args);
+    MStatus redoIt();
+    MStatus undoIt();
+    bool isUndoable() const;
 
-    private:
-        MStatus parseArgs(const MArgList &args);
+private:
+    MStatus parseArgs(const MArgList &args);
 
-    private:
-        SubCommand* mySubCommand;
+private:
+    SubCommand *mySubCommand;
 };
 
 #endif

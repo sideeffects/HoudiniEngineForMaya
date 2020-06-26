@@ -15,97 +15,83 @@ class Input;
 
 class Inputs
 {
-    public:
-        Inputs(HAPI_NodeId nodeId);
-        ~Inputs();
+public:
+    Inputs(HAPI_NodeId nodeId);
+    ~Inputs();
 
-        MStatus compute(MDataBlock &dataBlock);
+    MStatus compute(MDataBlock &dataBlock);
 
-        void setNumInputs(int numInputs);
+    void setNumInputs(int numInputs);
 
-    private:
-        HAPI_NodeId myNodeId;
+private:
+    HAPI_NodeId myNodeId;
 
-        typedef std::vector<Input*> AssetInputVector;
-        AssetInputVector myAssetInputs;
+    typedef std::vector<Input *> AssetInputVector;
+    AssetInputVector myAssetInputs;
 };
 
 class Input
 {
-    public:
-        enum AssetInputType
-        {
-            AssetInputType_Invalid,
-            AssetInputType_Mesh,
-            AssetInputType_Curve,
-            AssetInputType_Particle,
-        };
+public:
+    enum AssetInputType
+    {
+        AssetInputType_Invalid,
+        AssetInputType_Mesh,
+        AssetInputType_Curve,
+        AssetInputType_Particle,
+    };
 
-        static Input* createAssetInput(AssetInputType assetInputType);
+    static Input *createAssetInput(AssetInputType assetInputType);
 
-    public:
-        Input();
-        virtual ~Input();
+public:
+    Input();
+    virtual ~Input();
 
-        virtual AssetInputType assetInputType() const = 0;
+    virtual AssetInputType assetInputType() const = 0;
 
-        HAPI_NodeId transformNodeId() const { return myTransformNodeId; };
-        HAPI_NodeId geometryNodeId() const { return myGeometryNodeId; };
-	void setUnlockNormals(bool unlockNormals);
-	void setMatPerFace(bool matPerFace);
-	void setAllowFacetSet(bool allowFacetSet);
-	void setPreserveScale(bool preserveScale);
+    HAPI_NodeId transformNodeId() const { return myTransformNodeId; };
+    HAPI_NodeId geometryNodeId() const { return myGeometryNodeId; };
+    void setUnlockNormals(bool unlockNormals);
+    void setMatPerFace(bool matPerFace);
+    void setAllowFacetSet(bool allowFacetSet);
+    void setPreserveScale(bool preserveScale);
 
-        void setInputName(
-                HAPI_AttributeOwner owner, int count,
-                const MPlug &plug
-                );
+    void setInputName(HAPI_AttributeOwner owner, int count, const MPlug &plug);
 
-        void setInputTransform(MDataHandle &dataHandle);
+    void setInputTransform(MDataHandle &dataHandle);
 
-        virtual void setInputGeo(
-                MDataBlock &dataBlock,
-                const MPlug &plug
-                ) = 0;
-	
-        virtual void setInputComponents(
-                MDataBlock &dataBlock,
-                const MPlug &geoPlug,
-                const MPlug &compPlug,	
-                const MPlug &primGroupPlug,
-                const MPlug &pointGroupPlug
-	);
+    virtual void setInputGeo(MDataBlock &dataBlock, const MPlug &plug) = 0;
 
-    protected:
-        void setTransformNodeId( HAPI_NodeId nodeId )
-        {
-            myTransformNodeId = nodeId;
-        };
-        void setGeometryNodeId( HAPI_NodeId nodeId )
-        {
-            myGeometryNodeId = nodeId;
-        };
+    virtual void setInputComponents(MDataBlock &dataBlock,
+                                    const MPlug &geoPlug,
+                                    const MPlug &compPlug,
+                                    const MPlug &primGroupPlug,
+                                    const MPlug &pointGroupPlug);
 
-	bool myUnlockNormals;
-	bool myMatPerFace;
-	bool myAllowFacetSet;
-	bool myPreserveScale;
-	
-    private:
-        static void nameChangedCallback(
-                MObject &node, const MString &str, void *clientData
-                );
-        void addNameChangedCallback(MObject &node);
-        void removeNameChangedCallback();
+protected:
+    void setTransformNodeId(HAPI_NodeId nodeId) { myTransformNodeId = nodeId; };
+    void setGeometryNodeId(HAPI_NodeId nodeId) { myGeometryNodeId = nodeId; };
 
-    private:
-        HAPI_NodeId myTransformNodeId;
-        HAPI_NodeId myGeometryNodeId;
+    bool myUnlockNormals;
+    bool myMatPerFace;
+    bool myAllowFacetSet;
+    bool myPreserveScale;
 
-        MPlug myGeoPlug;
+private:
+    static void nameChangedCallback(MObject &node,
+                                    const MString &str,
+                                    void *clientData);
+    void addNameChangedCallback(MObject &node);
+    void removeNameChangedCallback();
 
-        MCallbackIdArray myNameChangedCallbackIds;
-        MObject myNameChangedCallbackNode;
+private:
+    HAPI_NodeId myTransformNodeId;
+    HAPI_NodeId myGeometryNodeId;
+
+    MPlug myGeoPlug;
+
+    MCallbackIdArray myNameChangedCallbackIds;
+    MObject myNameChangedCallbackNode;
 };
 
 #endif

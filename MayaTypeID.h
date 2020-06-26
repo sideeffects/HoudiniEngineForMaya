@@ -27,19 +27,20 @@
 // MTypeId in the Maya SDK.
 
 // Globally unique IDs assigned to Side Effects:
-//     - 0x0011E240 - 0x0011E2BF : 128 IDs requested by Andrew Wong on 2013-07-17 13:55
+//     - 0x0011E240 - 0x0011E2BF : 128 IDs requested by Andrew Wong on
+//                                 2013-07-17 13:55
 
 // More IDs can be requested through the Autodesk Developer Network.
 
 // Globally unique IDs being used by Side Effects
 enum MayaTypeID
 {
-    MayaTypeID_HoudiniAssetNode = 0x0011E240,
-    MayaTypeID_HoudiniFluidGridConvert = 0x0011E241,
-    MayaTypeID_HoudiniInputGeometryNode = 0x0011E242,
-    MayaTypeID_HoudiniInputCurveNode = 0x0011E243,
-    MayaTypeID_HoudiniInputTransformNode = 0x0011E244,
-    MayaTypeID_HoudiniInputMergeNode = 0x0011E245,
+    MayaTypeID_HoudiniAssetNode               = 0x0011E240,
+    MayaTypeID_HoudiniFluidGridConvert        = 0x0011E241,
+    MayaTypeID_HoudiniInputGeometryNode       = 0x0011E242,
+    MayaTypeID_HoudiniInputCurveNode          = 0x0011E243,
+    MayaTypeID_HoudiniInputTransformNode      = 0x0011E244,
+    MayaTypeID_HoudiniInputMergeNode          = 0x0011E245,
     MayaTypeID_HoudiniOutputPartInstancerNode = 0x0011E246,
 };
 

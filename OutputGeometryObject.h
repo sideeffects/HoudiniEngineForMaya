@@ -9,35 +9,31 @@
 
 class OutputGeometry;
 
-class OutputGeometryObject: public OutputObject
+class OutputGeometryObject : public OutputObject
 {
-    public:
-        OutputGeometryObject(
-                HAPI_NodeId nodeId
-                );
-        virtual ~OutputGeometryObject();
+public:
+    OutputGeometryObject(HAPI_NodeId nodeId);
+    virtual ~OutputGeometryObject();
 
-        virtual MStatus compute(
-                const MTime &time,
-                const MPlug &objectPlug,
-                MDataBlock& data,
-                MDataHandle& objectHandle,
-                const MIntArray &instancedObjIds,
-                const MStringArray &instancedObjNames,
-                AssetNodeOptions::AccessorDataBlock &options,
-                bool &needToSyncOutputs,
-                const bool needToRecomputeOutputData
-                );
+    virtual MStatus compute(const MTime &time,
+                            const MPlug &objectPlug,
+                            MDataBlock &data,
+                            MDataHandle &objectHandle,
+                            const MIntArray &instancedObjIds,
+                            const MStringArray &instancedObjNames,
+                            AssetNodeOptions::AccessorDataBlock &options,
+                            bool &needToSyncOutputs,
+                            const bool needToRecomputeOutputData);
 
-        virtual ObjectType type();
+    virtual ObjectType type();
 
-    private:
-        void update();
+private:
+    void update();
 
-        void updateTransform(MDataHandle& handle, const bool preserveScale);
+    void updateTransform(MDataHandle &handle, const bool preserveScale);
 
-    private:
-        std::vector<OutputGeometry *> myGeos;
+private:
+    std::vector<OutputGeometry *> myGeos;
 };
 
 #endif

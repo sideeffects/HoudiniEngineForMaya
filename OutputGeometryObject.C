@@ -2,23 +2,21 @@
 
 #include "Asset.h"
 #include "AssetNode.h"
+#include "OutputGeometry.h"
 #include "OutputGeometryObject.h"
 #include "OutputGeometryPart.h"
 #include "util.h"
-#include "OutputGeometry.h"
 
 #include <math.h>
 
-OutputGeometryObject::OutputGeometryObject(
-        HAPI_NodeId nodeId
-        ) :
-    OutputObject(nodeId)
+OutputGeometryObject::OutputGeometryObject(HAPI_NodeId nodeId)
+    : OutputObject(nodeId)
 {
 }
 
 OutputGeometryObject::~OutputGeometryObject()
 {
-    for(int i = 0; i < (int) myGeos.size(); i++)
+    for (int i = 0; i < (int)myGeos.size(); i++)
     {
         delete myGeos[i];
     }
@@ -32,53 +30,57 @@ OutputGeometryObject::type()
 }
 
 MStatus
-OutputGeometryObject::compute(
-        const MTime &time,
-        const MPlug &objectPlug,
-        MDataBlock& data,
-        MDataHandle& objectHandle,
-        const MIntArray &instancedObjIds,
-        const MStringArray &instancedObjNames,
-        AssetNodeOptions::AccessorDataBlock &options,
-        bool &needToSyncOutputs,
-        const bool needToRecomputeOutputData
-        )
+OutputGeometryObject::compute(const MTime &time,
+                              const MPlug &objectPlug,
+                              MDataBlock &data,
+                              MDataHandle &objectHandle,
+                              const MIntArray &instancedObjIds,
+                              const MStringArray &instancedObjNames,
+                              AssetNodeOptions::AccessorDataBlock &options,
+                              bool &needToSyncOutputs,
+                              const bool needToRecomputeOutputData)
 {
     MStatus stat = MS::kSuccess;
 
     update();
 
     // Meta data
-    MDataHandle metaDataHandle = objectHandle.child(AssetNode::outputObjectMetaData);
+    MDataHandle metaDataHandle =
+        objectHandle.child(AssetNode::outputObjectMetaData);
     metaDataHandle.setInt(myNodeId);
 
     // outputVisibility
-    MDataHandle visibilityHandle = objectHandle.child(AssetNode::outputVisibility);
+    MDataHandle visibilityHandle =
+        objectHandle.child(AssetNode::outputVisibility);
     visibilityHandle.setBool(isVisible());
 
     // outputObjectName
-    MDataHandle objectNameHandle = objectHandle.child(AssetNode::outputObjectName);
+    MDataHandle objectNameHandle =
+        objectHandle.child(AssetNode::outputObjectName);
     MString objectName;
-    if(myNodeInfo.nameSH != 0)
+    if (myNodeInfo.nameSH != 0)
     {
         objectName = Util::HAPIString(myNodeInfo.nameSH);
     }
     objectNameHandle.setString(objectName);
 
     // outputIsInstanced
-    MDataHandle isInstancedHandle = objectHandle.child(AssetNode::outputIsInstanced);
+    MDataHandle isInstancedHandle =
+        objectHandle.child(AssetNode::outputIsInstanced);
     bool isInstanced = false;
     {
-        for(unsigned int i = 0; !isInstanced && i < instancedObjIds.length(); i++)
+        for (unsigned int i = 0; !isInstanced && i < instancedObjIds.length();
+             i++)
         {
-            if(instancedObjIds[i] == myNodeInfo.id)
+            if (instancedObjIds[i] == myNodeInfo.id)
             {
                 isInstanced = true;
             }
         }
-        for(unsigned int i = 0; !isInstanced && i < instancedObjNames.length(); i++)
+        for (unsigned int i = 0; !isInstanced && i < instancedObjNames.length();
+             i++)
         {
-            if(instancedObjNames[i] == objectName)
+            if (instancedObjNames[i] == objectName)
             {
                 isInstanced = true;
             }
@@ -88,41 +90,36 @@ OutputGeometryObject::compute(
 
     // compute geometry
     {
-        MPlug geosPlug = objectPlug.child(AssetNode::outputGeos);
+        MPlug geosPlug         = objectPlug.child(AssetNode::outputGeos);
         MDataHandle geosHandle = objectHandle.child(AssetNode::outputGeos);
         MArrayDataHandle geoArrayHandle(geosHandle);
-        if(geoArrayHandle.elementCount() != myGeos.size())
+        if (geoArrayHandle.elementCount() != myGeos.size())
         {
             Util::resizeArrayDataHandle(geoArrayHandle, myGeos.size());
             needToSyncOutputs = true;
         }
 
-        for(size_t i = 0; i < myGeos.size(); i++)
+        for (size_t i = 0; i < myGeos.size(); i++)
         {
             MPlug geoPlug = geosPlug.elementByLogicalIndex(i);
             CHECK_MSTATUS(geoArrayHandle.jumpToArrayElement(i));
             MDataHandle geoHandle = geoArrayHandle.outputValue();
 
-            stat = myGeos[i]->compute(
-                    time,
-                    geoPlug,
-                    data,
-                    geoHandle,
-                    options,
-                    needToSyncOutputs,
-                    needToRecomputeOutputData
-                    );
+            stat = myGeos[i]->compute(time, geoPlug, data, geoHandle, options,
+                                      needToSyncOutputs,
+                                      needToRecomputeOutputData);
             CHECK_MSTATUS_AND_RETURN_IT(stat);
         }
     }
 
     // compute transform
-    // always compute, even if the totalCookCount has not changed: 
+    // always compute, even if the totalCookCount has not changed:
     // When an asset is an OBJ subnet, calling HAPI_CookNode() on the asset
     // doesn't cause a cook on the OBJ nodes in the asset. So the
     // HAPI_NodeInfo.totalCookCount would never be incremented - Andrew W.
     {
-        MDataHandle transformHandle = objectHandle.child(AssetNode::outputObjectTransform);
+        MDataHandle transformHandle =
+            objectHandle.child(AssetNode::outputObjectTransform);
         updateTransform(transformHandle, options.preserveScale());
 
         myLastCookCount = myNodeInfo.totalCookCount;
@@ -131,48 +128,37 @@ OutputGeometryObject::compute(
     return stat;
 }
 
-void OutputGeometryObject::update()
+void
+OutputGeometryObject::update()
 {
     HAPI_Result hapiResult;
 
     hapiResult = HAPI_GetNodeInfo(
-            Util::theHAPISession.get(),
-            myNodeId, &myNodeInfo
-            );
+        Util::theHAPISession.get(), myNodeId, &myNodeInfo);
     CHECK_HAPI(hapiResult);
 
     hapiResult = HAPI_GetObjectInfo(
-            Util::theHAPISession.get(),
-            myNodeId, &myObjectInfo
-            );
+        Util::theHAPISession.get(), myNodeId, &myObjectInfo);
     CHECK_HAPI(hapiResult);
 
     // Get the SOP nodes
     int geoCount;
     hapiResult = HAPI_ComposeChildNodeList(
-            Util::theHAPISession.get(),
-            myNodeId,
-            HAPI_NODETYPE_SOP,
-            HAPI_NODEFLAGS_DISPLAY,
-            false,
-            &geoCount
-            );
+        Util::theHAPISession.get(), myNodeId, HAPI_NODETYPE_SOP,
+        HAPI_NODEFLAGS_DISPLAY, false, &geoCount);
     CHECK_HAPI(hapiResult);
 
     std::vector<HAPI_NodeId> geoNodeIds(geoCount);
-    if(geoCount > 0)
+    if (geoCount > 0)
     {
         hapiResult = HAPI_GetComposedChildNodeList(
-                Util::theHAPISession.get(),
-                myNodeId,
-                &geoNodeIds.front(),
-                geoCount
-                );
+            Util::theHAPISession.get(), myNodeId, &geoNodeIds.front(),
+            geoCount);
         CHECK_HAPI(hapiResult);
     }
 
     // Delete old OutputGeometry
-    for(int i = myGeos.size(); i-- > geoCount;)
+    for (int i = myGeos.size(); i-- > geoCount;)
     {
         delete myGeos[i];
         myGeos.pop_back();
@@ -180,37 +166,33 @@ void OutputGeometryObject::update()
 
     // Add new OutputGeometry
     myGeos.reserve(geoCount);
-    for(int i = myGeos.size(); i < geoCount; i++)
+    for (int i = myGeos.size(); i < geoCount; i++)
     {
-        OutputGeometry * geo = new OutputGeometry(geoNodeIds[i]);
+        OutputGeometry *geo = new OutputGeometry(geoNodeIds[i]);
         myGeos.push_back(geo);
     }
 }
 
-void OutputGeometryObject::updateTransform(MDataHandle& handle, const bool preserveScale)
+void
+OutputGeometryObject::updateTransform(MDataHandle &handle,
+                                      const bool preserveScale)
 {
     HAPI_Result hapiResult;
 
-    MDataHandle translateHandle = handle.child(AssetNode::outputObjectTranslate);
+    MDataHandle translateHandle =
+        handle.child(AssetNode::outputObjectTranslate);
     MDataHandle rotateHandle = handle.child(AssetNode::outputObjectRotate);
-    MDataHandle scaleHandle = handle.child(AssetNode::outputObjectScale);
+    MDataHandle scaleHandle  = handle.child(AssetNode::outputObjectScale);
 
     HAPI_Transform trans;
     hapiResult = HAPI_GetObjectTransform(
-            Util::theHAPISession.get(),
-            myNodeId,
-            -1,
-            HAPI_SRT,
-            &trans
-            );
+        Util::theHAPISession.get(), myNodeId, -1, HAPI_SRT, &trans);
     CHECK_HAPI(hapiResult);
 
-    MEulerRotation eulerRotation = MQuaternion(
-            trans.rotationQuaternion[0],
-            trans.rotationQuaternion[1],
-            trans.rotationQuaternion[2],
-            trans.rotationQuaternion[3]
-            ).asEulerRotation();
+    MEulerRotation eulerRotation =
+        MQuaternion(trans.rotationQuaternion[0], trans.rotationQuaternion[1],
+                    trans.rotationQuaternion[2], trans.rotationQuaternion[3])
+            .asEulerRotation();
 #ifndef M_PI
 #define M_PI 3.14
 #endif
@@ -222,16 +204,7 @@ void OutputGeometryObject::updateTransform(MDataHandle& handle, const bool prese
     }
 
     translateHandle.set3Double(
-            trans.position[0],
-            trans.position[1],
-            trans.position[2]);
-    rotateHandle.set3Double(
-            eulerRotation.x,
-            eulerRotation.y,
-            eulerRotation.z);
-    scaleHandle.set3Double(
-            trans.scale[0],
-            trans.scale[1],
-            trans.scale[2]);
+        trans.position[0], trans.position[1], trans.position[2]);
+    rotateHandle.set3Double(eulerRotation.x, eulerRotation.y, eulerRotation.z);
+    scaleHandle.set3Double(trans.scale[0], trans.scale[1], trans.scale[2]);
 }
-

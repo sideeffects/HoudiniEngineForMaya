@@ -53,6 +53,8 @@ The input nodes used to be so uninteresting that we didn't even have Attribute E
 
 @image html Maya_InputOptions.png
 
+The houdiniInputCurve and houdiniInputTransform nodes now also have the Preserve Houdini Scale option.
+
 @subsection Maya_Inputs_Options_UnlockNormals Unlock Normals
 
 For mesh inputs, to avoid sending custom normals to Houdini in the first place, turn on unlockNormals. This was a  more useful performance optimization back when PreserveMeshLockedNormals was slow (pre 2018/pre 17.0), but still potentially useful if you plan to work on normals in Houdini and want to ignore any previous Maya custom normals.
@@ -76,4 +78,11 @@ If you want to use a non-default group for face selection input, specify the nam
 
 If you want to use a non-default group for maye vertex selection input, specify the name here. Otherwise a point group called inputPointComponent will be created for maya vertex selection.
 
+@subsection Maya_Inputs_Options_PreserveHoudiniScale  Preserve Houdini Scale
+
+Each unit in Houdini is 1 meter, while in Maya each internal unit is interpreted as 1 centimeter. If this option is enabled, geometry coming from Maya into Houdini will be scaled by a factor of .01. This option is automatically set when the corresponding option is set on the houdiniAsset node, so the user should not need to set this manually. This option is off by default for backward compatibility with pre-18.0 behavior.
+
+@subsection Maya_Inputs_Options_IgnoreTransform Ignore Transform
+
+When active, the incoming transformation will be ignored. This mimics the function of the Object Merges SOP's "Transform" parm being set to "None". 
 */

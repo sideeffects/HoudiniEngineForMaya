@@ -7,19 +7,16 @@
 
 class InputCurve : public Input
 {
-    public:
-        InputCurve();
-        virtual ~InputCurve();
+public:
+    InputCurve();
+    virtual ~InputCurve();
 
-        virtual AssetInputType assetInputType() const;
+    virtual AssetInputType assetInputType() const;
 
-        virtual void setInputGeo(
-                MDataBlock &dataBlock,
-                const MPlug &plug
-                );
+    virtual void setInputGeo(MDataBlock &dataBlock, const MPlug &plug);
 
-    protected:
-        HAPI_NodeInfo myCurveNodeInfo;
+protected:
+    HAPI_NodeInfo myCurveNodeInfo;
 };
 
 #endif

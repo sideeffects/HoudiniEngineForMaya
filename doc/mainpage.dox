@@ -20,7 +20,6 @@ Input and Output Geometries
   - @subpage Maya_Curve "Curve"
   - @subpage Maya_Hair "Hair"
   - @subpage Maya_Volume "Volume"
-
   - @subpage Maya_Instancing "Instancing"
 
 Other topics
@@ -33,5 +32,8 @@ Other topics
   - @subpage Maya_Scripting "Scripting"
   - @subpage Maya_History "Construction History"
   - @subpage Maya_Bake "Baking Assets"
-
+  - @subpage Maya_Freeze "Freeze Assets"
+  - @subpage Maya_Compatibility "Maya vs. Houdini Incompatibilites"
+  - @subpage Maya_Code "Intro to the Plugin Code"
+  
 */

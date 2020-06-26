@@ -8,7 +8,7 @@
 class InputTransformNode : public MPxNode
 {
 public:
-    static void* creator();
+    static void *creator();
     static MStatus initialize();
 
 public:
@@ -25,10 +25,7 @@ public:
     InputTransformNode();
     virtual ~InputTransformNode();
 
-    virtual MStatus compute(
-            const MPlug &plug,
-            MDataBlock &dataBlock
-            );
+    virtual MStatus compute(const MPlug &plug, MDataBlock &dataBlock);
 
 private:
     void clearInput();

@@ -6,19 +6,19 @@
 #include <maya/MFloatArray.h>
 #include <maya/MFloatPointArray.h>
 #include <maya/MIntArray.h>
-#include <maya/MStringArray.h>
 #include <maya/MString.h>
+#include <maya/MStringArray.h>
 #include <maya/MVectorArray.h>
 
 #include <vector>
 
-template<typename T>
+template <typename T>
 struct RemoveConst
 {
     typedef T type;
 };
 
-template<typename T>
+template <typename T>
 struct RemoveConst<const T>
 {
     typedef T type;
@@ -26,14 +26,14 @@ struct RemoveConst<const T>
 
 #define REMOVECONST(T) typename RemoveConst<T>::type
 
-template<typename T>
+template <typename T>
 struct TypeTrait
 {
 };
 
 #define TYPETRAIT(T) TypeTrait<typename RemoveConst<T>::type>
 
-template<>
+template <>
 struct TypeTrait<int>
 {
     typedef int Type;
@@ -41,12 +41,13 @@ struct TypeTrait<int>
 
     static const int numComponents = 1;
     static const ComponentType &getComponent(const Type &o, size_t i)
-    { return o; }
-    static ComponentType &getComponent(Type &o, size_t i)
-    { return o; }
+    {
+        return o;
+    }
+    static ComponentType &getComponent(Type &o, size_t i) { return o; }
 };
 
-template<>
+template <>
 struct TypeTrait<float>
 {
     typedef float Type;
@@ -54,12 +55,13 @@ struct TypeTrait<float>
 
     static const int numComponents = 1;
     static const ComponentType &getComponent(const Type &o, size_t i)
-    { return o; }
-    static ComponentType &getComponent(Type &o, size_t i)
-    { return o; }
+    {
+        return o;
+    }
+    static ComponentType &getComponent(Type &o, size_t i) { return o; }
 };
 
-template<>
+template <>
 struct TypeTrait<double>
 {
     typedef double Type;
@@ -67,12 +69,13 @@ struct TypeTrait<double>
 
     static const int numComponents = 1;
     static const ComponentType &getComponent(const Type &o, size_t i)
-    { return o; }
-    static ComponentType &getComponent(Type &o, size_t i)
-    { return o; }
+    {
+        return o;
+    }
+    static ComponentType &getComponent(Type &o, size_t i) { return o; }
 };
 
-template<>
+template <>
 struct TypeTrait<MVector>
 {
     typedef MVector Type;
@@ -82,13 +85,12 @@ struct TypeTrait<MVector>
     static const ComponentType &getComponent(const Type &o, size_t i)
     {
         // const MVector doesn't return a double reference
-        return const_cast<Type&>(o)[i];
+        return const_cast<Type &>(o)[i];
     }
-    static ComponentType &getComponent(Type &o, size_t i)
-    { return o[i]; }
+    static ComponentType &getComponent(Type &o, size_t i) { return o[i]; }
 };
 
-template<>
+template <>
 struct TypeTrait<MColor>
 {
     typedef MColor Type;
@@ -98,13 +100,12 @@ struct TypeTrait<MColor>
     static const ComponentType &getComponent(const Type &o, size_t i)
     {
         // const MVector doesn't return a double reference
-        return const_cast<Type&>(o)[i];
+        return const_cast<Type &>(o)[i];
     }
-    static ComponentType &getComponent(Type &o, size_t i)
-    { return o[i]; }
+    static ComponentType &getComponent(Type &o, size_t i) { return o[i]; }
 };
 
-template<>
+template <>
 struct TypeTrait<MFloatPoint>
 {
     typedef MFloatPoint Type;
@@ -114,38 +115,37 @@ struct TypeTrait<MFloatPoint>
     static const ComponentType &getComponent(const Type &o, size_t i)
     {
         // const MFloatPoint doesn't return a float reference
-        return const_cast<Type&>(o)[i];
+        return const_cast<Type &>(o)[i];
     }
-    static ComponentType &getComponent(Type &o, size_t i)
-    { return o[i]; }
+    static ComponentType &getComponent(Type &o, size_t i) { return o[i]; }
 };
 
-template<typename T>
+template <typename T>
 struct ArrayTrait
 {
     static const bool isArray = false;
 
-    //typedef void ArrayType;
-    //typedef void ElementType;
+    // typedef void ArrayType;
+    // typedef void ElementType;
 
-    //static const bool canGetData = false;
-    //static const T* data(const ArrayType &array);
-    //static T* data(ArrayType &array);
+    // static const bool canGetData = false;
+    // static const T* data(const ArrayType &array);
+    // static T* data(ArrayType &array);
 
-    //static size_t size(const ArrayType &array);
-    //static void resize(ArrayType &array, size_t size);
+    // static size_t size(const ArrayType &array);
+    // static void resize(ArrayType &array, size_t size);
 
-    //static const ElementType &getElement(const ArrayType &array, size_t i);
+    // static const ElementType &getElement(const ArrayType &array, size_t i);
 
-    //static ElementType &getElement(ArrayType &array, size_t i);
+    // static ElementType &getElement(ArrayType &array, size_t i);
 };
 
 #define ARRAYTRAIT(T) ArrayTrait<typename RemoveConst<T>::type>
 #define ELEMENTTYPE(T) typename ARRAYTRAIT(T)::ElementType
 #define ELEMENTTRAIT(T) TypeTrait<ELEMENTTYPE(T)>
 
-template<typename T>
-struct ArrayTrait<std::vector<T> >
+template <typename T>
+struct ArrayTrait<std::vector<T>>
 {
     static const bool isArray = true;
 
@@ -153,24 +153,24 @@ struct ArrayTrait<std::vector<T> >
     typedef T ElementType;
 
     static const bool canGetData = true;
-    static const ElementType* data(const ArrayType &array)
-    { return &array[0]; }
-    static ElementType* data(ArrayType &array)
-    { return &array[0]; }
+    static const ElementType *data(const ArrayType &array) { return &array[0]; }
+    static ElementType *data(ArrayType &array) { return &array[0]; }
 
-    static size_t size(const ArrayType &array)
-    { return array.size(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.resize(size); }
+    static size_t size(const ArrayType &array) { return array.size(); }
+    static void resize(ArrayType &array, size_t size) { array.resize(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
-template<>
+template <>
 struct ArrayTrait<MIntArray>
 {
     static const bool isArray = true;
@@ -180,22 +180,22 @@ struct ArrayTrait<MIntArray>
 
     static const bool canGetData = false;
 
-    static size_t size(const ArrayType &array)
-    { return array.length(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.setLength(size); }
+    static size_t size(const ArrayType &array) { return array.length(); }
+    static void resize(ArrayType &array, size_t size) { array.setLength(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
     {
         // const MIntArray doesn't return a int reference
-        return const_cast<ArrayType&>(array)[i];
+        return const_cast<ArrayType &>(array)[i];
     }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
-template<>
+template <>
 struct ArrayTrait<MFloatArray>
 {
     static const bool isArray = true;
@@ -205,22 +205,22 @@ struct ArrayTrait<MFloatArray>
 
     static const bool canGetData = false;
 
-    static size_t size(const ArrayType &array)
-    { return array.length(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.setLength(size); }
+    static size_t size(const ArrayType &array) { return array.length(); }
+    static void resize(ArrayType &array, size_t size) { array.setLength(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
     {
         // const MFloatArray doesn't return a float reference
-        return const_cast<ArrayType&>(array)[i];
+        return const_cast<ArrayType &>(array)[i];
     }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
-template<>
+template <>
 struct ArrayTrait<MDoubleArray>
 {
     static const bool isArray = true;
@@ -230,22 +230,22 @@ struct ArrayTrait<MDoubleArray>
 
     static const bool canGetData = false;
 
-    static size_t size(const ArrayType &array)
-    { return array.length(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.setLength(size); }
+    static size_t size(const ArrayType &array) { return array.length(); }
+    static void resize(ArrayType &array, size_t size) { array.setLength(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
     {
         // const MDoubleArray doesn't return a double reference
-        return const_cast<ArrayType&>(array)[i];
+        return const_cast<ArrayType &>(array)[i];
     }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
-template<>
+template <>
 struct ArrayTrait<MVectorArray>
 {
     static const bool isArray = true;
@@ -255,19 +255,21 @@ struct ArrayTrait<MVectorArray>
 
     static const bool canGetData = false;
 
-    static size_t size(const ArrayType &array)
-    { return array.length(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.setLength(size); }
+    static size_t size(const ArrayType &array) { return array.length(); }
+    static void resize(ArrayType &array, size_t size) { array.setLength(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
-template<>
+template <>
 struct ArrayTrait<MColorArray>
 {
     static const bool isArray = true;
@@ -277,19 +279,21 @@ struct ArrayTrait<MColorArray>
 
     static const bool canGetData = false;
 
-    static size_t size(const ArrayType &array)
-    { return array.length(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.setLength(size); }
+    static size_t size(const ArrayType &array) { return array.length(); }
+    static void resize(ArrayType &array, size_t size) { array.setLength(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
-template<>
+template <>
 struct ArrayTrait<MFloatPointArray>
 {
     static const bool isArray = true;
@@ -299,19 +303,21 @@ struct ArrayTrait<MFloatPointArray>
 
     static const bool canGetData = false;
 
-    static size_t size(const ArrayType &array)
-    { return array.length(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.setLength(size); }
+    static size_t size(const ArrayType &array) { return array.length(); }
+    static void resize(ArrayType &array, size_t size) { array.setLength(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
-template<>
+template <>
 struct ArrayTrait<MStringArray>
 {
     static const bool isArray = true;
@@ -321,19 +327,19 @@ struct ArrayTrait<MStringArray>
 
     static const bool canGetData = false;
 
-    static size_t size(const ArrayType &array)
-    { return array.length(); }
-    static void resize(ArrayType &array, size_t size)
-    { array.setLength(size); }
+    static size_t size(const ArrayType &array) { return array.length(); }
+    static void resize(ArrayType &array, size_t size) { array.setLength(size); }
 
     static const ElementType &getElement(const ArrayType &array, size_t i)
     {
         // const MStringArray doesn't return a MString reference
-        return const_cast<ArrayType&>(array)[i];
+        return const_cast<ArrayType &>(array)[i];
     }
 
     static ElementType &getElement(ArrayType &array, size_t i)
-    { return array[i]; }
+    {
+        return array[i];
+    }
 };
 
 #endif

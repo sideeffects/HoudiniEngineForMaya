@@ -1,43 +1,43 @@
 #include "SyncOutputMaterial.h"
 
 #include <maya/MDGModifier.h>
+#include <maya/MFnDependencyNode.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
-#include <maya/MFnDependencyNode.h>
 
-#include "AssetNode.h"
 #include "Asset.h"
+#include "AssetNode.h"
 #include "util.h"
 
 #include <algorithm>
 
 MObject
 SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
-        const MObject &assetObj,
-        int nodeId)
+                                         const MObject &assetObj,
+                                         int nodeId)
 {
     MStatus status;
 
     // map -1 to initialShadingGroup
-    if(nodeId == -1)
+    if (nodeId == -1)
     {
         return Util::findNodeByName("initialShadingGroup");
     }
 
     MPlug materialPlug = createOutputMaterialPlug(dgModifier, assetObj, nodeId);
-    if(materialPlug.isNull())
+    if (materialPlug.isNull())
     {
         return MObject::kNullObj;
     }
-    
+
     // check if the ambient output has a shader already (checking diffuse
     // would force us to check the file texture connections as well)
-    
+
     MPlug shadingPlug =
         materialPlug.child(AssetNode::outputMaterialAmbientColor);
     MObject shaderObj = findShader(shadingPlug);
 
-    if(shaderObj.isNull())
+    if (shaderObj.isNull())
     {
         // create shader
         status = Util::createNodeByModifierCommand(
@@ -54,13 +54,13 @@ SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
     MFnDependencyNode shaderFn(shaderObj);
 
     MObject shadingGroupObj = findShadingGroup(shaderObj);
-    if(shadingGroupObj.isNull())
+    if (shadingGroupObj.isNull())
     {
         // create shading group
         status = Util::createNodeByModifierCommand(
-                dgModifier,
-                "select -noExpand `sets -renderable true "
-                "-noSurfaceShader true -empty "
+            dgModifier,
+            "select -noExpand `sets -renderable true "
+            "-noSurfaceShader true -empty "
             "-name \"" +
                 shaderFn.name() + "SG\"`",
             shadingGroupObj);
@@ -84,7 +84,7 @@ SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
         materialPlug.child(AssetNode::outputMaterialTexturePath);
     MString texturePath = texturePathPlug.asString();
     MFnDependencyNode textureFileFn;
-    if(texturePath.length())
+    if (texturePath.length())
     {
         MObject textureFile;
         status = Util::createNodeByModifierCommand(
@@ -102,7 +102,7 @@ SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
         MPlug colorPlug(shaderFn.findPlug("color", true));
 
         // color
-        if(textureFileFn.object().isNull())
+        if (textureFileFn.object().isNull())
         {
             srcPlug = materialPlug.child(AssetNode::outputMaterialDiffuseColor);
             status  = dgModifier.connect(srcPlug, colorPlug);
@@ -114,11 +114,11 @@ SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
             {
                 // Nothing is connected to the shader's color, so we can connect
                 // the file node
-            dstPlug = textureFileFn.findPlug("fileTextureName", true);
-            status = dgModifier.connect(texturePathPlug, dstPlug);
-            CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
+                dstPlug = textureFileFn.findPlug("fileTextureName", true);
+                status  = dgModifier.connect(texturePathPlug, dstPlug);
+                CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
-            srcPlug = textureFileFn.findPlug("outColor", true);
+                srcPlug = textureFileFn.findPlug("outColor", true);
                 status  = dgModifier.connect(srcPlug, colorPlug);
                 CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
             }
@@ -148,19 +148,19 @@ SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
         // specularColor
         srcPlug = materialPlug.child(AssetNode::outputMaterialSpecularColor);
         dstPlug = shaderFn.findPlug("specularColor", true);
-        status = dgModifier.connect(srcPlug, dstPlug);
+        status  = dgModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
         // ambientColor
         srcPlug = materialPlug.child(AssetNode::outputMaterialAmbientColor);
         dstPlug = shaderFn.findPlug("ambientColor", true);
-        status = dgModifier.connect(srcPlug, dstPlug);
+        status  = dgModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
 
         // transparency
         srcPlug = materialPlug.child(AssetNode::outputMaterialAlphaColor);
         dstPlug = shaderFn.findPlug("transparency", true);
-        status = dgModifier.connect(srcPlug, dstPlug);
+        status  = dgModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN(status, MObject::kNullObj);
     }
 
@@ -172,10 +172,9 @@ SyncOutputMaterial::createOutputMaterial(MDGModifier &dgModifier,
 }
 
 MPlug
-SyncOutputMaterial::createOutputMaterialPlug(
-        MDGModifier &dgModifier,
-        const MObject &assetObj,
-        int nodeId)
+SyncOutputMaterial::createOutputMaterialPlug(MDGModifier &dgModifier,
+                                             const MObject &assetObj,
+                                             int nodeId)
 {
     MStatus status;
 
@@ -183,17 +182,18 @@ SyncOutputMaterial::createOutputMaterialPlug(
 
     // find the material plug that matches the node id
     MPlug materialPlug;
-    size_t lastLogicalElement = (size_t) -1;
+    size_t lastLogicalElement = (size_t)-1;
     {
-        for(size_t i = 0; i < materialsPlug.numElements(); i++)
+        for (size_t i = 0; i < materialsPlug.numElements(); i++)
         {
             MPlug testMaterialPlug = materialsPlug.elementByPhysicalIndex(i);
 
             lastLogicalElement = testMaterialPlug.logicalIndex();
 
-            MPlug nodeIdPlug = testMaterialPlug.child(AssetNode::outputMaterialNodeId);
+            MPlug nodeIdPlug =
+                testMaterialPlug.child(AssetNode::outputMaterialNodeId);
 
-            if(nodeId == nodeIdPlug.asInt())
+            if (nodeId == nodeIdPlug.asInt())
             {
                 materialPlug = testMaterialPlug;
                 break;
@@ -201,7 +201,7 @@ SyncOutputMaterial::createOutputMaterialPlug(
         }
     }
 
-    if(!materialPlug.isNull())
+    if (!materialPlug.isNull())
     {
         return materialPlug;
     }
@@ -209,14 +209,14 @@ SyncOutputMaterial::createOutputMaterialPlug(
     // allocate a new material plug
     materialPlug = materialsPlug.elementByLogicalIndex(lastLogicalElement + 1);
 
-    AssetNode* assetNode = dynamic_cast<AssetNode*>(
-            MFnDependencyNode(assetObj).userNode());
+    AssetNode *assetNode =
+        dynamic_cast<AssetNode *>(MFnDependencyNode(assetObj).userNode());
 
-    Asset* asset = assetNode->getAsset();
+    Asset *asset = assetNode->getAsset();
 
     status = dgModifier.newPlugValueString(
-            materialPlug.child(AssetNode::outputMaterialPath),
-            asset->getRelativePath(nodeId));
+        materialPlug.child(AssetNode::outputMaterialPath),
+        asset->getRelativePath(nodeId));
     CHECK_MSTATUS(status);
 
     status = dgModifier.doIt();
@@ -229,7 +229,7 @@ MObject
 SyncOutputMaterial::findShader(const MPlug &materialPlug)
 {
     MPlugArray destinationPlugs = Util::plugDestination(materialPlug);
-    for(size_t i = 0; i < destinationPlugs.length(); i++)
+    for (size_t i = 0; i < destinationPlugs.length(); i++)
     {
         MObject shaderObj = destinationPlugs[i].node();
 
@@ -241,8 +241,8 @@ SyncOutputMaterial::findShader(const MPlug &materialPlug)
         classificationString.split(':', classifications);
 
         ArrayIterator<MStringArray> begin = arrayBegin(classifications);
-        ArrayIterator<MStringArray> end = arrayEnd(classifications);
-        if(std::find(begin, end, MString("shader/surface")) != end)
+        ArrayIterator<MStringArray> end   = arrayEnd(classifications);
+        if (std::find(begin, end, MString("shader/surface")) != end)
         {
             return shaderObj;
         }
@@ -256,13 +256,12 @@ SyncOutputMaterial::findShadingGroup(const MObject &shaderObj)
 {
     MFnDependencyNode shaderFn(shaderObj);
 
-    MPlugArray destinationPlugs = Util::plugDestination(
-            shaderFn.findPlug("outColor", true)
-            );
-    for(size_t i = 0; i < destinationPlugs.length(); i++)
+    MPlugArray destinationPlugs =
+        Util::plugDestination(shaderFn.findPlug("outColor", true));
+    for (size_t i = 0; i < destinationPlugs.length(); i++)
     {
         MObject shadingGroupObj = destinationPlugs[i].node();
-        if(shadingGroupObj.hasFn(MFn::kShadingEngine))
+        if (shadingGroupObj.hasFn(MFn::kShadingEngine))
         {
             return shadingGroupObj;
         }
@@ -275,10 +274,10 @@ MObject
 SyncOutputMaterial::findFileTexture(const MPlug &materialPlug)
 {
     MPlugArray destinationPlugs = Util::plugDestination(materialPlug);
-    for(size_t i = 0; i < destinationPlugs.length(); i++)
+    for (size_t i = 0; i < destinationPlugs.length(); i++)
     {
         MObject shadingGroupObj = destinationPlugs[i].node();
-        if(shadingGroupObj.hasFn(MFn::kFileTexture))
+        if (shadingGroupObj.hasFn(MFn::kFileTexture))
         {
             return shadingGroupObj;
         }

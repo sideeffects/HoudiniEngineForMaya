@@ -16,81 +16,66 @@
 #include "SyncOutputMaterial.h"
 #include "util.h"
 
-#include <string>
 #include <algorithm>
 #include <map>
+#include <string>
 
 static MObject
-createAttributeFromDataHandle(
-        const MString &attributeName,
-        const MDataHandle &dataHandle
-        )
+createAttributeFromDataHandle(const MString &attributeName,
+                              const MDataHandle &dataHandle)
 {
     MObject attribute;
 
     bool isNumeric = false;
-    bool isNull = false;
+    bool isNull    = false;
     dataHandle.isGeneric(isNumeric, isNull);
 
-    if(isNumeric)
+    if (isNumeric)
     {
         // This is a singleton generic type. It is not MFnNumericData, and
         // needs to be handled differently. This is stored internally as a
         // double, and there's no way to determine the original type.
         MFnNumericAttribute numericAttribute;
         attribute = numericAttribute.create(
-                attributeName,
-                attributeName,
-                MFnNumericData::kDouble
-                );
+            attributeName, attributeName, MFnNumericData::kDouble);
     }
-    else if(dataHandle.numericType() != MFnNumericData::kInvalid)
+    else if (dataHandle.numericType() != MFnNumericData::kInvalid)
     {
         MFnNumericAttribute numericAttribute;
         attribute = numericAttribute.create(
-                attributeName,
-                attributeName,
-                dataHandle.numericType()
-                );
+            attributeName, attributeName, dataHandle.numericType());
     }
-    else if(dataHandle.type() != MFnData::kInvalid)
+    else if (dataHandle.type() != MFnData::kInvalid)
     {
         MFnTypedAttribute typedAttribute;
         attribute = typedAttribute.create(
-                attributeName,
-                attributeName,
-                dataHandle.type()
-                );
+            attributeName, attributeName, dataHandle.type());
     }
 
     return attribute;
 }
 
-SyncOutputGeometryPart::SyncOutputGeometryPart(
-        const MPlug &outputPlug,
-        const MObject &objectTransform
-        ) :
-    myOutputPlug(outputPlug),
-    myObjectTransform(objectTransform),
-    myIsInstanced(false)
+SyncOutputGeometryPart::SyncOutputGeometryPart(const MPlug &outputPlug,
+                                               const MObject &objectTransform)
+    : myOutputPlug(outputPlug),
+      myObjectTransform(objectTransform),
+      myIsInstanced(false)
 {
 }
 
-SyncOutputGeometryPart::~SyncOutputGeometryPart()
-{
-}
+SyncOutputGeometryPart::~SyncOutputGeometryPart() {}
 
 MStatus
 SyncOutputGeometryPart::doIt()
 {
     MStatus status;
-    
+
     int numGeosOutput = 0;
     MString partName = myOutputPlug.child(AssetNode::outputPartName).asString();
-    if(partName.length())
+    if (partName.length())
     {
-        partName = Util::sanitizeStringForNodeName(partName);
-	numGeosOutput = 1;
+        partName      = Util::sanitizeStringForNodeName(partName);
+        numGeosOutput = 1;
     }
     else
     {
@@ -103,7 +88,8 @@ SyncOutputGeometryPart::doIt()
     assert(myPartTransform.isNull()); // TODO: does the transform ever exist?
 
     // create myPartTransform
-    myPartTransform = myDagModifier.createNode("transform", myObjectTransform, &status);
+    myPartTransform = myDagModifier.createNode(
+        "transform", myObjectTransform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename myPartTransform
@@ -111,35 +97,28 @@ SyncOutputGeometryPart::doIt()
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // create part
-    status = createOutputPart(
-            myObjectTransform,
-            partName
-            );
+    status = createOutputPart(myObjectTransform, partName);
 
     redoIt();
-    
 
-    if(numGeosOutput > 0)
+    if (numGeosOutput > 0)
         return MStatus::kSuccess;
     else
         return MStatus::kFailure;
 }
 
 MStatus
-SyncOutputGeometryPart::doItPost(
-        SyncOutputGeometryPart *const *syncParts
-        )
+SyncOutputGeometryPart::doItPost(SyncOutputGeometryPart *const *syncParts)
 {
     // A second pass for setting up the nodes. This second pass has access to
     // all the nodes that were created in the first pass.
 
-    MPlug hasInstancerPlug = myOutputPlug.child(AssetNode::outputPartHasInstancer);
-    if(hasInstancerPlug.asBool())
+    MPlug hasInstancerPlug =
+        myOutputPlug.child(AssetNode::outputPartHasInstancer);
+    if (hasInstancerPlug.asBool())
     {
         createOutputInstancerPost(
-                myOutputPlug.child(AssetNode::outputPartInstancer),
-                syncParts
-                );
+            myOutputPlug.child(AssetNode::outputPartInstancer), syncParts);
     }
 
     return redoIt();
@@ -174,48 +153,42 @@ SyncOutputGeometryPart::isUndoable() const
 }
 
 MStatus
-SyncOutputGeometryPart::createOutputPart(
-        const MObject &objectTransform,
-        const MString &partName
-        )
+SyncOutputGeometryPart::createOutputPart(const MObject &objectTransform,
+                                         const MString &partName)
 {
     MStatus status;
 
     // create mesh
     MPlug hasMeshPlug = myOutputPlug.child(AssetNode::outputPartHasMesh);
-    if(hasMeshPlug.asBool())
+    if (hasMeshPlug.asBool())
     {
         status = createOutputMesh(
-                partName,
-                myOutputPlug.child(AssetNode::outputPartMesh)
-                );
+            partName, myOutputPlug.child(AssetNode::outputPartMesh));
     }
 
     // create particle
-    MPlug particleExistsPlug = myOutputPlug.child(AssetNode::outputPartHasParticles);
-    if(particleExistsPlug.asBool())
+    MPlug particleExistsPlug =
+        myOutputPlug.child(AssetNode::outputPartHasParticles);
+    if (particleExistsPlug.asBool())
     {
         status = createOutputParticle(
-                partName,
-                myOutputPlug.child(AssetNode::outputPartParticle)
-                );
+            partName, myOutputPlug.child(AssetNode::outputPartParticle));
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
     // create curves
-    MPlug curveIsBezier = myOutputPlug.child(AssetNode::outputPartCurvesIsBezier);
+    MPlug curveIsBezier =
+        myOutputPlug.child(AssetNode::outputPartCurvesIsBezier);
     createOutputCurves(myOutputPlug.child(AssetNode::outputPartCurves),
-                       partName,
-                       curveIsBezier.asBool());
+                       partName, curveIsBezier.asBool());
 
     // create instancer
-    MPlug hasInstancerPlug = myOutputPlug.child(AssetNode::outputPartHasInstancer);
-    if(hasInstancerPlug.asBool())
+    MPlug hasInstancerPlug =
+        myOutputPlug.child(AssetNode::outputPartHasInstancer);
+    if (hasInstancerPlug.asBool())
     {
         createOutputInstancer(
-                partName,
-                myOutputPlug.child(AssetNode::outputPartInstancer)
-                );
+            partName, myOutputPlug.child(AssetNode::outputPartInstancer));
     }
 
     // doIt
@@ -228,15 +201,14 @@ SyncOutputGeometryPart::createOutputPart(
 }
 
 MStatus
-SyncOutputGeometryPart::createOutputMesh(
-        const MString &partName,
-        const MPlug &meshPlug
-        )
+SyncOutputGeometryPart::createOutputMesh(const MString &partName,
+                                         const MPlug &meshPlug)
 {
     MStatus status;
 
     // create mesh
-    MObject meshShape = myDagModifier.createNode("mesh", myPartTransform, &status);
+    MObject meshShape = myDagModifier.createNode(
+        "mesh", myPartTransform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename mesh
@@ -251,44 +223,40 @@ SyncOutputGeometryPart::createOutputMesh(
 
     // set mesh.displayColors
     myDagModifier.newPlugValueBool(
-				   partMeshFn.findPlug("displayColors", true),
-            true
-            );
+        partMeshFn.findPlug("displayColors", true), true);
 
     // set mesh.currentColorSet
     // Connecting outputPartMeshCurrentColorSet to currentColorSet doesn't seem
     // to trigger updates.
     myDagModifier.newPlugValueString(
-            partMeshFn.findPlug("currentColorSet", true),
-            meshPlug.child(AssetNode::outputPartMeshCurrentColorSet).asString()
-            );
+        partMeshFn.findPlug("currentColorSet", true),
+        meshPlug.child(AssetNode::outputPartMeshCurrentColorSet).asString());
 
     // set mesh.currentUVSet
     // Connecting outputPartMeshCurrentUV to currentUVSet doesn't seem to
     // trigger updates.
     myDagModifier.newPlugValueString(
-            partMeshFn.findPlug("currentUVSet", true),
-            meshPlug.child(AssetNode::outputPartMeshCurrentUV).asString()
-            );
+        partMeshFn.findPlug("currentUVSet", true),
+        meshPlug.child(AssetNode::outputPartMeshCurrentUV).asString());
 
     // connect mesh attributes
     {
         MPlug srcPlug;
         MPlug dstPlug;
 
-        //srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentColorSet);
-        //dstPlug = partMeshFn.findPlug("currentColorSet", true);
-        //status = myDagModifier.connect(srcPlug, dstPlug);
-        //CHECK_MSTATUS_AND_RETURN_IT(status);
+        // srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentColorSet);
+        // dstPlug = partMeshFn.findPlug("currentColorSet", true);
+        // status = myDagModifier.connect(srcPlug, dstPlug);
+        // CHECK_MSTATUS_AND_RETURN_IT(status);
 
-        //srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentUV);
-        //dstPlug = partMeshFn.findPlug("currentUVSet", true);
-        //status = myDagModifier.connect(srcPlug, dstPlug);
-        //CHECK_MSTATUS_AND_RETURN_IT(status);
+        // srcPlug = meshPlug.child(AssetNode::outputPartMeshCurrentUV);
+        // dstPlug = partMeshFn.findPlug("currentUVSet", true);
+        // status = myDagModifier.connect(srcPlug, dstPlug);
+        // CHECK_MSTATUS_AND_RETURN_IT(status);
 
         srcPlug = meshPlug.child(AssetNode::outputPartMeshData);
         dstPlug = partMeshFn.findPlug("inMesh", true);
-        status = myDagModifier.connect(srcPlug, dstPlug);
+        status  = myDagModifier.connect(srcPlug, dstPlug);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         status = myDagModifier.doIt();
@@ -296,10 +264,7 @@ SyncOutputGeometryPart::createOutputMesh(
     }
 
     MPlug mayaSGAttributePlug;
-    createOutputExtraAttributes(
-            meshShape,
-            &mayaSGAttributePlug
-            );
+    createOutputExtraAttributes(meshShape, &mayaSGAttributePlug);
 
     // createOutputExtraAttributes() seems to cause something in the DG to be
     // dirty/invalid. We need to force the mesh to evaluate before running the
@@ -314,192 +279,188 @@ SyncOutputGeometryPart::createOutputMesh(
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
-    createOutputGroups(
-            meshShape,
-            &hasMaterials
-            );
+    createOutputGroups(meshShape, &hasMaterials);
 
     // material
     {
-        typedef std::pair<MObject, MIntArray*> MaterialComponent;
+        typedef std::pair<MObject, MIntArray *> MaterialComponent;
         std::vector<MaterialComponent> materialComponents;
 
         // if there are material ids
-        MPlug materialIdsPlug = meshPlug.parent().child(AssetNode::outputPartMaterialIds);
+        MPlug materialIdsPlug =
+            meshPlug.parent().child(AssetNode::outputPartMaterialIds);
         const MFnIntArrayData materialIdsData(materialIdsPlug.asMObject());
-        if(materialIdsData.length())
+        if (materialIdsData.length())
         {
             std::map<int, MaterialComponent> materialComponentsMap;
 
             // gather material ids
-            for(size_t i = 0; i < materialIdsData.length(); i++)
+            for (size_t i = 0; i < materialIdsData.length(); i++)
             {
-                if(hasMaterials[i])
+                if (hasMaterials[i])
                 {
                     continue;
                 }
 
                 int materialId = materialIdsData[i];
-                if(materialId == -1)
+                if (materialId == -1)
                 {
                     continue;
                 }
 
                 hasMaterials[i] = true;
 
-                std::pair<std::map<int, MaterialComponent>::iterator, bool> r
-                    = materialComponentsMap.insert(
-                            std::pair<int, MaterialComponent>(
-                                materialId, MaterialComponent()));
+                std::pair<std::map<int, MaterialComponent>::iterator, bool> r =
+                    materialComponentsMap.insert(
+                        std::pair<int, MaterialComponent>(
+                            materialId, MaterialComponent()));
                 // if first time seeing the material id
-                if(r.second)
+                if (r.second)
                 {
                     MaterialComponent &materialComponent = r.first->second;
                     // create the material
-                    materialComponent.first = SyncOutputMaterial::createOutputMaterial(
-                            myDagModifier,
-                            myOutputPlug.node(),
-                            materialId);
+                    materialComponent.first =
+                        SyncOutputMaterial::createOutputMaterial(
+                            myDagModifier, myOutputPlug.node(), materialId);
                     materialComponent.second = new MIntArray();
                 }
 
                 r.first->second.second->append(i);
             }
 
-            for(std::map<int, MaterialComponent>::iterator iter
-                    = materialComponentsMap.begin();
-                    iter != materialComponentsMap.end(); iter++)
+            for (std::map<int, MaterialComponent>::iterator iter =
+                     materialComponentsMap.begin();
+                 iter != materialComponentsMap.end(); iter++)
             {
                 materialComponents.push_back(iter->second);
             }
         }
 
         // if there are maya_shading_group
-	bool objectShaderAssigned = false;
-        if(!mayaSGAttributePlug.isNull())
+        bool objectShaderAssigned = false;
+        if (!mayaSGAttributePlug.isNull())
         {
             MPlug mayaSGOwnerPlug = mayaSGAttributePlug.child(
-                    AssetNode::outputPartExtraAttributeOwner
-                    );
+                AssetNode::outputPartExtraAttributeOwner);
             MPlug mayaSGDataPlug = mayaSGAttributePlug.child(
-                    AssetNode::outputPartExtraAttributeData
-                    );
+                AssetNode::outputPartExtraAttributeData);
 
             MString owner = mayaSGOwnerPlug.asString();
 
-            if(owner == "detail")
+            if (owner == "detail")
             {
                 MString mayaSG = mayaSGDataPlug.asString();
                 myDagModifier.commandToExecute(
-                     MString("sets -e -forceElement ")
-		     + mayaSG
-		     + MString(" ")
-                     + partMeshFn.fullPathName()
-                );
-	        objectShaderAssigned = true;	
+                    MString("sets -e -forceElement ") + mayaSG + MString(" ") +
+                    partMeshFn.fullPathName());
+                objectShaderAssigned = true;
             }
-            else if(owner == "primitive")
+            else if (owner == "primitive")
             {
                 MFnStringArrayData mayaSGData(mayaSGDataPlug.asMObject());
                 MStringArray mayaSG = mayaSGData.array();
-		
-		const char* firstSgName = mayaSG[0].asChar();
-		bool sameShader = true;
-                for(size_t i = 0; i < mayaSG.length(); i++)
+
+                const char *firstSgName = mayaSG[0].asChar();
+                bool sameShader         = true;
+                for (size_t i = 0; i < mayaSG.length(); i++)
                 {
-		    const char* sgName = mayaSG[i].asChar();
-                    if(!sgName || !sgName[0])
+                    const char *sgName = mayaSG[i].asChar();
+                    if (!sgName || !sgName[0])
                     {
-		      sameShader = false;
-		      break;
+                        sameShader = false;
+                        break;
                     }
-		    if(!strcmp(sgName, firstSgName))
-		      continue;
-		    sameShader = false;
-		    break;
-		}
-		// if all the primitives are on the same shader, assign it as object level shader
-		if(sameShader) {
+                    if (!strcmp(sgName, firstSgName))
+                        continue;
+                    sameShader = false;
+                    break;
+                }
+                // if all the primitives are on the same shader, assign it as
+                // object level shader
+                if (sameShader)
+                {
                     myDagModifier.commandToExecute(
-                         MString("sets -e -forceElement ")
-		         + mayaSG[0]
-		         + MString(" ")
-                         + partMeshFn.fullPathName()
-                    );
-	            objectShaderAssigned = true;
-		} else {
-
-                std::map<std::string, MaterialComponent> materialComponentsMap;
-
-                // gather shading group name
-                for(size_t i = 0; i < mayaSG.length(); i++)
+                        MString("sets -e -forceElement ") + mayaSG[0] +
+                        MString(" ") + partMeshFn.fullPathName());
+                    objectShaderAssigned = true;
+                }
+                else
                 {
-                    if(hasMaterials[i])
+                    std::map<std::string, MaterialComponent>
+                        materialComponentsMap;
+
+                    // gather shading group name
+                    for (size_t i = 0; i < mayaSG.length(); i++)
                     {
-                        continue;
-                    }
+                        if (hasMaterials[i])
+                        {
+                            continue;
+                        }
 
-                    const char* sgName = mayaSG[i].asChar();
-                    if(!sgName || !sgName[0])
-                    {
-                        continue;
-                    }
+                        const char *sgName = mayaSG[i].asChar();
+                        if (!sgName || !sgName[0])
+                        {
+                            continue;
+                        }
 
-                    hasMaterials[i] = true;
+                        hasMaterials[i] = true;
 
-                    std::pair<std::map<std::string, MaterialComponent>::iterator, bool> r
-                        = materialComponentsMap.insert(
+                        std::pair<
+                            std::map<std::string, MaterialComponent>::iterator,
+                            bool>
+                            r = materialComponentsMap.insert(
                                 std::pair<std::string, MaterialComponent>(
                                     sgName, MaterialComponent()));
-                    // if first time seeing the shading group
-                    if(r.second)
-                    {
-                        MaterialComponent &materialComponent = r.first->second;
-                        materialComponent.first = Util::findNodeByName(sgName,
-                                MFn::kShadingEngine);
-                        materialComponent.second = new MIntArray();
+                        // if first time seeing the shading group
+                        if (r.second)
+                        {
+                            MaterialComponent &materialComponent =
+                                r.first->second;
+                            materialComponent.first = Util::findNodeByName(
+                                sgName, MFn::kShadingEngine);
+                            materialComponent.second = new MIntArray();
+                        }
+
+                        r.first->second.second->append(i);
                     }
 
-                    r.first->second.second->append(i);
+                    for (std::map<std::string, MaterialComponent>::iterator
+                             iter = materialComponentsMap.begin();
+                         iter != materialComponentsMap.end(); iter++)
+                    {
+                        materialComponents.push_back(iter->second);
+                    }
                 }
-
-                for(std::map<std::string, MaterialComponent>::iterator iter
-                        = materialComponentsMap.begin();
-                        iter != materialComponentsMap.end(); iter++)
-                {
-                    materialComponents.push_back(iter->second);
-                }
-		}
             }
         }
-	if(!objectShaderAssigned) {
-	    // use default shader for object level shader if none was specified in the detail attrs
-	    // so that new, unassigned faces have a fallback shader assignment
-	    myDagModifier.commandToExecute(
-                MString("sets -e -forceElement initialShadingGroup ")
-                + partMeshFn.fullPathName()
-                );
-	}
-	  
+        if (!objectShaderAssigned)
+        {
+            // use default shader for object level shader if none was specified
+            // in the detail attrs so that new, unassigned faces have a fallback
+            // shader assignment
+            myDagModifier.commandToExecute(
+                MString("sets -e -forceElement initialShadingGroup ") +
+                partMeshFn.fullPathName());
+        }
 
         // assign materials
-        MObject defaultMaterialObj = Util::findNodeByName("initialShadingGroup",
-                MFn::kShadingEngine);
-        for(std::vector<MaterialComponent>::iterator iter
-                = materialComponents.begin();
-                iter != materialComponents.end(); iter++)
+        MObject defaultMaterialObj = Util::findNodeByName(
+            "initialShadingGroup", MFn::kShadingEngine);
+        for (std::vector<MaterialComponent>::iterator iter =
+                 materialComponents.begin();
+             iter != materialComponents.end(); iter++)
         {
-            MObject materialObj = iter->first;
+            MObject materialObj   = iter->first;
             MIntArray *components = iter->second;
 
-            if(materialObj.isNull())
+            if (materialObj.isNull())
             {
                 materialObj = defaultMaterialObj;
             }
 
             MObject componentObj;
-            //do per-face assignment if components is null
-            if(components)
+            // do per-face assignment if components is null
+            if (components)
             {
                 MFnSingleIndexedComponent componentFn;
                 componentObj = componentFn.create(MFn::kMeshPolygonComponent);
@@ -509,14 +470,14 @@ SyncOutputGeometryPart::createOutputMesh(
             MDagPath partMeshDag;
             partMeshFn.getPath(partMeshDag);
 
-            MString assignCommand = "sets -e -forceElement "
-                + MFnDependencyNode(materialObj).name();
+            MString assignCommand = "sets -e -forceElement " +
+                                    MFnDependencyNode(materialObj).name();
 
             MSelectionList selectionList;
             MStringArray selectionStrings;
             selectionList.add(partMeshDag, componentObj);
             selectionList.getSelectionStrings(selectionStrings);
-            for(unsigned int i = 0; i < selectionStrings.length(); i++)
+            for (unsigned int i = 0; i < selectionStrings.length(); i++)
             {
                 assignCommand += " " + selectionStrings[i];
             }
@@ -534,16 +495,14 @@ SyncOutputGeometryPart::createOutputMesh(
 }
 
 MStatus
-SyncOutputGeometryPart::createOutputCurves(
-        MPlug curvesPlug,
-        const MString &partName,
-        bool isBezier
-        )
+SyncOutputGeometryPart::createOutputCurves(MPlug curvesPlug,
+                                           const MString &partName,
+                                           bool isBezier)
 {
     MStatus status;
 
     int numCurves = curvesPlug.evaluateNumElements();
-    for(int i=0; i<numCurves; i++)
+    for (int i = 0; i < numCurves; i++)
     {
         MPlug curvePlug = curvesPlug[i];
 
@@ -554,10 +513,7 @@ SyncOutputGeometryPart::createOutputCurves(
 
         // create curve transform
         MObject curveTransform = myDagModifier.createNode(
-                "transform",
-                myPartTransform,
-                &status
-                );
+            "transform", myPartTransform, &status);
         CHECK_MSTATUS_AND_RETURN_IT(status);
 
         // rename curve transform
@@ -566,10 +522,7 @@ SyncOutputGeometryPart::createOutputCurves(
 
         // create curve shape
         MObject curveShape = myDagModifier.createNode(
-                isBezier ? "bezierCurve" : "nurbsCurve",
-                curveTransform,
-                &status
-                );
+            isBezier ? "bezierCurve" : "nurbsCurve", curveTransform, &status);
         CHECK_MSTATUS(status);
 
         // rename curve shape
@@ -587,19 +540,14 @@ SyncOutputGeometryPart::createOutputCurves(
 }
 
 MStatus
-SyncOutputGeometryPart::createOutputParticle(
-        const MString &partName,
-        const MPlug &particlePlug
-        )
+SyncOutputGeometryPart::createOutputParticle(const MString &partName,
+                                             const MPlug &particlePlug)
 {
     MStatus status;
 
     // create nParticle
     MObject particleShapeObj = myDagModifier.createNode(
-            "nParticle",
-            myPartTransform,
-            &status
-            );
+        "nParticle", myPartTransform, &status);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // rename particle
@@ -608,10 +556,8 @@ SyncOutputGeometryPart::createOutputParticle(
     status = myDagModifier.doIt();
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    myDagModifier.commandToExecute(
-            "setupNParticleConnections " +
-            MFnDagNode(myPartTransform).fullPathName()
-            );
+    myDagModifier.commandToExecute("setupNParticleConnections " +
+                                   MFnDagNode(myPartTransform).fullPathName());
 
     MPlug srcPlug;
     MPlug dstPlug;
@@ -621,29 +567,27 @@ SyncOutputGeometryPart::createOutputParticle(
     // connect nParticleShape attributes
     srcPlug = particlePlug.child(AssetNode::outputPartParticleCurrentTime);
     dstPlug = particleShapeFn.findPlug("currentTime", true);
-    status = myDagModifier.connect(srcPlug, dstPlug);
+    status  = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     srcPlug = particlePlug.child(AssetNode::outputPartParticlePositions);
     dstPlug = particleShapeFn.findPlug("positions", true);
-    status = myDagModifier.connect(srcPlug, dstPlug);
+    status  = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     srcPlug = particlePlug.child(AssetNode::outputPartParticleArrayData);
     dstPlug = particleShapeFn.findPlug("cacheArrayData", true);
-    status = myDagModifier.connect(srcPlug, dstPlug);
+    status  = myDagModifier.connect(srcPlug, dstPlug);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set particleRenderType to points
     status = myDagModifier.newPlugValueInt(
-            particleShapeFn.findPlug("particleRenderType", true),
-            3);
+        particleShapeFn.findPlug("particleRenderType", true), 3);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     // set playFromCache to true
     status = myDagModifier.newPlugValueBool(
-            particleShapeFn.findPlug("playFromCache", true),
-            true);
+        particleShapeFn.findPlug("playFromCache", true), true);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
     createOutputExtraAttributes(particleShapeObj);
@@ -652,37 +596,38 @@ SyncOutputGeometryPart::createOutputParticle(
 }
 
 MStatus
-SyncOutputGeometryPart::createOutputInstancer(
-        const MString &partName,
-        const MPlug &instancerPlug
-        )
+SyncOutputGeometryPart::createOutputInstancer(const MString &partName,
+                                              const MPlug &instancerPlug)
 {
     MStatus status;
 
     MFnDependencyNode assetNodeFn(instancerPlug.node());
 
-    AssetNodeOptions::AccessorFn options(assetNodeOptionsDefinition, assetNodeFn);
+    AssetNodeOptions::AccessorFn options(
+        assetNodeOptionsDefinition, assetNodeFn);
 
     MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
     MFnIntArrayData partsData(partsPlug.asMObject());
     MIntArray parts = partsData.array();
 
     // Particle instancer
-    if(options.useInstancerNode())
+    if (options.useInstancerNode())
     {
         myPartShapes.setLength(parts.length());
 
-        for(unsigned int i = 0; i < parts.length(); i++)
+        for (unsigned int i = 0; i < parts.length(); i++)
         {
             // create the instancer node
-            myPartShapes[i] = myDagModifier.createNode("instancer", myPartTransform, &status);
+            myPartShapes[i] = myDagModifier.createNode(
+                "instancer", myPartTransform, &status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             MFnDependencyNode instancerFn(myPartShapes[i], &status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // set the rotation units to radians
-            status = myDagModifier.newPlugValueInt(instancerFn.findPlug("rotationAngleUnits", true), 1);
+            status = myDagModifier.newPlugValueInt(
+                instancerFn.findPlug("rotationAngleUnits", true), 1);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect instancer directly to assetnode
@@ -690,54 +635,58 @@ SyncOutputGeometryPart::createOutputInstancer(
                 instancerPlug.child(AssetNode::outputPartInstancerArrayData),
                 instancerFn.findPlug("inputPoints", true));
 
-            createOutputExtraAttributes(
-                    myPartShapes[i]
-                    );
+            createOutputExtraAttributes(myPartShapes[i]);
         }
     }
     else
     {
-        MPlug transformPlug = instancerPlug.child(AssetNode::outputPartInstancerTransform);
+        MPlug transformPlug =
+            instancerPlug.child(AssetNode::outputPartInstancerTransform);
 
         unsigned int numTransforms = transformPlug.numElements();
 
         myPartShapes.setLength(numTransforms);
 
-        for(unsigned int i = 0; i < numTransforms; i++)
+        for (unsigned int i = 0; i < numTransforms; i++)
         {
             MPlug transformElemPlug = transformPlug[i];
-            MPlug translatePlug = transformElemPlug.child(AssetNode::outputPartInstancerTranslate);
-            MPlug rotatePlug = transformElemPlug.child(AssetNode::outputPartInstancerRotate);
-            MPlug scalePlug = transformElemPlug.child(AssetNode::outputPartInstancerScale);
+            MPlug translatePlug     = transformElemPlug.child(
+                AssetNode::outputPartInstancerTranslate);
+            MPlug rotatePlug =
+                transformElemPlug.child(AssetNode::outputPartInstancerRotate);
+            MPlug scalePlug =
+                transformElemPlug.child(AssetNode::outputPartInstancerScale);
 
-            translatePlug.selectAncestorLogicalIndex(i, AssetNode::outputPartInstancerTransform);
-            rotatePlug.selectAncestorLogicalIndex(i, AssetNode::outputPartInstancerTransform);
-            scalePlug.selectAncestorLogicalIndex(i, AssetNode::outputPartInstancerTransform);
+            translatePlug.selectAncestorLogicalIndex(
+                i, AssetNode::outputPartInstancerTransform);
+            rotatePlug.selectAncestorLogicalIndex(
+                i, AssetNode::outputPartInstancerTransform);
+            scalePlug.selectAncestorLogicalIndex(
+                i, AssetNode::outputPartInstancerTransform);
 
-            myPartShapes[i] = myDagModifier.createNode("transform", myPartTransform, &status);
+            myPartShapes[i] = myDagModifier.createNode(
+                "transform", myPartTransform, &status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
-            status = myDagModifier.renameNode(myPartShapes[i], partName + "_" + i);
+            status = myDagModifier.renameNode(
+                myPartShapes[i], partName + "_" + i);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             MFnDependencyNode instanceTransform(myPartShapes[i]);
 
             // connect translate
             status = myDagModifier.connect(
-                    translatePlug,
-                    instanceTransform.findPlug("translate", true));
+                translatePlug, instanceTransform.findPlug("translate", true));
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect rotate
             status = myDagModifier.connect(
-                    rotatePlug,
-                    instanceTransform.findPlug("rotate", true));
+                rotatePlug, instanceTransform.findPlug("rotate", true));
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect scale
             status = myDagModifier.connect(
-                    scalePlug,
-                    instanceTransform.findPlug("scale", true));
+                scalePlug, instanceTransform.findPlug("scale", true));
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
     }
@@ -747,60 +696,61 @@ SyncOutputGeometryPart::createOutputInstancer(
 
 MStatus
 SyncOutputGeometryPart::createOutputInstancerPost(
-        const MPlug &instancerPlug,
-        SyncOutputGeometryPart *const *syncParts
-        )
+    const MPlug &instancerPlug, SyncOutputGeometryPart *const *syncParts)
 {
     MStatus status;
 
     MFnDependencyNode assetNodeFn(instancerPlug.node());
 
-    AssetNodeOptions::AccessorFn options(assetNodeOptionsDefinition, assetNodeFn);
+    AssetNodeOptions::AccessorFn options(
+        assetNodeOptionsDefinition, assetNodeFn);
 
     MPlug partsPlug = instancerPlug.child(AssetNode::outputPartInstancerParts);
     MFnIntArrayData partsData(partsPlug.asMObject());
     MIntArray parts = partsData.array();
 
     // Particle instancer
-    if(options.useInstancerNode())
+    if (options.useInstancerNode())
     {
-        for(unsigned int i = 0; i < parts.length(); i++)
+        for (unsigned int i = 0; i < parts.length(); i++)
         {
             MFnDependencyNode instancerFn(myPartShapes[i], &status);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
-            MPlug inputHierarchyPlug = instancerFn.findPlug("inputHierarchy", true);
+            MPlug inputHierarchyPlug = instancerFn.findPlug(
+                "inputHierarchy", true);
 
-            const MObject &instancedPartTransform = syncParts[parts[i]]->partTransform();
+            const MObject &instancedPartTransform =
+                syncParts[parts[i]]->partTransform();
             MFnDependencyNode instancedPartTransformFn(instancedPartTransform);
 
             // set objectTransform hidden
             status = myDagModifier.newPlugValueInt(
-                    instancedPartTransformFn.findPlug("visibility", true),
-                    0);
+                instancedPartTransformFn.findPlug("visibility", true), 0);
             CHECK_MSTATUS_AND_RETURN_IT(status);
 
             // connect inputHierarchy
             status = myDagModifier.connect(
-                    instancedPartTransformFn.findPlug("matrix", true),
-                    inputHierarchyPlug.elementByLogicalIndex(0));
+                instancedPartTransformFn.findPlug("matrix", true),
+                inputHierarchyPlug.elementByLogicalIndex(0));
             CHECK_MSTATUS_AND_RETURN_IT(status);
         }
     }
     else
     {
-        MPlug transformPlug = instancerPlug.child(AssetNode::outputPartInstancerTransform);
+        MPlug transformPlug =
+            instancerPlug.child(AssetNode::outputPartInstancerTransform);
 
         unsigned int numTransforms = transformPlug.numElements();
 
-        for(unsigned int i = 0; i < parts.length(); i++)
+        for (unsigned int i = 0; i < parts.length(); i++)
         {
-            SyncOutputGeometryPart* const &syncPart = syncParts[parts[i]];
+            SyncOutputGeometryPart *const &syncPart = syncParts[parts[i]];
 
             const MObject &instancedPartTransform = syncPart->partTransform();
             MFnDagNode instancedPartTransformFn(instancedPartTransform);
 
-            for(unsigned int j = 0; j < numTransforms; j++)
+            for (unsigned int j = 0; j < numTransforms; j++)
             {
                 MFnDagNode instanceTransformFn(myPartShapes[j]);
 
@@ -809,19 +759,19 @@ SyncOutputGeometryPart::createOutputInstancerPost(
                 // When we ever see the part for the very first time, we want to
                 // reparent it from the default location. After that, we can
                 // simply instance it.
-                if(!syncPart->isInstanced())
+                if (!syncPart->isInstanced())
                 {
                     syncPart->setIsInstanced(true);
 
                     command.format("parent -relative ^1s ^2s;",
-                            instancedPartTransformFn.fullPathName(),
-                            instanceTransformFn.fullPathName());
+                                   instancedPartTransformFn.fullPathName(),
+                                   instanceTransformFn.fullPathName());
                 }
                 else
                 {
                     command.format("parent -relative -addObject ^1s ^2s;",
-                            instancedPartTransformFn.fullPathName(),
-                            instanceTransformFn.fullPathName());
+                                   instancedPartTransformFn.fullPathName(),
+                                   instanceTransformFn.fullPathName());
                 }
 
                 status = myDagModifier.commandToExecute(command);
@@ -837,126 +787,113 @@ SyncOutputGeometryPart::createOutputInstancerPost(
 }
 
 MStatus
-SyncOutputGeometryPart::createOutputExtraAttributes(
-        const MObject &dstNode,
-        MPlug* mayaSGAttributePlug
-        )
+SyncOutputGeometryPart::createOutputExtraAttributes(const MObject &dstNode,
+                                                    MPlug *mayaSGAttributePlug)
 {
     MStatus status;
 
     MFnDependencyNode dstNodeFn(dstNode);
 
-    MPlug extraAttributesPlug = myOutputPlug.child(
-            AssetNode::outputPartExtraAttributes
-            );
+    MPlug extraAttributesPlug =
+        myOutputPlug.child(AssetNode::outputPartExtraAttributes);
 
     bool isParticle = dstNode.hasFn(MFn::kParticle);
 
     int numExtraAttributes = extraAttributesPlug.numElements();
-    for(int i = 0; i < numExtraAttributes; i++)
+    for (int i = 0; i < numExtraAttributes; i++)
     {
         MPlug extraAttributePlug = extraAttributesPlug[i];
-        MPlug extraAttributeNamePlug = extraAttributePlug.child(
-                AssetNode::outputPartExtraAttributeName
-                );
-        MPlug extraAttributeOwnerPlug = extraAttributePlug.child(
-                AssetNode::outputPartExtraAttributeOwner
-                );
+        MPlug extraAttributeNamePlug =
+            extraAttributePlug.child(AssetNode::outputPartExtraAttributeName);
+        MPlug extraAttributeOwnerPlug =
+            extraAttributePlug.child(AssetNode::outputPartExtraAttributeOwner);
         MPlug extraAttributeDataTypePlug = extraAttributePlug.child(
-                AssetNode::outputPartExtraAttributeDataType
-                );
-        MPlug extraAttributeTuplePlug = extraAttributePlug.child(
-                AssetNode::outputPartExtraAttributeTuple
-                );
-        MPlug extraAttributeDataPlug = extraAttributePlug.child(
-                AssetNode::outputPartExtraAttributeData
-                );
+            AssetNode::outputPartExtraAttributeDataType);
+        MPlug extraAttributeTuplePlug =
+            extraAttributePlug.child(AssetNode::outputPartExtraAttributeTuple);
+        MPlug extraAttributeDataPlug =
+            extraAttributePlug.child(AssetNode::outputPartExtraAttributeData);
 
         MString dstAttributeName = extraAttributeNamePlug.asString();
 
-        MString owner = extraAttributeOwnerPlug.asString();
+        MString owner    = extraAttributeOwnerPlug.asString();
         MString dataType = extraAttributeDataTypePlug.asString();
-        int tuple = extraAttributeTuplePlug.asInt();
+        int tuple        = extraAttributeTuplePlug.asInt();
 
         bool isPerParticleAttribute = false;
-        if(isParticle)
+        if (isParticle)
         {
             // Not every attribute type can be supported on a particle node.
             bool canSupportAttribute = false;
 
-            if(owner == "detail")
+            if (owner == "detail")
             {
                 // Make sure the data is not array type.
-                if((dataType == "float"
-                            || dataType == "double"
-                            || dataType == "int"
-                            || dataType == "long")
-                        && tuple <= 3)
+                if ((dataType == "float" || dataType == "double" ||
+                     dataType == "int" || dataType == "long") &&
+                    tuple <= 3)
                 {
                     canSupportAttribute = true;
                 }
-                else if(dataType == "string"
-                        && tuple == 1)
+                else if (dataType == "string" && tuple == 1)
                 {
                     canSupportAttribute = true;
                 }
             }
-            else if(owner == "primitive")
+            else if (owner == "primitive")
             {
                 // Shouldn't be possible.
             }
-            else if(owner == "point")
+            else if (owner == "point")
             {
                 // Particles don't support int and string attributes. Also,
                 // make sure the one particle maps to one element of the array.
-                if((dataType == "double" && tuple == 1)
-                        || (dataType == "double" && tuple == 3))
+                if ((dataType == "double" && tuple == 1) ||
+                    (dataType == "double" && tuple == 3))
                 {
                     isPerParticleAttribute = true;
-                    canSupportAttribute = true;
+                    canSupportAttribute    = true;
 
                     // This should match the list in
                     // OutputGeometryPart::computeParticle().
-                    if(dstAttributeName == "Cd")
+                    if (dstAttributeName == "Cd")
                     {
                         dstAttributeName = "rgbPP";
                     }
-                    else if(dstAttributeName == "Alpha")
+                    else if (dstAttributeName == "Alpha")
                     {
                         dstAttributeName = "opacityPP";
                     }
-                    else if(dstAttributeName == "pscale")
+                    else if (dstAttributeName == "pscale")
                     {
                         dstAttributeName = "radiusPP";
                     }
                 }
             }
-            else if(owner == "vertex")
+            else if (owner == "vertex")
             {
                 // Shouldn't be possible.
             }
 
-            if(!canSupportAttribute)
+            if (!canSupportAttribute)
             {
                 DISPLAY_WARNING(
-                        "The particle node:\n"
-                        "    ^1s\n"
-                        "cannot support the attribute:\n"
-                        "    owner: ^2s, name: ^3s, type: ^4s, tuple: ^5s\n"
-                        "from the plug:"
-                        "    ^6s\n",
-                        dstNodeFn.name(),
-                        owner, dstAttributeName, dataType, MString() + tuple,
-                        extraAttributeDataPlug.name()
-                        );
+                    "The particle node:\n"
+                    "    ^1s\n"
+                    "cannot support the attribute:\n"
+                    "    owner: ^2s, name: ^3s, type: ^4s, tuple: ^5s\n"
+                    "from the plug:"
+                    "    ^6s\n",
+                    dstNodeFn.name(), owner, dstAttributeName, dataType,
+                    MString() + tuple, extraAttributeDataPlug.name());
                 continue;
             }
         }
 
-        if((owner == "primitive" || owner == "detail")
-                && dstAttributeName == "maya_shading_group")
+        if ((owner == "primitive" || owner == "detail") &&
+            dstAttributeName == "maya_shading_group")
         {
-            if(mayaSGAttributePlug)
+            if (mayaSGAttributePlug)
             {
                 *mayaSGAttributePlug = extraAttributePlug;
             }
@@ -964,7 +901,7 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
         }
 
         // Some special cases to remap certain attributes.
-        if(owner != "detail" && dstAttributeName == "v")
+        if (owner != "detail" && dstAttributeName == "v")
         {
             // "v" means velocity in Houdini. However, in Maya, "v" happens to
             // be the short name of the "visibility" attribute. Instead of
@@ -975,82 +912,69 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
 
         MObject dstAttribute = dstNodeFn.attribute(dstAttributeName);
 
-        if(owner == "detail")
+        if (owner == "detail")
         {
             // Use existing attribute if it exists.
         }
         else
         {
-            if(!dstAttribute.isNull())
+            if (!dstAttribute.isNull())
             {
                 // If the attribute already exists, add a prefix. This avoids
                 // name conflict when outputting attributes with the same name.
                 dstAttributeName = owner + "_" + dstAttributeName;
-                dstAttribute = MObject::kNullObj;
+                dstAttribute     = MObject::kNullObj;
             }
         }
 
         // If it doesn't exist, create it.
-        if(dstAttribute.isNull())
+        if (dstAttribute.isNull())
         {
             MDataHandle dataHandle = extraAttributeDataPlug.asMDataHandle();
 
             dstAttribute = createAttributeFromDataHandle(
-                    dstAttributeName,
-                    dataHandle
-                    );
+                dstAttributeName, dataHandle);
 
-            if(!dstAttribute.isNull())
+            if (!dstAttribute.isNull())
             {
-                CHECK_MSTATUS(myDagModifier.addAttribute(
-                            dstNode,
-                            dstAttribute
-                            ));
+                CHECK_MSTATUS(
+                    myDagModifier.addAttribute(dstNode, dstAttribute));
                 CHECK_MSTATUS(myDagModifier.doIt());
             }
         }
 
         // If there's still no attribute, skip it.
-        if(dstAttribute.isNull())
+        if (dstAttribute.isNull())
         {
-            DISPLAY_WARNING(
-                    "Cannot create attribute on the node:\n"
-                    "    ^1s\n"
-                    "for the attribute:\n"
-                    "    owner: ^2s, name: ^3s, type: ^4s, tuple: ^5s\n"
-                    "from the plug:\n"
-                    "    ^6s\n",
-                    dstNodeFn.name(),
-                    owner, dstAttributeName, dataType, MString() + tuple,
-                    extraAttributeDataPlug.name()
-                    );
+            DISPLAY_WARNING("Cannot create attribute on the node:\n"
+                            "    ^1s\n"
+                            "for the attribute:\n"
+                            "    owner: ^2s, name: ^3s, type: ^4s, tuple: ^5s\n"
+                            "from the plug:\n"
+                            "    ^6s\n",
+                            dstNodeFn.name(), owner, dstAttributeName, dataType,
+                            MString() + tuple, extraAttributeDataPlug.name());
 
             continue;
         }
 
         // Per-particle attributes does not need to be, and cannot be,
         // connected.
-        if(isParticle && isPerParticleAttribute)
+        if (isParticle && isPerParticleAttribute)
         {
             continue;
         }
 
         MPlug dstPlug(dstNode, dstAttribute);
-        CHECK_MSTATUS(myDagModifier.connect(
-                    extraAttributeDataPlug,
-                    dstPlug
-                    ));
+        CHECK_MSTATUS(myDagModifier.connect(extraAttributeDataPlug, dstPlug));
         status = (myDagModifier.doIt());
-        if(!status)
+        if (!status)
         {
-            DISPLAY_WARNING(
-                    "Failed to connect:\n"
-                    "    ^1s\n"
-                    "    to:\n"
-                    "    ^2s\n",
-                    extraAttributeDataPlug.name(),
-                    dstPlug.name()
-                    );
+            DISPLAY_WARNING("Failed to connect:\n"
+                            "    ^1s\n"
+                            "    to:\n"
+                            "    ^2s\n",
+                            extraAttributeDataPlug.name(), dstPlug.name());
             CHECK_MSTATUS(status);
         }
     }
@@ -1059,10 +983,8 @@ SyncOutputGeometryPart::createOutputExtraAttributes(
 }
 
 MStatus
-SyncOutputGeometryPart::createOutputGroups(
-        const MObject &dstNode,
-        std::vector<bool>* hasMaterials
-        )
+SyncOutputGeometryPart::createOutputGroups(const MObject &dstNode,
+                                           std::vector<bool> *hasMaterials)
 {
     MStatus status;
 
@@ -1074,38 +996,30 @@ SyncOutputGeometryPart::createOutputGroups(
     status = myDagModifier.doIt();
     CHECK_MSTATUS(status);
 
-    MPlug groupsPlug = myOutputPlug.child(
-            AssetNode::outputPartGroups
-            );
+    MPlug groupsPlug = myOutputPlug.child(AssetNode::outputPartGroups);
 
     int numGroups = groupsPlug.numElements();
-    for(int i = 0; i < numGroups; i++)
+    for (int i = 0; i < numGroups; i++)
     {
         MPlug groupPlug = groupsPlug[i];
 
-        MPlug groupNamePlug = groupPlug.child(
-                AssetNode::outputPartGroupName
-                );
-        MPlug groupTypePlug = groupPlug.child(
-                AssetNode::outputPartGroupType
-                );
-        MPlug groupMembersPlug = groupPlug.child(
-                AssetNode::outputPartGroupMembers
-                );
+        MPlug groupNamePlug = groupPlug.child(AssetNode::outputPartGroupName);
+        MPlug groupTypePlug = groupPlug.child(AssetNode::outputPartGroupType);
+        MPlug groupMembersPlug =
+            groupPlug.child(AssetNode::outputPartGroupMembers);
 
         MString setName = groupNamePlug.asString();
 
-        MFn::Type componentType = (MFn::Type) groupTypePlug.asInt();
+        MFn::Type componentType = (MFn::Type)groupTypePlug.asInt();
 
         MObject setObj = Util::findNodeByName(setName, MFn::kSet);
-        if(setObj.isNull())
+        if (setObj.isNull())
         {
-            status = Util::createNodeByModifierCommand(
-                    myDagModifier,
-                    "select -noExpand `sets "
-                    "-name \"" + setName + "\"`",
-                    setObj
-                    );
+            status = Util::createNodeByModifierCommand(myDagModifier,
+                                                       "select -noExpand `sets "
+                                                       "-name \"" +
+                                                           setName + "\"`",
+                                                       setObj);
             CHECK_MSTATUS(status);
         }
 
@@ -1119,22 +1033,22 @@ SyncOutputGeometryPart::createOutputGroups(
         MIntArray componentArray = groupMembersDataFn.array();
         componentFn.addElements(componentArray);
 
-        if(hasMaterials && setObj.hasFn(MFn::kShadingEngine))
+        if (hasMaterials && setObj.hasFn(MFn::kShadingEngine))
         {
-            for(unsigned int j = 0; j < componentArray.length(); j++)
+            for (unsigned int j = 0; j < componentArray.length(); j++)
             {
                 (*hasMaterials)[componentArray[j]] = true;
             }
         }
 
-        MString assignCommand = "sets -e -forceElement "
-            + MFnDependencyNode(setObj).name();
+        MString assignCommand = "sets -e -forceElement " +
+                                MFnDependencyNode(setObj).name();
 
         MSelectionList selectionList;
         MStringArray selectionStrings;
         selectionList.add(dagPath, componentObj);
         selectionList.getSelectionStrings(selectionStrings);
-        for(unsigned int j = 0; j < selectionStrings.length(); j++)
+        for (unsigned int j = 0; j < selectionStrings.length(); j++)
         {
             assignCommand += " " + selectionStrings[j];
         }

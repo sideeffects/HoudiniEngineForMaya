@@ -1,4 +1,4 @@
- global proc
+global proc
 houdiniEnginePreferences_refresh()
 {
     setParent houdiniEnginePreferences;
@@ -10,6 +10,10 @@ houdiniEnginePreferences_refresh()
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineDeleteAfterBake"`
         delAfterBakeCheck;
+
+    optionMenuGrp -e
+        -value `optionVar -query "houdiniEngineViewProduct"`
+        viewProductOpt;
 
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineUnsetLLP"`
@@ -83,6 +87,9 @@ houdiniEnginePreferences_save()
         -intValue "houdiniEngineDeleteAfterBake"
         `checkBoxGrp -q -value1 delAfterBakeCheck`;
     optionVar
+        -stringValue "houdiniEngineViewProduct"
+        `optionMenuGrp -q -value viewProductOpt`;
+    optionVar
         -intValue "houdiniEngineUnsetLLP"
         `checkBoxGrp -q -value1 unsetLLPCheck`;
 
@@ -143,6 +150,16 @@ houdiniEnginePreferences_toggleDelAfterBake(int $state)
     global int $houdiniEngineDeleteAfterBake;
 
     $houdiniEngineDeleteAfterBake = $state;
+}
+
+global proc
+houdiniEnginePreferences_setViewProduct(string $state)
+{
+    global string $houdiniEngineViewProduct;
+
+    print($state + "\n");
+
+    $houdiniEngineViewProduct = $state;
 }
 
 global proc
@@ -238,6 +255,23 @@ houdiniEnginePreferences()
                 -changeCommand "houdiniEnginePreferences_toggleDelAfterBake #1"
                 delAfterBakeCheck;
 
+            optionMenuGrp
+                -label "View Assets in:"
+                -changeCommand "houdiniEnginePreferences_setViewProduct \"#1\""
+                viewProductOpt;
+
+                menuItem -label "Houdini FX";
+                menuItem -label "Houdini Core";
+
+            button
+                -label "?"
+                -command ("confirmDialog -title \"Houdini Engine Preferences\"" +
+                "-button \"OK\" -message \"\\\"View Assets in\\\" specifies " +
+                "which Houdini product should be used when assets are viewed via " +
+                "Houdini Engine>Debugging>View Assets in Houdini. (Default: " +
+                "Houdini Core)\"")
+                viewAssetInProductHelp;
+
         setParent ..;
     setParent ..;
 
@@ -249,7 +283,14 @@ houdiniEnginePreferences()
         -attachForm asynchronousModeHelp "top" 5
         -attachForm asynchronousModeHelp "right" 5
         -attachControl delAfterBakeCheck "top" 5 asynchronousModeCheck
+
+        -attachForm delAfterBakeCheck "top" 5
         -attachForm delAfterBakeCheck "left" 5
+        -attachControl viewProductOpt "top" 5 delAfterBakeCheck
+
+        -attachForm viewAssetInProductHelp "right" 5
+        -attachControl viewAssetInProductHelp "top" 0 delAfterBakeCheck
+
         globalPreferences;
 
     // Sessions

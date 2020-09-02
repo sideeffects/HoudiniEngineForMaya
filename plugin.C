@@ -149,13 +149,13 @@ struct OptionVars
 {
     OptionVars()
         : asyncMode("AsynchronousMode", 1),
-          sessionType("SessionType", 2) // named pipe
-          ,
+          sessionType("SessionType", 2), // named pipe
           thriftServer("ThriftServer", "localhost"),
           thriftPort("ThriftPort", 9090),
           sessionPipeCustom("SessionPipeCustom", 0),
           thriftPipe("ThriftPipe", "hapi"),
-          unsetLLP("UnsetLLP", 1)
+          unsetLLP("UnsetLLP", 1),
+          viewProduct("ViewProduct", "Houdini Core")
     {
     }
 
@@ -166,6 +166,7 @@ struct OptionVars
     IntOptionVar sessionPipeCustom;
     StringOptionVar thriftPipe;
     IntOptionVar unsetLLP;
+    StringOptionVar viewProduct;
 
 private:
     OptionVars &operator=(const OptionVars &);

@@ -565,9 +565,22 @@ houdiniEngine_viewInHoudini()
 
     houdiniEngine -saveHIP $hipFile;
 
+    string $exe = "houdini";
+
+    string $viewProduct = `optionVar -q houdiniEngineViewProduct`;
+
+    if($viewProduct != "Houdini FX")
+    {
+        if($viewProduct == "Houdini Core")
+            $exe += "core";
+        else
+            $exe = $viewProduct;      // Not possible usually, but handle it here
+                                      // in case a customer modifies the UI.
+    }
+
     string $cmds[];
 
-    $cmds[size($cmds)] = "houdini -foreground \"" + $hipFile + "\"";
+    $cmds[size($cmds)] = $exe + " -foreground \"" + $hipFile + "\"";
     if($isLinux || $isMac)
     {
         $cmds[size($cmds)] = "rm -f \"" + $hipFile + "\"";

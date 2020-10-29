@@ -1,0 +1,940 @@
+#include <maya/MTypes.h>
+#if MAYA_API_VERSION >= 20180000
+
+#include <maya/MString.h>
+#include <maya/MTypeId.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
+#include <maya/MVector.h>
+#include <maya/MDataBlock.h>
+#include <maya/MDataHandle.h>
+#include <maya/MColor.h>
+#include <maya/M3dView.h>
+#include <maya/MModelMessage.h>
+#include <maya/MSelectionList.h>
+#include <maya/MFnMessageAttribute.h>
+
+#define MNoVersionString
+#define MNoPluginEntry
+#include <maya/MFnPlugin.h>
+
+#include <maya/MDistance.h>
+#include <maya/MFnUnitAttribute.h>
+#include <maya/MFnTypedAttribute.h>
+#include <maya/MGlobal.h>
+#include <maya/MEvaluationNode.h>
+
+// Viewport 2.0 includes
+#include <maya/MDrawRegistry.h>
+#include <maya/MUserData.h>
+#include <maya/MDrawContext.h>
+#include <maya/MShaderManager.h>
+#include <maya/MHWGeometry.h>
+#include <maya/MHWGeometryUtilities.h>
+#include <maya/MPointArray.h>
+
+#include <unordered_map>
+#include <signal.h>
+
+#include "MayaTypeID.h"
+#include "AssetNode.h"
+#include "AssetDraw2.h"
+#include "hapiutil.h"
+
+// Ctor of AssetDraw2Traits
+AssetDraw2Traits::AssetDraw2Traits()
+{
+}
+
+namespace
+{
+    // Viewport 2.0 specific data
+    //
+    const MString colorParameterName_ = "solidColor";
+    const MString wireframeItemName_  = "houdiniDraw2Wires";
+    const MString shadedItemName_     = "houdiniDraw2Triangles";
+
+    // Maintain a mini cache for 3d solid shaders in order to reuse the shader
+    // instance whenever possible. This can allow Viewport 2.0 optimization e.g.
+    // the GPU instancing system and the consolidation system to be leveraged.
+    //
+    struct MColorHash
+    {
+	std::size_t
+	operator()(const MColor& color) const
+	{
+	    std::size_t seed = 0;
+	    CombineHashCode(seed, color.r);
+	    CombineHashCode(seed, color.g);
+	    CombineHashCode(seed, color.b);
+	    CombineHashCode(seed, color.a);
+	    return seed;
+	}
+
+	void
+	CombineHashCode(std::size_t& seed, float v) const
+	{
+	    std::hash<float> hasher;
+	    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+	}
+    };
+
+    std::unordered_map<MColor, MHWRender::MShaderInstance*, MColorHash> the3dSolidShaders;
+    std::unordered_map<MColor, MHWRender::MShaderInstance*, MColorHash> the3dMaterialShaders;
+
+#if 1
+    void
+    printTechniques(const MStringArray& techniqueNames)
+    {
+	for( size_t i=0; i<techniqueNames.length(); ++i)
+	{
+	    const MString &s = techniqueNames[i];
+	    printf("technique[%d] = %s\n", (int)i, s.asChar());
+	}
+    }
+
+    void
+    printShaderParameters(MHWRender::MShaderInstance *test)
+    {
+	const char * parameterTypes[] {
+	    "kInvalid",
+	    "kBoolean",
+	    "kInteger",
+	    "kFloat",
+	    "kFloat2",
+	    "kFloat3",
+	    "kFloat4",
+	    "kFloat4x4Row",
+	    "kFloat4x4Col",
+	    "kTexture1",
+	    "kTexture2",
+	    "kTexture3",
+	    "kTextureCube",
+	    "kSampler"
+	};
+
+	MStringArray l;
+	test->parameterList(l);
+	for (unsigned int i=0; i<l.length(); ++i)
+	{
+	    int pt = (int)test->parameterType(l[i]);
+	    printf("%s %s\n",parameterTypes[pt],l[i].asChar());
+	}
+    }
+#endif
+
+    MHWRender::MShaderInstance*
+    get3dSolidShader(const MColor& color, bool &newshader)
+    {
+	// Return the shader instance if exists.
+	auto it = the3dSolidShaders.find(color);
+	if (it != the3dSolidShaders.end())
+	    return it->second;
+
+
+	MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+	if (!renderer)
+	    return nullptr;
+
+	const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+	if (!shaderMgr)
+	    return nullptr;
+
+	MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
+	    MHWRender::MShaderManager::k3dSolidShader);
+
+	if (!shader)
+	    return nullptr;
+
+	float solidColor[] = { color.r, color.g, color.b, 1.0f };
+	shader->setParameter(colorParameterName_, solidColor);
+
+	the3dSolidShaders[color] = shader;
+
+	newshader = true;
+	return shader;
+    }
+
+    MHWRender::MShaderInstance*
+    get3dDefaultMaterialShader(const MColor& color, bool &newshader)
+    {
+	// Return the shader instance if exists.
+	auto it = the3dMaterialShaders.find(color);
+	if (it != the3dMaterialShaders.end())
+	    return it->second;
+
+
+	MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+	if (!renderer)
+	    return nullptr;
+
+	const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+	if (!shaderMgr)
+	    return nullptr;
+
+	MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
+	    MHWRender::MShaderManager::k3dDefaultMaterialShader);
+
+
+	if (!shader)
+	    return nullptr;
+
+	//printShaderParameters(shader);
+
+	//kFloat4 diffuseColor
+	float diffuseColor[] = { 0.7, 0.7, 0.7, 1.0f };
+	shader->setParameter("diffuseColor", diffuseColor);
+
+	the3dMaterialShaders[color] = shader;
+
+	newshader = true;
+	return shader;
+    }
+
+
+    MStatus
+    releaseShaders()
+    {
+	MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+	if (!renderer)
+	    return MS::kFailure;
+
+	const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+	if (!shaderMgr)
+	    return MS::kFailure;
+
+	for (auto it = the3dSolidShaders.begin(); it != the3dSolidShaders.end(); it++)
+	    shaderMgr->releaseShader(it->second);
+
+	for (auto it = the3dMaterialShaders.begin(); it != the3dMaterialShaders.end(); it++)
+	    shaderMgr->releaseShader(it->second);
+
+	the3dSolidShaders.clear();
+	the3dMaterialShaders.clear();
+	return MS::kSuccess;
+
+    }
+} // anonymous namespace
+
+MTypeId AssetDraw2::id( MayaTypeID_HoudiniAssetDraw2 );
+MString	AssetDraw2::drawDbClassification("drawdb/geometry/houdiniDraw2");
+MString	AssetDraw2::drawRegistrantId("houdiniDraw2Plugin");
+
+AssetDraw2::AssetDraw2()
+: myOutputDeform(/*topo=*/true,/*normal=*/true, /*skippoints=*/true, /*uvs=*/true)
+{
+
+}
+AssetDraw2::~AssetDraw2()
+{
+}
+
+MStatus
+AssetDraw2::compute( const MPlug& plug, MDataBlock& data )
+{
+    MString plugName = plug.name();
+    printf("compute plug: %s\n", plugName.asChar());
+
+    if (plug.attribute() == theTraits.output)
+    {
+	// Pull on the output plug ourself to trigger cooking
+	// Store a pointer to the output for access during drawing
+	MPlug inPlug(thisMObject(), AssetDraw2::theTraits.inputNodeId);
+        data.setClean(plug);
+
+	int i=0;
+	inPlug.getValue(i);
+
+	MPlugArray plugs;
+	if (!inPlug.connectedTo(plugs,/*asDst=*/true,/*asSrc=*/false))
+	    return MS::kFailure;
+
+	AssetNode *pAssetNode = dynamic_cast<AssetNode*>(
+	    MFnDependencyNode(plugs[0].node()).userNode());
+	if (!pAssetNode)
+	    return MS::kFailure;
+
+	Asset *a = pAssetNode->getAsset();
+	if (!a->isValid())
+	    return MS::kFailure;
+
+	OutputObject *obj = a->getOutputObject(0);
+
+	size_t n = 0;
+	if (!myOutputDeform.compute(obj,n))
+	    return MS::kFailure;
+
+	return MS::kSuccess;
+    }
+    return MS::kUnknownParameter;
+}
+
+bool
+AssetDraw2::isBounded() const
+{
+    return false;
+}
+
+MSelectionMask
+AssetDraw2::getShapeSelectionMask() const
+{
+    return MSelectionMask("houdiniDraw2Selection");
+}
+
+// Called before this node is evaluated by Evaluation Manager
+MStatus
+AssetDraw2::preEvaluation( const MDGContext& context,
+    const MEvaluationNode& evaluationNode)
+{
+    if (context.isNormal())
+    {
+	MStatus status;
+	if( (evaluationNode.dirtyPlugExists(theTraits.inputNodeId, &status) && status) ||
+	    (evaluationNode.dirtyPlugExists(theTraits.output, &status) && status) )
+	{
+	    MHWRender::MRenderer::setGeometryDrawDirty(thisMObject());
+	}
+    }
+    return MStatus::kSuccess;
+}
+
+void*
+AssetDraw2::creator()
+{
+    return new AssetDraw2();
+}
+
+
+
+// Viewport 2.0 override implementation
+
+AssetDraw2GeometryOverride::AssetDraw2GeometryOverride(const MObject& obj)
+: MHWRender::MPxGeometryOverride(obj)
+, mLocatorNode(obj)
+, myOutput(nullptr)
+, myShaderInstance(nullptr)
+{
+}
+
+AssetDraw2GeometryOverride::~AssetDraw2GeometryOverride()
+{
+    releaseShader();
+}
+
+void
+AssetDraw2GeometryOverride::releaseShader()
+{
+    MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+    if (!renderer)
+	return;
+    const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+    if (!shaderMgr)
+	return;
+
+    // Release the existing shader
+    if (myShaderInstance)
+	shaderMgr->releaseShader(myShaderInstance);
+
+    myShaderInstance = nullptr;
+    myShaderNode = MObject();
+    myShaderFile = MString();
+}
+
+MHWRender::MShaderInstance*
+AssetDraw2GeometryOverride::getShader(const MDagPath& path, bool &newshader)
+
+{
+    MStatus status;
+    AssetDraw2Traits &traits = AssetDraw2::theTraits;
+    MPlug shaderPlug(path.node(),traits.shader);
+    MPlug shaderFilePlug(path.node(),traits.shaderfile);
+
+    MObject shaderNode = shaderPlug.source().node();
+    MString shaderFile = shaderFilePlug.asString();
+    if (myShaderNode==shaderNode && myShaderFile==shaderFile)
+	return myShaderInstance;
+
+    releaseShader();
+
+    if (shaderNode.isNull())
+	return nullptr;
+    
+
+    MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+    if (!renderer)
+	return nullptr;
+    const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+    if (!shaderMgr)
+	return nullptr;
+
+
+    MFnDependencyNode shaderDep(shaderNode);
+    CHECK_MSTATUS(status);
+
+    MHWRender::MShaderInstance* shader = nullptr;
+
+    // Try building a shader from the file attribute
+    if (myShaderFile.length()>0)
+    {
+	MStringArray techniques;
+	shaderMgr->getEffectsTechniques(shaderFile, techniques);
+	printTechniques(techniques);
+
+	if (techniques.length()>0)
+	{
+	    const MString &technique = techniques[0];
+	    shader = shaderMgr->getEffectsFileShader(shaderFile,technique);
+	}
+    }
+
+    
+    // Fallback to the connected shader
+    if (!shader)
+	shader = shaderMgr->getShaderFromNode(shaderNode, path);
+
+    // No shader at this point is a failure.
+    if (!shader)
+	return nullptr;
+
+    // Debug shader parameters
+    printShaderParameters(shader);
+
+    newshader = true;
+    myShaderInstance = shader;
+    myShaderNode = shaderNode;
+    myShaderFile = shaderFile;
+    return shader;
+}
+
+MHWRender::DrawAPI
+AssetDraw2GeometryOverride::supportedDrawAPIs() const
+{
+    // this plugin supports both GL and DX
+    return (MHWRender::kOpenGL | MHWRender::kDirectX11 | MHWRender::kOpenGLCoreProfile);
+}
+
+void
+AssetDraw2GeometryOverride::updateDG()
+{
+    myOutput = nullptr;
+
+    // Pull on the output plug ourself to trigger cooking
+    // Store a pointer to the output for access during drawing
+    MPlug plug(mLocatorNode, AssetDraw2::theTraits.output);
+    int i=0;
+    plug.getValue(i);
+
+    AssetDraw2 *pAssetDraw2 = dynamic_cast<AssetDraw2*>(
+	MFnDependencyNode(mLocatorNode).userNode());
+    if (!pAssetDraw2)
+	return;
+
+    myOutput = &pAssetDraw2->myOutputDeform;
+
+}
+
+bool
+AssetDraw2GeometryOverride::isIndexingDirty(const MHWRender::MRenderItem &item)
+{
+    return myOutput ? myOutput->myTopoDirty : false;
+}
+
+bool
+AssetDraw2GeometryOverride::isStreamDirty(const MHWRender::MVertexBufferDescriptor &desc)
+{
+    return myOutput ? myOutput->myPos.myDirty||myOutput->myTopoDirty : false;
+}
+
+void
+AssetDraw2GeometryOverride::updateRenderItems( const MDagPath& path,
+    MHWRender::MRenderItemList& list )
+{
+    if (!myOutput)
+	return;
+
+    bool newshader=false;
+    MColor color = MHWRender::MGeometryUtilities::wireframeColor(path);
+    MHWRender::MShaderInstance* shader0 = get3dSolidShader(color,newshader);
+    if (!shader0)
+	return;
+
+    MHWRender::MShaderInstance* shader1 = get3dDefaultMaterialShader(color,newshader);
+    if (!shader1)
+	return;
+
+    MHWRender::MShaderInstance* shaderSG = getShader(path,newshader);
+    if (shaderSG)
+	shader1 = shaderSG;
+
+    if (newshader)
+	myOutput->myTopoDirty = true;
+
+    unsigned int depthPriority;
+    switch (MHWRender::MGeometryUtilities::displayStatus(path))
+    {
+	case MHWRender::kLead:
+	case MHWRender::kActive:
+	case MHWRender::kHilite:
+	case MHWRender::kActiveComponent:
+	    depthPriority = MHWRender::MRenderItem::sActiveWireDepthPriority;
+	    break;
+	default:
+	    depthPriority = MHWRender::MRenderItem::sDormantFilledDepthPriority;
+	    break;
+    }
+
+    MHWRender::MRenderItem* wireframeItem = NULL;
+
+    int index = 0;
+
+    index = list.indexOf(wireframeItemName_);
+    if (index < 0)
+    {
+        wireframeItem = MHWRender::MRenderItem::Create(
+            wireframeItemName_,
+            MHWRender::MRenderItem::DecorationItem,
+            MHWRender::MGeometry::kLines);
+        wireframeItem->setDrawMode(MHWRender::MGeometry::kWireframe);
+        list.append(wireframeItem);
+    }
+    else
+    {
+        wireframeItem = list.itemAt(index);
+    }
+
+    if(wireframeItem)
+    {
+	wireframeItem->setShader(shader0);
+	wireframeItem->depthPriority(depthPriority);
+	wireframeItem->enable(true);
+    }
+
+    MHWRender::MRenderItem* shadedItem = NULL;
+
+    index = list.indexOf(shadedItemName_);
+    if (index < 0)
+    {
+	shadedItem = MHWRender::MRenderItem::Create(
+            shadedItemName_,
+            MHWRender::MRenderItem::DecorationItem,
+            MHWRender::MGeometry::kTriangles);
+
+	shadedItem->setDrawMode((MHWRender::MGeometry::DrawMode)
+	    (MHWRender::MGeometry::kShaded | MHWRender::MGeometry::kTextured));
+
+        list.append(shadedItem);
+    }
+    else
+    {
+	shadedItem = list.itemAt(index);
+    }
+
+    if(shadedItem)
+    {
+	shadedItem->setShader(shader1);
+	shadedItem->depthPriority(depthPriority);
+	shadedItem->enable(true);
+    }
+}
+void
+AssetDraw2GeometryOverride::populateGeometry(
+    const MHWRender::MGeometryRequirements& requirements,
+    const MHWRender::MRenderItemList& renderItems,
+    MHWRender::MGeometry& data)
+{
+    if (!myOutput)
+	return;
+
+    MHWRender::MVertexBuffer* verticesBuffer = NULL;
+    MHWRender::MVertexBuffer* normalsBuffer = NULL;
+    MHWRender::MVertexBuffer* texturesBuffer = NULL;
+    MHWRender::MVertexBuffer* tangentsBuffer = NULL;
+    MHWRender::MVertexBuffer* bitangentsBuffer = NULL;
+
+    float* vertices = NULL;
+    float* normals = NULL;
+    float* textures = NULL;
+    float* tangents = NULL;
+    float* bitangents = NULL;
+
+    const MHWRender::MVertexBufferDescriptorList& vertexBufferDescriptorList =
+	requirements.vertexRequirements();
+
+    const int numberOfVertexRequirments = vertexBufferDescriptorList.length();
+
+    const HAPI_PartInfo &info = myOutput->myPartInfo;
+    int pointCount = myOutput->myPos.myIsValid ? info.pointCount : 0;
+
+    MHWRender::MVertexBufferDescriptor vertexBufferDescriptor;
+    for (int requirementNumber = 0; 
+	requirementNumber < numberOfVertexRequirments; ++requirementNumber)
+    {
+	if (!vertexBufferDescriptorList.getDescriptor(
+	    requirementNumber, vertexBufferDescriptor))
+	    continue;
+
+	switch (vertexBufferDescriptor.semantic())
+	{
+	    case MHWRender::MGeometry::kPosition:
+	    {
+		if (!verticesBuffer)
+		{
+		    verticesBuffer = data.createVertexBuffer(vertexBufferDescriptor);
+		    if (verticesBuffer)
+			vertices = (float*)verticesBuffer->acquire(pointCount,/*writeOnly=*/true);
+		}
+		break;
+	    }
+
+	    case MHWRender::MGeometry::kNormal:
+	    {
+		if (!normalsBuffer)
+		{
+		    normalsBuffer = data.createVertexBuffer(vertexBufferDescriptor);
+		    if (normalsBuffer)
+			normals = (float*)normalsBuffer->acquire(pointCount,/*writeOnly=*/true);
+		}
+		break;
+	    }
+
+	    case MHWRender::MGeometry::kTexture:
+	    {
+		if (!texturesBuffer && myOutput->myTopoDirty)
+		{
+		    texturesBuffer = data.createVertexBuffer(vertexBufferDescriptor);
+		    if (texturesBuffer)
+			textures = (float*)texturesBuffer->acquire(pointCount,/*writeOnly=*/true);
+		}
+		break;
+	    }
+
+	    case MHWRender::MGeometry::kTangent:
+	    {
+		if (!tangentsBuffer && myOutput->myTopoDirty)
+		{
+		    tangentsBuffer = data.createVertexBuffer(vertexBufferDescriptor);
+		    if (tangentsBuffer)
+			tangents = (float*)tangentsBuffer->acquire(pointCount,/*writeOnly=*/true);
+		}
+		break;
+	    }
+
+	    case MHWRender::MGeometry::kBitangent:
+	    {
+		if (!bitangentsBuffer && myOutput->myTopoDirty)
+		{
+		    bitangentsBuffer = data.createVertexBuffer(vertexBufferDescriptor);
+		    if (bitangentsBuffer)
+			bitangents = (float*)bitangentsBuffer->acquire(pointCount,/*writeOnly=*/true);
+		}
+		break;
+	    }
+	    default:
+		// do nothing for stuff we don't understand
+		break;
+	    }
+    }
+
+    if(vertices)
+    {
+	if (myOutput->myDelayedPointCount>0)
+	{
+	    float *dst = vertices;
+	    myOutput->getDelayedPointAttribute("P",myOutput->myPos,pointCount,dst);
+	}
+	else
+	{
+	    if (myOutput->myPos.myIsDouble)
+	    {
+		float *dst = vertices;
+		double *src = &(myOutput->myPos.myData64[0]);
+		for (int i=0; i<pointCount; ++i)
+		{
+		    *(dst++) = *(src++);
+		    *(dst++) = *(src++);
+		    *(dst++) = *(src++);
+		}
+	    }
+	    else
+	    {
+		float *src = &(myOutput->myPos.myData32[0]);
+		memcpy(vertices, src, sizeof(float)*3 * pointCount);
+	    }
+	}
+    }
+
+    if(verticesBuffer && vertices)
+    {
+	verticesBuffer->commit(vertices);
+	myOutput->myPos.myDirty = false;
+    }
+
+    if(normals)
+    {
+	if (!myOutput->myNormal.myIsValid)
+	{
+	    float *dst = normals;
+	    for (int i=0; i<pointCount; ++i)
+	    {
+		*(dst++) = 0;
+		*(dst++) = 1;
+		*(dst++) = 0;
+	    }
+	}
+	else if (myOutput->myDelayedPointCount>0)
+	{
+	    float *dst = normals;
+	    myOutput->getDelayedPointAttribute("N",myOutput->myNormal,pointCount,dst);
+	}
+	else if (myOutput->myNormal.myIsDouble)
+	{
+	    float *dst = normals;
+	    double *src = &(myOutput->myNormal.myData64[0]);
+	    for (int i=0; i<pointCount; ++i)
+	    {
+		*(dst++) = *(src++);
+		*(dst++) = *(src++);
+		*(dst++) = *(src++);
+	    }
+	}
+	else
+	{
+	    float *src = &(myOutput->myNormal.myData32[0]);
+	    memcpy(normals, src, sizeof(float)*3 * pointCount);
+	}
+    }
+
+    if(normalsBuffer && normals)
+    {
+	normalsBuffer->commit(normals);
+	myOutput->myNormal.myDirty = false;
+    }
+
+    if(textures)
+    {
+	if (!myOutput->myTexture.myIsValid)
+	{
+	    float *dst = textures;
+	    for (int i=0; i<pointCount; ++i)
+	    {
+		*(dst++) = 0;
+		*(dst++) = 1;
+	    }
+	}
+	else if (myOutput->myDelayedPointCount>0)
+	{
+	    float *dst = textures;
+	    myOutput->getDelayedPointAttribute("uv",myOutput->myTexture,pointCount,dst);
+	}
+	else if (myOutput->myTexture.myIsDouble)
+	{
+	    float *dst = textures;
+	    double *src = &(myOutput->myTexture.myData64[0]);
+	    for (int i=0; i<pointCount; ++i)
+	    {
+		*(dst++) = *(src++);
+		*(dst++) = *(src++);
+	    }
+	}
+	else
+	{
+	    float *src = &(myOutput->myTexture.myData32[0]);
+	    memcpy(textures, src, sizeof(float)*2 * pointCount);
+	}
+    }
+
+    if(texturesBuffer && textures)
+    {
+	texturesBuffer->commit(textures);
+	myOutput->myTexture.myDirty = false;
+    }
+
+    for (int ri=0; ri < renderItems.length(); ++ri)
+    {
+	const MHWRender::MRenderItem* item = renderItems.itemAt(ri);
+	if (!item)
+	    continue;
+
+	if (!myOutput->myTopoValid)
+	    continue;
+
+	MHWRender::MIndexBuffer* indexBuffer = data.createIndexBuffer(MHWRender::MGeometry::kUnsignedInt32);
+
+	int faceCount = info.faceCount;
+	if (item->name() == wireframeItemName_ )
+	{
+	    int numIndex = faceCount*6;
+
+	    unsigned int* indices = (unsigned int*)indexBuffer->acquire(numIndex,/*writeOnly=*/true);
+
+	    unsigned int* dst = indices;
+	    int* src = &myOutput->myVertexList[0];
+	    int* faces = &myOutput->myFaceCounts[0];
+
+	    for (int i=0; i<faceCount; ++i)
+	    {
+		*(dst++) = (unsigned int)(src[0]);
+		*(dst++) = (unsigned int)(src[1]);
+
+		*(dst++) = (unsigned int)(src[1]);
+		*(dst++) = (unsigned int)(src[2]);
+
+		*(dst++) = (unsigned int)(src[2]);
+		*(dst++) = (unsigned int)(src[0]);
+		src += *(faces++);
+	    }
+
+	    indexBuffer->commit(indices);
+	}
+	else if (item->name() == shadedItemName_ )
+	{
+	    int numIndex = faceCount*3;
+
+	    unsigned int* indices = (unsigned int*)indexBuffer->acquire(numIndex,/*writeOnly=*/true);
+
+	    unsigned int* dst = indices;
+	    int* src = &myOutput->myVertexList[0];
+	    int* faces = &myOutput->myFaceCounts[0];
+
+	    for (int i=0; i<faceCount; ++i)
+	    {
+		*(dst++) = (unsigned int)(src[0]);
+		*(dst++) = (unsigned int)(src[1]);
+		*(dst++) = (unsigned int)(src[2]);
+		src += *(faces++);
+	    }
+
+	    indexBuffer->commit(indices);
+	}
+
+	item->associateWithIndexBuffer(indexBuffer);
+	myOutput->myTopoDirty = false;
+    }
+}
+
+//---------------------------------------------------------------------------
+// Plugin Registration
+//---------------------------------------------------------------------------
+
+MStatus
+AssetDraw2::initialize()
+{
+    AssetDraw2Traits &traits = theTraits;
+
+    MFnNumericAttribute nAttr;
+    MFnMessageAttribute mAttr;
+    MFnTypedAttribute tAttr;
+    MStatus stat;
+
+    // input/inputNodeId
+    traits.inputNodeId = nAttr.create(
+        "inputNodeId", "inputNodeId", MFnNumericData::kInt, -1);
+    nAttr.setCached(false);
+    nAttr.setStorable(false);
+    stat = addAttribute( traits.inputNodeId );
+
+    // shader message
+    traits.shader = mAttr.create("shader", "shader");
+    stat = addAttribute( traits.shader );
+
+    // shaderfile filepath
+    traits.shaderfile = tAttr.create(
+        "shaderfile", "shaderfile", MFnData::kString);
+    tAttr.setInternal(true);
+    tAttr.setUsedAsFilename(true);
+    stat = addAttribute( traits.shaderfile );
+
+    // input/inputNodeId
+    traits.inputNodeId = nAttr.create(
+        "inputNodeId", "inputNodeId", MFnNumericData::kInt, -1);
+    nAttr.setCached(false);
+    nAttr.setStorable(false);
+    stat = addAttribute( traits.inputNodeId );
+
+    traits.output = nAttr.create(
+	"output", "output", MFnNumericData::kInt, -1);
+    nAttr.setStorable(false);
+    nAttr.setWritable(false);
+    stat = addAttribute( traits.output );
+
+    attributeAffects( traits.inputNodeId, traits.output );
+
+    return MS::kSuccess;
+}
+
+MStatus
+AssetDraw2::initializePlugin( MFnPlugin &plugin, MObject obj )
+{
+    MStatus   status;
+
+    status = plugin.registerNode(
+	"houdiniDraw2",
+	AssetDraw2::id,
+	AssetDraw2::creator,
+	AssetDraw2::initialize,
+	MPxNode::kLocatorNode,
+	&AssetDraw2::drawDbClassification);
+
+    if (!status)
+    {
+	status.perror("registerNode");
+	return status;
+    }
+
+    status = MHWRender::MDrawRegistry::registerGeometryOverrideCreator(
+	AssetDraw2::drawDbClassification,
+	AssetDraw2::drawRegistrantId,
+	AssetDraw2GeometryOverride::Creator);
+
+    if (!status)
+    {
+	status.perror("registerDrawOverrideCreator");
+	return status;
+    }
+
+    // Register a custom selection mask with priority 2 (same as locators
+    // by default).
+    MSelectionMask::registerSelectionType("houdiniDraw2Selection", 2);
+    status = MGlobal::executeCommand("selectType -byName \"houdiniDraw2Selection\" 1");
+    return status;
+}
+
+MStatus
+AssetDraw2::uninitializePlugin( MFnPlugin &plugin, MObject obj)
+{
+    MStatus   status;
+
+    status = MHWRender::MDrawRegistry::deregisterGeometryOverrideCreator(
+	    AssetDraw2::drawDbClassification,
+	    AssetDraw2::drawRegistrantId);
+    if (!status)
+    {
+	status.perror("deregisterDrawOverrideCreator");
+	return status;
+    }
+
+    status = releaseShaders();
+    if (!status)
+    {
+	status.perror("releaseShaders");
+	return status;
+    }
+
+    status = plugin.deregisterNode( AssetDraw2::id );
+    if (!status)
+    {
+	status.perror("deregisterNode");
+	return status;
+    }
+
+    // Deregister custom selection mask
+    MSelectionMask::deregisterSelectionType("houdiniDraw2Selection");
+
+    return status;
+}
+
+
+
+AssetDraw2Traits AssetDraw2::theTraits;
+
+#endif

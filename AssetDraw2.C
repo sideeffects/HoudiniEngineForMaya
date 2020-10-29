@@ -232,18 +232,20 @@ AssetDraw2::~AssetDraw2()
 MStatus
 AssetDraw2::compute( const MPlug& plug, MDataBlock& data )
 {
+    AssetDraw2Traits &traits = AssetDraw2::theTraits;
+
     MString plugName = plug.name();
     printf("compute plug: %s\n", plugName.asChar());
 
-    if (plug.attribute() == theTraits.output)
+    if (plug.attribute() == traits.output)
     {
 	// Pull on the output plug ourself to trigger cooking
 	// Store a pointer to the output for access during drawing
-	MPlug inPlug(thisMObject(), AssetDraw2::theTraits.inputNodeId);
-        data.setClean(plug);
+	MPlug inPlug(thisMObject(), traits.inputNodeId);
 
 	int i=0;
 	inPlug.getValue(i);
+        data.setClean(plug);
 
 	MPlugArray plugs;
 	if (!inPlug.connectedTo(plugs,/*asDst=*/true,/*asSrc=*/false))
@@ -286,11 +288,12 @@ MStatus
 AssetDraw2::preEvaluation( const MDGContext& context,
     const MEvaluationNode& evaluationNode)
 {
+    AssetDraw2Traits &traits = AssetDraw2::theTraits;
     if (context.isNormal())
     {
 	MStatus status;
-	if( (evaluationNode.dirtyPlugExists(theTraits.inputNodeId, &status) && status) ||
-	    (evaluationNode.dirtyPlugExists(theTraits.output, &status) && status) )
+	if( (evaluationNode.dirtyPlugExists(traits.inputNodeId, &status) && status) ||
+	    (evaluationNode.dirtyPlugExists(traits.output, &status) && status) )
 	{
 	    MHWRender::MRenderer::setGeometryDrawDirty(thisMObject());
 	}
@@ -346,6 +349,7 @@ AssetDraw2GeometryOverride::getShader(const MDagPath& path, bool &newshader)
 {
     MStatus status;
     AssetDraw2Traits &traits = AssetDraw2::theTraits;
+
     MPlug shaderPlug(path.node(),traits.shader);
     MPlug shaderFilePlug(path.node(),traits.shaderfile);
 
@@ -418,11 +422,16 @@ AssetDraw2GeometryOverride::updateDG()
 {
     myOutput = nullptr;
 
+    AssetDraw2Traits &traits = AssetDraw2::theTraits;
+
     // Pull on the output plug ourself to trigger cooking
     // Store a pointer to the output for access during drawing
     MPlug plug(mLocatorNode, AssetDraw2::theTraits.output);
     int i=0;
     plug.getValue(i);
+
+    MString plugName = plug.name();
+    printf("updateDG: %s\n", plugName.asChar());
 
     AssetDraw2 *pAssetDraw2 = dynamic_cast<AssetDraw2*>(
 	MFnDependencyNode(mLocatorNode).userNode());
@@ -844,15 +853,9 @@ AssetDraw2::initialize()
     tAttr.setUsedAsFilename(true);
     stat = addAttribute( traits.shaderfile );
 
-    // input/inputNodeId
-    traits.inputNodeId = nAttr.create(
-        "inputNodeId", "inputNodeId", MFnNumericData::kInt, -1);
-    nAttr.setCached(false);
-    nAttr.setStorable(false);
-    stat = addAttribute( traits.inputNodeId );
-
+    // output
     traits.output = nAttr.create(
-	"output", "output", MFnNumericData::kInt, -1);
+	"output", "output", MFnNumericData::kInt);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
     stat = addAttribute( traits.output );

@@ -10,6 +10,7 @@
 #include <maya/MPxLocatorNode.h>
 #include <maya/MPxSurfaceShape.h>
 #include <maya/MPxGeometryOverride.h>
+#include <maya/MShaderManager.h>
 
 
 class MFnPlugin;
@@ -99,6 +100,8 @@ public:
 	fputs("\n",stderr);
     }
 
+    void preDrawCallback(MDrawContext& ctx, const MRenderItemList& renderItemList, MShaderInstance *sh);
+
 private:
     AssetDraw2GeometryOverride(const MObject& obj);
 
@@ -111,6 +114,9 @@ private:
     MObject myShaderNode;
     MString myShaderFile;
     MShaderInstance *myShaderInstance;
+    std::vector<MHWRender::MTexture*> myTextures;
+    std::vector<MString> myTextureParms;
+    size_t myLightCount;
 };
 #endif
 #endif

@@ -2,6 +2,7 @@
 #if MAYA_API_VERSION >= 20180000
 
 #include <maya/MString.h>
+#include <maya/MFileObject.h>
 #include <maya/MTypeId.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
@@ -40,6 +41,9 @@
 #include "AssetNode.h"
 #include "AssetDraw2.h"
 #include "hapiutil.h"
+
+static std::unordered_map<MShaderInstance*,AssetDraw2GeometryOverride*> 
+theShaderToOverrideMap;
 
 // Ctor of AssetDraw2Traits
 AssetDraw2Traits::AssetDraw2Traits()
@@ -223,7 +227,6 @@ MString	AssetDraw2::drawRegistrantId("houdiniDraw2Plugin");
 AssetDraw2::AssetDraw2()
 : myOutputDeform(/*topo=*/true,/*normal=*/true, /*skippoints=*/true, /*uvs=*/true)
 {
-
 }
 AssetDraw2::~AssetDraw2()
 {
@@ -235,7 +238,6 @@ AssetDraw2::compute( const MPlug& plug, MDataBlock& data )
     AssetDraw2Traits &traits = AssetDraw2::theTraits;
 
     MString plugName = plug.name();
-    printf("compute plug: %s\n", plugName.asChar());
 
     if (plug.attribute() == traits.output)
     {
@@ -257,7 +259,7 @@ AssetDraw2::compute( const MPlug& plug, MDataBlock& data )
 	    return MS::kFailure;
 
 	Asset *a = pAssetNode->getAsset();
-	if (!a->isValid())
+	if (!a || !a->isValid())
 	    return MS::kFailure;
 
 	OutputObject *obj = a->getOutputObject(0);
@@ -316,6 +318,7 @@ AssetDraw2GeometryOverride::AssetDraw2GeometryOverride(const MObject& obj)
 , mLocatorNode(obj)
 , myOutput(nullptr)
 , myShaderInstance(nullptr)
+, myLightCount(0)
 {
 }
 
@@ -334,13 +337,251 @@ AssetDraw2GeometryOverride::releaseShader()
     if (!shaderMgr)
 	return;
 
+    const MHWRender::MTextureManager* textureMgr = renderer->getTextureManager();
+    if (!textureMgr)
+	return;
+
     // Release the existing shader
     if (myShaderInstance)
+    {
 	shaderMgr->releaseShader(myShaderInstance);
+	theShaderToOverrideMap.erase(myShaderInstance);
+    }
 
     myShaderInstance = nullptr;
     myShaderNode = MObject();
     myShaderFile = MString();
+
+    for (size_t i=0; i<myTextures.size(); ++i)
+    {
+	if (myTextures[i])
+	    textureMgr->releaseTexture(myTextures[i]);
+    }
+    myTextures.clear();
+    myTextureParms.clear();
+    myLightCount = 0;
+}
+const static MString kLightColorF = "Light%dColor";
+const static MString kLightTypeF = "Light%dType";
+const static MString kLightIntensityF = "Light%dIntensity";
+const static MString kLightPosF = "Light%dPos";
+const static MString kLightDirF = "Light%dDir";
+
+struct LightNames
+{
+    MString kLightColor;
+    MString kLightType;
+    MString kLightIntensity;
+    MString kLightPos;
+    MString kLightDir;
+};
+
+enum ELightType
+{
+	eInvalidLight,
+	eUndefinedLight,
+	eSpotLight,
+	ePointLight,	
+	eDirectionalLight,
+	eAmbientLight,
+	eVolumeLight,
+	eAreaLight,
+	eDefaultLight,
+	eLightCount
+};
+// Convert Maya light type to glslShader light type
+ELightType
+getLightType(const MHWRender::MLightParameterInformation* lightParam)
+{
+    ELightType type = eUndefinedLight;
+    MString lightType = lightParam->lightType();
+
+    // The 3rd letter of the light name is a perfect hash,
+    // so let's cut on the number of string comparisons.
+    if (lightType.length() <= 2)
+	return type;
+
+    char c2 = lightType.asChar()[2];
+    switch (c2)
+    {
+    case 'o':
+	//if (STRICMP(lightType.asChar(),"spotLight") == 0)
+	type = eSpotLight;
+	break;
+
+    case 'r':
+	//if (STRICMP(lightType.asChar(),"directionalLight") == 0)
+	{
+	    // The headlamp used in the "Use default lighting" mode
+	    // does not have the same set of attributes as a regular
+	    // directional light, so we must disambiguate them
+	    // otherwise we might not know how to fetch shadow data
+	    // from the regular kind.
+	    if (lightParam->lightPath().isValid())
+		type = eDirectionalLight;
+	    else
+		type = eDefaultLight;
+	}
+	break;
+
+    case 'i':
+	//if (STRICMP(lightType.asChar(),"pointLight") == 0)
+	    type = ePointLight;
+	break;
+
+    case 'b':
+	//if (STRICMP(lightType.asChar(),"ambientLight") == 0)
+	    type = eAmbientLight;
+	break;
+
+    case 'l':
+	//if (STRICMP(lightType.asChar(),"volumeLight") == 0)
+	    type = eVolumeLight;
+	break;
+
+    case 'e':
+	//if (STRICMP(lightType.asChar(),"areaLight") == 0)
+	    type = eAreaLight;
+	break;
+    }
+    return type;
+}
+
+void
+AssetDraw2PreCallback(MDrawContext& ctx,
+    const MRenderItemList& renderItemList, MShaderInstance *sh)
+{
+    AssetDraw2GeometryOverride *drawOverride = theShaderToOverrideMap[sh];
+    drawOverride->preDrawCallback(ctx,renderItemList,sh);
+}
+
+void
+AssetDraw2GeometryOverride::preDrawCallback(MDrawContext& ctx,
+    const MRenderItemList& renderItemList, MShaderInstance *sh)
+{
+    sh->bind(ctx);
+    MStatus status;
+
+    //Prebuild a list of shader parameter names for each light index
+    static LightNames names[32];
+    static bool initNames = true;
+    if (initNames)
+    {
+	char buf[128];
+	for( int i=0; i<32; ++i)
+	{
+	    LightNames &namei = names[i];
+#define INIT_NAME(X) \
+	    sprintf(buf, X ## F.asChar(), i); \
+	    namei.X.set(buf)
+	    INIT_NAME(kLightColor);
+	    INIT_NAME(kLightType);
+	    INIT_NAME(kLightIntensity);
+	    INIT_NAME(kLightPos);
+	    INIT_NAME(kLightDir);
+	}
+	initNames=false;
+    }
+
+    // the set parameter calls somehow hold the pointers
+    // so we'll use a buffer to hold the values until 
+    // updateParameters is called.
+    float zero4[4] = {0.f,0.f,0.f,0.f};
+
+    // Run over the active lights
+    size_t n = ctx.numberOfActiveLights();
+    if (n>myLightCount)
+	n = myLightCount;
+
+    for (size_t i=0; i<n; ++i)
+    {
+	MLightParameterInformation* li = ctx.getLightParameterInformation(i);
+	if (!li)
+	    continue;
+
+	MStringArray parms;
+	li->parameterList(parms);
+	for (size_t j=0; j<parms.length(); ++j)
+	{
+	    const MString &p = parms[j];
+	    printf("Light%d%s\n",(int)i,p.asChar());
+	}
+
+	MIntArray ivals;
+	MFloatArray fvals;
+	MFloatVector vec;
+
+	LightNames &namei = names[i];
+	bool enabled = true;
+	{
+	    status = li->getParameter(
+		MLightParameterInformation::kLightEnabled,ivals);
+	    if (status==MS::kSuccess)
+		enabled = ivals[0];
+	}
+	if (!enabled)
+	{
+	    sh->setParameter(namei.kLightColor, zero4);
+	    sh->setParameter(namei.kLightIntensity, 0.f);
+	    sh->setParameter(namei.kLightType, 0);//not sure of this value
+	    continue;
+	}
+
+	ELightType lightType = getLightType(li);
+	printf("%s->%d\n",li->lightType().asChar(), (int)lightType);
+	sh->setParameter(namei.kLightType, (int)lightType);
+
+	status = li->getParameter(
+	    MLightParameterInformation::kWorldPosition,fvals);
+	if (status==MS::kSuccess)
+	{
+	    sh->setParameter(namei.kLightPos,&fvals[0]);
+	}
+
+	status = li->getParameter(
+	    MLightParameterInformation::kWorldDirection,fvals);
+	if (status==MS::kSuccess)
+	{
+	    sh->setParameter(namei.kLightDir,&fvals[0]);
+	}
+
+	status = li->getParameter(
+	    MLightParameterInformation::kIntensity,fvals);
+	if (status==MS::kSuccess)
+	    sh->setParameter(namei.kLightIntensity,fvals[0]);
+
+	status = li->getParameter(
+	    MLightParameterInformation::kColor,fvals);
+	if (status==MS::kSuccess)
+	{
+	    //printf("setParm%d %s %f %f %f\n", (int)i, namei.kLightColor.asChar(), fvals[0], fvals[1], fvals[2]);
+	    sh->setParameter(namei.kLightColor,&fvals[0]);
+	}
+    }
+    // Disable all the remaining lights
+    for (size_t i=n; i<myLightCount; ++i)
+    {
+	LightNames &namei = names[i];
+	sh->setParameter(namei.kLightColor, zero4);
+	sh->setParameter(namei.kLightIntensity, 0.f);
+	sh->setParameter(namei.kLightType, 0);//not sure of this value
+    }
+
+    // Force texture parms, to avoid flickering
+    /*for (size_t i=0; i<myTextures.size(); ++i)
+    {
+	MHWRender::MTexture *texture = myTextures[i];
+	const MString &pname = myTextureParms[i];
+
+	// Set the shader parameter
+	MHWRender::MTextureAssignment assign;
+	assign.texture = texture;
+	sh->setParameter(pname,assign);
+    }*/
+
+    sh->updateParameters(ctx);
+
+    sh->unbind(ctx);
 }
 
 MHWRender::MShaderInstance*
@@ -370,6 +611,9 @@ AssetDraw2GeometryOverride::getShader(const MDagPath& path, bool &newshader)
     const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
     if (!shaderMgr)
 	return nullptr;
+    MHWRender::MTextureManager* textureMgr = renderer->getTextureManager();
+    if (!textureMgr)
+	return nullptr;
 
 
     MFnDependencyNode shaderDep(shaderNode);
@@ -377,17 +621,129 @@ AssetDraw2GeometryOverride::getShader(const MDagPath& path, bool &newshader)
 
     MHWRender::MShaderInstance* shader = nullptr;
 
+    size_t lightCount = 0;
     // Try building a shader from the file attribute
-    if (myShaderFile.length()>0)
+    if (shaderFile.length()>0)
     {
+	MFileObject shaderFileObject;
+	shaderFileObject.setRawFullName(shaderFile);
+	
+	MString folder = shaderFileObject.resolvedPath();
+	printf("folder=%s\n", folder.asChar());
+
+	MHWRender::MShaderCompileMacro *macros = nullptr;
+	const unsigned int numMacros = 0;
+	bool useEffectCache = false;
+	MShaderInstance::DrawCallback preCb = AssetDraw2PreCallback;
+
 	MStringArray techniques;
-	shaderMgr->getEffectsTechniques(shaderFile, techniques);
+	shaderMgr->getEffectsTechniques(shaderFile, techniques,
+	    macros, numMacros, useEffectCache);
 	printTechniques(techniques);
+
+	std::unordered_map<std::string,size_t> prefixes;
+	for (size_t i=0; i<32; ++i)
+	{
+	    std::string key;
+
+	    key = "Light";
+	    key += std::to_string(i);
+	    prefixes[key] = i;
+
+	    key = "light";
+	    key += std::to_string(i);
+	    prefixes[key] = i;
+	}
 
 	if (techniques.length()>0)
 	{
 	    const MString &technique = techniques[0];
-	    shader = shaderMgr->getEffectsFileShader(shaderFile,technique);
+	    shader = shaderMgr->getEffectsFileShader(shaderFile,technique,
+		macros, numMacros, useEffectCache, preCb);
+
+	    // set textures
+	    if (shader)
+	    {
+		MStringArray l;
+		shader->parameterList(l);
+
+		// count the number of lights by looking at the parameter
+		// names and light index
+		for (unsigned int i=0; i<l.length(); ++i)
+		{
+		    size_t lightIndex = 0;
+
+		    const MString & pname = l[i];
+		    std::string s = pname.asChar();
+
+		    std::string key;
+		    std::unordered_map<std::string,size_t>::const_iterator it;
+		    
+		    key = s.substr(0,7);
+		    it = prefixes.find(key);
+		    if (it==prefixes.end())
+		    {
+			key = s.substr(0,6);
+			it = prefixes.find(key);
+		    }
+		    if (it==prefixes.end())
+			continue;
+
+		    lightIndex = it->second;
+		    if (lightIndex+1>lightCount)
+			lightCount = lightIndex+1;
+		}
+		printf("lightCount -> %d\n", (int)lightCount);
+
+		// Set parameters
+		for (unsigned int i=0; i<l.length(); ++i)
+		{
+		    // Support only 2D textures
+		    const MString & pname = l[i];
+		    MShaderInstance::ParameterType pt = shader->parameterType(pname);
+		    if (pt!=MShaderInstance::kTexture2)
+			continue;
+
+		    // Heuristic to get a full filename from the resource name
+		    // We might want to expose a texture folder on AssetDraw
+		    // as a string parameter.
+		    // I could only get the name of the file without the folder
+		    // from the shader file.
+		    MString resourceName = shader->resourceName(pname,status);
+		    printf("texture %s -> %s\n",
+			pname.asChar(), resourceName.asChar());
+
+		    if (resourceName.length()==0)
+			continue;
+		    
+		    // resolve the texture path
+		    MString texturePath;
+		    {
+			MFileObject textureFileObject;
+			textureFileObject.setRawPath(folder);
+			textureFileObject.setName(resourceName);
+
+			texturePath = textureFileObject.resolvedFullName();
+		    }
+
+		    // Get a texture
+		    // TODO add mipmap control
+		    MHWRender::MTextureArguments args(texturePath);
+		    MHWRender::MTexture *texture =
+			textureMgr->acquireTexture(args);
+		    if (!texture)
+			continue;
+
+		    // Set the shader parameter
+		    MHWRender::MTextureAssignment assign;
+		    assign.texture = texture;
+		    shader->setParameter(pname,assign);
+
+		    // TODO use shared textures if the paths are the same
+		    myTextures.push_back(texture);
+		    myTextureParms.push_back(pname);
+		}
+	    }
 	}
     }
 
@@ -405,8 +761,10 @@ AssetDraw2GeometryOverride::getShader(const MDagPath& path, bool &newshader)
 
     newshader = true;
     myShaderInstance = shader;
+    theShaderToOverrideMap[myShaderInstance] = this;
     myShaderNode = shaderNode;
     myShaderFile = shaderFile;
+    myLightCount = lightCount;
     return shader;
 }
 
@@ -426,12 +784,11 @@ AssetDraw2GeometryOverride::updateDG()
 
     // Pull on the output plug ourself to trigger cooking
     // Store a pointer to the output for access during drawing
-    MPlug plug(mLocatorNode, AssetDraw2::theTraits.output);
+    MPlug plug(mLocatorNode, traits.output);
     int i=0;
     plug.getValue(i);
 
     MString plugName = plug.name();
-    printf("updateDG: %s\n", plugName.asChar());
 
     AssetDraw2 *pAssetDraw2 = dynamic_cast<AssetDraw2*>(
 	MFnDependencyNode(mLocatorNode).userNode());
@@ -525,7 +882,7 @@ AssetDraw2GeometryOverride::updateRenderItems( const MDagPath& path,
     {
 	shadedItem = MHWRender::MRenderItem::Create(
             shadedItemName_,
-            MHWRender::MRenderItem::DecorationItem,
+            MHWRender::MRenderItem::MaterialSceneItem,
             MHWRender::MGeometry::kTriangles);
 
 	shadedItem->setDrawMode((MHWRender::MGeometry::DrawMode)
@@ -646,7 +1003,12 @@ AssetDraw2GeometryOverride::populateGeometry(
 
     if(vertices)
     {
-	if (myOutput->myDelayedPointCount>0)
+	if (!myOutput->myPos.myIsValid)
+	{
+	    float *dst = vertices;
+	    memset(dst, 0, sizeof(float)*3 * pointCount);
+	}
+	else if (myOutput->myDelayedPointCount>0)
 	{
 	    float *dst = vertices;
 	    myOutput->getDelayedPointAttribute("P",myOutput->myPos,pointCount,dst);
@@ -657,17 +1019,33 @@ AssetDraw2GeometryOverride::populateGeometry(
 	    {
 		float *dst = vertices;
 		double *src = &(myOutput->myPos.myData64[0]);
-		for (int i=0; i<pointCount; ++i)
+		if (src)
 		{
-		    *(dst++) = *(src++);
-		    *(dst++) = *(src++);
-		    *(dst++) = *(src++);
+		    for (int i=0; i<pointCount; ++i)
+		    {
+			*(dst++) = *(src++);
+			*(dst++) = *(src++);
+			*(dst++) = *(src++);
+		    }
 		}
+		else
+		{
+		    memset(dst, 0, sizeof(float)*3 * pointCount);
+		}
+
+
 	    }
 	    else
 	    {
 		float *src = &(myOutput->myPos.myData32[0]);
-		memcpy(vertices, src, sizeof(float)*3 * pointCount);
+		if (src)
+		{
+		    memcpy(vertices, src, sizeof(float)*3 * pointCount);
+		}
+		else
+		{
+		    memset(vertices, 0, sizeof(float)*3 * pointCount);
+		}
 	    }
 	}
     }
@@ -699,17 +1077,42 @@ AssetDraw2GeometryOverride::populateGeometry(
 	{
 	    float *dst = normals;
 	    double *src = &(myOutput->myNormal.myData64[0]);
-	    for (int i=0; i<pointCount; ++i)
+	    if (src)
 	    {
-		*(dst++) = *(src++);
-		*(dst++) = *(src++);
-		*(dst++) = *(src++);
+		for (int i=0; i<pointCount; ++i)
+		{
+		    *(dst++) = *(src++);
+		    *(dst++) = *(src++);
+		    *(dst++) = *(src++);
+		}
+	    }
+	    else
+	    {
+		for (int i=0; i<pointCount; ++i)
+		{
+		    *(dst++) = 0;
+		    *(dst++) = 1;
+		    *(dst++) = 0;
+		}
 	    }
 	}
 	else
 	{
 	    float *src = &(myOutput->myNormal.myData32[0]);
-	    memcpy(normals, src, sizeof(float)*3 * pointCount);
+	    if (src)
+	    {
+		memcpy(normals, src, sizeof(float)*3 * pointCount);
+	    }
+	    else
+	    {
+		float *dst = normals;
+		for (int i=0; i<pointCount; ++i)
+		{
+		    *(dst++) = 0;
+		    *(dst++) = 1;
+		    *(dst++) = 0;
+		}
+	    }
 	}
     }
 
@@ -739,16 +1142,34 @@ AssetDraw2GeometryOverride::populateGeometry(
 	{
 	    float *dst = textures;
 	    double *src = &(myOutput->myTexture.myData64[0]);
-	    for (int i=0; i<pointCount; ++i)
+	    if (src)
 	    {
-		*(dst++) = *(src++);
-		*(dst++) = *(src++);
+		for (int i=0; i<pointCount; ++i)
+		{
+		    *(dst++) = *(src++);
+		    *(dst++) = *(src++);
+		}
+	    }
+	    else
+	    {
+		for (int i=0; i<pointCount; ++i)
+		{
+		    *(dst++) = 0;
+		    *(dst++) = 1;
+		}
 	    }
 	}
 	else
 	{
 	    float *src = &(myOutput->myTexture.myData32[0]);
-	    memcpy(textures, src, sizeof(float)*2 * pointCount);
+	    if (src)
+	    {
+		memcpy(textures, src, sizeof(float)*2 * pointCount);
+	    }
+	    else
+	    {
+		memset(textures, 0, sizeof(float)*2 * pointCount);
+	    }
 	}
     }
 
@@ -779,18 +1200,34 @@ AssetDraw2GeometryOverride::populateGeometry(
 	    unsigned int* dst = indices;
 	    int* src = &myOutput->myVertexList[0];
 	    int* faces = &myOutput->myFaceCounts[0];
-
-	    for (int i=0; i<faceCount; ++i)
+	    if (src)
 	    {
-		*(dst++) = (unsigned int)(src[0]);
-		*(dst++) = (unsigned int)(src[1]);
+		for (int i=0; i<faceCount; ++i)
+		{
+		    *(dst++) = (unsigned int)(src[0]);
+		    *(dst++) = (unsigned int)(src[1]);
 
-		*(dst++) = (unsigned int)(src[1]);
-		*(dst++) = (unsigned int)(src[2]);
+		    *(dst++) = (unsigned int)(src[1]);
+		    *(dst++) = (unsigned int)(src[2]);
 
-		*(dst++) = (unsigned int)(src[2]);
-		*(dst++) = (unsigned int)(src[0]);
-		src += *(faces++);
+		    *(dst++) = (unsigned int)(src[2]);
+		    *(dst++) = (unsigned int)(src[0]);
+		    src += *(faces++);
+		}
+	    }
+	    else
+	    {
+		for (int i=0; i<faceCount; ++i)
+		{
+		    *(dst++) = (unsigned int)(0);
+		    *(dst++) = (unsigned int)(0);
+
+		    *(dst++) = (unsigned int)(0);
+		    *(dst++) = (unsigned int)(0);
+
+		    *(dst++) = (unsigned int)(0);
+		    *(dst++) = (unsigned int)(0);
+		}
 	    }
 
 	    indexBuffer->commit(indices);
@@ -805,12 +1242,24 @@ AssetDraw2GeometryOverride::populateGeometry(
 	    int* src = &myOutput->myVertexList[0];
 	    int* faces = &myOutput->myFaceCounts[0];
 
-	    for (int i=0; i<faceCount; ++i)
+	    if (src)
 	    {
-		*(dst++) = (unsigned int)(src[0]);
-		*(dst++) = (unsigned int)(src[1]);
-		*(dst++) = (unsigned int)(src[2]);
-		src += *(faces++);
+		for (int i=0; i<faceCount; ++i)
+		{
+		    *(dst++) = (unsigned int)(src[0]);
+		    *(dst++) = (unsigned int)(src[1]);
+		    *(dst++) = (unsigned int)(src[2]);
+		    src += *(faces++);
+		}
+	    }
+	    else
+	    {
+		for (int i=0; i<faceCount; ++i)
+		{
+		    *(dst++) = (unsigned int)0;
+		    *(dst++) = (unsigned int)0;
+		    *(dst++) = (unsigned int)0;
+		}
 	    }
 
 	    indexBuffer->commit(indices);
@@ -849,7 +1298,6 @@ AssetDraw2::initialize()
     // shaderfile filepath
     traits.shaderfile = tAttr.create(
         "shaderfile", "shaderfile", MFnData::kString);
-    tAttr.setInternal(true);
     tAttr.setUsedAsFilename(true);
     stat = addAttribute( traits.shaderfile );
 

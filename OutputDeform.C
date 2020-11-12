@@ -158,13 +158,31 @@ OutputDeform::compute(OutputObject *obj, size_t &n)
     if (!mySkipPointAttributes)
     {
 	if (!getPointAttribute(session,nodeId,partId,"P",myPos, n))
+	{
+	    myPos.myDirty = true;
+	    myPos.myIsValid = false;
+
+	    myNormal.myDirty = true;
+	    myNormal.myIsValid = false;
+
+	    myTexture.myDirty = true;
+	    myTexture.myIsValid = false;
 	    return false;
+	}
 
 	// N is optionnal
-	getPointAttribute(session,nodeId,partId,"N",myNormal, n);
+	if ( !getPointAttribute(session,nodeId,partId,"N",myNormal, n) )
+	{
+	    myNormal.myDirty = true;
+	    myNormal.myIsValid = false;
+	}
 
 	// uv is optionnal
-	getPointAttribute(session,nodeId,partId,"uv",myTexture, n);
+	if ( !getPointAttribute(session,nodeId,partId,"uv",myTexture, n) )
+	{
+	    myTexture.myDirty = true;
+	    myTexture.myIsValid = false;
+	}
     }
     else
     {

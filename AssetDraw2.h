@@ -1,5 +1,5 @@
-#ifndef __AssetDraw2_h__
-#define __AssetDraw2_h__
+#ifndef __AssetDraw_h__
+#define __AssetDraw_h__
 
 #include <maya/MTypes.h>
 #if MAYA_API_VERSION >= 20180000
@@ -15,22 +15,22 @@
 
 class MFnPlugin;
 
-class AssetDraw2Traits
+class AssetDrawTraits
 {
 public:
-    AssetDraw2Traits();
+    AssetDrawTraits();
     MObject inputNodeId;
     MObject shader;
     MObject output;
     MObject shaderfile;
 };
 
-class AssetDraw2 : public MPxLocatorNode
+class AssetDraw : public MPxLocatorNode
 {
 public:
-    static AssetDraw2Traits theTraits;
-    AssetDraw2();
-    ~AssetDraw2() override;
+    static AssetDrawTraits theTraits;
+    AssetDraw();
+    ~AssetDraw() override;
 
     static void *creator();
     static MStatus initialize();
@@ -48,11 +48,14 @@ public:
 	M3dView::DisplayStatus status ) override{}
 
     bool isBounded() const override;
+    MBoundingBox boundingBox() const override;
 
     MSelectionMask getShapeSelectionMask() const override;
 
     MStatus preEvaluation(const MDGContext& context, 
 	const MEvaluationNode& evaluationNode) override;
+
+    SchedulingType schedulingType() const override {return SchedulingType::kParallel;}
 
     static MTypeId id;
     static MString drawDbClassification;
@@ -65,15 +68,15 @@ private:
 };
 
 // Viewport 2.0 override implementation
-class AssetDraw2GeometryOverride : public MHWRender::MPxGeometryOverride
+class AssetDrawGeometryOverride : public MHWRender::MPxGeometryOverride
 {
 public:
     static MHWRender::MPxGeometryOverride* Creator(const MObject& obj)
     {
-	return new AssetDraw2GeometryOverride(obj);
+	return new AssetDrawGeometryOverride(obj);
     }
 
-    ~AssetDraw2GeometryOverride() override;
+    ~AssetDrawGeometryOverride() override;
 
     MHWRender::DrawAPI supportedDrawAPIs() const override;
 
@@ -94,8 +97,8 @@ public:
 
     void handleTraceMessage( const MString &message ) const override
     {
-	MGlobal::displayInfo("houdiniDraw2GeometryOverride: " + message);
-	fputs("houdiniDraw2GeometryOverride: ",stderr);
+	MGlobal::displayInfo("houdiniDrawGeometryOverride: " + message);
+	fputs("houdiniDrawGeometryOverride: ",stderr);
 	fputs(message.asChar(),stderr);
 	fputs("\n",stderr);
     }
@@ -103,7 +106,7 @@ public:
     void preDrawCallback(MDrawContext& ctx, const MRenderItemList& renderItemList, MShaderInstance *sh);
 
 private:
-    AssetDraw2GeometryOverride(const MObject& obj);
+    AssetDrawGeometryOverride(const MObject& obj);
 
     MHWRender::MShaderInstance* getShader(const MDagPath& path, bool &newshader);
     void releaseShader();

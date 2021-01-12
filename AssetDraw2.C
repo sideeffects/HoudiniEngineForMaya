@@ -36,17 +36,18 @@
 
 #include <unordered_map>
 #include <signal.h>
+#include <limits>
 
 #include "MayaTypeID.h"
 #include "AssetNode.h"
 #include "AssetDraw2.h"
 #include "hapiutil.h"
 
-static std::unordered_map<MShaderInstance*,AssetDraw2GeometryOverride*> 
+static std::unordered_map<MShaderInstance*,AssetDrawGeometryOverride*> 
 theShaderToOverrideMap;
 
-// Ctor of AssetDraw2Traits
-AssetDraw2Traits::AssetDraw2Traits()
+// Ctor of AssetDrawTraits
+AssetDrawTraits::AssetDrawTraits()
 {
 }
 
@@ -55,8 +56,8 @@ namespace
     // Viewport 2.0 specific data
     //
     const MString colorParameterName_ = "solidColor";
-    const MString wireframeItemName_  = "houdiniDraw2Wires";
-    const MString shadedItemName_     = "houdiniDraw2Triangles";
+    const MString wireframeItemName_  = "houdiniDrawWires";
+    const MString shadedItemName_     = "houdiniDrawTriangles";
 
     // Maintain a mini cache for 3d solid shaders in order to reuse the shader
     // instance whenever possible. This can allow Viewport 2.0 optimization e.g.
@@ -220,22 +221,22 @@ namespace
     }
 } // anonymous namespace
 
-MTypeId AssetDraw2::id( MayaTypeID_HoudiniAssetDraw2 );
-MString	AssetDraw2::drawDbClassification("drawdb/geometry/houdiniDraw2");
-MString	AssetDraw2::drawRegistrantId("houdiniDraw2Plugin");
+MTypeId AssetDraw::id( MayaTypeID_HoudiniAssetDraw );
+MString	AssetDraw::drawDbClassification("drawdb/geometry/houdiniDraw");
+MString	AssetDraw::drawRegistrantId("houdiniDrawPlugin");
 
-AssetDraw2::AssetDraw2()
+AssetDraw::AssetDraw()
 : myOutputDeform(/*topo=*/true,/*normal=*/true, /*skippoints=*/true, /*uvs=*/true)
 {
 }
-AssetDraw2::~AssetDraw2()
+AssetDraw::~AssetDraw()
 {
 }
 
 MStatus
-AssetDraw2::compute( const MPlug& plug, MDataBlock& data )
+AssetDraw::compute( const MPlug& plug, MDataBlock& data )
 {
-    AssetDraw2Traits &traits = AssetDraw2::theTraits;
+    AssetDrawTraits &traits = AssetDraw::theTraits;
 
     MString plugName = plug.name();
 
@@ -274,23 +275,39 @@ AssetDraw2::compute( const MPlug& plug, MDataBlock& data )
 }
 
 bool
-AssetDraw2::isBounded() const
+AssetDraw::isBounded() const
 {
-    return false;
+    return true;
+}
+
+MBoundingBox
+AssetDraw::boundingBox() const
+{
+    static MBoundingBox theReallyBigBox(
+        MPoint( std::numeric_limits<double>::min(),
+                std::numeric_limits<double>::min(),
+                std::numeric_limits<double>::min())
+                ,
+        MPoint( std::numeric_limits<double>::max(),
+                std::numeric_limits<double>::max(),
+                std::numeric_limits<double>::max())
+                );
+
+    return theReallyBigBox;
 }
 
 MSelectionMask
-AssetDraw2::getShapeSelectionMask() const
+AssetDraw::getShapeSelectionMask() const
 {
-    return MSelectionMask("houdiniDraw2Selection");
+    return MSelectionMask("houdiniDrawSelection");
 }
 
 // Called before this node is evaluated by Evaluation Manager
 MStatus
-AssetDraw2::preEvaluation( const MDGContext& context,
+AssetDraw::preEvaluation( const MDGContext& context,
     const MEvaluationNode& evaluationNode)
 {
-    AssetDraw2Traits &traits = AssetDraw2::theTraits;
+    AssetDrawTraits &traits = AssetDraw::theTraits;
     if (context.isNormal())
     {
 	MStatus status;
@@ -304,16 +321,16 @@ AssetDraw2::preEvaluation( const MDGContext& context,
 }
 
 void*
-AssetDraw2::creator()
+AssetDraw::creator()
 {
-    return new AssetDraw2();
+    return new AssetDraw();
 }
 
 
 
 // Viewport 2.0 override implementation
 
-AssetDraw2GeometryOverride::AssetDraw2GeometryOverride(const MObject& obj)
+AssetDrawGeometryOverride::AssetDrawGeometryOverride(const MObject& obj)
 : MHWRender::MPxGeometryOverride(obj)
 , mLocatorNode(obj)
 , myOutput(nullptr)
@@ -322,13 +339,13 @@ AssetDraw2GeometryOverride::AssetDraw2GeometryOverride(const MObject& obj)
 {
 }
 
-AssetDraw2GeometryOverride::~AssetDraw2GeometryOverride()
+AssetDrawGeometryOverride::~AssetDrawGeometryOverride()
 {
     releaseShader();
 }
 
 void
-AssetDraw2GeometryOverride::releaseShader()
+AssetDrawGeometryOverride::releaseShader()
 {
     MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
     if (!renderer)
@@ -451,12 +468,12 @@ void
 AssetDraw2PreCallback(MDrawContext& ctx,
     const MRenderItemList& renderItemList, MShaderInstance *sh)
 {
-    AssetDraw2GeometryOverride *drawOverride = theShaderToOverrideMap[sh];
+    AssetDrawGeometryOverride *drawOverride = theShaderToOverrideMap[sh];
     drawOverride->preDrawCallback(ctx,renderItemList,sh);
 }
 
 void
-AssetDraw2GeometryOverride::preDrawCallback(MDrawContext& ctx,
+AssetDrawGeometryOverride::preDrawCallback(MDrawContext& ctx,
     const MRenderItemList& renderItemList, MShaderInstance *sh)
 {
     sh->bind(ctx);
@@ -585,11 +602,11 @@ AssetDraw2GeometryOverride::preDrawCallback(MDrawContext& ctx,
 }
 
 MHWRender::MShaderInstance*
-AssetDraw2GeometryOverride::getShader(const MDagPath& path, bool &newshader)
+AssetDrawGeometryOverride::getShader(const MDagPath& path, bool &newshader)
 
 {
     MStatus status;
-    AssetDraw2Traits &traits = AssetDraw2::theTraits;
+    AssetDrawTraits &traits = AssetDraw::theTraits;
 
     MPlug shaderPlug(path.node(),traits.shader);
     MPlug shaderFilePlug(path.node(),traits.shaderfile);
@@ -769,18 +786,18 @@ AssetDraw2GeometryOverride::getShader(const MDagPath& path, bool &newshader)
 }
 
 MHWRender::DrawAPI
-AssetDraw2GeometryOverride::supportedDrawAPIs() const
+AssetDrawGeometryOverride::supportedDrawAPIs() const
 {
     // this plugin supports both GL and DX
     return (MHWRender::kOpenGL | MHWRender::kDirectX11 | MHWRender::kOpenGLCoreProfile);
 }
 
 void
-AssetDraw2GeometryOverride::updateDG()
+AssetDrawGeometryOverride::updateDG()
 {
     myOutput = nullptr;
 
-    AssetDraw2Traits &traits = AssetDraw2::theTraits;
+    AssetDrawTraits &traits = AssetDraw::theTraits;
 
     // Pull on the output plug ourself to trigger cooking
     // Store a pointer to the output for access during drawing
@@ -790,7 +807,7 @@ AssetDraw2GeometryOverride::updateDG()
 
     MString plugName = plug.name();
 
-    AssetDraw2 *pAssetDraw2 = dynamic_cast<AssetDraw2*>(
+    AssetDraw *pAssetDraw2 = dynamic_cast<AssetDraw*>(
 	MFnDependencyNode(mLocatorNode).userNode());
     if (!pAssetDraw2)
 	return;
@@ -800,19 +817,19 @@ AssetDraw2GeometryOverride::updateDG()
 }
 
 bool
-AssetDraw2GeometryOverride::isIndexingDirty(const MHWRender::MRenderItem &item)
+AssetDrawGeometryOverride::isIndexingDirty(const MHWRender::MRenderItem &item)
 {
     return myOutput ? myOutput->myTopoDirty : false;
 }
 
 bool
-AssetDraw2GeometryOverride::isStreamDirty(const MHWRender::MVertexBufferDescriptor &desc)
+AssetDrawGeometryOverride::isStreamDirty(const MHWRender::MVertexBufferDescriptor &desc)
 {
     return myOutput ? myOutput->myPos.myDirty||myOutput->myTopoDirty : false;
 }
 
 void
-AssetDraw2GeometryOverride::updateRenderItems( const MDagPath& path,
+AssetDrawGeometryOverride::updateRenderItems( const MDagPath& path,
     MHWRender::MRenderItemList& list )
 {
     if (!myOutput)
@@ -903,7 +920,7 @@ AssetDraw2GeometryOverride::updateRenderItems( const MDagPath& path,
     }
 }
 void
-AssetDraw2GeometryOverride::populateGeometry(
+AssetDrawGeometryOverride::populateGeometry(
     const MHWRender::MGeometryRequirements& requirements,
     const MHWRender::MRenderItemList& renderItems,
     MHWRender::MGeometry& data)
@@ -1275,9 +1292,9 @@ AssetDraw2GeometryOverride::populateGeometry(
 //---------------------------------------------------------------------------
 
 MStatus
-AssetDraw2::initialize()
+AssetDraw::initialize()
 {
-    AssetDraw2Traits &traits = theTraits;
+    AssetDrawTraits &traits = theTraits;
 
     MFnNumericAttribute nAttr;
     MFnMessageAttribute mAttr;
@@ -1314,17 +1331,17 @@ AssetDraw2::initialize()
 }
 
 MStatus
-AssetDraw2::initializePlugin( MFnPlugin &plugin, MObject obj )
+AssetDraw::initializePlugin( MFnPlugin &plugin, MObject obj )
 {
     MStatus   status;
 
     status = plugin.registerNode(
 	"houdiniDraw2",
-	AssetDraw2::id,
-	AssetDraw2::creator,
-	AssetDraw2::initialize,
+	AssetDraw::id,
+	AssetDraw::creator,
+	AssetDraw::initialize,
 	MPxNode::kLocatorNode,
-	&AssetDraw2::drawDbClassification);
+	&AssetDraw::drawDbClassification);
 
     if (!status)
     {
@@ -1333,9 +1350,9 @@ AssetDraw2::initializePlugin( MFnPlugin &plugin, MObject obj )
     }
 
     status = MHWRender::MDrawRegistry::registerGeometryOverrideCreator(
-	AssetDraw2::drawDbClassification,
-	AssetDraw2::drawRegistrantId,
-	AssetDraw2GeometryOverride::Creator);
+	AssetDraw::drawDbClassification,
+	AssetDraw::drawRegistrantId,
+	AssetDrawGeometryOverride::Creator);
 
     if (!status)
     {
@@ -1345,19 +1362,19 @@ AssetDraw2::initializePlugin( MFnPlugin &plugin, MObject obj )
 
     // Register a custom selection mask with priority 2 (same as locators
     // by default).
-    MSelectionMask::registerSelectionType("houdiniDraw2Selection", 2);
-    status = MGlobal::executeCommand("selectType -byName \"houdiniDraw2Selection\" 1");
+    MSelectionMask::registerSelectionType("houdiniDrawSelection", 2);
+    status = MGlobal::executeCommand("selectType -byName \"houdiniDrawSelection\" 1");
     return status;
 }
 
 MStatus
-AssetDraw2::uninitializePlugin( MFnPlugin &plugin, MObject obj)
+AssetDraw::uninitializePlugin( MFnPlugin &plugin, MObject obj)
 {
     MStatus   status;
 
     status = MHWRender::MDrawRegistry::deregisterGeometryOverrideCreator(
-	    AssetDraw2::drawDbClassification,
-	    AssetDraw2::drawRegistrantId);
+	    AssetDraw::drawDbClassification,
+	    AssetDraw::drawRegistrantId);
     if (!status)
     {
 	status.perror("deregisterDrawOverrideCreator");
@@ -1371,7 +1388,7 @@ AssetDraw2::uninitializePlugin( MFnPlugin &plugin, MObject obj)
 	return status;
     }
 
-    status = plugin.deregisterNode( AssetDraw2::id );
+    status = plugin.deregisterNode( AssetDraw::id );
     if (!status)
     {
 	status.perror("deregisterNode");
@@ -1379,13 +1396,13 @@ AssetDraw2::uninitializePlugin( MFnPlugin &plugin, MObject obj)
     }
 
     // Deregister custom selection mask
-    MSelectionMask::deregisterSelectionType("houdiniDraw2Selection");
+    MSelectionMask::deregisterSelectionType("houdiniDrawSelection");
 
     return status;
 }
 
 
 
-AssetDraw2Traits AssetDraw2::theTraits;
+AssetDrawTraits AssetDraw::theTraits;
 
 #endif

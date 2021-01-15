@@ -1208,9 +1208,13 @@ AssetDrawGeometryOverride::populateGeometry(
 	MHWRender::MIndexBuffer* indexBuffer = data.createIndexBuffer(MHWRender::MGeometry::kUnsignedInt32);
 
 	int faceCount = info.faceCount;
+	int vertexCount = info.vertexCount;
+
+        // Wireframe topology
+        // No need to triangulate.
 	if (item->name() == wireframeItemName_ )
 	{
-	    int numIndex = faceCount*6;
+	    int numIndex = vertexCount*2;
 
 	    unsigned int* indices = (unsigned int*)indexBuffer->acquire(numIndex,/*writeOnly=*/true);
 
@@ -1221,61 +1225,90 @@ AssetDrawGeometryOverride::populateGeometry(
 	    {
 		for (int i=0; i<faceCount; ++i)
 		{
-		    *(dst++) = (unsigned int)(src[0]);
-		    *(dst++) = (unsigned int)(src[1]);
+                    int faceVertCount = *(faces++);
+                    if (faceVertCount<=0)
+                        continue;
 
-		    *(dst++) = (unsigned int)(src[1]);
-		    *(dst++) = (unsigned int)(src[2]);
+                    for (int j=0; j<faceVertCount-1; ++j)
+                    {
+                        *(dst++) = (unsigned int)(src[j]);
+                        *(dst++) = (unsigned int)(src[j+1]);
+                    }
+                    *(dst++) = (unsigned int)(src[faceVertCount-1]);
+                    *(dst++) = (unsigned int)(src[0]);
 
-		    *(dst++) = (unsigned int)(src[2]);
-		    *(dst++) = (unsigned int)(src[0]);
-		    src += *(faces++);
+		    src += faceVertCount;
 		}
 	    }
 	    else
 	    {
 		for (int i=0; i<faceCount; ++i)
 		{
-		    *(dst++) = (unsigned int)(0);
-		    *(dst++) = (unsigned int)(0);
+                    int faceVertCount = *(faces++);
+                    if (faceVertCount<=0)
+                        continue;
 
-		    *(dst++) = (unsigned int)(0);
-		    *(dst++) = (unsigned int)(0);
-
-		    *(dst++) = (unsigned int)(0);
-		    *(dst++) = (unsigned int)(0);
+                    for (int j=0; j<faceVertCount; ++j)
+                    {
+                        *(dst++) = (unsigned int)(0);
+                        *(dst++) = (unsigned int)(0);
+                    }
 		}
 	    }
 
 	    indexBuffer->commit(indices);
 	}
+
+        // Shaded topology
+        // We must convert the polygons to triangles
 	else if (item->name() == shadedItemName_ )
 	{
-	    int numIndex = faceCount*3;
+	    int* src = &myOutput->myVertexList[0];
+	    int* faces = &myOutput->myFaceCounts[0];
+
+            // Count the number of triangles we need
+            int numIndex = 0;
+	    for (int i=0; i<faceCount; ++i)
+            {
+                int faceVertCount = faces[i];
+                if (faceVertCount<3)
+                    continue;
+                numIndex += (faceVertCount-2)*3;
+            }
 
 	    unsigned int* indices = (unsigned int*)indexBuffer->acquire(numIndex,/*writeOnly=*/true);
 
 	    unsigned int* dst = indices;
-	    int* src = &myOutput->myVertexList[0];
-	    int* faces = &myOutput->myFaceCounts[0];
 
 	    if (src)
 	    {
 		for (int i=0; i<faceCount; ++i)
 		{
-		    *(dst++) = (unsigned int)(src[0]);
-		    *(dst++) = (unsigned int)(src[1]);
-		    *(dst++) = (unsigned int)(src[2]);
-		    src += *(faces++);
+                    int faceVertCount = *(faces++);
+                    if (faceVertCount<3)
+                        continue;
+
+                    // Dumb triangulation without convexing
+                    for (int j=2; j<faceVertCount; j++)
+                    {
+                        *(dst++) = (unsigned int)(src[0]);
+                        *(dst++) = (unsigned int)(src[j-1]);
+                        *(dst++) = (unsigned int)(src[j]);
+                    }
+
+		    src += faceVertCount;
 		}
 	    }
 	    else
 	    {
 		for (int i=0; i<faceCount; ++i)
 		{
-		    *(dst++) = (unsigned int)0;
-		    *(dst++) = (unsigned int)0;
-		    *(dst++) = (unsigned int)0;
+                    int faceVertCount = *(faces++);
+                    if (faceVertCount<3)
+                        continue;
+
+                    for (int j=0; j<faceVertCount; j++)
+                        *(dst++) = (unsigned int)(0);
 		}
 	    }
 

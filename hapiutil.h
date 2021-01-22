@@ -19,7 +19,7 @@ struct HAPITypeTrait<int>
 };
 
 template <>
-struct HAPITypeTrait<long long>
+struct HAPITypeTrait<HAPI_Int64>
 {
     static const HAPI_StorageType storageType = HAPI_STORAGETYPE_INT64;
 };
@@ -123,8 +123,8 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
 template <>
 struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
 {
-    typedef long long SetType;
-    typedef long long GetType;
+    typedef HAPI_Int64 SetType;
+    typedef HAPI_Int64 GetType;
 
     static HAPI_Result setAttribute(const HAPI_Session *session,
                                     HAPI_NodeId nodeId,

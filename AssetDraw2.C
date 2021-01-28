@@ -277,23 +277,13 @@ AssetDraw::compute( const MPlug& plug, MDataBlock& data )
 bool
 AssetDraw::isBounded() const
 {
-    return true;
+    return false;
 }
 
 MBoundingBox
 AssetDraw::boundingBox() const
 {
-    static MBoundingBox theReallyBigBox(
-        MPoint( std::numeric_limits<double>::min(),
-                std::numeric_limits<double>::min(),
-                std::numeric_limits<double>::min())
-                ,
-        MPoint( std::numeric_limits<double>::max(),
-                std::numeric_limits<double>::max(),
-                std::numeric_limits<double>::max())
-                );
-
-    return theReallyBigBox;
+    return MPxLocatorNode::boundingBox();
 }
 
 MSelectionMask

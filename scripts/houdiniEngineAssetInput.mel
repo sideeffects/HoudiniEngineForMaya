@@ -635,8 +635,8 @@ houdiniEngine_setAssetInput(string $inputAttr, string $objects[])
 
     if (`attributeExists "preserveScale" $finalInputNode`)
     {
-        int $isScalePreserved = `getAttr ($finalInputNode + ".preserveScale")`;
-        setAttr ($inputNode + ".preserveScale") $isScalePreserved;
+        int $isScalePreserved = `getAttr ($inputNode + ".preserveScale")`;
+        setAttr ($finalInputNode + ".preserveScale") $isScalePreserved;
     }
 
     if(`getAttr ($assetNodeName + ".syncWhenInputConnects")`)

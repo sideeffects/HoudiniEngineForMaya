@@ -303,14 +303,14 @@ def show_asset_store_window():
             subMenu = True,
             postMenuCommand = change_user_post_menu_command,
             )
-    cmds.setParent(menu = True, upLevel = True);
+    cmds.setParent(menu = True, upLevel = True)
 
     cmds.menuItem(divider = True)
     cmds.menuItem(label = "Refresh Asset List", command = refresh_asset_entries)
     cmds.menuItem(divider = True)
     cmds.menuItem(label = "Close", command = close_asset_store_window)
 
-    cmds.setParent(menu = True, upLevel = True);
+    cmds.setParent(menu = True, upLevel = True)
 
     refresh_asset_entries()
 

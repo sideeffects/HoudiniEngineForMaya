@@ -155,7 +155,8 @@ struct OptionVars
           sessionPipeCustom("SessionPipeCustom", 0),
           thriftPipe("ThriftPipe", "hapi"),
           unsetLLP("UnsetLLP", 1),
-          viewProduct("ViewProduct", "Houdini Core")
+          viewProduct("ViewProduct", "Houdini Core"),
+          timeout("Timeout", 10 * 1000)
     {
     }
 
@@ -167,6 +168,7 @@ struct OptionVars
     StringOptionVar thriftPipe;
     IntOptionVar unsetLLP;
     StringOptionVar viewProduct;
+    IntOptionVar timeout;
 
 private:
     OptionVars &operator=(const OptionVars &);
@@ -278,7 +280,7 @@ initializeSession(const OptionVars &optionVars)
         {
             HAPI_ThriftServerOptions serverOptions;
             serverOptions.autoClose = true;
-            serverOptions.timeoutMs = 10 * 1000;
+            serverOptions.timeoutMs = optionVars.timeout.get();
 
             pipeName = Util::getTempDir().c_str();
             Util::mkpath(pipeName.asChar());

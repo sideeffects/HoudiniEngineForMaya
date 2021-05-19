@@ -18,7 +18,7 @@ In order to use socket sessions, the Houdini Engine server must be manually star
 
 Named pipe session was added when thin client was introduced in Houdini Engine. In short, thin client allows the main Houdini Engine processing to happen in a separate process, outside of the Maya process. For named pipe sessions, named pipe is used to communicate between the Maya process and the Houdini Engine process. This is the recommended method when using thin client in the same local machine.
 
-The named pipe session support auto-starting the Houdini Engine server. When the plug-in initializes, the Houdini Engine server will be automatically started, and a named pipe is automatically chosen. In some cases on Linux, we have found that there can be library conflicts if the LD_LIBRARY_PATH has been set, resulting in HARS failing to start.  There is now a preference to unset LD_LIBRARY_PATH before starting the server (and restoring the value afterwards, of course). The preference is on by default, but if you need to pass LD_LIBRARY_PATH to engine, you can turn this preference off.
+The named pipe session supports auto-starting the Houdini Engine server. When the plug-in initializes, the Houdini Engine server will be automatically started, and a named pipe is automatically chosen. In some cases on Linux, we have found that there can be library conflicts if the LD_LIBRARY_PATH has been set, resulting in HARS failing to start.  There is now a preference to unset LD_LIBRARY_PATH before starting the server (and restoring the value afterwards, of course). The preference is on by default, but if you need to pass LD_LIBRARY_PATH to engine, you can turn this preference off. The timeout for connecting to HARS can also be set. This is useful if Houdini takes a long time to start.
 
 The Houdini Engine server can also be manually started with a known named pipe. Then, the named pipe information is entered into the plug-in.
 
@@ -47,6 +47,7 @@ For a named pipe session with autostart:
 optionVar -iv "houdiniEngineSessionType" 2;
 optionVar -sv "houdiniEngineThriftPipe" "hapi";
 optionVar -iv "houdiniEngineSessionPipeCustom" 0;
+optionVar -iv "houdiniEngineTimeout" 10000;
 @endverbatim
 
 @section Maya_Session_Server Server

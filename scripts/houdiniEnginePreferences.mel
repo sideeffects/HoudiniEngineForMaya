@@ -50,13 +50,23 @@ houdiniEnginePreferences_refresh()
         break;
     }
 
-    textField -edit
-        -text `optionVar -query "houdiniEngineThriftServer"`
-        sessionSocketHost;
+    if (`optionVar -exists "houdiniEngineThriftServer"`)
+    {
+        textField -edit
+            -text `optionVar -query "houdiniEngineThriftServer"`
+            sessionSocketHost;
+    }
+    else
+        textField -edit -text "localhost" sessionSocketHost;
 
-    textField -edit
-        -text `optionVar -query "houdiniEngineThriftPort"`
-        sessionSocketPort;
+    if (`optionVar -exists "houdiniEngineThriftPort"`)
+    {
+        textField -edit
+            -text `optionVar -query "houdiniEngineThriftPort"`
+            sessionSocketPort;
+    }
+    else
+        textField -edit -text "9090" sessionSocketPort;
 
     if((`optionVar -query "houdiniEngineSessionPipeCustom"` == 0) || $originalSessionType == 0)
         radioButton -edit
@@ -73,6 +83,15 @@ houdiniEnginePreferences_refresh()
 
     houdiniEnginePreferences_toggleSessionTypeSocket($sessionType == 1);
     houdiniEnginePreferences_toggleSessionTypePipe($sessionType == 2);
+    
+    if (`optionVar -exists "houdiniEngineTimeout"`)
+    {
+        intFieldGrp -edit
+            -value1 `optionVar -query "houdiniEngineTimeout"`
+            timeoutGrp;
+    }
+    else
+        intFieldGrp -edit -value1 10000 timeoutGrp;
 }
 
 global proc
@@ -118,6 +137,10 @@ houdiniEnginePreferences_save()
     optionVar
         -stringValue "houdiniEngineThriftPipe"
         `textField -query -text sessionPipeName`;
+        
+    optionVar
+        -intValue "houdiniEngineTimeout"
+        `intFieldGrp -query -value1 timeoutGrp`;
 
     houdiniEnginePreferences_close;
 }
@@ -157,8 +180,6 @@ houdiniEnginePreferences_setViewProduct(string $state)
 {
     global string $houdiniEngineViewProduct;
 
-    print($state + "\n");
-
     $houdiniEngineViewProduct = $state;
 }
 
@@ -191,6 +212,8 @@ houdiniEnginePreferences_toggleSessionTypePipe(int $state)
 
     textField -edit -enable ($state && $custom) sessionPipeName;
     checkBoxGrp -edit -enable  ($state && !$custom) unsetLLPCheck;
+    intFieldGrp -edit -enable  ($state && !$custom) timeoutGrp;
+    text -edit -enable  ($state && !$custom) timeoutUnitLabel;
 }
 
 global proc
@@ -200,6 +223,8 @@ houdiniEnginePreferences_toggleSessionTypePipeCustom(int $state)
 
     textField -edit -enable $state sessionPipeName;
     checkBoxGrp -edit -enable  (!$state) unsetLLPCheck;
+    intFieldGrp -edit -enable (!$state) timeoutGrp;
+    text -edit -enable (!$state) timeoutUnitLabel;
 }
 
 global proc
@@ -333,7 +358,9 @@ houdiniEnginePreferences()
                 -label "Manual server"
                 -changeCommand "houdiniEnginePreferences_toggleSessionTypePipeCustom 1"
                 sessionPipeCustom;
-
+            
+            intFieldGrp -label "Connection Timeout:" timeoutGrp;
+            text -label "ms" timeoutUnitLabel;
 
             textField -width 200 sessionPipeName;
             checkBoxGrp
@@ -369,8 +396,14 @@ houdiniEnginePreferences()
     
                 -attachControl sessionPipeAuto "top" 5 sessionTypePipe
                 -attachForm sessionPipeAuto "left" 20
-    
-                -attachControl unsetLLPCheck "top" 5 sessionPipeAuto
+
+                -attachControl timeoutGrp "top" 5 sessionPipeAuto
+                -attachForm timeoutGrp "left" 20
+
+                -attachControl timeoutUnitLabel "top" 9 sessionPipeAuto
+                -attachControl timeoutUnitLabel "left" 0 timeoutGrp
+
+                -attachControl unsetLLPCheck "top" 5 timeoutGrp
                 -attachForm unsetLLPCheck "left" 20
     
                 -attachControl sessionPipeCustom "top" 5 unsetLLPCheck
@@ -403,10 +436,16 @@ houdiniEnginePreferences()
                 -attachControl sessionPipeAuto "top" 5 sessionTypePipe
                 -attachForm sessionPipeAuto "left" 20
 
-                -attachControl sessionPipeCustom "top" 5 sessionPipeAuto
+                -attachControl timeoutGrp "top" 5 sessionPipeAuto
+                -attachForm timeoutGrp "left" 20
+
+                -attachControl timeoutUnitLabel "top" 9 sessionPipeAuto
+                -attachControl timeoutUnitLabel "left" 0 timeoutGrp
+
+                -attachControl sessionPipeCustom "top" 5 timeoutGrp
                 -attachForm sessionPipeCustom "left" 20
 
-                -attachControl sessionPipeName "top" 5 sessionPipeAuto
+                -attachControl sessionPipeName "top" 5 timeoutGrp
                 -attachControl sessionPipeName "left" 5 sessionPipeCustom
 
                 sessionLayout;

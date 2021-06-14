@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import os
 import re
@@ -88,7 +89,7 @@ def get_store_current_user():
             current_user = users_root["default_user"]
 
     if not current_user:
-        print "Warning: Cannot determine default user for asset store."
+        print("Warning: Cannot determine default user for asset store.")
 
     return current_user
 

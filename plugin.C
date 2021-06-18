@@ -569,10 +569,10 @@ initializePlugin(MObject obj)
 
     initializeSession(optionVars);
 
-    if (!HAPI_FAIL(initializeHAPI(optionVars)))
-    {
-        printHAPIVersion();
-    }
+    if (HAPI_FAIL(initializeHAPI(optionVars)))
+        return MStatus::kFailure;
+    
+    printHAPIVersion();
 
     char engine_version[32];
     sprintf(engine_version, "%d.%d (API: %d)",

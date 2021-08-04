@@ -205,6 +205,11 @@ InputMesh::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
     // Set position attributes.
     processPoints(meshFn);
 
+    // HACK: For some reason if processSets is called after processUVs, the part
+    //       size and the membership in Maya can get out of sync when custom
+    //       sets are utilized, which results in a crash.
+    processSets(plug, meshFn);
+
     // normals
     processNormals(meshObj, meshFn, vertexCount);
 
@@ -213,8 +218,6 @@ InputMesh::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
 
     // Colors and Alphas
     processColorSets(meshFn, vertexCount, vertexList);
-
-    processSets(plug, meshFn);
 
     setInputName(HAPI_ATTROWNER_PRIM, partInfo.faceCount, plug);
 

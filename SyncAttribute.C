@@ -149,6 +149,11 @@ static void handleAffectsOthersTag(const HAPI_NodeInfo &myNodeInfo, const HAPI_P
             // Parm affects others, so we must force an attribute sync
             attr.addToCategory("hapiParm_affectsOthers");
         }
+        else if (tagNames[i] == "sidefx::maya_parm_syncs_asset")
+        {
+            // Parm causes an asset sync
+            attr.addToCategory("hapiParm_syncsAsset");
+        }
     }
 }
 
@@ -433,6 +438,11 @@ CreateAttrOperation::createStringAttr(const HAPI_ParmInfo &parm)
         {
             // Parm affects others, so we must force an attribute sync
             tAttr.addToCategory("hapiParm_affectsOthers");
+        }
+        else if (tagNames[i] == "sidefx::maya_parm_syncs_asset")
+        {
+            // Parm causes an asset sync
+            tAttr.addToCategory("hapiParm_syncsAsset");
         }
     }
 

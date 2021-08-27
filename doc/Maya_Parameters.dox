@@ -87,7 +87,7 @@ setAttr foo1.houdiniAssetParm_parm__button 1;
 dgeval foo1.output;
 @endcode
 
-If a parameter's callback modifies any other parameters, it is recommended that it be tagged with the built-in `sidefx::maya_parm_affects_others` tag. This notifies Maya that it should sync every attribute when this parameter has been modified.
+If a parameter's callback modifies any other parameters, it is recommended that it be tagged with the built-in `sidefx::maya_parm_affects_others` tag. This notifies Maya that it should sync every attribute when this parameter has been modified. If an entire asset sync is required, tag the parm with the built-in `sidefx::maya_parm_syncs_asset` tag.
 
 @section Maya_Parameters_AnimationAndExpression Animation and Expression
 

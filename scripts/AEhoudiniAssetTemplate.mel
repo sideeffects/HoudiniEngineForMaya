@@ -468,6 +468,13 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
                           -attributeChange $plug
                           ("houdiniEngine_syncAssetAttributes " + $nodeName + ";");
             }
+            else if ($category == "hapiParm_syncsAsset")
+            {
+                // force a full asset sync whenever this attribute changes
+                scriptJob -parent `setParent -q`
+                          -attributeChange $plug
+                          ("houdiniEngine_syncAsset " + $nodeName + ";");
+            }
         }
     }
 }

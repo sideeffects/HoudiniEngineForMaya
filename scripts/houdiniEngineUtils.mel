@@ -47,6 +47,9 @@ houdiniEngine_run(string $cmds[])
             $final_cmd += "unset LD_LIBRARY_PATH; ";
         }
 
+        if(`optionVar -query "houdiniEngineUnsetPP"`)
+            $final_cmd += "unset PYTHONPATH; ";
+
         $final_cmd += "PATH=\"$HFS/bin:$PATH\"; ";
 
         $final_cmd += stringArrayToString($cmds, " ; ");
@@ -56,6 +59,9 @@ houdiniEngine_run(string $cmds[])
     else if($isWindows)
     {
         $final_cmd += "start cmd /c \"";
+
+        if(`optionVar -query "houdiniEngineUnsetPP"`)
+            $final_cmd += "set PYTHONPATH= & ";
 
         // PATH should already be set on Windows.
 

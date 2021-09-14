@@ -155,6 +155,7 @@ struct OptionVars
           sessionPipeCustom("SessionPipeCustom", 0),
           thriftPipe("ThriftPipe", "hapi"),
           unsetLLP("UnsetLLP", 1),
+          unsetPP("UnsetPP", 0),
           viewProduct("ViewProduct", "Houdini Core"),
           timeout("Timeout", 10 * 1000)
     {
@@ -167,6 +168,7 @@ struct OptionVars
     IntOptionVar sessionPipeCustom;
     StringOptionVar thriftPipe;
     IntOptionVar unsetLLP;
+    IntOptionVar unsetPP;
     StringOptionVar viewProduct;
     IntOptionVar timeout;
 
@@ -311,6 +313,27 @@ initializeSession(const OptionVars &optionVars)
             }
 #endif
 
+            // When starting HARS, it's possible that the Maya python path will
+            // conflict with Houdini's. Clear the PYTHONPATH variable if
+            // instructed.
+            char *ppString = getenv("PYTHONPATH");
+            char *ppSave   = NULL;
+
+            if (optionVars.unsetPP.get())
+            {
+                if (ppString && strlen(ppString) > 0)
+                {
+                    ppSave = new char[strlen((ppString)) + 1];
+                    strcpy(ppSave, ppString);
+
+#ifdef _WIN32
+                    _putenv("PYTHONPATH=");
+#else
+                    unsetenv("PYTHONPATH");
+#endif
+                }
+            }
+
             HAPI_ProcessId processId;
             sessionResult = HAPI_StartThriftNamedPipeServer(
                 &serverOptions, pipeName.asChar(), &processId);
@@ -319,10 +342,25 @@ initializeSession(const OptionVars &optionVars)
             if (llpSave)
             {
                 setenv("LD_LIBRARY_PATH", llpSave, 1);
-                delete llpSave;
+                delete[] llpSave;
                 llpSave = NULL;
             }
 #endif
+
+            if (ppSave)
+            {
+#ifdef _WIN32
+                char prefix[] = "PYTHONPATH=";
+                char *buffer = new char[strlen(ppString) + strlen(prefix) + 1];
+                strcpy(buffer, prefix);
+                strcat(buffer, ppString);
+                _putenv(buffer);
+#else
+                setenv("PYTHONPATH", ppSave, 1);
+#endif
+                delete[] ppSave;
+                ppSave = NULL;
+            }
 
             if (HAPI_FAIL(sessionResult))
             {

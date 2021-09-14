@@ -73,5 +73,6 @@ When engine was still running in-process we encountered many conflicts - usually
 There's still the possibility of conflicts with other plugins: On Windows, when PATH is modified from the module specifications, we can get conflicts when other plugins have libraries with the same name e.g. between our libray and Mentalray's libray. Mentalray may no longer be an issue for most customers - but similar problems could potentially occur with other plugins.  
 On Linux, we can have LD_LIBRARY_PATH conflicts as well, but our plugin does not rely on having anything set in LD_LIBRARY_PATH, we can (and do) just have an option to unset LD_LIBRARY_PATH before auto-starting the plugin.
 
+Likewise, we have also found that conflicts may arise when PYTHONPATH is set. If you enable "Unset PYTHONPATH" in the plugin's preferences, the PYTHONPATH variable will be cleared before starting the Houdini Engine server, as well as when assets are viewed in Houdini via the "View Assets in Houdini" menu item.
 
 */

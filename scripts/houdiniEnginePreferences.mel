@@ -19,6 +19,10 @@ houdiniEnginePreferences_refresh()
         -value1 `optionVar -query "houdiniEngineUnsetLLP"`
         unsetLLPCheck;
 
+    checkBoxGrp -e
+        -value1 `optionVar -query "houdiniEngineUnsetPP"`
+        unsetPPCheck;
+
     int $sessionType = int(`optionVar -query "houdiniEngineSessionType"`);
 
     // if the optionvars still refer to an in-process session,
@@ -111,6 +115,9 @@ houdiniEnginePreferences_save()
     optionVar
         -intValue "houdiniEngineUnsetLLP"
         `checkBoxGrp -q -value1 unsetLLPCheck`;
+    optionVar
+        -intValue "houdiniEngineUnsetPP"
+        `checkBoxGrp -q -value1 unsetPPCheck`;
 
     if (`radioButton -query -select sessionTypeSocket`)
     {
@@ -165,6 +172,14 @@ houdiniEnginePreferences_toggleUnsetLLP(int $state)
     global int $houdiniEngineUnsetLLP;
 
     $houdiniEngineUnsetLLP = $state;
+}
+
+global proc
+houdiniEnginePreferences_toggleUnsetPP(int $state)
+{
+    global int $houdiniEngineUnsetPP;
+
+    $houdiniEngineUnsetPP = $state;
 }
 
 global proc
@@ -372,6 +387,13 @@ houdiniEnginePreferences()
             if(!$isLinux)
                 checkBoxGrp -edit -visible 0  unsetLLPCheck;
 
+            checkBoxGrp
+                -numberOfCheckBoxes 1
+                -label "Unset PYTHONPATH:"
+                -label1 "(for auto-start)"
+                -changeCommand "houdiniEnginePreferences_toggleUnsetPP #1"
+                unsetPPCheck;
+
         setParent ..;
         if($isLinux)
         {
@@ -405,11 +427,14 @@ houdiniEnginePreferences()
 
                 -attachControl unsetLLPCheck "top" 5 timeoutGrp
                 -attachForm unsetLLPCheck "left" 20
+
+                -attachControl unsetPPCheck "top" 5 unsetLLPCheck
+                -attachForm unsetPPCheck "left" 20
     
-                -attachControl sessionPipeCustom "top" 5 unsetLLPCheck
+                -attachControl sessionPipeCustom "top" 5 unsetPPCheck
                 -attachForm sessionPipeCustom "left" 20
     
-                -attachControl sessionPipeName "top" 5 unsetLLPCheck
+                -attachControl sessionPipeName "top" 5 unsetPPCheck
                 -attachControl sessionPipeName "left" 5 sessionPipeCustom
     
                 sessionLayout;
@@ -442,10 +467,13 @@ houdiniEnginePreferences()
                 -attachControl timeoutUnitLabel "top" 9 sessionPipeAuto
                 -attachControl timeoutUnitLabel "left" 0 timeoutGrp
 
-                -attachControl sessionPipeCustom "top" 5 timeoutGrp
+                -attachControl unsetPPCheck "top" 5 timeoutGrp
+                -attachForm unsetPPCheck "left" 20
+
+                -attachControl sessionPipeCustom "top" 5 unsetPPCheck
                 -attachForm sessionPipeCustom "left" 20
 
-                -attachControl sessionPipeName "top" 5 timeoutGrp
+                -attachControl sessionPipeName "top" 5 unsetPPCheck
                 -attachControl sessionPipeName "left" 5 sessionPipeCustom
 
                 sessionLayout;

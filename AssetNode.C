@@ -15,6 +15,7 @@
 #include <maya/MFileObject.h>
 #include <maya/MGlobal.h>
 #include <maya/MModelMessage.h>
+#include <maya/MNodeMessage.h>
 #include <maya/MPlugArray.h>
 #include <maya/MTime.h>
 
@@ -1772,6 +1773,66 @@ AssetNode::isAssetFrozen() const
     return frozen;
 }
 
+void userAttribChangedCallback(MNodeMessage::AttributeMessage msg, MPlug &plug, MPlug &otherPlug, void*)
+{
+    using std::string;
+
+    if (msg & MNodeMessage::kAttributeSet)
+    {
+        MObject attribObj = plug.attribute();
+
+        if (!attribObj.hasFn(MFn::kAttribute))
+            return;
+
+        MFnAttribute attrib(attribObj);
+
+        MStringArray categories;
+        attrib.getCategories(categories);
+
+        int func_idx = -1;
+        int func_lang_idx = -1;
+
+        for (int i = 0; i < categories.length(); i++)
+        {
+            string category(categories[i].asChar());
+
+            if (category.rfind(MAYA_PARM_CALLBACK_FUNC_PREFIX, 0) == 0)
+                func_idx = i;
+            else if (category.rfind(MAYA_PARM_CALLBACK_FUNC_LANG_PREFIX, 0) == 0)
+                func_lang_idx = i;
+        }
+
+        if (func_idx != -1)
+        {
+            string func_category(categories[func_idx].asChar());
+            string function = func_category.substr(strlen(MAYA_PARM_CALLBACK_FUNC_PREFIX));
+
+            string language = "mel";
+
+            if (func_lang_idx != -1)
+            {
+                string lang_category(categories[func_lang_idx].asChar());
+                language = lang_category.substr(strlen(MAYA_PARM_CALLBACK_FUNC_LANG_PREFIX));
+            }
+
+            string plugName(plug.name().asChar());
+
+            string command = function + "(\"" + plugName + "\")";
+
+            if (language == "mel")
+            {
+                command += ';';
+
+                MGlobal::executeCommand(command.c_str(), true);
+            }
+            else if (language == "python")
+            {
+                MGlobal::executePythonCommand(command.c_str(), true);
+            }
+        }
+    }
+}
+
 void
 AssetNode::createAsset()
 {
@@ -1789,6 +1850,9 @@ AssetNode::createAsset()
     {
         return;
     }
+
+    MObject node = thisMObject();
+    myCallbackId = MNodeMessage::addAttributeChangedCallback(node, userAttribChangedCallback);
 
     // if the asset has been frozen
     // and we're reading a file, don't load the assets
@@ -1839,6 +1903,9 @@ AssetNode::destroyAsset()
 {
     if (myAsset)
     {
+        if (myCallbackId > 0)
+            MMessage::removeCallback(myCallbackId);
+
         delete myAsset;
         myAsset = NULL;
     }

@@ -3,11 +3,17 @@
 
 #include <maya/MPxTransform.h>
 
+#include <maya/MMessage.h> 
 #include <maya/MTypeId.h>
 
 #include <vector>
 
 class Asset;
+
+// Prefixes that we use to determine what type of tag created the associated
+// attribute category.
+#define MAYA_PARM_CALLBACK_FUNC_PREFIX      "mpcbf:: "
+#define MAYA_PARM_CALLBACK_FUNC_LANG_PREFIX "mpcbfl:: "
 
 #ifdef WIN32
 // Workaround the deprecation warning for MPxNode::internalArrayCount()
@@ -100,6 +106,8 @@ private:
 
     typedef std::vector<MObject> MObjectVector;
     MObjectVector myDirtyParmAttributes;
+
+    MCallbackId myCallbackId;
 
 public:
     static MObject inTime;

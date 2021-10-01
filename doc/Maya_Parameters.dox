@@ -79,6 +79,9 @@ Single Selection Menu can also be used with the parameters. However, Mini Menu, 
 Menu can be used with button parameters. They will be display as option menus in Maya's Attribute Editor. However, there is a minor UI issue with button menus. In Houdini's UI, after selecting an item from a button menu, the button menu stays at the default selection, and not at the selected item. However, inside Maya's Attribute Editor, the option menu would behave like a regular option menu, and stay at the selected item. This is purely a UI update issue in the Attribute Editor, and does not affect scripting.
 
 @section Maya_Parameters_CallbackScript Callback Script
+
+@subsection Maya_Parameters_Callbacks_H Running Callbacks in Houdini when a Parm is Modified
+
 Callback Scripts can be configured on parameters.
 
 However, it is important to note that the callback script is not triggered until Maya evaluates the asset node. So if the button is clicked via script, it's generally a good idea to force the asset node to evaluate. This can be done via `dgeval`. For example, the following MEL commands will click a button parameter, and ensure the callback script is triggered:
@@ -88,6 +91,26 @@ dgeval foo1.output;
 @endcode
 
 If a parameter's callback modifies any other parameters, it is recommended that it be tagged with the built-in `sidefx::maya_parm_affects_others` tag. This notifies Maya that it should sync every attribute when this parameter has been modified. If an entire asset sync is required, tag the parm with the built-in `sidefx::maya_parm_syncs_asset` tag.
+
+@subsection Maya_Parameters_Callbacks_M Running Callbacks in Maya when a Parm is Modified
+
+To trigger a Maya script when a parm is modified, the built-in `sidefx::maya_parm_callback_func` tag must be defined on the parm. This instructs Maya which function should be called when the parm is modified. Both MEL and Python functions are supported, however MEL is the default. If you wish for a Python function to be called, you must additionally include the `sidefx::maya_parm_callback_func_language` built-in tag on the parm and set its value to `python`.
+
+In both languages, the callback function must receive a single argument. This argument will hold the source of callback. Eg. if the `parm` parm on the Houdini asset `foo1` is modified, it will pass "foo1.houdiniAssetParm_parm__button" to the callback function specified by `sidefx::maya_parm_callback_func`. Therefore callback functions should be defined in the following way:
+
+@code
+// MEL
+global proc myCallback(string $plug)
+{
+    print("Caught message from " + $plug + "!\n");
+}
+
+# Python
+def myCallback(plug):
+    print('Caught message from ' + plug + '!')
+@endcode
+
+In this case, `sidefx::maya_parm_callback_func` would be defined as `myCallback`, and `sidefx::maya_parm_callback_language` would be defined as either `Python` or (optionally) `MEL`.
 
 @section Maya_Parameters_AnimationAndExpression Animation and Expression
 

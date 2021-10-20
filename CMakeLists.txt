@@ -175,7 +175,7 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         plugin
         PROPERTIES
         MACOSX_RPATH TRUE
-        INSTALL_RPATH_USE_LINK_PATH TRUE
+        INSTALL_RPATH "@loader_path/${install_plug_ins_dir_to_houdiniengine_lib_dir};@loader_path/../../Frameworks/Houdini.framework/Versions/Current/Libraries"
         )
 endif ()
 

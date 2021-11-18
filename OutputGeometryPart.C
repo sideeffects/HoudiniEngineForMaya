@@ -2132,19 +2132,37 @@ OutputGeometryPart::computeExtraAttributes(
     };
 
     size_t newSize = 0;
+
+    std::array<std::vector<char>, HAPI_ATTROWNER_MAX> attributeNames;
+
     for (size_t i = 0; i < HAPI_ATTROWNER_MAX; i++)
     {
         const HAPI_AttributeOwner &owner = attributeOwners[i];
         const int &attributeCount        = attributeCounts[i];
 
-        std::vector<HAPI_StringHandle> attributeNames(attributeCount);
+        std::vector<HAPI_StringHandle> ownerAttributeNames(attributeCount);
         HAPI_GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
-                               owner, &attributeNames[0],
-                               attributeNames.size());
+                               owner, &ownerAttributeNames[0],
+                               attributeCount);
 
-        for (size_t j = 0; j < attributeNames.size(); j++)
+        int stringsbuffer_len;
+        HAPI_GetStringBatchSize(Util::theHAPISession.get(), &ownerAttributeNames[0],
+                                attributeCount, &stringsbuffer_len);
+
+        attributeNames[i].resize(stringsbuffer_len);
+        HAPI_GetStringBatch(
+            Util::theHAPISession.get(), &attributeNames[i][0], stringsbuffer_len);
+    }
+
+    for (size_t i = 0; i < HAPI_ATTROWNER_MAX; i++)
+    {
+        const int &attributeCount = attributeCounts[i];
+
+        auto read_iter = attributeNames[i].begin();
+        for (size_t j = 0; j < attributeCount; j++)
         {
-            const MString attributeName = Util::HAPIString(attributeNames[j]);
+            auto next_null = std::find(read_iter, attributeNames[i].end(), '\0');
+            MString attributeName(&(*read_iter));
 
             if (isAttributeUsed(attributeName.asChar()) ||
                 Util::startsWith(attributeName, "__"))
@@ -2153,6 +2171,8 @@ OutputGeometryPart::computeExtraAttributes(
             }
 
             newSize++;
+
+            read_iter = next_null + 1;
         }
     }
 
@@ -2174,14 +2194,11 @@ OutputGeometryPart::computeExtraAttributes(
             continue;
         }
 
-        std::vector<HAPI_StringHandle> attributeNames(attributeCount);
-        HAPI_GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
-                               owner, &attributeNames[0],
-                               attributeNames.size());
-
-        for (size_t j = 0; j < attributeNames.size(); j++)
+        auto read_iter = attributeNames[i].begin();
+        for (int j = 0; j < attributeCount; ++j)
         {
-            const MString attributeName = Util::HAPIString(attributeNames[j]);
+            auto next_null = std::find(read_iter, attributeNames[i].end(), '\0');
+            MString attributeName(&(*read_iter));
 
             if (isAttributeUsed(attributeName.asChar()) ||
                 Util::startsWith(attributeName, "__"))
@@ -2206,6 +2223,8 @@ OutputGeometryPart::computeExtraAttributes(
                                 "    ^1s",
                                 attributeName);
             }
+
+            read_iter = next_null + 1;
         }
     }
 

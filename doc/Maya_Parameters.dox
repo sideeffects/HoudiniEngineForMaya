@@ -110,7 +110,7 @@ def myCallback(plug):
     print('Caught message from ' + plug + '!')
 @endcode
 
-In this case, `sidefx::maya_parm_callback_func` would be defined as `myCallback`, and `sidefx::maya_parm_callback_language` would be defined as either `Python` or (optionally) `MEL`.
+In this case, `sidefx::maya_parm_callback_func` would be defined as `myCallback`, and `sidefx::maya_parm_callback_func_language` would be defined as either `Python` or (optionally) `MEL`.
 
 @section Maya_Parameters_AnimationAndExpression Animation and Expression
 

@@ -2141,17 +2141,21 @@ OutputGeometryPart::computeExtraAttributes(
         const int &attributeCount        = attributeCounts[i];
 
         std::vector<HAPI_StringHandle> ownerAttributeNames(attributeCount);
-        HAPI_GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
-                               owner, &ownerAttributeNames[0],
-                               attributeCount);
 
-        int stringsbuffer_len;
-        HAPI_GetStringBatchSize(Util::theHAPISession.get(), &ownerAttributeNames[0],
-                                attributeCount, &stringsbuffer_len);
+        if (attributeCount > 0)
+        {
+            HAPI_GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
+                                owner, &ownerAttributeNames[0],
+                                attributeCount);
 
-        attributeNames[i].resize(stringsbuffer_len);
-        HAPI_GetStringBatch(
-            Util::theHAPISession.get(), &attributeNames[i][0], stringsbuffer_len);
+            int stringsbuffer_len;
+            HAPI_GetStringBatchSize(Util::theHAPISession.get(), &ownerAttributeNames[0],
+                                    attributeCount, &stringsbuffer_len);
+
+            attributeNames[i].resize(stringsbuffer_len);
+            HAPI_GetStringBatch(
+                Util::theHAPISession.get(), &attributeNames[i][0], stringsbuffer_len);
+        }
     }
 
     for (size_t i = 0; i < HAPI_ATTROWNER_MAX; i++)

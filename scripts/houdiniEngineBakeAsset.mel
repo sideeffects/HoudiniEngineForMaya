@@ -19,7 +19,6 @@ houdiniEngine_bakeAsset(string $assetNode)
             if(`objectType -isAType "shape" $desc`) {
                 delete -ch $desc;
                 $hasShape = 1;
-                break;
             }
             if(`objectType -isAType "instancer" $desc`) {
                 $hasShape = 1;

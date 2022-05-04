@@ -147,6 +147,7 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
         -wd4267 # conversion of integer type possible loss of data
         -wd4389 # signed/unsigned mismatch
         -wd4458 # declaration of 'identifier' hides class member
+        /O2
         )
 elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
     set(

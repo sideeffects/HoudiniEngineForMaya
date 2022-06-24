@@ -1792,7 +1792,7 @@ void userAttribChangedCallback(MNodeMessage::AttributeMessage msg, MPlug &plug, 
         int func_idx = -1;
         int func_lang_idx = -1;
 
-        for (int i = 0; i < categories.length(); i++)
+        for (int i = 0, n = categories.length(); i < n; i++)
         {
             string category(categories[i].asChar());
 
@@ -1978,3 +1978,4 @@ AssetNode::getParmValues(MDataBlock &data)
 
     myAsset->getParmValues(data, assetNodeFn, NULL);
 }
+

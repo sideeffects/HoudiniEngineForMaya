@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include "AssetNodeOptions.h"
 
@@ -40,3 +40,4 @@ protected:
 };
 
 #endif
+

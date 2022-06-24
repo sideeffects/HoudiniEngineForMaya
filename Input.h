@@ -9,7 +9,9 @@
 #include <maya/MMessage.h>
 #include <maya/MPlug.h>
 
-#include <HAPI/HAPI_Common.h>
+
+// #include <HAPI/HAPI_Common.h>
+#include "HoudiniApi.h"
 
 class Input;
 
@@ -95,3 +97,4 @@ private:
 };
 
 #endif
+

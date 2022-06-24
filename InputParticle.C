@@ -18,14 +18,14 @@ InputParticle::InputParticle() : Input()
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     HAPI_NodeId nodeId;
-    CHECK_HAPI(HAPI_CreateInputNode(Util::theHAPISession.get(), &nodeId, NULL));
+    CHECK_HAPI(HoudiniApi::CreateInputNode(Util::theHAPISession.get(), &nodeId, NULL));
     if (!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
     }
 
     HAPI_NodeInfo nodeInfo;
-    HAPI_GetNodeInfo(Util::theHAPISession.get(), nodeId, &nodeInfo);
+    HoudiniApi::GetNodeInfo(Util::theHAPISession.get(), nodeId, &nodeInfo);
 
     setTransformNodeId(nodeInfo.parentId);
     setGeometryNodeId(nodeId);
@@ -35,7 +35,7 @@ InputParticle::~InputParticle()
 {
     if (!Util::theHAPISession.get())
         return;
-    CHECK_HAPI(HAPI_DeleteNode(Util::theHAPISession.get(), geometryNodeId()));
+    CHECK_HAPI(HoudiniApi::DeleteNode(Util::theHAPISession.get(), geometryNodeId()));
 }
 
 Input::AssetInputType
@@ -58,18 +58,18 @@ InputParticle::setAttributePointData(const char *attributeName,
     attributeInfo.count     = count;
     attributeInfo.tupleSize = tupleSize;
 
-    HAPI_AddAttribute(Util::theHAPISession.get(), geometryNodeId(), 0,
+    HoudiniApi::AddAttribute(Util::theHAPISession.get(), geometryNodeId(), 0,
                       attributeName, &attributeInfo);
 
     switch (storage)
     {
     case HAPI_STORAGETYPE_FLOAT:
-        HAPI_SetAttributeFloatData(Util::theHAPISession.get(), geometryNodeId(),
+        HoudiniApi::SetAttributeFloatData(Util::theHAPISession.get(), geometryNodeId(),
                                    0, attributeName, &attributeInfo,
                                    static_cast<float *>(data), 0, count);
         break;
     case HAPI_STORAGETYPE_INT:
-        HAPI_SetAttributeIntData(Util::theHAPISession.get(), geometryNodeId(),
+        HoudiniApi::SetAttributeIntData(Util::theHAPISession.get(), geometryNodeId(),
                                  0, attributeName, &attributeInfo,
                                  static_cast<int *>(data), 0, count);
         break;
@@ -116,13 +116,13 @@ InputParticle::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
 
     // set up part info
     HAPI_PartInfo partInfo;
-    HAPI_PartInfo_Init(&partInfo);
+    HoudiniApi::PartInfo_Init(&partInfo);
     partInfo.id          = 0;
     partInfo.faceCount   = 0;
     partInfo.vertexCount = 0;
     partInfo.pointCount  = particleFn.count();
 
-    HAPI_SetPartInfo(
+    HoudiniApi::SetPartInfo(
         Util::theHAPISession.get(), geometryNodeId(), 0, &partInfo);
 
     // set per-particle attributes
@@ -312,5 +312,6 @@ InputParticle::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
     setInputName(HAPI_ATTROWNER_POINT, partInfo.pointCount, plug);
 
     // Commit it
-    HAPI_CommitGeo(Util::theHAPISession.get(), geometryNodeId());
+    HoudiniApi::CommitGeo(Util::theHAPISession.get(), geometryNodeId());
 }
+

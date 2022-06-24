@@ -29,3 +29,4 @@ NODE_OPTIONS_END()
 extern AssetNodeOptions::Definition assetNodeOptionsDefinition;
 
 #endif
+

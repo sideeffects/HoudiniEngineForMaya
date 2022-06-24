@@ -135,20 +135,20 @@ void
 OutputGeometryPart::update()
 {
     CHECK_HAPI(
-        HAPI_GetGeoInfo(Util::theHAPISession.get(), myNodeId, &myGeoInfo));
+        HoudiniApi::GetGeoInfo(Util::theHAPISession.get(), myNodeId, &myGeoInfo));
 
-    CHECK_HAPI(HAPI_GetPartInfo(
+    CHECK_HAPI(HoudiniApi::GetPartInfo(
         Util::theHAPISession.get(), myNodeId, myPartId, &myPartInfo));
 
     if (myPartInfo.type == HAPI_PARTTYPE_VOLUME)
     {
-        CHECK_HAPI(HAPI_GetVolumeInfo(
+        CHECK_HAPI(HoudiniApi::GetVolumeInfo(
             Util::theHAPISession.get(), myNodeId, myPartId, &myVolumeInfo));
     }
 
     if (myPartInfo.type == HAPI_PARTTYPE_CURVE)
     {
-        CHECK_HAPI(HAPI_GetCurveInfo(
+        CHECK_HAPI(HoudiniApi::GetCurveInfo(
             Util::theHAPISession.get(), myNodeId, myPartId, &myCurveInfo));
     }
 }
@@ -307,7 +307,7 @@ OutputGeometryPart::computeCurves(const MTime &time,
 
             // Number of CVs
             int numVertices = 0;
-            HAPI_GetCurveCounts(Util::theHAPISession.get(), myNodeId, myPartId,
+            HoudiniApi::GetCurveCounts(Util::theHAPISession.get(), myNodeId, myPartId,
                                 &numVertices, iCurve, 1);
 
             const int nextVertexOffset = vertexOffset + numVertices;
@@ -328,7 +328,7 @@ OutputGeometryPart::computeCurves(const MTime &time,
             }
             else
             {
-                HAPI_GetCurveOrders(Util::theHAPISession.get(), myNodeId,
+                HoudiniApi::GetCurveOrders(Util::theHAPISession.get(), myNodeId,
                                     myPartId, &order, iCurve, 1);
             }
 
@@ -378,7 +378,7 @@ OutputGeometryPart::computeCurves(const MTime &time,
                 // The Maya knot vector has two fewer knots;
                 // the first and last houdini knot are excluded
                 knotSequences.setLength(numVertices + order - 2);
-                HAPI_GetCurveKnots(Util::theHAPISession.get(), myNodeId,
+                HoudiniApi::GetCurveKnots(Util::theHAPISession.get(), myNodeId,
                                    myPartId, &knots.front(), knotOffset,
                                    numVertices + order);
                 // Maya doesn't need the first and last knots
@@ -493,7 +493,7 @@ OutputGeometryPart::computeExtraAttribute(const MPlug &extraAttributePlug,
         extraAttributeHandle.child(AssetNode::outputPartExtraAttributeData);
 
     HAPI_AttributeInfo attributeInfo;
-    HAPI_FAIL(HAPI_GetAttributeInfo(Util::theHAPISession.get(), myNodeId,
+    HAPI_FAIL(HoudiniApi::GetAttributeInfo(Util::theHAPISession.get(), myNodeId,
                                     myPartId, attributeName, attributeOwner,
                                     &attributeInfo));
     if (!attributeInfo.exists)
@@ -874,7 +874,7 @@ OutputGeometryPart::computeParticle(
     // other attributes
     std::vector<HAPI_StringHandle> attributeNames(
         myPartInfo.attributeCounts[HAPI_ATTROWNER_POINT]);
-    HAPI_GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
+    HoudiniApi::GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
                            HAPI_ATTROWNER_POINT,
                            attributeNames.empty() ? NULL : &attributeNames[0],
                            myPartInfo.attributeCounts[HAPI_ATTROWNER_POINT]);
@@ -913,7 +913,7 @@ OutputGeometryPart::computeParticle(
 
         HAPI_AttributeInfo attributeInfo;
 
-        HAPI_GetAttributeInfo(Util::theHAPISession.get(), myNodeId, myPartId,
+        HoudiniApi::GetAttributeInfo(Util::theHAPISession.get(), myNodeId, myPartId,
                               attributeName.asChar(), HAPI_ATTROWNER_POINT,
                               &attributeInfo);
 
@@ -984,7 +984,7 @@ OutputGeometryPart::computeVolume(const MTime &time,
         tile.resize(tileSize * tileSize * tileSize);
 
         HAPI_VolumeTileInfo tileInfo;
-        HAPI_GetFirstVolumeTile(
+        HoudiniApi::GetFirstVolumeTile(
             Util::theHAPISession.get(), myNodeId, myPartId, &tileInfo);
 
 #ifdef max
@@ -995,7 +995,7 @@ OutputGeometryPart::computeVolume(const MTime &time,
                tileInfo.minY != std::numeric_limits<int>::max() &&
                tileInfo.minZ != std::numeric_limits<int>::max())
         {
-            HAPI_GetVolumeTileFloatData(Util::theHAPISession.get(), myNodeId,
+            HoudiniApi::GetVolumeTileFloatData(Util::theHAPISession.get(), myNodeId,
                                         myPartId, 0.0f, &tileInfo,
                                         &tile.front(), (int)tile.size());
 
@@ -1018,7 +1018,7 @@ OutputGeometryPart::computeVolume(const MTime &time,
                         }
                     }
 
-            HAPI_GetNextVolumeTile(
+            HoudiniApi::GetNextVolumeTile(
                 Util::theHAPISession.get(), myNodeId, myPartId, &tileInfo);
         }
     }
@@ -1119,7 +1119,7 @@ OutputGeometryPart::computeMesh(const MTime &time,
     {
         intArray.resize(myPartInfo.faceCount);
 
-        HAPI_GetFaceCounts(Util::theHAPISession.get(), myNodeId, myPartId,
+        HoudiniApi::GetFaceCounts(Util::theHAPISession.get(), myNodeId, myPartId,
                            &intArray.front(), 0, myPartInfo.faceCount);
 
         polygonCounts = MIntArray(&intArray.front(), intArray.size());
@@ -1132,7 +1132,7 @@ OutputGeometryPart::computeMesh(const MTime &time,
     {
         polygonConnectsReversed.resize(myPartInfo.vertexCount);
 
-        HAPI_GetVertexList(Util::theHAPISession.get(), myNodeId, myPartId,
+        HoudiniApi::GetVertexList(Util::theHAPISession.get(), myNodeId, myPartId,
                            &polygonConnectsReversed.front(), 0,
                            myPartInfo.vertexCount);
 
@@ -1955,7 +1955,7 @@ OutputGeometryPart::computeMaterial(const MTime &time,
     {
         markAttributeUsed("shop_materialpath");
 
-        CHECK_HAPI(HAPI_GetMaterialNodeIdsOnFaces(
+        CHECK_HAPI(HoudiniApi::GetMaterialNodeIdsOnFaces(
             Util::theHAPISession.get(), myNodeId, myPartId, &are_all_the_same,
             &materialIdsBuffer[0], 0, materialIdsBuffer.size()));
     }
@@ -2015,7 +2015,7 @@ OutputGeometryPart::computeInstancer(const MTime &time,
 
         std::vector<HAPI_Transform> transforms(instanceCount);
 
-        CHECK_HAPI(HAPI_GetInstancerPartTransforms(
+        CHECK_HAPI(HoudiniApi::GetInstancerPartTransforms(
             Util::theHAPISession.get(), myNodeId, myPartId, HAPI_SRT,
             instanceCount ? &transforms.front() : NULL, 0, instanceCount));
         markAttributeUsed("P");
@@ -2085,7 +2085,7 @@ OutputGeometryPart::computeInstancer(const MTime &time,
         const int &instancedPartCount = myPartInfo.instancedPartCount;
 
         std::vector<HAPI_PartId> partIds(instancedPartCount);
-        CHECK_HAPI(HAPI_GetInstancedPartIds(
+        CHECK_HAPI(HoudiniApi::GetInstancedPartIds(
             Util::theHAPISession.get(), myNodeId, myPartId,
             instancedPartCount ? &partIds.front() : NULL, 0,
             instancedPartCount));
@@ -2144,16 +2144,16 @@ OutputGeometryPart::computeExtraAttributes(
 
         if (attributeCount > 0)
         {
-            HAPI_GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
+            HoudiniApi::GetAttributeNames(Util::theHAPISession.get(), myNodeId, myPartId,
                                 owner, &ownerAttributeNames[0],
                                 attributeCount);
 
             int stringsbuffer_len;
-            HAPI_GetStringBatchSize(Util::theHAPISession.get(), &ownerAttributeNames[0],
+            HoudiniApi::GetStringBatchSize(Util::theHAPISession.get(), &ownerAttributeNames[0],
                                     attributeCount, &stringsbuffer_len);
 
             attributeNames[i].resize(stringsbuffer_len);
-            HAPI_GetStringBatch(
+            HoudiniApi::GetStringBatch(
                 Util::theHAPISession.get(), &attributeNames[i][0], stringsbuffer_len);
         }
     }
@@ -2163,7 +2163,7 @@ OutputGeometryPart::computeExtraAttributes(
         const int &attributeCount = attributeCounts[i];
 
         auto read_iter = attributeNames[i].begin();
-        for (size_t j = 0; j < attributeCount; j++)
+        for (int j = 0; j < attributeCount; j++)
         {
             auto next_null = std::find(read_iter, attributeNames[i].end(), '\0');
             MString attributeName(&(*read_iter));
@@ -2291,7 +2291,7 @@ OutputGeometryPart::computeGroups(const MTime &time,
 
         std::vector<HAPI_StringHandle> groupNames(myGeoInfo.*groupCount);
 
-        HAPI_GetGroupNames(Util::theHAPISession.get(), myNodeId, groupType,
+        HoudiniApi::GetGroupNames(Util::theHAPISession.get(), myNodeId, groupType,
                            &groupNames[0], myGeoInfo.*groupCount);
 
         std::vector<int> groupMembership(myPartInfo.*maxMemberCount);
@@ -2306,7 +2306,7 @@ OutputGeometryPart::computeGroups(const MTime &time,
 
             // Get the group membership first, because we want to skip the group
             // completely if it's empty.
-            HAPI_GetGroupMembership(Util::theHAPISession.get(), myNodeId,
+            HoudiniApi::GetGroupMembership(Util::theHAPISession.get(), myNodeId,
                                     myPartId, groupType, groupName.asChar(),
                                     NULL, &groupMembership[0], 0,
                                     groupMembership.size());
@@ -2397,3 +2397,4 @@ OutputGeometryPart::clearAttributesUsed()
 {
     myAttributesUsed.clear();
 }
+

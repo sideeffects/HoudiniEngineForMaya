@@ -4,8 +4,7 @@
 #include <maya/MArgList.h>
 #include <maya/MStatus.h>
 
-#include <HAPI/HAPI.h>
-#include <HAPI/HAPI_Version.h>
+#include "HoudiniApi.h"
 
 #include "SubCommand.h"
 
@@ -19,6 +18,8 @@
 #define kBuildHoudiniVersionFlagLong "-buildHoudiniVersion"
 #define kBuildHoudiniEngineVersionFlag "-bev"
 #define kBuildHoudiniEngineVersionFlagLong "-buildHoudiniEngineVersion"
+#define kHapilLoadedFlag "-hl"
+#define kHapilLoadedFlagLong "-hapilLoaded"
 #define kTempDirFlag "-mtp"
 #define kTempDirFlagLong "-makeTempDir"
 #define kSaveHIPFlag "-sh"
@@ -33,8 +34,9 @@ public:
     {
         int license;
 
-        HAPI_GetSessionEnvInt(
-            Util::theHAPISession.get(), HAPI_SESSIONENVINT_LICENSE, &license);
+        if (HoudiniApi::GetSessionEnvInt(
+            Util::theHAPISession.get(), HAPI_SESSIONENVINT_LICENSE, &license) == HAPI_RESULT_FAILURE)
+            license = HAPI_LICENSE_NONE;
 
         MString version_string;
         switch (license)
@@ -78,7 +80,7 @@ public:
 
     virtual MStatus doIt()
     {
-        HAPI_SaveHIPFile(
+        HoudiniApi::SaveHIPFile(
             Util::theHAPISession.get(), myHIPFilePath.asChar(), false);
 
         return MStatus::kSuccess;
@@ -95,9 +97,9 @@ public:
     {
         int major, minor, build;
 
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &major);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &minor);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &build);
+        if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &major) == HAPI_RESULT_FAILURE) major = 0;
+        if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &minor) == HAPI_RESULT_FAILURE) minor = 0;
+        if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &build) == HAPI_RESULT_FAILURE) build = 0;
 
         MString version_string;
         version_string.format("^1s.^2s.^3s", MString() + major,
@@ -116,9 +118,9 @@ public:
     {
         int major, minor, api;
 
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &major);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &minor);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &api);
+        if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &major) == HAPI_RESULT_FAILURE) major = 0;
+        if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &minor) == HAPI_RESULT_FAILURE) minor = 0;
+        if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API,   &api)   == HAPI_RESULT_FAILURE) api   = 0;
 
         MString version_string;
         version_string.format("^1s.^2s (API: ^3s)", MString() + major,
@@ -187,6 +189,17 @@ public:
     }
 };
 
+class EngineSubCommandHapilLoaded : public SubCommand
+{
+public:
+    virtual MStatus doIt()
+    {
+        MPxCommand::setResult(Util::isHapilLoaded);
+
+        return MStatus::kSuccess;
+    }
+};
+
 void *
 EngineCommand::creator()
 {
@@ -217,6 +230,10 @@ EngineCommand::newSyntax()
     // built with.
     CHECK_MSTATUS(syntax.addFlag(
         kBuildHoudiniEngineVersionFlag, kBuildHoudiniEngineVersionFlagLong));
+
+    // -hapilLoaded returns whether libHAPIL has been loaded
+    CHECK_MSTATUS(syntax.addFlag(
+        kHapilLoadedFlag, kHapilLoadedFlagLong));
 
     CHECK_MSTATUS(syntax.addFlag(kTempDirFlag, kTempDirFlagLong));
 
@@ -250,6 +267,7 @@ EngineCommand::parseArgs(const MArgList &args)
           argData.isFlagSet(kHoudiniEngineVersionFlag) ^
           argData.isFlagSet(kBuildHoudiniVersionFlag) ^
           argData.isFlagSet(kBuildHoudiniEngineVersionFlag) ^
+          argData.isFlagSet(kHapilLoadedFlag) ^
           argData.isFlagSet(kTempDirFlag) ^ argData.isFlagSet(kSaveHIPFlag)))
     {
         displayError(
@@ -286,6 +304,11 @@ EngineCommand::parseArgs(const MArgList &args)
     if (argData.isFlagSet(kTempDirFlag))
     {
         mySubCommand = new EngineSubCommandTempDir();
+    }
+
+    if (argData.isFlagSet(kHapilLoadedFlag))
+    {
+        mySubCommand = new EngineSubCommandHapilLoaded();
     }
 
     if (argData.isFlagSet(kSaveHIPFlag))
@@ -337,3 +360,4 @@ EngineCommand::isUndoable() const
 {
     return mySubCommand->isUndoable();
 }
+

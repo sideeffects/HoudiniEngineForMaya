@@ -47,8 +47,7 @@ houdiniEngine_run(string $cmds[])
             $final_cmd += "unset LD_LIBRARY_PATH; ";
         }
 
-        if(`optionVar -query "houdiniEngineUnsetPP"`)
-            $final_cmd += "unset PYTHONPATH; ";
+        $final_cmd += "unset PYTHONPATH; ";
 
         $final_cmd += "PATH=\"$HFS/bin:$PATH\"; ";
 
@@ -60,8 +59,7 @@ houdiniEngine_run(string $cmds[])
     {
         $final_cmd += "start cmd /c \"";
 
-        if(`optionVar -query "houdiniEngineUnsetPP"`)
-            $final_cmd += "set PYTHONPATH= & ";
+        $final_cmd += "set PYTHONPATH= & ";
 
         // PATH should already be set on Windows.
 
@@ -74,6 +72,7 @@ houdiniEngine_run(string $cmds[])
 
     system($final_cmd);
 }
+
 global proc string
 houdiniEngine_findAsset(string $assetFileName)
 {
@@ -116,5 +115,210 @@ houdiniEngine_findAsset(string $assetFileName)
         }
     }
     return $assetPath;
+}
+
+proc string
+getDefaultInstallPath(string $houVersion)
+{
+    string $installPath = "";
+
+    if (`about -windows`)
+    {
+        $installPath = "C:\\Program Files\\Side Effects Software\\Houdini " + $houVersion;
+
+        if (!`filetest -r $installPath`)
+            $installPath = "C:\\Program Files\\SideFX\\Houdini " + $houVersion;
+    }
+    else if (`about -linux`)
+    {
+        $installPath = "/opt/hfs" + $houVersion;
+    }
+    else if (`about -macOS`)
+    {
+        $installPath = "/Applications/Houdini/Houdini" + $houVersion;
+    }
+
+    if (`filetest -r $installPath`)
+        return $installPath;
+
+    return "";
+}
+
+proc string
+getDsolibLocation(string $hfs)
+{
+    string $houVersion = `houdiniEngine -buildHoudiniVersion`;
+    string $dsolib = "";
+
+    string $installPath = getDefaultInstallPath($houVersion);
+
+    string $hdso = getenv("HDSO");
+
+    if (size($hdso) > 0)
+        return $hdso;
+
+    if (size($hfs)<= 0 && size($installPath) <= 0)
+        return "";
+
+    if (`about -windows`)
+    {
+        if (size($hfs) > 0)
+            $dsolib = $hfs + "\\bin";
+        else
+        {
+            $dsolib = $installPath + "\\bin";
+
+            if (!`filetest -r $dsolib`)
+                $dsolib = $installPath + "\\bin";
+        }
+    }
+    else if (`about -linux`)
+    {
+        if (size($hfs) > 0)
+            $dsolib = $hfs + "/dsolib";
+        else
+            $dsolib = $installPath + "/dsolib";
+    }
+    else if (`about -macOS`)
+    {
+        if (size($hfs) > 0)
+            $dsolib = $hfs + "/../Libraries";
+        else
+            $dsolib = $installPath + "/Frameworks/Houdini.framework/Libraries";
+    }
+
+    if (`filetest -r $dsolib`)
+        return $dsolib;
+
+    return "";
+}
+
+proc string
+getHfsLocationFromPlugin()
+{
+    string $pluginPath = fromNativePath(`pluginInfo -q -p "houdiniEngine"`);
+
+    string $pluginBuildVer = `houdiniEngine -buildHoudiniVersion`;
+    string $installPath    = getDefaultInstallPath($pluginBuildVer);
+
+    string $hfs = "";
+
+    if (size($installPath) > 0)
+    {
+        $hfs = $installPath;
+
+        if (`about -macOS`)
+        {
+            $hfs = $installPath + "/Frameworks/Houdini.framework/Resources";
+        }
+    }
+
+    $hfs = toNativePath($hfs);
+
+    if (`filetest -r $hfs`)
+        return $hfs;
+
+    // look in all parent directories and hope we find houdini_setup
+    string $tokens[];
+    int $nTokens = tokenize($pluginPath, "/", $tokens);
+
+    for ($i = $nTokens - 1; $i >= 0; $i--)
+    {
+        string $path = "";
+
+        for ($j = 0; $j < $i; $j++)
+            $path += $tokens[$j] + "/";
+
+        if (`filetest -r ($path + "houdini_setup")`)
+            return $path;
+    }
+
+    return "";
+}
+
+global proc string
+houdiniEngine_getHfsPath(int $prompt)
+{
+    int $found = false;
+
+    string $hfs = `getenv "HFS"`;
+
+    if (size($hfs) > 0 && `filetest -r $hfs`)
+        $found = true;
+
+    if (!$found)
+    {
+        $hfs = getHfsLocationFromPlugin();
+        $found = size($hfs) > 0 && `filetest -r $hfs`;
+    }
+
+    if (!$found && $prompt)
+    {
+        warning("The Houdini HFS path could not be found. Please browse to its location.");
+
+        string $fileDialogResults[] = `fileDialog2
+            -caption "Browse to HFS Location"
+            -fileMode 3
+            -okCaption "Select"`;
+
+        if (size($fileDialogResults) > 0)
+        {
+            $hfs = $fileDialogResults[0];
+            $found = size($hfs) > 0  && `filetest -r $hfs`;
+        }
+    }
+
+    if ($found)
+    {
+        if (size(getDsolibLocation($hfs)) > 0)
+            return $hfs;
+    }
+
+    return "";
+}
+
+global proc string
+houdiniEngine_getHapilExtension()
+{
+    string $ext = "";
+
+    if (`about -windows`)
+        $ext = "dll";
+    else if (`about -linux`)
+        $ext = "so";
+    else if (`about -macOS`)
+        $ext = "dylib";
+    else
+        error("Unkown operating system");
+
+    return $ext;
+}
+
+global proc string
+houdiniEngine_getHapilPath(int $prompt, string $hfs)
+{
+    string $pathsep = "/";
+    string $ext     = houdiniEngine_getHapilExtension();
+
+    if (`about -windows`)
+        $pathsep = "\\";
+
+    if (size($hfs) <= 0)
+        $hfs = houdiniEngine_getHfsPath($prompt);
+
+    if (size($hfs) > 0)
+    {
+        string $dsolib = getDsolibLocation($hfs);
+
+        if (`filetest -r $dsolib`)
+        {
+            string $hapil = $dsolib + $pathsep + "libHAPIL." + $ext;
+
+            if (`filetest -r $hapil`)
+                return $hapil;
+        }
+    }
+
+    return "";
 }
 

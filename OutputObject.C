@@ -16,7 +16,7 @@ OutputObject::createObject(HAPI_NodeId nodeId)
     HAPI_Result hapiResult;
 
     HAPI_ObjectInfo objectInfo;
-    hapiResult = HAPI_GetObjectInfo(
+    hapiResult = HoudiniApi::GetObjectInfo(
         Util::theHAPISession.get(), nodeId, &objectInfo);
     CHECK_HAPI(hapiResult);
 
@@ -50,3 +50,4 @@ OutputObject::isVisible() const
 {
     return myObjectInfo.isVisible;
 }
+

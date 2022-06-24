@@ -24,7 +24,7 @@
 #include <direct.h>
 #endif
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include "traits.h"
 #include "types.h"
@@ -52,11 +52,11 @@
     std::vector<char> _hapiStatusBuffer;                                       \
     {                                                                          \
         int bufferLength;                                                      \
-        HAPI_GetStatusStringBufLength(Util::theHAPISession.get(),              \
+        HoudiniApi::GetStatusStringBufLength(Util::theHAPISession.get(),       \
                                       (status_type), (verbosity),              \
                                       &bufferLength);                          \
         _hapiStatusBuffer.resize(bufferLength);                                \
-        HAPI_GetStatusString(Util::theHAPISession.get(), (status_type),        \
+        HoudiniApi::GetStatusString(Util::theHAPISession.get(), (status_type), \
                              &_hapiStatusBuffer.front(), bufferLength);        \
     }                                                                          \
     const char *hapiStatus = &_hapiStatusBuffer.front();
@@ -120,12 +120,13 @@ public:
     {
         if (type != HAPI_SESSION_MAX)
         {
-            HAPI_CloseSession(this);
+            HoudiniApi::CloseSession(this);
         }
     }
 };
 
 extern std::unique_ptr<HAPISession> theHAPISession;
+extern bool isHapilLoaded;
 
 #ifdef _WIN32
 bool mkpath(const std::string &path);
@@ -246,7 +247,7 @@ public:
     HAPIString(int handle) : myHandle(handle)
     {
         int bufLen;
-        HAPI_GetStringBufLength(theHAPISession.get(), myHandle, &bufLen);
+        HoudiniApi::GetStringBufLength(theHAPISession.get(), myHandle, &bufLen);
 
         if (bufLen == 0)
         {
@@ -255,7 +256,7 @@ public:
 
         myString.resize(bufLen - 1);
 
-        HAPI_GetString(
+        HoudiniApi::GetString(
             theHAPISession.get(), myHandle, &myString[0], myString.size() + 1);
     }
 
@@ -850,6 +851,11 @@ isPlugBelow(const MPlug &plug, const T &upper)
 void getChildPlugs(MPlugArray &plugArray, const MPlug &plug);
 
 void resizeArrayDataHandle(MArrayDataHandle &arrayDataHandle, const int count);
+
+bool getHarsPath(std::string &harsPath);
+
+bool checkBuildEngineCompatibility();
 }
 
 #endif
+

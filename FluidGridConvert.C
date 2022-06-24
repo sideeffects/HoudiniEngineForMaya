@@ -299,3 +299,4 @@ FluidGridConvert::compute(const MPlug &plug, MDataBlock &data)
 }
 
 #endif // MAYA_API_VERSION check
+

@@ -13,7 +13,7 @@
 
 OutputInstancerObject::OutputInstancerObject(HAPI_NodeId nodeId)
     : OutputObject(nodeId),
-      myGeoInfo(HAPI_GeoInfo_Create()),
+      myGeoInfo(HoudiniApi::GeoInfo_Create()),
       myLastSopCookCount(0)
 {
 }
@@ -31,17 +31,17 @@ OutputInstancerObject::update()
 {
     HAPI_Result hapiResult;
 
-    hapiResult = HAPI_GetNodeInfo(
+    hapiResult = HoudiniApi::GetNodeInfo(
         Util::theHAPISession.get(), myNodeId, &myNodeInfo);
     CHECK_HAPI(hapiResult);
 
-    hapiResult = HAPI_GetObjectInfo(
+    hapiResult = HoudiniApi::GetObjectInfo(
         Util::theHAPISession.get(), myNodeId, &myObjectInfo);
     CHECK_HAPI(hapiResult);
 
     // Get the SOP nodes
     int geoCount;
-    hapiResult = HAPI_ComposeChildNodeList(
+    hapiResult = HoudiniApi::ComposeChildNodeList(
         Util::theHAPISession.get(), myNodeId, HAPI_NODETYPE_SOP,
         HAPI_NODEFLAGS_DISPLAY, false, &geoCount);
     CHECK_HAPI(hapiResult);
@@ -49,16 +49,16 @@ OutputInstancerObject::update()
     std::vector<HAPI_NodeId> geoNodeIds(geoCount);
     if (geoCount > 0)
     {
-        hapiResult = HAPI_GetComposedChildNodeList(
+        hapiResult = HoudiniApi::GetComposedChildNodeList(
             Util::theHAPISession.get(), myNodeId, &geoNodeIds.front(),
             geoCount);
         CHECK_HAPI(hapiResult);
 
-        hapiResult = HAPI_GetNodeInfo(
+        hapiResult = HoudiniApi::GetNodeInfo(
             Util::theHAPISession.get(), geoNodeIds[0], &mySopNodeInfo);
         CHECK_HAPI(hapiResult);
 
-        hapiResult = HAPI_GetGeoInfo(
+        hapiResult = HoudiniApi::GetGeoInfo(
             Util::theHAPISession.get(), geoNodeIds[0], &myGeoInfo);
         CHECK_HAPI(hapiResult);
     }
@@ -72,7 +72,7 @@ OutputInstancerObject::update()
         myHoudiniInstanceAttribute.clear();
         myHoudiniNameAttribute.clear();
 
-        hapiResult = HAPI_GetPartInfo(
+        hapiResult = HoudiniApi::GetPartInfo(
             Util::theHAPISession.get(), mySopNodeInfo.id, 0, &myPartInfo);
         CHECK_HAPI(hapiResult);
 
@@ -191,7 +191,7 @@ OutputInstancerObject::compute(const MTime &time,
 
         unsigned int size              = myPartInfo.pointCount;
         HAPI_Transform *instTransforms = new HAPI_Transform[size];
-        CHECK_HAPI(HAPI_GetInstanceTransformsOnPart(
+        CHECK_HAPI(HoudiniApi::GetInstanceTransformsOnPart(
             Util::theHAPISession.get(), mySopNodeInfo.id, 0, HAPI_SRT,
             instTransforms, 0, size));
 
@@ -293,7 +293,7 @@ OutputInstancerObject::compute(const MTime &time,
             Util::resizeArrayDataHandle(instancedObjectNamesHandle, 1);
 
             HAPI_ObjectInfo instanceObjectInfo;
-            CHECK_HAPI(HAPI_GetObjectInfo(Util::theHAPISession.get(),
+            CHECK_HAPI(HoudiniApi::GetObjectInfo(Util::theHAPISession.get(),
                                           myObjectInfo.objectToInstanceId,
                                           &instanceObjectInfo));
             MString name = Util::HAPIString(instanceObjectInfo.nameSH);
@@ -322,3 +322,4 @@ OutputInstancerObject::compute(const MTime &time,
 
     return MS::kSuccess;
 }
+

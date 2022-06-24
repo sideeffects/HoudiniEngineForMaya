@@ -7,7 +7,7 @@
 #include <maya/MMatrix.h>
 #include <maya/MPointArray.h>
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include "util.h"
 
@@ -16,14 +16,14 @@ InputCurve::InputCurve() : Input()
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     HAPI_NodeId nodeId;
-    CHECK_HAPI(HAPI_CreateNode(
+    CHECK_HAPI(HoudiniApi::CreateNode(
         Util::theHAPISession.get(), -1, "Sop/curve", NULL, false, &nodeId));
     if (!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input curve."));
     }
 
-    HAPI_GetNodeInfo(Util::theHAPISession.get(), nodeId, &myCurveNodeInfo);
+    HoudiniApi::GetNodeInfo(Util::theHAPISession.get(), nodeId, &myCurveNodeInfo);
 
     setTransformNodeId(myCurveNodeInfo.parentId);
     setGeometryNodeId(nodeId);
@@ -33,7 +33,7 @@ InputCurve::~InputCurve()
 {
     if (!Util::theHAPISession.get())
         return;
-    HAPI_DeleteNode(Util::theHAPISession.get(), geometryNodeId());
+    HoudiniApi::DeleteNode(Util::theHAPISession.get(), geometryNodeId());
 }
 
 InputCurve::AssetInputType
@@ -55,7 +55,7 @@ InputCurve::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
 
     // find coords parm
     std::vector<HAPI_ParmInfo> parms(myCurveNodeInfo.parmCount);
-    HAPI_GetParameters(Util::theHAPISession.get(), myCurveNodeInfo.id,
+    HoudiniApi::GetParameters(Util::theHAPISession.get(), myCurveNodeInfo.id,
                        &parms[0], 0, myCurveNodeInfo.parmCount);
     int typeParmIndex   = Util::findParm(parms, "type");
     int coordsParmIndex = Util::findParm(parms, "coords");
@@ -84,7 +84,7 @@ InputCurve::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
 
         HAPI_ParmChoiceInfo *choices =
             new HAPI_ParmChoiceInfo[typeParm.choiceCount];
-        HAPI_GetParmChoiceLists(Util::theHAPISession.get(), myCurveNodeInfo.id,
+        HoudiniApi::GetParmChoiceLists(Util::theHAPISession.get(), myCurveNodeInfo.id,
                                 choices, typeParm.choiceIndex,
                                 typeParm.choiceCount);
 
@@ -105,7 +105,7 @@ InputCurve::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
             return;
         }
 
-        HAPI_SetParmIntValues(Util::theHAPISession.get(), myCurveNodeInfo.id,
+        HoudiniApi::SetParmIntValues(Util::theHAPISession.get(), myCurveNodeInfo.id,
                               &nurbsIdx, typeParm.intValuesIndex, 1);
     }
 
@@ -129,7 +129,7 @@ InputCurve::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
 
             coords << pt.x << "," << pt.y << "," << pt.z << " ";
         }
-        HAPI_SetParmStringValue(Util::theHAPISession.get(), myCurveNodeInfo.id,
+        HoudiniApi::SetParmStringValue(Util::theHAPISession.get(), myCurveNodeInfo.id,
                                 coords.str().c_str(), coordsParm.id,
                                 coordsParm.stringValuesIndex);
     }
@@ -138,14 +138,15 @@ InputCurve::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
     {
         int order = curveFn.degree() + 1;
 
-        HAPI_SetParmIntValues(Util::theHAPISession.get(), myCurveNodeInfo.id,
+        HoudiniApi::SetParmIntValues(Util::theHAPISession.get(), myCurveNodeInfo.id,
                               &order, orderParm.intValuesIndex, 1);
     }
 
     // periodicity
     {
         int close = curveFn.form() == MFnNurbsCurve::kPeriodic;
-        HAPI_SetParmIntValues(Util::theHAPISession.get(), myCurveNodeInfo.id,
+        HoudiniApi::SetParmIntValues(Util::theHAPISession.get(), myCurveNodeInfo.id,
                               &close, closeParm.intValuesIndex, 1);
     }
 }
+

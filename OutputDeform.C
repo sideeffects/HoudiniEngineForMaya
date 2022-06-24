@@ -28,7 +28,7 @@ OutputDeform::getPointAttribute(const HAPI_Session *session,
 	return false;
 
     HAPI_AttributeInfo attrInfo;
-    hapiResult = HAPI_GetAttributeInfo(session, nodeId, partId, name,
+    hapiResult = HoudiniApi::GetAttributeInfo(session, nodeId, partId, name,
 	HAPI_ATTROWNER_POINT, &attrInfo);
 
     if (HAPI_FAIL(hapiResult))
@@ -65,7 +65,7 @@ OutputDeform::getPointAttribute(const HAPI_Session *session,
 	cache.myIsDouble = false;
 	cache.myData32.resize(n*numComponents);
 	cache.myData64.resize(0);
-	hapiResult = HAPI_GetAttributeFloatData( session, nodeId, partId, name,
+	hapiResult = HoudiniApi::GetAttributeFloatData( session, nodeId, partId, name,
 	    &attrInfo, -1, /*data_array=*/&(cache.myData32[0]),
 	    /*start=*/0, /*length=*/n );
 
@@ -85,7 +85,7 @@ OutputDeform::getPointAttribute(const HAPI_Session *session,
 	cache.myData32.resize(0);
 	cache.myData64.resize(0);
 
-	hapiResult = HAPI_GetAttributeFloatData( session, nodeId, partId, name,
+	hapiResult = HoudiniApi::GetAttributeFloatData( session, nodeId, partId, name,
 	    &attrInfo, -1, /*data_array=*/buf,
 	    /*start=*/0, /*length=*/n );
     }
@@ -94,7 +94,7 @@ OutputDeform::getPointAttribute(const HAPI_Session *session,
 	cache.myIsDouble = false;
 	cache.myData32.resize(n*numComponents);
 	cache.myData64.resize(0);
-	hapiResult = HAPI_GetAttributeFloatData( session, nodeId, partId, name,
+	hapiResult = HoudiniApi::GetAttributeFloatData( session, nodeId, partId, name,
 	    &attrInfo, -1, /*data_array=*/&(cache.myData32[0]),
 	    /*start=*/0, /*length=*/n );
     
@@ -144,7 +144,7 @@ OutputDeform::compute(OutputObject *obj, size_t &n)
     HAPI_Result hapiResult;
 
     HAPI_PartInfo partInfo;
-    hapiResult = HAPI_GetPartInfo(session, nodeId, partId, &partInfo );
+    hapiResult = HoudiniApi::GetPartInfo(session, nodeId, partId, &partInfo );
     if (HAPI_FAIL(hapiResult))
 	return false;
 
@@ -217,13 +217,13 @@ OutputDeform::compute(OutputObject *obj, size_t &n)
 	    myTopoValid = false;
 	    myFaceCounts.resize(partInfo.faceCount);
 
-	    hapiResult = HAPI_GetFaceCounts(session, nodeId, partId,
+	    hapiResult = HoudiniApi::GetFaceCounts(session, nodeId, partId,
 			       &myFaceCounts.front(), 0, partInfo.faceCount);
 	    if (HAPI_FAIL(hapiResult))
 		return false;
 
 	    myVertexList.resize(partInfo.vertexCount);
-	    hapiResult = HAPI_GetVertexList(session, nodeId, partId,
+	    hapiResult = HoudiniApi::GetVertexList(session, nodeId, partId,
 			       &myVertexList.front(), 0,
 			       partInfo.vertexCount);
 	    if (HAPI_FAIL(hapiResult))
@@ -243,4 +243,5 @@ OutputDeform::compute(OutputObject *obj, size_t &n)
 
     return true;
 }
+
 

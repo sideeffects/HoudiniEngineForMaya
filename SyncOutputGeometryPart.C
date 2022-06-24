@@ -1058,3 +1058,4 @@ SyncOutputGeometryPart::createOutputGroups(const MObject &dstNode,
 
     return MStatus::kSuccess;
 }
+

@@ -4,39 +4,11 @@ project( Maya )
 
 set( MAYA_VERSION 2014 CACHE STRING "" )
 
-set(
-    SRCS
-    AssetNode.C
-    AssetNodeOptions.C
-    AssetCommand.C
-    SubCommand.C
-    AssetSubCommandLoadAsset.C
-    AssetSubCommandSync.C
-    EngineCommand.C
-    Asset.C
-    InputGeometryNode.C
-    Input.C
-    InputMesh.C
-    InputCurve.C
-    InputParticle.C
-    InputTransformNode.C
-    InputMergeNode.C
-    OutputObject.C
-    util.C
-    OutputGeometryObject.C
-    OutputInstancerObject.C
-    OutputGeometry.C
-    OutputGeometryPart.C
-    OutputMaterial.C
-    SyncAttribute.C
-    SyncOutputObject.C
-    SyncOutputGeometryPart.C
-    SyncOutputMaterial.C
-    SyncOutputInstance.C
-    FluidGridConvert.C
-    plugin.C
-    InputCurveNode.C
-    )
+set( MAYA_SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+set( MAYA_SCRIPT_DIRECTORY "${MAYA_SOURCE_DIRECTORY}/scripts")
+set( MAYA_ICON_DIRECTORY   "${MAYA_SOURCE_DIRECTORY}/icons")
+
+include( ./cmake/PluginFiles.cmake )
 
 ########################################
 # Module structure
@@ -55,6 +27,7 @@ set(
     OpenMaya
     OpenMayaAnim
     OpenMayaFX
+    Foundation
     )
 find_package( Maya ${MAYA_VERSION} EXACT REQUIRED ${maya_libraries} )
 
@@ -80,7 +53,7 @@ file(
 ########################################
 # plugin
 ########################################
-add_library( plugin SHARED ${SRCS} )
+add_library( plugin SHARED ${MAYA_PLUGIN_SOURCES} )
 
 if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
     set( plugin_suffix ".so" )
@@ -147,7 +120,6 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
         -wd4267 # conversion of integer type possible loss of data
         -wd4389 # signed/unsigned mismatch
         -wd4458 # declaration of 'identifier' hides class member
-        /O2
         )
 elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
     set(
@@ -179,6 +151,12 @@ elseif ( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         INSTALL_RPATH "@loader_path/${install_plug_ins_dir_to_houdiniengine_lib_dir};@loader_path/../../Frameworks/Houdini.framework/Versions/Current/Libraries"
         )
 endif ()
+
+set_target_properties(
+    plugin
+    PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    )
 
 ########################################
 # Module files
@@ -244,3 +222,4 @@ install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/${install_module_dir}/houdiniEngine-maya${MAYA_VERSION}"
     DESTINATION "${install_module_dir}"
     )
+

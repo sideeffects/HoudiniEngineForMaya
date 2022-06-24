@@ -24,14 +24,14 @@ InputMesh::InputMesh() : Input()
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     HAPI_NodeId nodeId;
-    CHECK_HAPI(HAPI_CreateInputNode(Util::theHAPISession.get(), &nodeId, NULL));
+    CHECK_HAPI(HoudiniApi::CreateInputNode(Util::theHAPISession.get(), &nodeId, NULL));
     if (!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
     }
 
     HAPI_NodeInfo nodeInfo;
-    HAPI_GetNodeInfo(Util::theHAPISession.get(), nodeId, &nodeInfo);
+    HoudiniApi::GetNodeInfo(Util::theHAPISession.get(), nodeId, &nodeInfo);
 
     setTransformNodeId(nodeInfo.parentId);
     setGeometryNodeId(nodeId);
@@ -41,7 +41,7 @@ InputMesh::~InputMesh()
 {
     if (!Util::theHAPISession.get())
         return;
-    CHECK_HAPI(HAPI_DeleteNode(Util::theHAPISession.get(), geometryNodeId()));
+    CHECK_HAPI(HoudiniApi::DeleteNode(Util::theHAPISession.get(), geometryNodeId()));
 }
 
 Input::AssetInputType
@@ -123,10 +123,10 @@ InputMesh::setInputComponents(MDataBlock &dataBlock,
             primGroupName = "inputPrimitiveComponent";
         }
 
-        CHECK_HAPI(HAPI_AddGroup(Util::theHAPISession.get(), geometryNodeId(),
+        CHECK_HAPI(HoudiniApi::AddGroup(Util::theHAPISession.get(), geometryNodeId(),
                                  0, groupType, primGroupName.asChar()));
 
-        CHECK_HAPI(HAPI_SetGroupMembership(
+        CHECK_HAPI(HoudiniApi::SetGroupMembership(
             Util::theHAPISession.get(), geometryNodeId(), 0, groupType,
             primGroupName.asChar(), &groupMembership[0], 0,
             groupMembership.size()));
@@ -149,15 +149,15 @@ InputMesh::setInputComponents(MDataBlock &dataBlock,
         {
             pointGroupName = "inputPointComponent";
         }
-        CHECK_HAPI(HAPI_AddGroup(Util::theHAPISession.get(), geometryNodeId(),
+        CHECK_HAPI(HoudiniApi::AddGroup(Util::theHAPISession.get(), geometryNodeId(),
                                  0, groupType, pointGroupName.asChar()));
 
-        CHECK_HAPI(HAPI_SetGroupMembership(
+        CHECK_HAPI(HoudiniApi::SetGroupMembership(
             Util::theHAPISession.get(), geometryNodeId(), 0, groupType,
             pointGroupName.asChar(), &groupMembership[0], 0,
             groupMembership.size()));
     }
-    HAPI_CommitGeo(Util::theHAPISession.get(), geometryNodeId());
+    HoudiniApi::CommitGeo(Util::theHAPISession.get(), geometryNodeId());
 }
 
 void
@@ -188,18 +188,18 @@ InputMesh::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
 
     // set up part info
     HAPI_PartInfo partInfo;
-    HAPI_PartInfo_Init(&partInfo);
+    HoudiniApi::PartInfo_Init(&partInfo);
     partInfo.id          = 0;
     partInfo.faceCount   = vertexCount.size();
     partInfo.vertexCount = vertexList.size();
     partInfo.pointCount  = meshFn.numVertices();
 
     // Set the data
-    HAPI_SetPartInfo(
+    HoudiniApi::SetPartInfo(
         Util::theHAPISession.get(), geometryNodeId(), 0, &partInfo);
-    HAPI_SetFaceCounts(Util::theHAPISession.get(), geometryNodeId(), 0,
+    HoudiniApi::SetFaceCounts(Util::theHAPISession.get(), geometryNodeId(), 0,
                        &vertexCount[0], 0, partInfo.faceCount);
-    HAPI_SetVertexList(Util::theHAPISession.get(), geometryNodeId(), 0,
+    HoudiniApi::SetVertexList(Util::theHAPISession.get(), geometryNodeId(), 0,
                        &vertexList[0], 0, partInfo.vertexCount);
 
     // Set position attributes.
@@ -222,7 +222,7 @@ InputMesh::setInputGeo(MDataBlock &dataBlock, const MPlug &plug)
     setInputName(HAPI_ATTROWNER_PRIM, partInfo.faceCount, plug);
 
     // Commit it
-    HAPI_CommitGeo(Util::theHAPISession.get(), geometryNodeId());
+    HoudiniApi::CommitGeo(Util::theHAPISession.get(), geometryNodeId());
 }
 
 bool
@@ -281,12 +281,12 @@ InputMesh::processNormals(const MObject &meshObj,
         attributeInfo.count     = 1;
         attributeInfo.tupleSize = 1;
 
-        HAPI_DeleteAttribute(Util::theHAPISession.get(), geometryNodeId(), 0,
+        HoudiniApi::DeleteAttribute(Util::theHAPISession.get(), geometryNodeId(), 0,
                              "maya_locked_normal", &attributeInfo);
         attributeInfo.storage   = HAPI_STORAGETYPE_FLOAT;
         attributeInfo.count     = 1;
         attributeInfo.tupleSize = 3;
-        HAPI_DeleteAttribute(Util::theHAPISession.get(), geometryNodeId(), 0,
+        HoudiniApi::DeleteAttribute(Util::theHAPISession.get(), geometryNodeId(), 0,
                              "N", &attributeInfo);
 
         return false;
@@ -443,13 +443,13 @@ InputMesh::processUVs(const MFnMesh &meshFn,
     // This seems more complicated but less of a performance hit  than deleting
     // and recreating all the attributes every time we pull on the inputs.
 
-    HAPI_CommitGeo(Util::theHAPISession.get(), geometryNodeId());
-    HAPI_CookOptions cook_options = HAPI_CookOptions_Create();
+    HoudiniApi::CommitGeo(Util::theHAPISession.get(), geometryNodeId());
+    HAPI_CookOptions cook_options = HoudiniApi::CookOptions_Create();
     // cook the input geo so that the group counts are updated on the geoInfo
-    HAPI_CookNode(Util::theHAPISession.get(), geometryNodeId(), &cook_options);
+    HoudiniApi::CookNode(Util::theHAPISession.get(), geometryNodeId(), &cook_options);
 
     HAPI_PartInfo partInfo;
-    CHECK_HAPI(HAPI_GetPartInfo(
+    CHECK_HAPI(HoudiniApi::GetPartInfo(
         Util::theHAPISession.get(), geometryNodeId(), 0, &partInfo));
 
     // on the inputs, we know that UV parms are called uv[0-9]*
@@ -460,7 +460,7 @@ InputMesh::processUVs(const MFnMesh &meshFn,
     if (attributeCount > 0)
     {
         std::vector<HAPI_StringHandle> attributeNames(attributeCount);
-        HAPI_GetAttributeNames(Util::theHAPISession.get(), geometryNodeId(), 0,
+        HoudiniApi::GetAttributeNames(Util::theHAPISession.get(), geometryNodeId(), 0,
                                HAPI_ATTROWNER_VERTEX, &attributeNames[0],
                                attributeCount);
         for (int j = 0; j < attributeCount; j++)
@@ -479,7 +479,7 @@ InputMesh::processUVs(const MFnMesh &meshFn,
                     attributeInfo.count     = 1;
                     attributeInfo.tupleSize = 3;
 
-                    HAPI_DeleteAttribute(Util::theHAPISession.get(),
+                    HoudiniApi::DeleteAttribute(Util::theHAPISession.get(),
                                          geometryNodeId(), 0, attributeName,
                                          &attributeInfo);
                     char vertNumName[16] = "uvNumber";
@@ -488,7 +488,7 @@ InputMesh::processUVs(const MFnMesh &meshFn,
                     attributeInfo.storage   = HAPI_STORAGETYPE_INT;
                     attributeInfo.count     = 1;
                     attributeInfo.tupleSize = 1;
-                    HAPI_DeleteAttribute(Util::theHAPISession.get(),
+                    HoudiniApi::DeleteAttribute(Util::theHAPISession.get(),
                                          geometryNodeId(), 0, vertNumName,
                                          &attributeInfo);
                 }
@@ -599,13 +599,13 @@ InputMesh::processColorSets(const MFnMesh &meshFn,
     // and recreating all the attributes every time we pull on the inputs. need
     // to commit to update the parms and cook to update the parm counts
 
-    HAPI_CommitGeo(Util::theHAPISession.get(), geometryNodeId());
-    HAPI_CookOptions cook_options = HAPI_CookOptions_Create();
+    HoudiniApi::CommitGeo(Util::theHAPISession.get(), geometryNodeId());
+    HAPI_CookOptions cook_options = HoudiniApi::CookOptions_Create();
     // cook the input geo so that the group counts are updated on the geoInfo
-    HAPI_CookNode(Util::theHAPISession.get(), geometryNodeId(), &cook_options);
+    HoudiniApi::CookNode(Util::theHAPISession.get(), geometryNodeId(), &cook_options);
 
     HAPI_PartInfo partInfo;
-    CHECK_HAPI(HAPI_GetPartInfo(
+    CHECK_HAPI(HoudiniApi::GetPartInfo(
         Util::theHAPISession.get(), geometryNodeId(), 0, &partInfo));
 
     // on the inputs, we know that color parms are called Cd[0-9]*
@@ -616,7 +616,7 @@ InputMesh::processColorSets(const MFnMesh &meshFn,
     if (attributeCount > 0)
     {
         std::vector<HAPI_StringHandle> attributeNames(attributeCount);
-        HAPI_GetAttributeNames(Util::theHAPISession.get(), geometryNodeId(), 0,
+        HoudiniApi::GetAttributeNames(Util::theHAPISession.get(), geometryNodeId(), 0,
                                HAPI_ATTROWNER_VERTEX, &attributeNames[0],
                                attributeCount);
         for (int j = 0; j < attributeCount; j++)
@@ -634,7 +634,7 @@ InputMesh::processColorSets(const MFnMesh &meshFn,
                     attributeInfo.count     = 1;
                     attributeInfo.tupleSize = 3;
 
-                    HAPI_DeleteAttribute(Util::theHAPISession.get(),
+                    HoudiniApi::DeleteAttribute(Util::theHAPISession.get(),
                                          geometryNodeId(), 0, attributeName,
                                          &attributeInfo);
                 }
@@ -650,7 +650,7 @@ InputMesh::processColorSets(const MFnMesh &meshFn,
                     attributeInfo.count     = 1;
                     attributeInfo.tupleSize = 1;
 
-                    HAPI_DeleteAttribute(Util::theHAPISession.get(),
+                    HoudiniApi::DeleteAttribute(Util::theHAPISession.get(),
                                          geometryNodeId(), 0, attributeName,
                                          &attributeInfo);
                 }
@@ -752,7 +752,7 @@ InputMesh::processSets(const MPlug &plug, const MFnMesh &meshFn)
 
             MString setName = setFn.name();
             setName         = Util::sanitizeStringForNodeName(setName);
-            CHECK_HAPI(HAPI_DeleteGroup(Util::theHAPISession.get(),
+            CHECK_HAPI(HoudiniApi::DeleteGroup(Util::theHAPISession.get(),
                                         geometryNodeId(), 0,
                                         HAPI_GROUPTYPE_PRIM, setName.asChar()));
             continue;
@@ -800,10 +800,10 @@ InputMesh::processSets(const MPlug &plug, const MFnMesh &meshFn)
         std::string setNameStr = setName.asChar();
         Util::markItemNameUsed(setNameStr, setNamesUsed);
 
-        CHECK_HAPI(HAPI_AddGroup(Util::theHAPISession.get(), geometryNodeId(),
+        CHECK_HAPI(HoudiniApi::AddGroup(Util::theHAPISession.get(), geometryNodeId(),
                                  0, groupType, setName.asChar()));
 
-        CHECK_HAPI(HAPI_SetGroupMembership(
+        CHECK_HAPI(HoudiniApi::SetGroupMembership(
             Util::theHAPISession.get(), geometryNodeId(), 0, groupType,
             setName.asChar(), &groupMembership[0], 0, groupMembership.size()));
     }
@@ -811,22 +811,22 @@ InputMesh::processSets(const MPlug &plug, const MFnMesh &meshFn)
 
     // Commit it (even though we only care about pre-existing groups to delete
     // if we don't commit the geo the first time through, bad stuff happens
-    HAPI_CommitGeo(Util::theHAPISession.get(), geometryNodeId());
+    HoudiniApi::CommitGeo(Util::theHAPISession.get(), geometryNodeId());
 
-    HAPI_CookOptions cook_options = HAPI_CookOptions_Create();
+    HAPI_CookOptions cook_options = HoudiniApi::CookOptions_Create();
     // cook the input geo so that the group counts are updated on the geoInfo
-    HAPI_CookNode(Util::theHAPISession.get(), geometryNodeId(), &cook_options);
+    HoudiniApi::CookNode(Util::theHAPISession.get(), geometryNodeId(), &cook_options);
     HAPI_PartInfo partInfo;
     HAPI_GeoInfo geoInfo;
-    CHECK_HAPI(HAPI_GetGeoInfo(
+    CHECK_HAPI(HoudiniApi::GetGeoInfo(
         Util::theHAPISession.get(), geometryNodeId(), &geoInfo));
-    CHECK_HAPI(HAPI_GetPartInfo(
+    CHECK_HAPI(HoudiniApi::GetPartInfo(
         Util::theHAPISession.get(), geometryNodeId(), 0, &partInfo));
 
     if (geoInfo.pointGroupCount > 0)
     {
         std::vector<HAPI_StringHandle> groupNames(geoInfo.pointGroupCount);
-        HAPI_GetGroupNames(Util::theHAPISession.get(), geometryNodeId(),
+        HoudiniApi::GetGroupNames(Util::theHAPISession.get(), geometryNodeId(),
                            HAPI_GROUPTYPE_POINT, &groupNames[0],
                            geoInfo.pointGroupCount);
         for (int j = 0; j < geoInfo.pointGroupCount; j++)
@@ -835,7 +835,7 @@ InputMesh::processSets(const MPlug &plug, const MFnMesh &meshFn)
             std::string groupNameStr = groupName.asChar();
             if (!Util::isItemNameUsed(groupNameStr, setNamesUsed))
             {
-                CHECK_HAPI(HAPI_DeleteGroup(
+                CHECK_HAPI(HoudiniApi::DeleteGroup(
                     Util::theHAPISession.get(), geometryNodeId(), 0,
                     HAPI_GROUPTYPE_POINT, groupName.asChar()));
             }
@@ -844,7 +844,7 @@ InputMesh::processSets(const MPlug &plug, const MFnMesh &meshFn)
     if (geoInfo.primitiveGroupCount > 0)
     {
         std::vector<HAPI_StringHandle> groupNames(geoInfo.primitiveGroupCount);
-        HAPI_GetGroupNames(Util::theHAPISession.get(), geometryNodeId(),
+        HoudiniApi::GetGroupNames(Util::theHAPISession.get(), geometryNodeId(),
                            HAPI_GROUPTYPE_PRIM, &groupNames[0],
                            geoInfo.primitiveGroupCount);
         for (int j = 0; j < geoInfo.primitiveGroupCount; j++)
@@ -853,7 +853,7 @@ InputMesh::processSets(const MPlug &plug, const MFnMesh &meshFn)
             std::string groupNameStr = groupName.asChar();
             if (!Util::isItemNameUsed(groupNameStr, setNamesUsed))
             {
-                CHECK_HAPI(HAPI_DeleteGroup(
+                CHECK_HAPI(HoudiniApi::DeleteGroup(
                     Util::theHAPISession.get(), geometryNodeId(), 0,
                     HAPI_GROUPTYPE_PRIM, groupName.asChar()));
             }
@@ -925,3 +925,4 @@ InputMesh::processShadingGroups(const MFnMesh &meshFn,
 
     return true;
 }
+

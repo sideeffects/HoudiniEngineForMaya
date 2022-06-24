@@ -1,7 +1,17 @@
+source "houdiniEngineUtils.mel";
+
 global proc
 houdiniEnginePreferences_refresh()
 {
     setParent houdiniEnginePreferences;
+
+    textFieldGrp -e
+        -text `optionVar -query "houdiniEngineHfsLocation"`
+        hfsLocationField;
+
+    textFieldGrp -e
+        -text `optionVar -query "houdiniEngineHapilLocation"`
+        hapilLocationField;
 
     checkBoxGrp -e
         -value1 `optionVar -query "houdiniEngineAsynchronousMode"`
@@ -54,6 +64,37 @@ houdiniEnginePreferences_refresh()
         break;
     }
 
+    if (`optionVar -exists "houdiniEngineHfsLocation"`)
+    {
+        textFieldGrp -edit
+            -text `optionVar -query "houdiniEngineHfsLocation"` hfsLocationField;
+    }
+    else
+    {
+        string $hfsPath = houdiniEngine_getHfsPath(true);
+
+        if (size($hfsPath) > 0)
+            textFieldGrp -edit -text $hfsPath hfsLocationField;
+        else
+            houdiniEnginePreferences_showHfsErrorDialog();
+    }
+
+    if (`optionVar -exists "houdiniEngineHapilLocation"` && size(`optionVar -query "houdiniEngineHapilLocation"`) > 0)
+    {
+        textFieldGrp -edit
+            -text `optionVar -query "houdiniEngineHapilLocation"` hapilLocationField;
+    }
+    else
+    {
+        string $hfsPath   = `textFieldGrp -q -text hfsLocationField`;
+        string $hapilPath = houdiniEngine_getHapilPath(false, $hfsPath);
+
+        if (size($hapilPath) > 0)
+            textFieldGrp -edit -text $hapilPath hapilLocationField;
+        else
+            houdiniEnginePreferences_showHapilErrorDialog();
+    }
+
     if (`optionVar -exists "houdiniEngineThriftServer"`)
     {
         textField -edit
@@ -87,7 +128,7 @@ houdiniEnginePreferences_refresh()
 
     houdiniEnginePreferences_toggleSessionTypeSocket($sessionType == 1);
     houdiniEnginePreferences_toggleSessionTypePipe($sessionType == 2);
-    
+
     if (`optionVar -exists "houdiniEngineTimeout"`)
     {
         intFieldGrp -edit
@@ -102,6 +143,16 @@ global proc
 houdiniEnginePreferences_save()
 {
     setParent houdiniEnginePreferences;
+
+    string $hfsLocation   = `textFieldGrp -q -text hfsLocationField`;
+    string $hapilLocation = `textFieldGrp -q -text hapilLocationField`;
+
+    optionVar
+        -stringValue "houdiniEngineHfsLocation"
+        $hfsLocation;
+    optionVar
+        -stringValue "houdiniEngineHapilLocation"
+        $hapilLocation;
 
     optionVar
         -intValue "houdiniEngineAsynchronousMode"
@@ -144,10 +195,30 @@ houdiniEnginePreferences_save()
     optionVar
         -stringValue "houdiniEngineThriftPipe"
         `textField -query -text sessionPipeName`;
-        
+
     optionVar
         -intValue "houdiniEngineTimeout"
         `intFieldGrp -query -value1 timeoutGrp`;
+
+    // reload the plugin for changes to take affect
+    if (`pluginInfo -q -loaded houdiniEngine`)
+    {
+        int $engineInUse = !`pluginInfo -q -unloadOk houdiniEngine`;
+        
+        if ($engineInUse)
+        {   
+            confirmDialog -title "Houdini Engine Preferences"
+                -button "OK"
+                -icon "information"
+                -message "Please restart Maya for the changes to take affect.";
+        }
+        else
+        {
+            print("Attempting to reload Houdini Engine for Maya with new settings...\n");
+            unloadPlugin("houdiniEngine");
+            loadPlugin("houdiniEngine");
+        }
+    }
 
     houdiniEnginePreferences_close;
 }
@@ -156,6 +227,148 @@ global proc
 houdiniEnginePreferences_close()
 {
     evalDeferred "deleteUI -window houdiniEnginePreferences";
+}
+
+proc string
+getDefaultHfsPaths()
+{
+    return "    Windows: C:\\Program Files\\Side Effects Software\\Houdini x.x.x\n" +
+           "    Linux: /opt/hfsx.x.x\n" +
+           "    macOS: /Applications/Houdini/Houdinix.x.x/Frameworks/Houdini.framework/Resources";
+}
+
+proc string
+getDefaultHapilPaths()
+{
+    return "    Windows: C:\\Program Files\\Side Effects Software\\Houdini x.x.x\\bin\\libHAPIL.dll\n" +
+           "    Linux: /opt/hfsx.x.x/dsolib/libHAPIL.so\n" +
+           "    macOS: /Applications/Houdini/Houdinix.x.x/Frameworks/Houdini.framework/Libraries/libHAPIL.dylib";
+}
+
+global proc
+houdiniEnginePreferences_showHfsErrorDialog()
+{
+    confirmDialog -title "Houdini Engine Preferences"
+        -button "OK"
+        -message ("The HFS path could not be found in the specified directory.\n\n" +
+                  "The default locations are:\n" + getDefaultHfsPaths());
+}
+
+global proc
+houdiniEnginePreferences_showHapilErrorDialog()
+{
+    confirmDialog -title "Houdini Engine Preferences"
+        -button "OK"
+        -message ("The path to libHAPIL could not be found from the specified HFS directory.\n" +
+                  "You will need to specify the path manually.\n\n" +
+                  "The default locations are:\n" + getDefaultHapilPaths());
+}
+
+global proc
+houdiniEnginePreferences_showHfsLocationHelpDialog()
+{
+    confirmDialog -title "Houdini Engine Preferences"
+        -button "OK"
+        -message ("\"HFS location\" is used to specify where Houdini has been installed. If Houdini is installed in\n" +
+                  "its default location, this should be automatically detected.\n\n" +
+                  "If Houdini has been installed in a non-default location, this field should be set to the folder\n" +
+                  "that includes the houdini_setup file.\n\n" +
+                  "The default locations are:\n" + getDefaultHfsPaths());
+}
+
+global proc
+houdiniEnginePreferences_showHapilLocationHelpDialog()
+{
+    confirmDialog -title "Houdini Engine Preferences"
+        -button "OK"
+        -message ("\"libHAPIL location\" is used to specify where libHAPIL has been installed. If Houdini is installed\n" +
+                  "in its default location, this should be automatically detected.\n\n" +
+                  "If Houdini has been installed in a non-deafult location, this field should be set to the path to\n" +
+                  "libHAPIL.[dll|so|dylib]\n\n" +
+                  "The default locations are:\n" + getDefaultHapilPaths());
+}
+
+global proc
+houdiniEnginePreferences_setHfsLocation(string $location)
+{
+    global string $houdiniEngineHfsLocation;
+
+    $houdiniEngineHfsLocation = $location;
+}
+
+global proc
+houdiniEnginePreferences_setHapilLocation(string $location)
+{
+    global string $houdiniEngineHapilLocation;
+
+    $houdiniEngineHapilLocation = $location;
+}
+
+global proc
+houdiniEnginePreferences_browseForHfs()
+{
+    string $existingLocation = `textFieldGrp -q -text hfsLocationField`;
+
+    string $fileDialogResults[] = `fileDialog2
+        -caption "Browse to HFS Location"
+        -fileMode 3
+        -okCaption "Select"
+        -dir $existingLocation`;
+
+    if (size($fileDialogResults) > 0)
+    {
+        string $hfs = $fileDialogResults[0];
+
+        if ($hfs == "") // cancel
+            return;
+
+        if (size($hfs) > 0  && `filetest -r $hfs`)
+        {
+            string $hapilLocation = houdiniEngine_getHapilPath(false, $hfs);
+
+            textFieldGrp -edit -text $hfs hfsLocationField;
+
+            if (size($hapilLocation) > 0)
+                textFieldGrp -edit -text $hapilLocation hapilLocationField;
+            else
+                houdiniEnginePreferences_showHapilErrorDialog();
+
+            return;
+        }
+
+        houdiniEnginePreferences_showHfsErrorDialog();
+    }
+
+}
+
+global proc
+houdiniEnginePreferences_browseForHapil()
+{
+    string $existingLocation = `textFieldGrp -q -text hapilLocationField`;
+    string $ext = houdiniEngine_getHapilExtension();
+
+    if (size($existingLocation) <= 0)
+        $existingLocation = `textFieldGrp -q -text hfsLocationField`;
+
+    string $fileDialogResults[] = `fileDialog2
+        -caption ("Browse to libHAPIL." + $ext)
+        -fileMode 1
+        -fileFilter ("*." + $ext)
+        -okCaption "Select"
+        -dir $existingLocation`;
+
+    if (size($fileDialogResults) > 0)
+    {
+        string $hapil = $fileDialogResults[0];
+
+        if (size($hapil) > 0  && `filetest -r $hapil`)
+        {
+            textFieldGrp -edit -text $hapil hapilLocationField;
+            return;
+        }
+
+       houdiniEnginePreferences_showHapilErrorDialog();
+    }
 }
 
 global proc
@@ -259,79 +472,105 @@ houdiniEnginePreferences()
     string $mainLayout = `formLayout`;
 
     // Versions
-    string $houdiniVersion  = `houdiniEngine -houdiniVersion`;
-    string $houdiniEngineVersion  = `houdiniEngine -houdiniEngineVersion`;
+    string $houdiniVersion       = `houdiniEngine -houdiniVersion`;
+    string $houdiniEngineVersion = `houdiniEngine -houdiniEngineVersion`;
+
     string $versionText = `text -align "left"
         -label ("Houdini Version: " + $houdiniVersion + "\n"
                 + "Houdini Engine Version: " + $houdiniEngineVersion + "\n")`;
 
     // Global
-    string $globalLayout = `frameLayout
-        -label "Global"`;
-        formLayout
-            globalPreferences;
+    string $globalLayout = `frameLayout -label "Global"`;
 
-            checkBoxGrp
-                -numberOfCheckBoxes 1
-                -label "Asynchronous Mode:"
-                -label1 "(requires restart)"
-                -changeCommand "houdiniEnginePreferences_toggleAsynchronousMode #1"
-                asynchronousModeCheck;
+    rowColumnLayout -numberOfColumns 3 -columnWidth 2 24 -columnWidth 3 24 -columnSpacing 3 5
+        globalPreferences;
 
-            button
-                -label "?"
-                -command ("confirmDialog -title \"Houdini Engine Preferences\"" +
+        textFieldGrp
+            -label "HFS location:"
+            -changeCommand "houdiniEnginePreferences_setHfsLocation \"#1\""
+            hfsLocationField;
+
+        button
+            -label "..."
+            -height 20
+            -command "houdiniEnginePreferences_browseForHfs"
+            hfsLocationBrowseBtn;
+
+        button
+            -label "?"
+            -height 20
+            -command "houdiniEnginePreferences_showHfsLocationHelpDialog"
+            hfsLocationHelp;
+
+        textFieldGrp
+            -label "libHAPIL location:"
+            -changeCommand "houdiniEnginePreferences_setHapilLocation \"#1\""
+            hapilLocationField;
+
+        button
+            -label "..."
+            -height 20
+            -command "houdiniEnginePreferences_browseForHapil"
+            hapilLocationBrowseBtn;
+
+        button
+            -label "?"
+            -height 20
+            -command "houdiniEnginePreferences_showHapilLocationHelpDialog"
+            hapilLocationHelp;
+
+        checkBoxGrp
+            -numberOfCheckBoxes 1
+            -label "Asynchronous Mode:"
+            -label1 "(requires restart)"
+            -changeCommand "houdiniEnginePreferences_toggleAsynchronousMode #1"
+            asynchronousModeCheck;
+
+        text -label "";
+
+        button
+            -label "?"
+            -height 20
+            -command ("confirmDialog -title \"Houdini Engine Preferences\" " +
                 "-button \"OK\" -message \"\\\"Asynchronous Mode\\\" controls " +
                 "whether Houdini Engine runs asynchronously. Running asynchronously " +
                 "enables some nice features, such as progress bars and interrupts. " +
                 "However, if an asset tries to interact with Maya, it may lead to " +
                 "some unexpected behaviors. Disabling this option may fix these " +
                 "issues. If unsure, leave it on. (Default: on)\"")
-                asynchronousModeHelp;
+            asynchronousModeHelp;
 
-            checkBoxGrp
-                -numberOfCheckBoxes 1
-                -label "Delete Asset After Baking:"
-                -changeCommand "houdiniEnginePreferences_toggleDelAfterBake #1"
-                delAfterBakeCheck;
+        checkBoxGrp
+            -numberOfCheckBoxes 1
+            -label "Delete Asset After Baking:"
+            -changeCommand "houdiniEnginePreferences_toggleDelAfterBake #1"
+            delAfterBakeCheck;
 
-            optionMenuGrp
-                -label "View Assets in:"
-                -changeCommand "houdiniEnginePreferences_setViewProduct \"#1\""
-                viewProductOpt;
+        text -label "";
+        text -label "";
 
-                menuItem -label "Houdini FX";
-                menuItem -label "Houdini Core";
+        optionMenuGrp
+            -label "View Assets in:"
+            -changeCommand "houdiniEnginePreferences_setViewProduct \"#1\""
+            viewProductOpt;
 
-            button
-                -label "?"
-                -command ("confirmDialog -title \"Houdini Engine Preferences\"" +
+            menuItem -label "Houdini FX";
+            menuItem -label "Houdini Core";
+
+        text -label "";
+
+        button
+            -label "?"
+            -height 20
+            -command ("confirmDialog -title \"Houdini Engine Preferences\" " +
                 "-button \"OK\" -message \"\\\"View Assets in\\\" specifies " +
                 "which Houdini product should be used when assets are viewed via " +
                 "Houdini Engine>Debugging>View Assets in Houdini. (Default: " +
                 "Houdini Core)\"")
-                viewAssetInProductHelp;
+            viewAssetInProductHelp;
 
         setParent ..;
     setParent ..;
-
-    formLayout -e
-        -attachForm asynchronousModeCheck "top" 5
-        -attachForm asynchronousModeCheck "left" 5
-        -attachControl asynchronousModeCheck "right" 5 asynchronousModeHelp
-
-        -attachForm asynchronousModeHelp "top" 5
-        -attachForm asynchronousModeHelp "right" 5
-        -attachControl delAfterBakeCheck "top" 5 asynchronousModeCheck
-
-        -attachForm delAfterBakeCheck "top" 5
-        -attachForm delAfterBakeCheck "left" 5
-        -attachControl viewProductOpt "top" 5 delAfterBakeCheck
-
-        -attachForm viewAssetInProductHelp "right" 5
-        -attachControl viewAssetInProductHelp "top" 0 delAfterBakeCheck
-
-        globalPreferences;
 
     // Sessions
     int $isLinux = `about -linux`;
@@ -373,7 +612,7 @@ houdiniEnginePreferences()
                 -label "Manual server"
                 -changeCommand "houdiniEnginePreferences_toggleSessionTypePipeCustom 1"
                 sessionPipeCustom;
-            
+
             intFieldGrp -label "Connection Timeout:" timeoutGrp;
             text -label "ms" timeoutUnitLabel;
 
@@ -384,7 +623,8 @@ houdiniEnginePreferences()
                 -label1 "(for Linux auto-start)"
                 -changeCommand "houdiniEnginePreferences_toggleUnsetLLP #1"
                 unsetLLPCheck;
-            if(!$isLinux)
+
+            if (!$isLinux)
                 checkBoxGrp -edit -visible 0  unsetLLPCheck;
 
             checkBoxGrp
@@ -395,89 +635,49 @@ houdiniEnginePreferences()
                 unsetPPCheck;
 
         setParent ..;
-        if($isLinux)
-        {
-            formLayout -e
-                -attachForm sessionTypeSocket "top" 5
-                -attachForm sessionTypeSocket "left" 5
-    
-                -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
-                -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
-    
-                -attachControl sessionSocketHost "top" 5 sessionTypeSocket
-                -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
-    
-                -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
-                -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
-    
-                -attachControl sessionSocketPort "top" 5 sessionTypeSocket
-                -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
-    
-                -attachControl sessionTypePipe "top" 5 sessionSocketPort
-                -attachForm sessionTypePipe "left" 5
-    
-                -attachControl sessionPipeAuto "top" 5 sessionTypePipe
-                -attachForm sessionPipeAuto "left" 20
 
-                -attachControl timeoutGrp "top" 5 sessionPipeAuto
-                -attachForm timeoutGrp "left" 20
+        formLayout -e
+            -attachForm sessionTypeSocket "top" 5
+            -attachForm sessionTypeSocket "left" 5
 
-                -attachControl timeoutUnitLabel "top" 9 sessionPipeAuto
-                -attachControl timeoutUnitLabel "left" 0 timeoutGrp
+            -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
+            -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
 
-                -attachControl unsetLLPCheck "top" 5 timeoutGrp
-                -attachForm unsetLLPCheck "left" 20
+            -attachControl sessionSocketHost "top" 5 sessionTypeSocket
+            -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
 
-                -attachControl unsetPPCheck "top" 5 unsetLLPCheck
-                -attachForm unsetPPCheck "left" 20
-    
-                -attachControl sessionPipeCustom "top" 5 unsetPPCheck
-                -attachForm sessionPipeCustom "left" 20
-    
-                -attachControl sessionPipeName "top" 5 unsetPPCheck
-                -attachControl sessionPipeName "left" 5 sessionPipeCustom
-    
-                sessionLayout;
-        } else {
-            formLayout -e
-                -attachForm sessionTypeSocket "top" 5
-                -attachForm sessionTypeSocket "left" 5
+            -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
+            -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
 
-                -attachControl sessionSocketHostLabel "top" 5 sessionTypeSocket
-                -attachControl sessionSocketHostLabel "left" 5 sessionTypeSocket
+            -attachControl sessionSocketPort "top" 5 sessionTypeSocket
+            -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
 
-                -attachControl sessionSocketHost "top" 5 sessionTypeSocket
-                -attachControl sessionSocketHost "left" 5 sessionSocketHostLabel
+            -attachControl sessionTypePipe "top" 5 sessionSocketPort
+            -attachForm sessionTypePipe "left" 5
 
-                -attachControl sessionSocketPortLabel "top" 5 sessionTypeSocket
-                -attachControl sessionSocketPortLabel "left" 5 sessionSocketHost
+            -attachControl sessionPipeAuto "top" 5 sessionTypePipe
+            -attachForm sessionPipeAuto "left" 20
 
-                -attachControl sessionSocketPort "top" 5 sessionTypeSocket
-                -attachControl sessionSocketPort "left" 5 sessionSocketPortLabel
+            -attachControl timeoutGrp "top" 5 sessionPipeAuto
+            -attachForm timeoutGrp "left" 20
 
-                -attachControl sessionTypePipe "top" 5 sessionSocketPort
-                -attachForm sessionTypePipe "left" 5
+            -attachControl timeoutUnitLabel "top" 9 sessionPipeAuto
+            -attachControl timeoutUnitLabel "left" 0 timeoutGrp
 
-                -attachControl sessionPipeAuto "top" 5 sessionTypePipe
-                -attachForm sessionPipeAuto "left" 20
+            -attachControl unsetLLPCheck "top" 5 timeoutGrp
+            -attachForm unsetLLPCheck "left" 20
+            
+            -attachControl unsetPPCheck "top" 5 unsetLLPCheck
+            -attachForm unsetPPCheck "left" 20
 
-                -attachControl timeoutGrp "top" 5 sessionPipeAuto
-                -attachForm timeoutGrp "left" 20
+            -attachControl sessionPipeCustom "top" 5 unsetPPCheck
+            -attachForm sessionPipeCustom "left" 20
 
-                -attachControl timeoutUnitLabel "top" 9 sessionPipeAuto
-                -attachControl timeoutUnitLabel "left" 0 timeoutGrp
+            -attachControl sessionPipeName "top" 5 unsetPPCheck
+            -attachControl sessionPipeName "left" 5 sessionPipeCustom
 
-                -attachControl unsetPPCheck "top" 5 timeoutGrp
-                -attachForm unsetPPCheck "left" 20
+            sessionLayout;
 
-                -attachControl sessionPipeCustom "top" 5 unsetPPCheck
-                -attachForm sessionPipeCustom "left" 20
-
-                -attachControl sessionPipeName "top" 5 unsetPPCheck
-                -attachControl sessionPipeName "left" 5 sessionPipeCustom
-
-                sessionLayout;
-        }
     setParent ..;
 
     // Buttons
@@ -534,3 +734,4 @@ houdiniEnginePreferences()
 
     showWindow;
 }
+

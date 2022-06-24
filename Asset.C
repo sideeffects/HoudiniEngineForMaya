@@ -17,6 +17,7 @@
 #include "Asset.h"
 #include "AssetNode.h"
 #include "Input.h"
+
 #include "OutputGeometryObject.h"
 #include "OutputInstancerObject.h"
 #include "OutputMaterial.h"
@@ -389,8 +390,8 @@ AttrOperation::containsParm(const MString &attrName,
         // If the parm is a tuple, then we also need to check the parent plug.
         // We need to check if it's int, float, or string, because non-values
         // like folders also use parm.size.
-        if ((HAPI_ParmInfo_IsInt(&parm) || HAPI_ParmInfo_IsFloat(&parm) ||
-             HAPI_ParmInfo_IsString(&parm)) &&
+        if ((HoudiniApi::ParmInfo_IsInt(&parm) || HoudiniApi::ParmInfo_IsFloat(&parm) ||
+             HoudiniApi::ParmInfo_IsString(&parm)) &&
             parm.size > 1 && plug.isChild() && parmPlug == plug.parent())
         {
             return true;
@@ -491,12 +492,12 @@ Asset::Asset(const MString &otlFilePath, const MString &assetName)
 
     HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
 
-    HAPI_AssetInfo_Init(&myAssetInfo);
-    HAPI_NodeInfo_Init(&myNodeInfo);
+    HoudiniApi::AssetInfo_Init(&myAssetInfo);
+    HoudiniApi::NodeInfo_Init(&myNodeInfo);
 
     // load the otl
     int libraryId = -1;
-    hapiResult    = HAPI_LoadAssetLibraryFromFile(
+    hapiResult    = HoudiniApi::LoadAssetLibraryFromFile(
         Util::theHAPISession.get(), otlFilePath.asChar(), true, &libraryId);
     if (HAPI_FAIL(hapiResult))
     {
@@ -511,12 +512,12 @@ Asset::Asset(const MString &otlFilePath, const MString &assetName)
     if (libraryId >= 0)
     {
         int assetCount = 0;
-        hapiResult     = HAPI_GetAvailableAssetCount(
+        hapiResult     = HoudiniApi::GetAvailableAssetCount(
             Util::theHAPISession.get(), libraryId, &assetCount);
         CHECK_HAPI(hapiResult);
 
         assetNamesSH.resize(assetCount);
-        hapiResult = HAPI_GetAvailableAssets(Util::theHAPISession.get(),
+        hapiResult = HoudiniApi::GetAvailableAssets(Util::theHAPISession.get(),
                                              libraryId, &assetNamesSH.front(),
                                              assetCount);
         CHECK_HAPI(hapiResult);
@@ -548,7 +549,7 @@ Asset::Asset(const MString &otlFilePath, const MString &assetName)
     {
         Util::PythonInterpreterLock pythonInterpreterLock;
 
-        hapiResult = HAPI_CreateNode(Util::theHAPISession.get(), -1,
+        hapiResult = HoudiniApi::CreateNode(Util::theHAPISession.get(), -1,
                                      assetName.asChar(), NULL, false, &nodeId);
         if (HAPI_FAIL(hapiResult))
         {
@@ -576,7 +577,7 @@ Asset::Asset(const MString &otlFilePath, const MString &assetName)
         }
     }
 
-    hapiResult = HAPI_GetAssetInfo(
+    hapiResult = HoudiniApi::GetAssetInfo(
         Util::theHAPISession.get(), nodeId, &myAssetInfo);
     CHECK_HAPI(hapiResult);
 
@@ -584,7 +585,7 @@ Asset::Asset(const MString &otlFilePath, const MString &assetName)
     myAssetHelpText = Util::HAPIString(myAssetInfo.helpTextSH);
     myAssetHelpURL  = Util::HAPIString(myAssetInfo.helpURLSH);
 
-    hapiResult = HAPI_GetNodeInfo(
+    hapiResult = HoudiniApi::GetNodeInfo(
         Util::theHAPISession.get(), nodeId, &myNodeInfo);
     CHECK_HAPI(hapiResult);
 
@@ -628,7 +629,7 @@ Asset::~Asset()
         idToDelete = myNodeInfo.parentId;
     if (idToDelete >= 0)
     {
-        CHECK_HAPI(HAPI_DeleteNode(Util::theHAPISession.get(), idToDelete));
+        CHECK_HAPI(HoudiniApi::DeleteNode(Util::theHAPISession.get(), idToDelete));
     }
 }
 
@@ -683,7 +684,7 @@ MString
 Asset::getRelativePath(HAPI_NodeId id)
 {
     HAPI_StringHandle relativePathHandle;
-    CHECK_HAPI(HAPI_GetNodePath(
+    CHECK_HAPI(HoudiniApi::GetNodePath(
         Util::theHAPISession.get(), id, myNodeInfo.id, &relativePathHandle));
     return Util::HAPIString(relativePathHandle);
 }
@@ -693,7 +694,7 @@ Asset::resetSimulation()
 {
     assert(myNodeInfo.id >= 0);
 
-    HAPI_ResetSimulation(Util::theHAPISession.get(), myNodeInfo.id);
+    HoudiniApi::ResetSimulation(Util::theHAPISession.get(), myNodeInfo.id);
 }
 
 MString
@@ -704,7 +705,7 @@ Asset::getCookMessages()
     // Trigger a cook so that the asset will become the "last cooked asset",
     // because HAPI_STATUS_COOK_RESULT only consider the "last cooked asset".
     // In most cases, this shouldn't do any actual cooking.
-    HAPI_CookNode(Util::theHAPISession.get(), myNodeInfo.id, NULL);
+    HoudiniApi::CookNode(Util::theHAPISession.get(), myNodeInfo.id, NULL);
 
     GET_HAPI_STATUS_COOK();
 
@@ -723,7 +724,7 @@ Asset::update()
     if (myNodeInfo.type == HAPI_NODETYPE_OBJ)
     {
         int objectCount = 0;
-        hapiResult      = HAPI_ComposeChildNodeList(
+        hapiResult      = HoudiniApi::ComposeChildNodeList(
             Util::theHAPISession.get(), myAssetInfo.objectNodeId,
             HAPI_NODETYPE_OBJ, HAPI_NODEFLAGS_OBJ_GEOMETRY, true, &objectCount);
         CHECK_HAPI(hapiResult);
@@ -734,7 +735,7 @@ Asset::update()
         {
             nodeIds.resize(objectCount);
 
-            hapiResult = HAPI_GetComposedChildNodeList(
+            hapiResult = HoudiniApi::GetComposedChildNodeList(
                 Util::theHAPISession.get(), myAssetInfo.objectNodeId,
                 &nodeIds.front(), objectCount);
             CHECK_HAPI(hapiResult);
@@ -922,7 +923,7 @@ Asset::setTime(const MTime &mayaTime)
     // So we need to offset the time by 1.
     MTime hapiTime        = myTime - MTime(1, MTime::uiUnit());
     float hapiTimeSeconds = (float)hapiTime.as(MTime::kSeconds);
-    HAPI_SetTime(Util::theHAPISession.get(), hapiTimeSeconds);
+    HoudiniApi::SetTime(Util::theHAPISession.get(), hapiTimeSeconds);
 }
 
 void
@@ -951,12 +952,12 @@ Asset::setInputs(const MPlug &plug, MDataBlock &data)
 
         if (inputNodeId < 0)
         {
-            HAPI_DisconnectNodeInput(
+            HoudiniApi::DisconnectNodeInput(
                 Util::theHAPISession.get(), myNodeInfo.id, i);
             continue;
         }
 
-        CHECK_HAPI(HAPI_ConnectNodeInput(
+        CHECK_HAPI(HoudiniApi::ConnectNodeInput(
             Util::theHAPISession.get(), myNodeInfo.id, i, inputNodeId, 0));
     }
 }
@@ -978,7 +979,7 @@ Asset::compute(const MPlug &plug,
         Util::PythonInterpreterLock pythonInterpreterLock;
 
         HAPI_CookOptions cookOptions;
-        HAPI_CookOptions_Init(&cookOptions);
+        HoudiniApi::CookOptions_Init(&cookOptions);
         cookOptions.splitGeosByGroup  = options.splitGeosByGroup();
         cookOptions.cookTemplatedGeos = options.outputTemplatedGeometries();
 
@@ -995,7 +996,7 @@ Asset::compute(const MPlug &plug,
                 HAPI_PACKEDPRIM_INSTANCING_MODE_HIERARCHY;
         }
 
-        hapiResult = HAPI_CookNode(
+        hapiResult = HoudiniApi::CookNode(
             Util::theHAPISession.get(), myNodeInfo.id, &cookOptions);
         CHECK_HAPI(hapiResult);
 
@@ -1024,7 +1025,7 @@ Asset::compute(const MPlug &plug,
         if (myNodeInfo.type == HAPI_NODETYPE_OBJ && myIsObjSubnet)
         {
             HAPI_Transform trans;
-            HAPI_GetObjectTransform(Util::theHAPISession.get(),
+            HoudiniApi::GetObjectTransform(Util::theHAPISession.get(),
                                     myAssetInfo.objectNodeId, -1, HAPI_SRT,
                                     &trans);
 
@@ -1293,14 +1294,14 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                          parmInfo.type == HAPI_PARMTYPE_PATH_FILE_IMAGE)
                 {
                     int value;
-                    HAPI_GetParmStringValues(
+                    HoudiniApi::GetParmStringValues(
                         Util::theHAPISession.get(), myNodeInfo.id, false,
                         &value, parmInfo.stringValuesIndex, parmInfo.size);
                     MString valueString = Util::HAPIString(value);
 
                     HAPI_ParmChoiceInfo *choiceInfos =
                         new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
-                    HAPI_GetParmChoiceLists(
+                    HoudiniApi::GetParmChoiceLists(
                         Util::theHAPISession.get(), myNodeInfo.id, choiceInfos,
                         parmInfo.choiceIndex, parmInfo.choiceCount);
 
@@ -1317,7 +1318,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 }
                 else
                 {
-                    HAPI_GetParmIntValues(
+                    HoudiniApi::GetParmIntValues(
                         Util::theHAPISession.get(), myNodeInfo.id, &enumIndex,
                         parmInfo.intValuesIndex, parmInfo.size);
 
@@ -1351,7 +1352,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 case HAPI_PARMTYPE_COLOR:
                 {
                     float *values = new float[parmInfo.size];
-                    HAPI_GetParmFloatValues(
+                    HoudiniApi::GetParmFloatValues(
                         Util::theHAPISession.get(), myNodeInfo.id, values,
                         parmInfo.floatValuesIndex, parmInfo.size);
 
@@ -1394,7 +1395,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     }
                     else
                     {
-                        HAPI_GetParmIntValues(
+                        HoudiniApi::GetParmIntValues(
                             Util::theHAPISession.get(), myNodeInfo.id, values,
                             parmInfo.intValuesIndex, parmInfo.size);
                     }
@@ -1442,7 +1443,7 @@ GetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 case HAPI_PARMTYPE_PATH_FILE_IMAGE:
                 {
                     int *values = new int[parmInfo.size];
-                    HAPI_GetParmStringValues(
+                    HoudiniApi::GetParmStringValues(
                         Util::theHAPISession.get(), myNodeInfo.id, false,
                         values, parmInfo.stringValuesIndex, parmInfo.size);
 
@@ -1483,7 +1484,7 @@ Asset::fillParmNameCache()
 {
     auto num_parms = myNodeInfo.parmCount;
     std::vector<HAPI_ParmInfo> parmInfos(num_parms);
-    HAPI_GetParameters(
+    HoudiniApi::GetParameters(
         Util::theHAPISession.get(), myNodeInfo.id, &parmInfos[0], 0, num_parms);
 
     std::vector<HAPI_StringHandle> parmNameHandles;
@@ -1492,11 +1493,11 @@ Asset::fillParmNameCache()
         parmNameHandles.push_back(info.nameSH);
 
     int stringsbuffer_len;
-    HAPI_GetStringBatchSize(Util::theHAPISession.get(), &parmNameHandles[0],
+    HoudiniApi::GetStringBatchSize(Util::theHAPISession.get(), &parmNameHandles[0],
                             num_parms, &stringsbuffer_len);
 
     std::vector<char> strings_buffer(stringsbuffer_len);
-    HAPI_GetStringBatch(
+    HoudiniApi::GetStringBatch(
         Util::theHAPISession.get(), &strings_buffer[0], stringsbuffer_len);
 
     myParmNameCache->clearCache();
@@ -1533,7 +1534,7 @@ Asset::getParmValues(MDataBlock &dataBlock,
     // Get multiparm length
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
+        HoudiniApi::GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
                            &parmInfos[0], 0, parmInfos.size());
 
         GetMultiparmLengthOperation operation(
@@ -1544,7 +1545,7 @@ Asset::getParmValues(MDataBlock &dataBlock,
     // Get value
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
+        HoudiniApi::GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
                            &parmInfos[0], 0, parmInfos.size());
 
         GetAttrOperation operation(dataBlock, nodeFn, myNodeInfo, attrs);
@@ -1619,7 +1620,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
             // then we need to add to the multiparm.
             for (int i = parmInfo.instanceCount; i < multiSize; ++i)
             {
-                HAPI_InsertMultiparmInstance(Util::theHAPISession.get(),
+                HoudiniApi::InsertMultiparmInstance(Util::theHAPISession.get(),
                                              myNodeInfo.id, parmInfo.id,
                                              i + parmInfo.instanceStartOffset);
             }
@@ -1628,7 +1629,7 @@ SetMultiparmLengthOperation::pushMultiparm(const HAPI_ParmInfo &parmInfo)
             // then we need to remove from the multiparm.
             for (int i = parmInfo.instanceCount; i-- > multiSize;)
             {
-                HAPI_RemoveMultiparmInstance(Util::theHAPISession.get(),
+                HoudiniApi::RemoveMultiparmInstance(Util::theHAPISession.get(),
                                              myNodeInfo.id, parmInfo.id,
                                              i + parmInfo.instanceStartOffset);
             }
@@ -1712,7 +1713,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     int value = enumIndex - 1;
                     if (value >= 0)
                     {
-                        HAPI_SetParmIntValues(Util::theHAPISession.get(),
+                        HoudiniApi::SetParmIntValues(Util::theHAPISession.get(),
                                               myNodeInfo.id, &value,
                                               parmInfo.intValuesIndex, 1);
                     }
@@ -1725,14 +1726,14 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                 {
                     HAPI_ParmChoiceInfo *choiceInfos =
                         new HAPI_ParmChoiceInfo[parmInfo.choiceCount];
-                    HAPI_GetParmChoiceLists(
+                    HoudiniApi::GetParmChoiceLists(
                         Util::theHAPISession.get(), myNodeInfo.id, choiceInfos,
                         parmInfo.choiceIndex, parmInfo.choiceCount);
 
                     MString valueString =
                         Util::HAPIString(choiceInfos[enumIndex].valueSH);
 
-                    HAPI_SetParmStringValue(Util::theHAPISession.get(),
+                    HoudiniApi::SetParmStringValue(Util::theHAPISession.get(),
                                             myNodeInfo.id, valueString.asChar(),
                                             parmInfo.id, 0);
 
@@ -1760,7 +1761,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                         }
                     }
 
-                    HAPI_SetParmIntValues(Util::theHAPISession.get(),
+                    HoudiniApi::SetParmIntValues(Util::theHAPISession.get(),
                                           myNodeInfo.id, &enumIndex,
                                           parmInfo.intValuesIndex, 1);
                 }
@@ -1789,7 +1790,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             values[i] = elementHandle.asFloat();
                         }
                     }
-                    HAPI_SetParmFloatValues(
+                    HoudiniApi::SetParmFloatValues(
                         Util::theHAPISession.get(), myNodeInfo.id, values,
                         parmInfo.floatValuesIndex, parmInfo.size);
 
@@ -1840,7 +1841,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                         int *currentValues = new int[parmInfo.size];
 
-                        HAPI_GetParmIntValues(Util::theHAPISession.get(),
+                        HoudiniApi::GetParmIntValues(Util::theHAPISession.get(),
                                               myNodeInfo.id, currentValues,
                                               parmInfo.intValuesIndex,
                                               parmInfo.size);
@@ -1852,7 +1853,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                                 // set it to the current value, so we
                                 // don't have to worry about the value
                                 // changing.
-                                HAPI_SetParmIntValues(
+                                HoudiniApi::SetParmIntValues(
                                     Util::theHAPISession.get(), myNodeInfo.id,
                                     &currentValues[i],
                                     parmInfo.intValuesIndex + i, 1);
@@ -1863,7 +1864,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     }
                     else
                     {
-                        HAPI_SetParmIntValues(
+                        HoudiniApi::SetParmIntValues(
                             Util::theHAPISession.get(), myNodeInfo.id, values,
                             parmInfo.intValuesIndex, parmInfo.size);
                     }
@@ -1880,7 +1881,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                     if (parmInfo.size == 1)
                     {
                         const char *val = dataHandle.asString().asChar();
-                        HAPI_SetParmStringValue(Util::theHAPISession.get(),
+                        HoudiniApi::SetParmStringValue(Util::theHAPISession.get(),
                                                 myNodeInfo.id, val, parmInfo.id,
                                                 0);
                     }
@@ -1894,7 +1895,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
                             MDataHandle elementHandle =
                                 myDataBlock.inputValue(plug.child(i));
                             const char *val = elementHandle.asString().asChar();
-                            HAPI_SetParmStringValue(Util::theHAPISession.get(),
+                            HoudiniApi::SetParmStringValue(Util::theHAPISession.get(),
                                                     myNodeInfo.id, val,
                                                     parmInfo.id, i);
                         }
@@ -1914,7 +1915,7 @@ SetAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 
                     std::string name = Util::HAPIString(parmInfo.nameSH);
 
-                    CHECK_HAPI(HAPI_SetParmNodeValue(
+                    CHECK_HAPI(HoudiniApi::SetParmNodeValue(
                         Util::theHAPISession.get(), myNodeInfo.id, name.c_str(),
                         inputNodeId));
                 }
@@ -1944,7 +1945,7 @@ Asset::setParmValues(MDataBlock &dataBlock,
     // Set multiparm length
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
+        HoudiniApi::GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
                            &parmInfos[0], 0, parmInfos.size());
 
         SetMultiparmLengthOperation operation(
@@ -1952,14 +1953,14 @@ Asset::setParmValues(MDataBlock &dataBlock,
         Util::walkParm(parmInfos, operation);
 
         // multiparm length could change, so we need to get the new parmCount
-        HAPI_GetNodeInfo(
+        HoudiniApi::GetNodeInfo(
             Util::theHAPISession.get(), myNodeInfo.id, &myNodeInfo);
     }
 
     // Set value
     {
         parmInfos.resize(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
+        HoudiniApi::GetParameters(Util::theHAPISession.get(), myNodeInfo.id,
                            &parmInfos[0], 0, parmInfos.size());
 
         Util::PythonInterpreterLock pythonInterpreterLock;
@@ -1987,3 +1988,4 @@ Asset::getAttrNameFromParm(const HAPI_ParmInfo &parm) const
     else
         return Util::getAttrNameFromParm(parm);
 }
+

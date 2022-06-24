@@ -1170,3 +1170,4 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
 
     editorTemplate -endLayout;
 }
+

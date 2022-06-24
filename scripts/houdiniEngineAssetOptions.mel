@@ -35,3 +35,4 @@ houdiniEngine_preserveHoudiniScaleChanged(string $assetNode)
     for ($upstreamInputCurve in $upstreamInputCurves)
         setAttr ($upstreamInputCurve + ".preserveScale") $preserveScale;
 }
+

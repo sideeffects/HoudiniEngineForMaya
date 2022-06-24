@@ -338,3 +338,4 @@ AssetSubCommandSync::isUndoable() const
 {
     return true;
 }
+

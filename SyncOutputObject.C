@@ -653,3 +653,4 @@ SyncOutputObject::isUndoable() const
 {
     return true;
 }
+

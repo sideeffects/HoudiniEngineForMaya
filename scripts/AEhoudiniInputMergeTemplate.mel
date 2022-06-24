@@ -23,3 +23,4 @@ global proc AEhoudiniInputMergeTemplate(string $nodeName)
     editorTemplate -endScrollLayout;
 }
 
+

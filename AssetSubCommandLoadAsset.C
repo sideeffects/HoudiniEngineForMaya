@@ -162,3 +162,4 @@ AssetSubCommandLoadAsset::isUndoable() const
 {
     return true;
 }
+

@@ -60,11 +60,11 @@ InputMergeNode::~InputMergeNode()
     // the merge is a sop, so it will have a parent geo
     // and an objectMerge to remove as well
     HAPI_NodeInfo node_info;
-    HAPI_GetNodeInfo(Util::theHAPISession.get(), myGeometryNodeId, &node_info);
+    HoudiniApi::GetNodeInfo(Util::theHAPISession.get(), myGeometryNodeId, &node_info);
     if (node_info.parentId >= 0)
     {
         CHECK_HAPI(
-            HAPI_DeleteNode(Util::theHAPISession.get(), node_info.parentId));
+            HoudiniApi::DeleteNode(Util::theHAPISession.get(), node_info.parentId));
     }
 }
 
@@ -81,7 +81,7 @@ InputMergeNode::compute(const MPlug &plug, MDataBlock &dataBlock)
 
         if (!frozen)
         {
-            CHECK_HAPI(HAPI_CreateNode(Util::theHAPISession.get(), -1,
+            CHECK_HAPI(HoudiniApi::CreateNode(Util::theHAPISession.get(), -1,
                                        "Sop/merge", NULL, false,
                                        &myGeometryNodeId));
             if (!Util::statusCheckLoop())
@@ -112,7 +112,7 @@ InputMergeNode::compute(const MPlug &plug, MDataBlock &dataBlock)
 
             HAPI_NodeId inputNode = inputNodeHandle.asInt();
 
-            CHECK_HAPI(HAPI_ConnectNodeInput(
+            CHECK_HAPI(HoudiniApi::ConnectNodeInput(
                 Util::theHAPISession.get(), myGeometryNodeId, i, inputNode, 0));
         }
 
@@ -126,3 +126,4 @@ InputMergeNode::compute(const MPlug &plug, MDataBlock &dataBlock)
 
     return MPxNode::compute(plug, dataBlock);
 }
+

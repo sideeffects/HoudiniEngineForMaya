@@ -17,6 +17,7 @@
 namespace Util
 {
 std::unique_ptr<HAPISession> theHAPISession;
+bool isHapilLoaded;
 
 bool
 #ifdef _WIN32
@@ -250,12 +251,12 @@ hasHAPICallFailed(HAPI_Result stat)
 
 PythonInterpreterLock::PythonInterpreterLock()
 {
-    HAPI_PythonThreadInterpreterLock(theHAPISession.get(), true);
+    HoudiniApi::PythonThreadInterpreterLock(theHAPISession.get(), true);
 }
 
 PythonInterpreterLock::~PythonInterpreterLock()
 {
-    HAPI_PythonThreadInterpreterLock(theHAPISession.get(), false);
+    HoudiniApi::PythonThreadInterpreterLock(theHAPISession.get(), false);
 }
 
 bool
@@ -607,14 +608,14 @@ statusCheckLoop(bool wantMainProgressBar)
 
     while (state > HAPI_STATE_MAX_READY_STATE)
     {
-        HAPI_GetStatus(
+        HoudiniApi::GetStatus(
             theHAPISession.get(), HAPI_STATUS_COOK_STATE, &currState);
         state = (HAPI_State)currState;
 
         if (state == HAPI_STATE_COOKING)
         {
-            HAPI_GetCookingCurrentCount(theHAPISession.get(), &currCookCount);
-            HAPI_GetCookingTotalCount(theHAPISession.get(), &totalCookCount);
+            HoudiniApi::GetCookingCurrentCount(theHAPISession.get(), &currCookCount);
+            HoudiniApi::GetCookingTotalCount(theHAPISession.get(), &totalCookCount);
         }
         else
         {
@@ -623,7 +624,7 @@ statusCheckLoop(bool wantMainProgressBar)
         }
 
         int statusBufSize = 0;
-        HAPI_GetStatusStringBufLength(
+        HoudiniApi::GetStatusStringBufLength(
             theHAPISession.get(), HAPI_STATUS_COOK_STATE,
             HAPI_STATUSVERBOSITY_ERRORS, &statusBufSize);
 
@@ -632,7 +633,7 @@ statusCheckLoop(bool wantMainProgressBar)
         if (statusBufSize > 0)
         {
             statusBuf = new char[statusBufSize];
-            HAPI_GetStatusString(theHAPISession.get(), HAPI_STATUS_COOK_STATE,
+            HoudiniApi::GetStatusString(theHAPISession.get(), HAPI_STATUS_COOK_STATE,
                                  statusBuf, statusBufSize);
         }
 
@@ -645,7 +646,7 @@ statusCheckLoop(bool wantMainProgressBar)
 
         if (progressBar->isInterrupted())
         {
-            HAPI_Interrupt(theHAPISession.get());
+            HoudiniApi::Interrupt(theHAPISession.get());
         }
 
 #ifdef _WIN32
@@ -1077,4 +1078,106 @@ resizeArrayDataHandle(MArrayDataHandle &arrayDataHandle, const int newSize)
 
     arrayDataHandle.set(arrayDataBuilder);
 }
+
+std::string
+concatPath(const std::string &path, const std::string &file)
+{
+#if defined(_WIN32)
+    const std::string sep = "\\";
+#else
+    const std::string sep = "/";
+#endif
+
+    return path + sep + file;
 }
+
+bool
+fileExistsInPath(const std::string &path, const std::string &file)
+{
+    std::string checkpath = concatPath(path, file);
+
+    FILE *fd = fopen(checkpath.c_str(), "r");
+
+    if (fd)
+    {
+        fclose(fd);
+        return true;
+    }
+
+    return false;
+}
+
+bool
+getHarsPath(std::string &harsPath)
+{
+    char *hHarsLocation = getenv("HOUDINI_HARS_LOCATION");
+    const MString path = MGlobal::executeCommandStringResult("getenv PATH;");
+    const MString hfsPath = MGlobal::executeCommandStringResult("houdiniEngine_getHfsPath(false)");
+
+#if defined(_WIN32)
+    const char *harsName = "HARS.exe";
+    const char delim = ';';
+#else
+    const char *harsName = "HARS";
+    const char delim = ':';
+#endif
+
+    if (hHarsLocation)
+    {
+        if (fileExistsInPath(hHarsLocation, harsName))
+        {
+            harsPath = concatPath(hHarsLocation, harsName);
+            return true;
+        }
+    }
+
+    if (path.length() > 0)
+    {
+        MStringArray tokens;
+        path.split(delim, tokens);
+
+        for (size_t i = 0; i < tokens.length(); i++)
+        {
+            if (fileExistsInPath(tokens[i].asChar(), harsName))
+            {
+                harsPath = concatPath(tokens[i].asChar(), harsName);
+                return true;
+            }
+        }
+    }
+
+    if (hfsPath.length() > 0)
+    {
+        std::string binPath = concatPath(hfsPath.asChar(), "bin");
+
+        if (fileExistsInPath(binPath, harsName))
+        {
+            harsPath = concatPath(binPath, harsName);
+            return true;
+        }
+    }
+
+    harsPath = "";
+    return false;
+}
+
+bool
+checkBuildEngineCompatibility()
+{
+    int buildMajor = HAPI_VERSION_HOUDINI_MAJOR;
+    int buildMinor = HAPI_VERSION_HOUDINI_MINOR;
+    int buildBuild = HAPI_VERSION_HOUDINI_BUILD;
+
+    int engineMajor = -1;
+    int engineMinor = -1;
+    int engineBuild = -1;
+
+    if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &engineMajor) == HAPI_RESULT_FAILURE) engineMajor = 0;
+    if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &engineMinor) == HAPI_RESULT_FAILURE) engineMinor = 0;
+    if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &engineBuild) == HAPI_RESULT_FAILURE) engineBuild = 0;
+
+    return (buildMajor == engineMajor) && (buildMinor == engineMinor) && (buildBuild == engineBuild);
+}
+
+}
+

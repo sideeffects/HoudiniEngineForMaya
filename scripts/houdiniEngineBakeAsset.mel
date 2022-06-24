@@ -77,3 +77,4 @@ houdiniEngine_bakeAsset(string $assetNode)
     return 1;
 }
 
+

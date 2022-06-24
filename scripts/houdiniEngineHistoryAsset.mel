@@ -485,3 +485,4 @@ houdiniEngine_loadAndAddAsset(string $assetFile, string $assetName, string $assi
     }
     return $assetNode;
 }
+

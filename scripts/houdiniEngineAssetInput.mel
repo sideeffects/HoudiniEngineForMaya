@@ -727,3 +727,4 @@ houdiniEngine_getAssetInput(string $inputAttr)
 
     return $inputGeometryNodes;
 }
+

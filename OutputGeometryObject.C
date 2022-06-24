@@ -133,17 +133,17 @@ OutputGeometryObject::update()
 {
     HAPI_Result hapiResult;
 
-    hapiResult = HAPI_GetNodeInfo(
+    hapiResult = HoudiniApi::GetNodeInfo(
         Util::theHAPISession.get(), myNodeId, &myNodeInfo);
     CHECK_HAPI(hapiResult);
 
-    hapiResult = HAPI_GetObjectInfo(
+    hapiResult = HoudiniApi::GetObjectInfo(
         Util::theHAPISession.get(), myNodeId, &myObjectInfo);
     CHECK_HAPI(hapiResult);
 
     // Get the SOP nodes
     int geoCount;
-    hapiResult = HAPI_ComposeChildNodeList(
+    hapiResult = HoudiniApi::ComposeChildNodeList(
         Util::theHAPISession.get(), myNodeId, HAPI_NODETYPE_SOP,
         HAPI_NODEFLAGS_DISPLAY, false, &geoCount);
     CHECK_HAPI(hapiResult);
@@ -151,7 +151,7 @@ OutputGeometryObject::update()
     std::vector<HAPI_NodeId> geoNodeIds(geoCount);
     if (geoCount > 0)
     {
-        hapiResult = HAPI_GetComposedChildNodeList(
+        hapiResult = HoudiniApi::GetComposedChildNodeList(
             Util::theHAPISession.get(), myNodeId, &geoNodeIds.front(),
             geoCount);
         CHECK_HAPI(hapiResult);
@@ -185,7 +185,7 @@ OutputGeometryObject::updateTransform(MDataHandle &handle,
     MDataHandle scaleHandle  = handle.child(AssetNode::outputObjectScale);
 
     HAPI_Transform trans;
-    hapiResult = HAPI_GetObjectTransform(
+    hapiResult = HoudiniApi::GetObjectTransform(
         Util::theHAPISession.get(), myNodeId, -1, HAPI_SRT, &trans);
     CHECK_HAPI(hapiResult);
 
@@ -208,3 +208,4 @@ OutputGeometryObject::updateTransform(MDataHandle &handle,
     rotateHandle.set3Double(eulerRotation.x, eulerRotation.y, eulerRotation.z);
     scaleHandle.set3Double(trans.scale[0], trans.scale[1], trans.scale[2]);
 }
+

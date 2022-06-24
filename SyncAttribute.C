@@ -9,7 +9,7 @@
 #include <maya/MPlugArray.h>
 #include <maya/MRampAttribute.h>
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include "Asset.h"
 #include "AssetNode.h"
@@ -122,13 +122,13 @@ static void getParmTags(const HAPI_NodeInfo &myNodeInfo, const HAPI_ParmInfo &pa
     for (int i = 0; i < parm.tagCount; i++)
     {
         HAPI_StringHandle tagNameSH;
-        HAPI_GetParmTagName(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
+        HoudiniApi::GetParmTagName(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
                             i, &tagNameSH);
 
         MString tagName = Util::HAPIString(tagNameSH);
 
         HAPI_StringHandle tagValueSH;
-        HAPI_GetParmTagValue(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
+        HoudiniApi::GetParmTagValue(Util::theHAPISession.get(), myNodeInfo.id, parm.id,
                              tagName.asChar(), &tagValueSH);
 
         MString tagValue = Util::HAPIString(tagValueSH);
@@ -388,7 +388,7 @@ CreateAttrOperation::leaf(const HAPI_ParmInfo &parmInfo)
 static void
 configureStringAttribute(MFnTypedAttribute &tAttr, const HAPI_ParmInfo &parm)
 {
-    if (HAPI_ParmInfo_IsPath(&parm))
+    if (HoudiniApi::ParmInfo_IsPath(&parm))
     {
         tAttr.setUsedAsFilename(true);
 
@@ -572,7 +572,7 @@ CreateAttrOperation::createEnumAttr(const HAPI_ParmInfo &parm)
 
     HAPI_ParmChoiceInfo *choiceInfos =
         new HAPI_ParmChoiceInfo[parm.choiceCount];
-    HAPI_GetParmChoiceLists(Util::theHAPISession.get(), myNodeInfo.id,
+    HoudiniApi::GetParmChoiceLists(Util::theHAPISession.get(), myNodeInfo.id,
                             choiceInfos, parm.choiceIndex, parm.choiceCount);
 
     int enumIndex = 0;
@@ -750,7 +750,7 @@ SyncAttribute::doIt()
     {
         std::vector<HAPI_ParmInfo> parmInfos;
         parmInfos.resize(nodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), nodeInfo.id,
+        HoudiniApi::GetParameters(Util::theHAPISession.get(), nodeInfo.id,
                            &parmInfos[0], 0, parmInfos.size());
 
         // create root attribute
@@ -816,3 +816,4 @@ SyncAttribute::isUndoable() const
 {
     return true;
 }
+

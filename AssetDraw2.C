@@ -1429,3 +1429,4 @@ AssetDraw::uninitializePlugin( MFnPlugin &plugin, MObject obj)
 AssetDrawTraits AssetDraw::theTraits;
 
 #endif
+

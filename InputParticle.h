@@ -3,7 +3,7 @@
 
 #include "Input.h"
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 class InputParticle : public Input
 {
@@ -24,3 +24,4 @@ protected:
 };
 
 #endif
+

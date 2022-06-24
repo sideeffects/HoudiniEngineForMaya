@@ -908,3 +908,4 @@ houdiniEngineCreateUI()
             + " \"" + $recentAssetsMenu + "\"")
         $recentAssetsMenu;
 }
+

@@ -66,7 +66,7 @@ InputTransformNode::InputTransformNode() : myGeometryNodeId(-1)
 {
     Util::PythonInterpreterLock pythonInterpreterLock;
 
-    CHECK_HAPI(HAPI_CreateInputNode(
+    CHECK_HAPI(HoudiniApi::CreateInputNode(
         Util::theHAPISession.get(), &myGeometryNodeId, NULL));
     if (!Util::statusCheckLoop())
     {
@@ -78,7 +78,7 @@ InputTransformNode::~InputTransformNode()
 {
     if (!Util::theHAPISession.get())
         return;
-    CHECK_HAPI(HAPI_DeleteNode(Util::theHAPISession.get(), myGeometryNodeId));
+    CHECK_HAPI(HoudiniApi::DeleteNode(Util::theHAPISession.get(), myGeometryNodeId));
 }
 
 MStatus
@@ -92,13 +92,13 @@ InputTransformNode::compute(const MPlug &plug, MDataBlock &dataBlock)
         const unsigned int pointCount = inputMatrixArrayPlug.numElements();
 
         HAPI_PartInfo partInfo;
-        HAPI_PartInfo_Init(&partInfo);
+        HoudiniApi::PartInfo_Init(&partInfo);
         partInfo.id          = 0;
         partInfo.faceCount   = 0;
         partInfo.vertexCount = 0;
         partInfo.pointCount  = pointCount;
 
-        HAPI_SetPartInfo(
+        HoudiniApi::SetPartInfo(
             Util::theHAPISession.get(), myGeometryNodeId, 0, &partInfo);
 
         std::vector<float> P(pointCount * 3);
@@ -155,7 +155,7 @@ InputTransformNode::compute(const MPlug &plug, MDataBlock &dataBlock)
         CHECK_HAPI(
             hapiSetPointAttribute(myGeometryNodeId, 0, 3, "scale", scale));
 
-        HAPI_CommitGeo(Util::theHAPISession.get(), myGeometryNodeId);
+        HoudiniApi::CommitGeo(Util::theHAPISession.get(), myGeometryNodeId);
 
         MDataHandle outputNodeIdHandle =
             dataBlock.outputValue(InputTransformNode::outputNodeId);
@@ -167,3 +167,4 @@ InputTransformNode::compute(const MPlug &plug, MDataBlock &dataBlock)
 
     return MPxNode::compute(plug, dataBlock);
 }
+

@@ -1,11 +1,12 @@
 #ifndef __hapiutil_h__
 #define __hapiutil_h__
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include "traits.h"
 #include "types.h"
 #include "util.h"
+#include "Platform.h"
 
 template <typename T>
 struct HAPITypeTrait
@@ -102,7 +103,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
                                     int start,
                                     int length)
     {
-        return HAPI_SetAttributeIntData(
+        return HoudiniApi::SetAttributeIntData(
             session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
@@ -115,7 +116,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT>
                                     int start,
                                     int length)
     {
-        return HAPI_GetAttributeIntData(session, nodeId, partId, name, attrInfo,
+        return HoudiniApi::GetAttributeIntData(session, nodeId, partId, name, attrInfo,
                                         -1, dataArray, start, length);
     }
 };
@@ -135,7 +136,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
                                     int start,
                                     int length)
     {
-        return HAPI_SetAttributeInt64Data(
+        return HoudiniApi::SetAttributeInt64Data(
             session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
@@ -148,7 +149,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_INT64>
                                     int start,
                                     int length)
     {
-        return HAPI_GetAttributeInt64Data(session, nodeId, partId, name,
+        return HoudiniApi::GetAttributeInt64Data(session, nodeId, partId, name,
                                           attrInfo, -1, dataArray, start,
                                           length);
     }
@@ -169,7 +170,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
                                     int start,
                                     int length)
     {
-        return HAPI_SetAttributeFloatData(
+        return HoudiniApi::SetAttributeFloatData(
             session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
@@ -182,7 +183,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT>
                                     int start,
                                     int length)
     {
-        return HAPI_GetAttributeFloatData(session, nodeId, partId, name,
+        return HoudiniApi::GetAttributeFloatData(session, nodeId, partId, name,
                                           attrInfo, -1, dataArray, start,
                                           length);
     }
@@ -203,7 +204,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
                                     int start,
                                     int length)
     {
-        return HAPI_SetAttributeFloat64Data(
+        return HoudiniApi::SetAttributeFloat64Data(
             session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 
@@ -216,7 +217,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_FLOAT64>
                                     int start,
                                     int length)
     {
-        return HAPI_GetAttributeFloat64Data(session, nodeId, partId, name,
+        return HoudiniApi::GetAttributeFloat64Data(session, nodeId, partId, name,
                                             attrInfo, -1, dataArray, start,
                                             length);
     }
@@ -237,7 +238,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
                                     int start,
                                     int length)
     {
-        return HAPI_SetAttributeStringData(session, nodeId, partId, name,
+        return HoudiniApi::SetAttributeStringData(session, nodeId, partId, name,
                                            attrInfo, (const char **)dataArray,
                                            start, length);
     }
@@ -251,7 +252,7 @@ struct HAPIAttributeTrait<HAPI_STORAGETYPE_STRING>
                                     int start,
                                     int length)
     {
-        return HAPI_GetAttributeStringData(
+        return HoudiniApi::GetAttributeStringData(
             session, nodeId, partId, name, attrInfo, dataArray, start, length);
     }
 };
@@ -292,7 +293,7 @@ struct HAPISetAttribute
         size_t count = dataArraySize / tupleSize;
 
         HAPI_AttributeInfo attributeInfo;
-        HAPI_AttributeInfo_Init(&attributeInfo);
+        HoudiniApi::AttributeInfo_Init(&attributeInfo);
         attributeInfo.exists    = true;
         attributeInfo.owner     = owner;
         attributeInfo.storage   = storageType;
@@ -308,7 +309,7 @@ struct HAPISetAttribute
             attributeInfo.typeInfo =
                 HAPI_AttributeTypeInfo::HAPI_ATTRIBUTE_TYPE_COLOR;
 
-        hapiResult = HAPI_AddAttribute(Util::theHAPISession.get(), nodeId,
+        hapiResult = HoudiniApi::AddAttribute(Util::theHAPISession.get(), nodeId,
                                        partId, attributeName, &attributeInfo);
         CHECK_HAPI_AND_RETURN(hapiResult, hapiResult);
 
@@ -454,7 +455,7 @@ struct HAPIGetAttribute
     {
         HAPI_Result hapiResult;
 
-        hapiResult = HAPI_GetAttributeInfo(Util::theHAPISession.get(), nodeId,
+        hapiResult = HoudiniApi::GetAttributeInfo(Util::theHAPISession.get(), nodeId,
                                            partId, attributeName, owner,
                                            &attrInfo);
         if (HAPI_FAIL(hapiResult))
@@ -710,3 +711,4 @@ hapiGetAnyAttribute(HAPI_NodeId nodeId,
 }
 
 #endif
+

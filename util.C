@@ -1112,6 +1112,8 @@ getHarsPath(std::string &harsPath)
 {
     char *hHarsLocation = getenv("HOUDINI_HARS_LOCATION");
     const MString path = MGlobal::executeCommandStringResult("getenv PATH;");
+
+    MGlobal::executeCommand("source \"houdiniEngineUtils.mel\";");
     const MString hfsPath = MGlobal::executeCommandStringResult("houdiniEngine_getHfsPath(false)");
 
 #if defined(_WIN32)

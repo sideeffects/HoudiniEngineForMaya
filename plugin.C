@@ -14,11 +14,12 @@
 #include "InputGeometryNode.h"
 #include "InputMergeNode.h"
 #include "InputTransformNode.h"
+#include "OptionVars.h"
+#include "Platform.h"
 #include "util.h"
 
-#include <HAPI/HAPI_Version.h>
-
 #include <cstdlib>
+#include <fstream>
 #ifndef _WIN32
 #include <unistd.h>
 #else
@@ -32,10 +33,12 @@ printHAPIVersion()
     char version[32];
     MString msg;
 
+    assert(Util::isHapilLoaded);
+
     {
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &i);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &j);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &k);
+        HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MAJOR, &i);
+        HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_MINOR, &j);
+        HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &k);
 
         msg = "Houdini version: ";
         sprintf(version, "%d.%d.%d", i, j, k);
@@ -54,9 +57,9 @@ printHAPIVersion()
     }
 
     {
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &i);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &j);
-        HAPI_GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &k);
+        HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MAJOR, &i);
+        HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_MINOR, &j);
+        HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_ENGINE_API, &k);
 
         msg = "Houdini Engine version: ";
         sprintf(version, "%d.%d (API: %d)", i, j, k);
@@ -76,105 +79,6 @@ printHAPIVersion()
 
         MGlobal::displayInfo(msg);
     }
-}
-
-namespace
-{
-template <typename VAL, class CHILD>
-class OptionVarBase
-{
-public:
-    OptionVarBase(const char *name, const VAL &defaultValue)
-        : myDefaultValue(defaultValue)
-    {
-        myName = "houdiniEngine";
-        myName += name;
-
-        bool exists = false;
-        static_cast<const CHILD &>(*this).getImpl(exists);
-
-        if (!exists)
-        {
-            MGlobal::setOptionVarValue(myName.c_str(), myDefaultValue);
-        }
-    }
-
-    VAL get() const
-    {
-        bool exists     = false;
-        const VAL value = static_cast<const CHILD &>(*this).getImpl(exists);
-        return exists ? value : myDefaultValue;
-    }
-
-protected:
-    std::string myName;
-    const VAL myDefaultValue;
-
-private:
-    OptionVarBase &operator=(const OptionVarBase &);
-};
-
-class IntOptionVar : public OptionVarBase<int, IntOptionVar>
-{
-public:
-    typedef OptionVarBase<int, IntOptionVar> Base;
-
-    IntOptionVar(const char *name, int defaultValue) : Base(name, defaultValue)
-    {
-    }
-
-    int getImpl(bool &exists) const
-    {
-        return MGlobal::optionVarIntValue(myName.c_str(), &exists);
-    }
-};
-
-class StringOptionVar : public OptionVarBase<MString, StringOptionVar>
-{
-public:
-    typedef OptionVarBase<MString, StringOptionVar> Base;
-
-    StringOptionVar(const char *name, const char *defaultValue)
-        : Base(name, defaultValue)
-    {
-    }
-
-    MString getImpl(bool &exists) const
-    {
-        return MGlobal::optionVarStringValue(myName.c_str(), &exists);
-    }
-};
-
-struct OptionVars
-{
-    OptionVars()
-        : asyncMode("AsynchronousMode", 1),
-          sessionType("SessionType", 2), // named pipe
-          thriftServer("ThriftServer", "localhost"),
-          thriftPort("ThriftPort", 9090),
-          sessionPipeCustom("SessionPipeCustom", 0),
-          thriftPipe("ThriftPipe", "hapi"),
-          unsetLLP("UnsetLLP", 1),
-          unsetPP("UnsetPP", 0),
-          viewProduct("ViewProduct", "Houdini Core"),
-          timeout("Timeout", 10 * 1000)
-    {
-    }
-
-    IntOptionVar asyncMode;
-    IntOptionVar sessionType;
-    StringOptionVar thriftServer;
-    IntOptionVar thriftPort;
-    IntOptionVar sessionPipeCustom;
-    StringOptionVar thriftPipe;
-    IntOptionVar unsetLLP;
-    IntOptionVar unsetPP;
-    StringOptionVar viewProduct;
-    IntOptionVar timeout;
-
-private:
-    OptionVars &operator=(const OptionVars &);
-};
 }
 
 namespace SessionType
@@ -216,14 +120,14 @@ initializeSession(const OptionVars &optionVars)
     }
 
     Util::theHAPISession.reset(new Util::HAPISession);
-    HAPI_Result sessionResult = HAPI_ClearConnectionError();
+    HAPI_Result sessionResult = HoudiniApi::ClearConnectionError();
 
     switch (actualSessionType)
     {
     case SessionType::ST_INPROCESS:
         MGlobal::displayInfo("Creating an in-process Houdini Engine session.");
 
-        sessionResult = HAPI_CreateInProcessSession(Util::theHAPISession.get());
+        sessionResult = HoudiniApi::CreateInProcessSession(Util::theHAPISession.get());
         break;
 
     case SessionType::ST_THRIFT_SOCKET:
@@ -238,7 +142,7 @@ initializeSession(const OptionVars &optionVars)
 
         msgHostPort = hostName + ":" + port;
 
-        sessionResult = HAPI_CreateThriftSocketSession(
+        sessionResult = HoudiniApi::CreateThriftSocketSession(
             Util::theHAPISession.get(), hostName.asChar(), port);
 
         if (!HAPI_FAIL(sessionResult))
@@ -252,12 +156,12 @@ initializeSession(const OptionVars &optionVars)
         {
             int errorLength = 0;
 
-            HAPI_GetConnectionErrorLength(&errorLength);
+            HoudiniApi::GetConnectionErrorLength(&errorLength);
 
             if (errorLength > 0)
             {
                 char *msg = new char[errorLength];
-                HAPI_GetConnectionError(msg, errorLength, true);
+                HoudiniApi::GetConnectionError(msg, errorLength, true);
                 MGlobal::displayError(msg);
                 delete[] msg;
             }
@@ -335,8 +239,8 @@ initializeSession(const OptionVars &optionVars)
             }
 
             HAPI_ProcessId processId;
-            sessionResult = HAPI_StartThriftNamedPipeServer(
-                &serverOptions, pipeName.asChar(), &processId);
+            sessionResult = HoudiniApi::StartThriftNamedPipeServer(
+                &serverOptions, pipeName.asChar(), &processId, nullptr);
 
 #ifndef _WIN32
             if (llpSave)
@@ -366,12 +270,12 @@ initializeSession(const OptionVars &optionVars)
             {
                 int errorLength = 0;
 
-                HAPI_GetConnectionErrorLength(&errorLength);
+                HoudiniApi::GetConnectionErrorLength(&errorLength);
 
                 if (errorLength > 0)
                 {
                     char *msg = new char[errorLength];
-                    HAPI_GetConnectionError(msg, errorLength, true);
+                    HoudiniApi::GetConnectionError(msg, errorLength, true);
                     MGlobal::displayError(msg);
                     delete[] msg;
                 }
@@ -398,7 +302,7 @@ initializeSession(const OptionVars &optionVars)
             msgPipe = pipeName;
         }
 
-        sessionResult = HAPI_CreateThriftNamedPipeSession(
+        sessionResult = HoudiniApi::CreateThriftNamedPipeSession(
             Util::theHAPISession.get(), pipeName.asChar());
 
         if (!HAPI_FAIL(sessionResult))
@@ -412,12 +316,12 @@ initializeSession(const OptionVars &optionVars)
         {
             int errorLength = 0;
 
-            HAPI_GetConnectionErrorLength(&errorLength);
+            HoudiniApi::GetConnectionErrorLength(&errorLength);
 
             if (errorLength > 0)
             {
                 char *msg = new char[errorLength];
-                HAPI_GetConnectionError(msg, errorLength, true);
+                HoudiniApi::GetConnectionError(msg, errorLength, true);
                 MGlobal::displayError(msg);
                 delete[] msg;
             }
@@ -448,7 +352,7 @@ initializeSession(const OptionVars &optionVars)
 HAPI_Result
 initializeHAPI(const OptionVars &optionVars)
 {
-    if (HAPI_IsInitialized(Util::theHAPISession.get()) == HAPI_RESULT_SUCCESS)
+    if (HoudiniApi::IsInitialized(Util::theHAPISession.get()) == HAPI_RESULT_SUCCESS)
     {
         MGlobal::displayInfo(
             "Houdini Engine is already initialized. Skipping initialization.");
@@ -459,24 +363,20 @@ initializeHAPI(const OptionVars &optionVars)
     const char *otl_dir = getenv("HAPI_OTL_PATH");
     const char *dso_dir = getenv("HAPI_DSO_PATH");
 
-    HAPI_CookOptions cook_options        = HAPI_CookOptions_Create();
+    HAPI_CookOptions cook_options        = HoudiniApi::CookOptions_Create();
     cook_options.maxVerticesPerPrimitive = -1;
     cook_options.refineCurveToLinear     = false;
 
     bool use_cooking_thread = optionVars.asyncMode.get() == 1;
 
-    HAPI_Result hstat = HAPI_Initialize(Util::theHAPISession.get(),
+    HAPI_Result hstat = HoudiniApi::Initialize(Util::theHAPISession.get(),
                                         &cook_options, use_cooking_thread, -1,
                                         NULL, otl_dir, dso_dir, NULL, NULL);
     if (HAPI_FAIL(hstat))
-    {
-        MGlobal::displayInfo("Houdini Engine failed to initialize.");
-
         return hstat;
-    }
 
     // Set the client name.
-    HAPI_SetServerEnvString(
+    HoudiniApi::SetServerEnvString(
         Util::theHAPISession.get(), HAPI_ENV_CLIENT_NAME, "maya");
 
     MGlobal::displayInfo("Houdini Engine initialized successfully.");
@@ -494,9 +394,9 @@ cleanupHAPI()
 
     // If HAPI is not initialized, then don't try to do cleanup. This could be
     // because HAPI failed to initialize, or HARS disconnected.
-    CHECK_HAPI_AND_RETURN(HAPI_IsInitialized(Util::theHAPISession.get()), true);
+    CHECK_HAPI_AND_RETURN(HoudiniApi::IsInitialized(Util::theHAPISession.get()), true);
 
-    CHECK_HAPI_AND_RETURN(HAPI_Cleanup(Util::theHAPISession.get()), false);
+    CHECK_HAPI_AND_RETURN(HoudiniApi::Cleanup(Util::theHAPISession.get()), false);
 
     return true;
 }
@@ -511,9 +411,7 @@ cleanupSession()
 
     // If session is not initialize, then don't try to close it.
     CHECK_HAPI_AND_RETURN(
-        HAPI_IsSessionValid(Util::theHAPISession.get()), true);
-
-    CHECK_HAPI_AND_RETURN(HAPI_CloseSession(Util::theHAPISession.get()), false);
+        HoudiniApi::IsSessionValid(Util::theHAPISession.get()), true);
 
     // null out the session when closed, it will be reset if reinitialized
     // anyway
@@ -544,7 +442,7 @@ updateTimelineCallback(void *clientData)
     timelineOptions.endTime =
         (MAnimControl::animationEndTime() - oneUnitTime).as(MTime::kSeconds);
 
-    HAPI_SetTimelineOptions(Util::theHAPISession.get(), &timelineOptions);
+    HoudiniApi::SetTimelineOptions(Util::theHAPISession.get(), &timelineOptions);
 }
 
 MCallbackIdArray messageCallbacks;
@@ -599,18 +497,27 @@ cleanupMessageCallbacks()
     CHECK_MSTATUS(status);
 }
 
+bool hapilLocationIsValid(MString &hapilLocation)
+{
+    bool valid = false;
+
+    // check if the library exists
+    FILE *fdHapil = fopen(hapilLocation.asChar(), "r");
+
+    if (fdHapil)
+    {
+        valid = true;
+        fclose(fdHapil);
+    }
+
+    return valid;
+}
+
 PLUGIN_EXPORT
 MStatus
 initializePlugin(MObject obj)
 {
     OptionVars optionVars;
-
-    initializeSession(optionVars);
-
-    if (HAPI_FAIL(initializeHAPI(optionVars)))
-        return MStatus::kFailure;
-    
-    printHAPIVersion();
 
     char engine_version[32];
     sprintf(engine_version, "%d.%d (API: %d)",
@@ -620,9 +527,128 @@ initializePlugin(MObject obj)
     MStatus status;
     MFnPlugin plugin(obj, "Side Effects", engine_version, "Any");
 
+    initializeMessageCallbacks();
+
+    // update the timeline option for the first time
+    updateTimelineCallback(NULL);
+
+    status = plugin.registerCommand(EngineCommand::commandName,
+                                    EngineCommand::creator,
+                                    EngineCommand::newSyntax);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    status = plugin.registerCommand(AssetCommand::commandName,
+                                    AssetCommand::creator,
+                                    AssetCommand::newSyntax);
+    CHECK_MSTATUS_AND_RETURN_IT(status); 
+
     status = plugin.registerUI(
         "houdiniEngineCreateUI", "houdiniEngineDeleteUI");
     CHECK_MSTATUS_AND_RETURN_IT(status);
+
+    MString hapilLocation = optionVars.hapilLocation.get();
+
+    bool hapilValid = false;
+
+    if (hapilLocation.length() > 0)
+    {
+        hapilValid = hapilLocationIsValid(hapilLocation);
+    }
+    else
+    {
+        MGlobal::executeCommand("source \"houdiniEngineUtils.mel\";");
+        MString hfsPath = MGlobal::executeCommandStringResult("houdiniEngine_getHfsPath(false)");
+        MString hapilPath = "";
+
+        if (hfsPath.length() > 0)
+        {
+            optionVars.hfsLocation.set(hfsPath);
+
+            hapilPath = MGlobal::executeCommandStringResult("houdiniEngine_getHapilPath(false, houdiniEngine_getHfsPath(false))");
+
+            if (hapilPath.length() > 0)
+            {
+                hapilValid = hapilLocationIsValid(hapilPath);
+
+                if (hapilValid)
+                {
+                    optionVars.hapilLocation.set(hapilPath);
+                    hapilLocation = hapilPath;
+                }
+            }
+        }
+    }
+
+    if (hapilValid)
+    {
+        void *hapilHandle = obtainHAPILHandle(hapilLocation.asChar());
+        
+        if (!hapilHandle)
+        {
+            MGlobal::displayInfo("Could not find libHAPIL.");
+            return MStatus::kSuccess;
+        }
+
+        HoudiniApi::InitializeHAPI(hapilHandle);
+
+        Util::isHapilLoaded = true;
+    }
+    else
+    {
+        MGlobal::executeCommand(
+            R"(confirmDialog -title "Houdini Engine"
+                -button "OK"
+                -icon "critical"
+                -message ("The Houdini Engine for Maya plugin could not be initialized.\n\n" +
+                          "The path to libHAPIL is invalid. Please double-check the value " +
+                          "in Houdini Engine>Preferences...");)");
+
+        MGlobal::executeCommand("houdiniEnginePreferences();", false);
+
+        // return success here so that the user can modify the preferences
+        return MStatus::kSuccess;
+    }
+
+    std::string harsPath = "";
+    bool harsFound = Util::getHarsPath(harsPath);
+
+    if (!harsFound)
+    {
+        MGlobal::executeCommand(
+            R"(confirmDialog -title "Houdini Engine"
+                -button "OK"
+                -icon "critical"
+                -message ("The Houdini Engine for Maya plugin could not be initialized.\n\n" +
+                        "The Houdini Engine Server (HARS) could not be found. The path " +
+                        "to HARS must either be added to your PATH environment variable " +
+                        "or specified in the HOUDINI_HARS_LOCATION environment variable.");)");
+
+        MGlobal::executeCommand("houdiniEnginePreferences();", false);
+
+        return MStatus::kSuccess;
+    }
+
+    if (!Util::checkBuildEngineCompatibility())
+    {
+        MGlobal::executeCommand(
+            R"(confirmDialog -title "Houdini Engine"
+                -button "OK"
+                -icon "critical"
+                -message ("The Houdini Engine for Maya plugin could not be initialized.\n\n" +
+                        "The version of Houdini that this plug-in was built for does " +
+                        "not match the version of Houdini that the plug-in is instructed " +
+                        "to use. In order to continue, you must edit the HFS and " +
+                        "libHAPIL paths to point to a compatible version.");)");
+
+        MGlobal::executeCommand("houdiniEnginePreferences();", false);
+
+        return MStatus::kSuccess;
+    }
+
+    initializeSession(optionVars);
+
+    if (HAPI_FAIL(initializeHAPI(optionVars)))
+        return MStatus::kSuccess;
 
     status = plugin.registerTransform(
         AssetNode::typeName, AssetNode::typeId, AssetNode::creator,
@@ -656,20 +682,7 @@ initializePlugin(MObject obj)
         FluidGridConvert::creator, FluidGridConvert::initialize);
 #endif
 
-    status = plugin.registerCommand(EngineCommand::commandName,
-                                    EngineCommand::creator,
-                                    EngineCommand::newSyntax);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    status = plugin.registerCommand(AssetCommand::commandName,
-                                    AssetCommand::creator,
-                                    AssetCommand::newSyntax);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
-
-    initializeMessageCallbacks();
-
-    // update the timeline option for the first time
-    updateTimelineCallback(NULL);
+    printHAPIVersion();
 
     return status;
 }
@@ -678,46 +691,70 @@ PLUGIN_EXPORT
 MStatus
 uninitializePlugin(MObject obj)
 {
-    MStatus status;
+    MStatus status = MStatus::kSuccess;
     MFnPlugin plugin(obj);
 
     cleanupMessageCallbacks();
 
-    status = plugin.deregisterNode(AssetNode::typeId);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if (plugin.isNodeRegistered(AssetNode::typeName))
+    {
+        status = plugin.deregisterNode(AssetNode::typeId);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
-    status = plugin.deregisterNode(InputGeometryNode::typeId);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if (plugin.isNodeRegistered(InputGeometryNode::typeName))
+    {
+        status = plugin.deregisterNode(InputGeometryNode::typeId);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
-    status = plugin.deregisterNode(InputCurveNode::typeId);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if (plugin.isNodeRegistered(InputCurveNode::typeName))
+    {
+        status = plugin.deregisterNode(InputCurveNode::typeId);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
-    status = plugin.deregisterNode(InputTransformNode::typeId);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if (plugin.isNodeRegistered(InputTransformNode::typeName))
+    {
+        status = plugin.deregisterNode(InputTransformNode::typeId);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
-    status = plugin.deregisterNode(InputMergeNode::typeId);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if (plugin.isNodeRegistered(InputMergeNode::typeName))
+    {
+        status = plugin.deregisterNode(InputMergeNode::typeId);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 
 #if MAYA_API_VERSION >= 201400
-    status = plugin.deregisterNode(FluidGridConvert::typeId);
-    CHECK_MSTATUS_AND_RETURN_IT(status);
+    if (plugin.isNodeRegistered(FluidGridConvert::typeName))
+    {
+        status = plugin.deregisterNode(FluidGridConvert::typeId);
+        CHECK_MSTATUS_AND_RETURN_IT(status);
+    }
 #endif
 
     status = plugin.deregisterCommand(EngineCommand::commandName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    status = plugin.deregisterCommand("houdiniAsset");
+    status = plugin.deregisterCommand(AssetCommand::commandName);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    if (cleanupHAPI() && cleanupSession())
+    if (Util::theHAPISession.get())
     {
-        MGlobal::displayInfo("Houdini Engine cleaned up successfully.");
+        if (cleanupHAPI() && cleanupSession())
+        {
+            MGlobal::displayInfo("Houdini Engine cleaned up successfully.");
+        }
+        else
+        {
+            MGlobal::displayInfo("Houdini Engine failed to clean up.");
+            return MStatus::kFailure;
+        }
     }
     else
-    {
-        MGlobal::displayInfo("Houdini Engine failed to clean up.");
-        return MStatus::kFailure;
-    }
+        MGlobal::displayInfo("Houdini Engine cleaned up successfully.");
 
     return status;
 }
+

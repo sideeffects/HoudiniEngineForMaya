@@ -623,6 +623,8 @@ initializePlugin(MObject obj)
                         "to HARS must either be added to your PATH environment variable " +
                         "or specified in the HOUDINI_HARS_LOCATION environment variable.");)");
 
+        MGlobal::executeCommand("houdiniEnginePreferences();", false);
+
         return MStatus::kSuccess;
     }
 

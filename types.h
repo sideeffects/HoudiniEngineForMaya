@@ -2,6 +2,7 @@
 #define __types_h__
 
 #include <cassert>
+#include <iterator>
 
 #include "traits.h"
 
@@ -59,9 +60,15 @@ rawArray(T *data, size_t size)
 }
 
 template <typename ArrayType>
-class ArrayIterator : public std::iterator<std::forward_iterator_tag, ArrayType>
+class ArrayIterator
 {
 public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = ArrayType;
+    using difference_type = std::ptrdiff_t;
+    using pointer = value_type*;
+    using reference = value_type&;
+
     typedef ARRAYTRAIT(ArrayType) Trait;
     typedef ELEMENTTYPE(ArrayType) ElementType;
 
@@ -191,9 +198,14 @@ template <typename ArrayType,
           size_t NumComponents,
           size_t Stride>
 class ComponentIterator
-    : public std::iterator<std::forward_iterator_tag, ArrayType>
 {
 public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = ArrayType;
+    using difference_type = std::ptrdiff_t;
+    using pointer = value_type*;
+    using reference = value_type&;
+
     typedef ComponentIterator<ArrayType, StartComponent, NumComponents, Stride>
         Type;
     typedef ARRAYTRAIT(ArrayType) Trait;
@@ -277,3 +289,4 @@ componentEnd(ArrayType &array)
 }
 
 #endif
+

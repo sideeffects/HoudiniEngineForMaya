@@ -21,6 +21,7 @@ NODE_OPTION(updateParmsForEvalMode, bool, true)
 NODE_OPTION(connectGeoForAssetInputs, bool, false)
 NODE_OPTION(bakeOutputTextures, bool, true)
 NODE_OPTION(preserveScale, bool, false)
+NODE_OPTION(alwaysMergeInputGeometry, bool, false)
 
 NODE_OPTION(useInstancerNode, bool, true)
 
@@ -29,3 +30,4 @@ NODE_OPTIONS_END()
 extern AssetNodeOptions::Definition assetNodeOptionsDefinition;
 
 #endif
+

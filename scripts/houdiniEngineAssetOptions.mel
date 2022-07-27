@@ -35,3 +35,23 @@ houdiniEngine_preserveHoudiniScaleChanged(string $assetNode)
     for ($upstreamInputCurve in $upstreamInputCurves)
         setAttr ($upstreamInputCurve + ".preserveScale") $preserveScale;
 }
+
+global proc
+houdiniEngine_alwaysMergeInputGeometryChanged(string $assetNode)
+{
+    string $parmAttrNames[] = `listAttr -st "*__node" ($assetNode + ".houdiniAssetParm")`;
+
+    for ($parmAttrName in $parmAttrNames)
+    {
+        string $attr = $assetNode + ".houdiniAssetParm." + $parmAttrName;
+        houdiniEngine_setAssetInput($attr, houdiniEngine_getAssetInput($attr));
+    }
+
+    int $inputMultiIndices[] = `getAttr -multiIndices ($assetNode + ".input")`;
+
+    for ($inputMultiIndex in $inputMultiIndices)
+    {
+        string $attr = $assetNode + ".input[" + $inputMultiIndex + "].inputNodeId";
+        houdiniEngine_setAssetInput($attr, houdiniEngine_getAssetInput($attr));
+    }
+}

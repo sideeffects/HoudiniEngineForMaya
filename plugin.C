@@ -546,35 +546,27 @@ initializePlugin(MObject obj)
         "houdiniEngineCreateUI", "houdiniEngineDeleteUI");
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-    MString hapilLocation = optionVars.hapilLocation.get();
+    MString hapilLocation = "";
 
     bool hapilValid = false;
 
-    if (hapilLocation.length() > 0)
-    {
-        hapilValid = hapilLocationIsValid(hapilLocation);
-    }
-    else
-    {
-        MGlobal::executeCommand("source \"houdiniEngineUtils.mel\";");
-        MString hfsPath = MGlobal::executeCommandStringResult("houdiniEngine_getHfsPath(false)");
-        MString hapilPath = "";
+    MGlobal::executeCommand("source \"houdiniEngineUtils.mel\";");
+    MString hfsPath = MGlobal::executeCommandStringResult("houdiniEngine_getHfsPath(false)");
 
-        if (hfsPath.length() > 0)
+    if (hfsPath.length() > 0)
+    {
+        optionVars.hfsLocation.set(hfsPath);
+
+        MString hapilPath = MGlobal::executeCommandStringResult("houdiniEngine_getHapilPath(false, houdiniEngine_getHfsPath(false))");
+
+        if (hapilPath.length() > 0)
         {
-            optionVars.hfsLocation.set(hfsPath);
+            hapilValid = hapilLocationIsValid(hapilPath);
 
-            hapilPath = MGlobal::executeCommandStringResult("houdiniEngine_getHapilPath(false, houdiniEngine_getHfsPath(false))");
-
-            if (hapilPath.length() > 0)
+            if (hapilValid)
             {
-                hapilValid = hapilLocationIsValid(hapilPath);
-
-                if (hapilValid)
-                {
-                    optionVars.hapilLocation.set(hapilPath);
-                    hapilLocation = hapilPath;
-                }
+                optionVars.hapilLocation.set(hapilPath);
+                hapilLocation = hapilPath;
             }
         }
     }

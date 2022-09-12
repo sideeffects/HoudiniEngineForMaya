@@ -2171,6 +2171,7 @@ OutputGeometryPart::computeExtraAttributes(
             if (isAttributeUsed(attributeName.asChar()) ||
                 Util::startsWith(attributeName, "__"))
             {
+                read_iter = next_null + 1;
                 continue;
             }
 
@@ -2207,6 +2208,7 @@ OutputGeometryPart::computeExtraAttributes(
             if (isAttributeUsed(attributeName.asChar()) ||
                 Util::startsWith(attributeName, "__"))
             {
+                read_iter = next_null + 1;
                 continue;
             }
 

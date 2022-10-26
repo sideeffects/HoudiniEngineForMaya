@@ -226,6 +226,9 @@ getHfsLocationFromPlugin()
     {
         string $path = "";
 
+        if (`about -linux` || `about -macOS`)
+            $path = "/";
+
         for ($j = 0; $j < $i; $j++)
             $path += $tokens[$j] + "/";
 

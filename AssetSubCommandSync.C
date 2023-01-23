@@ -1,3 +1,7 @@
+#if defined(_MSC_VER)
+    __pragma(warning(disable: 4996))
+#endif
+
 #include "AssetSubCommandSync.h"
 
 #include <maya/MGlobal.h>
@@ -338,3 +342,4 @@ AssetSubCommandSync::isUndoable() const
 {
     return true;
 }
+

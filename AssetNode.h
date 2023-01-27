@@ -1,7 +1,16 @@
 #ifndef __AssetNode_h__
 #define __AssetNode_h__
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4996)  // Disable errorneous "MPxTransform should not manage built-in attribute xxx"
+#endif
+
 #include <maya/MPxTransform.h>
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
 
 #include <maya/MMessage.h> 
 #include <maya/MTypeId.h>

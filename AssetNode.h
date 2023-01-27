@@ -1,7 +1,16 @@
 #ifndef __AssetNode_h__
 #define __AssetNode_h__
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4996)  // Disable errorneous "MPxTransform should not manage built-in attribute xxx"
+#endif
+
 #include <maya/MPxTransform.h>
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
 
 #include <maya/MMessage.h> 
 #include <maya/MTypeId.h>
@@ -15,7 +24,7 @@ class Asset;
 #define MAYA_PARM_CALLBACK_FUNC_PREFIX      "mpcbf:: "
 #define MAYA_PARM_CALLBACK_FUNC_LANG_PREFIX "mpcbfl:: "
 
-#ifdef WIN32
+#ifdef _WIN32
 // Workaround the deprecation warning for MPxNode::internalArrayCount()
 #pragma warning(push)
 #pragma warning(disable : 4266)
@@ -272,8 +281,9 @@ public:
     static MObject outputMaterialAlphaColor;
     static MObject outputMaterialTexturePath;
 };
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning(pop)
 #endif
 
 #endif
+

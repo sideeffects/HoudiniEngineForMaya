@@ -103,9 +103,9 @@ houdiniEngine_deleteHistory(string $node)
     // unparent children of asset (history asset should not have any)
     string $children[] = `listRelatives -c -f $assetNode`;
     for($child in $children) {
-        string $allDescendents[] = `listRelatives -ad -f $child`;
+        string $allDescendants[] = `listRelatives -ad -f $child`;
         int $hasShape = 0;
-        for($desc in $allDescendents) {
+        for($desc in $allDescendants) {
             if(`objectType -isAType "shape" $desc`) {
                 delete -ch $desc;
                 $hasShape = 1;
@@ -138,4 +138,5 @@ houdiniEngine_deleteHistory(string $node)
 
     return 0;
 }
+
 

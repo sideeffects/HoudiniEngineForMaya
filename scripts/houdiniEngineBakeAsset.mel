@@ -13,9 +13,9 @@ houdiniEngine_bakeAsset(string $assetNode)
     // delete construction history on mesh shapes: which doesn't delete plugin history
     // but will deal with sets and groups (i.e. complex material assignement)
     for($child in $children) {
-        string $allDescendents[] = `listRelatives -ad -f $child`;
+        string $allDescendants[] = `listRelatives -ad -f $child`;
         int $hasShape = 0;
-        for($desc in $allDescendents) {
+        for($desc in $allDescendants) {
             if(`objectType -isAType "shape" $desc`) {
                 delete -ch $desc;
                 $hasShape = 1;
@@ -76,4 +76,5 @@ houdiniEngine_bakeAsset(string $assetNode)
 
     return 1;
 }
+
 

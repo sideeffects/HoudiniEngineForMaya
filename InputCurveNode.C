@@ -67,7 +67,7 @@ InputCurveNode::~InputCurveNode()
         return;
     if (myNodeId > 0)
     {
-        CHECK_HAPI(HAPI_DeleteNode(Util::theHAPISession.get(), myNodeId));
+        CHECK_HAPI(HoudiniApi::DeleteNode(Util::theHAPISession.get(), myNodeId));
     }
 }
 
@@ -86,12 +86,12 @@ InputCurveNode::compute(const MPlug &plug, MDataBlock &data)
         Util::PythonInterpreterLock pythonInterpreterLock;
 
         CHECK_HAPI(
-            HAPI_CreateInputNode(Util::theHAPISession.get(), &myNodeId, NULL));
+            HoudiniApi::CreateInputNode(Util::theHAPISession.get(), &myNodeId, NULL));
 
         if (!Util::statusCheckLoop())
         {
             DISPLAY_ERROR(
-                MString("Unexpected error when creating input asset."));
+                MString("Unexpected error when creating input curve node."));
         }
 
         // Meta data
@@ -112,7 +112,7 @@ InputCurveNode::compute(const MPlug &plug, MDataBlock &data)
         return MStatus::kSuccess;
     }
 
-    HAPI_CurveInfo curveInfo = HAPI_CurveInfo_Create();
+    HAPI_CurveInfo curveInfo = HoudiniApi::CurveInfo_Create();
     curveInfo.curveType      = HAPI_CURVETYPE_NURBS;
     curveInfo.isRational     = false;
 
@@ -248,59 +248,60 @@ InputCurveNode::compute(const MPlug &plug, MDataBlock &data)
 
     curveInfo.hasKnots = curveInfo.knotCount > 0;
 
-    HAPI_PartInfo partInfo = HAPI_PartInfo_Create();
+    HAPI_PartInfo partInfo = HoudiniApi::PartInfo_Create();
     partInfo.vertexCount = partInfo.pointCount = curveInfo.vertexCount;
     partInfo.faceCount                         = curveInfo.curveCount;
     partInfo.type                              = HAPI_PARTTYPE_CURVE;
     CHECK_HAPI(
-        HAPI_SetPartInfo(Util::theHAPISession.get(), myNodeId, 0, &partInfo));
+        HoudiniApi::SetPartInfo(Util::theHAPISession.get(), myNodeId, 0, &partInfo));
 
     CHECK_HAPI(
-        HAPI_SetCurveInfo(Util::theHAPISession.get(), myNodeId, 0, &curveInfo));
-    CHECK_HAPI(HAPI_SetCurveCounts(Util::theHAPISession.get(), myNodeId, 0,
+        HoudiniApi::SetCurveInfo(Util::theHAPISession.get(), myNodeId, 0, &curveInfo));
+    CHECK_HAPI(HoudiniApi::SetCurveCounts(Util::theHAPISession.get(), myNodeId, 0,
                                    &cvCounts.front(), 0, cvCounts.size()));
     if (curveInfo.order == HAPI_CURVE_ORDER_VARYING)
     {
-        CHECK_HAPI(HAPI_SetCurveOrders(Util::theHAPISession.get(), myNodeId, 0,
+        CHECK_HAPI(HoudiniApi::SetCurveOrders(Util::theHAPISession.get(), myNodeId, 0,
                                        &orders.front(), 0, orders.size()));
     }
 
-    HAPI_AttributeInfo attrInfo = HAPI_AttributeInfo_Create();
+    HAPI_AttributeInfo attrInfo = HoudiniApi::AttributeInfo_Create();
     attrInfo.count              = partInfo.pointCount;
     attrInfo.tupleSize          = 3; // 3 floats per CV (x, y, z)
     attrInfo.exists             = true;
     attrInfo.owner              = HAPI_ATTROWNER_POINT;
     attrInfo.storage            = HAPI_STORAGETYPE_FLOAT;
 
-    CHECK_HAPI(HAPI_AddAttribute(
+    CHECK_HAPI(HoudiniApi::AddAttribute(
         Util::theHAPISession.get(), myNodeId, 0, "P", &attrInfo));
 
-    CHECK_HAPI(HAPI_SetAttributeFloatData(Util::theHAPISession.get(), myNodeId,
+    CHECK_HAPI(HoudiniApi::SetAttributeFloatData(Util::theHAPISession.get(), myNodeId,
                                           0, "P", &attrInfo, &cvP.front(), 0,
                                           static_cast<int>(cvP.size() / 3)));
 
     if (curveInfo.isRational)
     {
         attrInfo.tupleSize = 1;
-        CHECK_HAPI(HAPI_AddAttribute(
+        CHECK_HAPI(HoudiniApi::AddAttribute(
             Util::theHAPISession.get(), myNodeId, 0, "Pw", &attrInfo));
 
-        CHECK_HAPI(HAPI_SetAttributeFloatData(
+        CHECK_HAPI(HoudiniApi::SetAttributeFloatData(
             Util::theHAPISession.get(), myNodeId, 0, "Pw", &attrInfo,
             &cvPw.front(), 0, static_cast<int>(cvPw.size())));
     }
 
     if (curveInfo.hasKnots)
     {
-        CHECK_HAPI(HAPI_SetCurveKnots(Util::theHAPISession.get(), myNodeId, 0,
+        CHECK_HAPI(HoudiniApi::SetCurveKnots(Util::theHAPISession.get(), myNodeId, 0,
                                       &knots.front(), 0,
                                       static_cast<int>(knots.size())));
     }
 
     CHECK_HAPI(hapiSetPrimAttribute(myNodeId, 0, 1, "name", names));
 
-    CHECK_HAPI(HAPI_CommitGeo(Util::theHAPISession.get(), myNodeId));
+    CHECK_HAPI(HoudiniApi::CommitGeo(Util::theHAPISession.get(), myNodeId));
 
     data.setClean(plug);
     return MStatus::kSuccess;
 }
+

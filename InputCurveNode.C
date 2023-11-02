@@ -91,7 +91,7 @@ InputCurveNode::compute(const MPlug &plug, MDataBlock &data)
         if (!Util::statusCheckLoop())
         {
             DISPLAY_ERROR(
-                MString("Unexpected error when creating input asset."));
+                MString("Unexpected error when creating input curve node."));
         }
 
         // Meta data

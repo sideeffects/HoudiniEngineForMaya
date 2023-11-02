@@ -20,6 +20,8 @@ public:
 
     static MObject outputNodeId;
 
+    static MObject packBeforeMerge;
+
 public:
     InputMergeNode();
     virtual ~InputMergeNode();

@@ -27,7 +27,7 @@ InputMesh::InputMesh() : Input()
     CHECK_HAPI(HoudiniApi::CreateInputNode(Util::theHAPISession.get(), &nodeId, NULL));
     if (!Util::statusCheckLoop())
     {
-        DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
+        DISPLAY_ERROR(MString("Unexpected error when creating input mesh."));
     }
 
     HAPI_NodeInfo nodeInfo;

@@ -13,6 +13,7 @@ MTypeId InputMergeNode::typeId(MayaTypeID_HoudiniInputMergeNode);
 MObject InputMergeNode::inputTransform;
 MObject InputMergeNode::inputNode;
 MObject InputMergeNode::outputNodeId;
+MObject InputMergeNode::packBeforeMerge;
 
 void *
 InputMergeNode::creator()
@@ -43,9 +44,16 @@ InputMergeNode::initialize()
     nAttr.setStorable(false);
     addAttribute(InputMergeNode::outputNodeId);
 
+    InputMergeNode::packBeforeMerge = nAttr.create(
+        "packBeforeMerge", "packBeforeMerge", MFnNumericData::kBoolean, false);
+    nAttr.setCached(false);
+    nAttr.setStorable(true);
+    addAttribute(InputMergeNode::packBeforeMerge);
+
     attributeAffects(
         InputMergeNode::inputTransform, InputMergeNode::outputNodeId);
     attributeAffects(InputMergeNode::inputNode, InputMergeNode::outputNodeId);
+    attributeAffects(InputMergeNode::packBeforeMerge, InputMergeNode::outputNodeId);
 
     return MStatus::kSuccess;
 }
@@ -60,11 +68,11 @@ InputMergeNode::~InputMergeNode()
     // the merge is a sop, so it will have a parent geo
     // and an objectMerge to remove as well
     HAPI_NodeInfo node_info;
-    HAPI_GetNodeInfo(Util::theHAPISession.get(), myGeometryNodeId, &node_info);
+    HoudiniApi::GetNodeInfo(Util::theHAPISession.get(), myGeometryNodeId, &node_info);
     if (node_info.parentId >= 0)
     {
         CHECK_HAPI(
-            HAPI_DeleteNode(Util::theHAPISession.get(), node_info.parentId));
+            HoudiniApi::DeleteNode(Util::theHAPISession.get(), node_info.parentId));
     }
 }
 
@@ -81,7 +89,7 @@ InputMergeNode::compute(const MPlug &plug, MDataBlock &dataBlock)
 
         if (!frozen)
         {
-            CHECK_HAPI(HAPI_CreateNode(Util::theHAPISession.get(), -1,
+            CHECK_HAPI(HoudiniApi::CreateNode(Util::theHAPISession.get(), -1,
                                        "Sop/merge", NULL, false,
                                        &myGeometryNodeId));
             if (!Util::statusCheckLoop())
@@ -112,8 +120,28 @@ InputMergeNode::compute(const MPlug &plug, MDataBlock &dataBlock)
 
             HAPI_NodeId inputNode = inputNodeHandle.asInt();
 
-            CHECK_HAPI(HAPI_ConnectNodeInput(
+            CHECK_HAPI(HoudiniApi::ConnectNodeInput(
                 Util::theHAPISession.get(), myGeometryNodeId, i, inputNode, 0));
+        }
+
+        // Get the object merges connected to this merge node
+        HAPI_NodeInfo mergeNodeInfo;
+        CHECK_HAPI(HoudiniApi::GetNodeInfo(Util::theHAPISession.get(),
+            myGeometryNodeId, &mergeNodeInfo));
+
+        MPlug packBeforeMergePlug(thisMObject(), InputMergeNode::packBeforeMerge);
+        bool packBeforeMerge = packBeforeMergePlug.asBool();
+
+        for (int i = 0; i < mergeNodeInfo.inputCount; i++)
+        {
+            HAPI_NodeId objectMergeId;
+
+            if (HoudiniApi::QueryNodeInput(Util::theHAPISession.get(), myGeometryNodeId,
+                    i, &objectMergeId) != HAPI_RESULT_SUCCESS || objectMergeId < 0)
+                break;
+
+            CHECK_HAPI(HoudiniApi::SetParmIntValue(Util::theHAPISession.get(),
+                objectMergeId, "pack", 0, (int)packBeforeMerge));
         }
 
         MDataHandle outputNodeIdHandle =
@@ -126,3 +154,4 @@ InputMergeNode::compute(const MPlug &plug, MDataBlock &dataBlock)
 
     return MPxNode::compute(plug, dataBlock);
 }
+

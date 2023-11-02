@@ -39,19 +39,46 @@ houdiniEngine_preserveHoudiniScaleChanged(string $assetNode)
 global proc
 houdiniEngine_alwaysMergeInputGeometryChanged(string $assetNode)
 {
-    string $parmAttrNames[] = `listAttr -st "*__node" ($assetNode + ".houdiniAssetParm")`;
-
-    for ($parmAttrName in $parmAttrNames)
+    // Handle inputs connected to asset parms
+    if (`attributeExists "houdiniAssetParm" $assetNode`)
     {
-        string $attr = $assetNode + ".houdiniAssetParm." + $parmAttrName;
-        houdiniEngine_setAssetInput($attr, houdiniEngine_getAssetInput($attr));
+        string $parmAttrNames[] = `listAttr -st "*__node" ($assetNode + ".houdiniAssetParm")`;
+
+        for ($parmAttrName in $parmAttrNames)
+        {
+            string $attr = $assetNode + ".houdiniAssetParm." + $parmAttrName;
+            houdiniEngine_setAssetInput($attr, houdiniEngine_getAssetInput($attr));
+        }
+
+        int $inputMultiIndices[] = `getAttr -multiIndices ($assetNode + ".input")`;
+
+        for ($inputMultiIndex in $inputMultiIndices)
+        {
+            string $attr = $assetNode + ".input[" + $inputMultiIndex + "].inputNodeId";
+            houdiniEngine_setAssetInput($attr, houdiniEngine_getAssetInput($attr));
+        }
     }
 
-    int $inputMultiIndices[] = `getAttr -multiIndices ($assetNode + ".input")`;
+    // Handle inputs that are connected to asset inputs
+    int $nInputs = `getAttr -s ($assetNode + ".input")`;
 
-    for ($inputMultiIndex in $inputMultiIndices)
+    for ($i = 0; $i < $nInputs; $i++)
     {
-        string $attr = $assetNode + ".input[" + $inputMultiIndex + "].inputNodeId";
-        houdiniEngine_setAssetInput($attr, houdiniEngine_getAssetInput($attr));
+        houdiniEngine_setAssetInput($assetNode + ".input[" + $i + "].inputNodeId",
+            houdiniEngine_getAssetInput($assetNode + ".input[" + $i + "].inputNodeId"));
     }
+
+    // Make sure that the packing setting has been applied properly
+    houdiniEngine_packBeforeMergeChanged($assetNode);
+}
+
+global proc
+houdiniEngine_packBeforeMergeChanged(string $assetNode)
+{
+    string $upstreamInputMerges[] = getUpstreamNodes($assetNode, "houdiniInputMerge");
+
+    int $packBeforeMerge = `getAttr ($assetNode + ".packBeforeMerge")`;
+
+    for ($upstreamInputMerge in $upstreamInputMerges)
+        setAttr ($upstreamInputMerge + ".packBeforeMerge") $packBeforeMerge;
 }

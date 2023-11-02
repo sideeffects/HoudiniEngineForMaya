@@ -67,4 +67,18 @@ houdiniEngine_alwaysMergeInputGeometryChanged(string $assetNode)
         houdiniEngine_setAssetInput($assetNode + ".input[" + $i + "].inputNodeId",
             houdiniEngine_getAssetInput($assetNode + ".input[" + $i + "].inputNodeId"));
     }
+
+    // Make sure that the packing setting has been applied properly
+    houdiniEngine_packBeforeMergeChanged($assetNode);
+}
+
+global proc
+houdiniEngine_packBeforeMergeChanged(string $assetNode)
+{
+    string $upstreamInputMerges[] = getUpstreamNodes($assetNode, "houdiniInputMerge");
+
+    int $packBeforeMerge = `getAttr ($assetNode + ".packBeforeMerge")`;
+
+    for ($upstreamInputMerge in $upstreamInputMerges)
+        setAttr ($upstreamInputMerge + ".packBeforeMerge") $packBeforeMerge;
 }

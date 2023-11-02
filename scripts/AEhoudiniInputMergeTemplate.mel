@@ -2,10 +2,13 @@ global proc AEhoudiniInputMergeTemplate(string $nodeName)
 {
     editorTemplate -beginScrollLayout;
 
-    editorTemplate -beginLayout "Inputs" -collapse true;
+    editorTemplate -beginLayout "Inputs" -collapse false;
         editorTemplate
             -label "Input Nodes"
             -addControl "inputNode";
+        editorTemplate
+            -label "Pack Before Merge"
+            -addControl "packBeforeMerge";
     editorTemplate -endLayout;
 
     editorTemplate -beginLayout "Outputs" -collapse false;
@@ -22,4 +25,5 @@ global proc AEhoudiniInputMergeTemplate(string $nodeName)
 
     editorTemplate -endScrollLayout;
 }
+
 

@@ -109,4 +109,8 @@ Each unit in Houdini is 1 meter, while in Maya each internal unit is interpreted
 
 Always create a merge node when providing geometry to an input. When this is off, when there is a single node connected to a geometry input, it will be passed directly to the input. By enabling this, the input geometry will always be connected through a merge node before being connected to the input.
 
+@subsection Maya_assets_Options_PackBeforeMerge Pack Geometry Before Merging
+
+Turn the input geometry into packed primatives before merging them together.
+
 */

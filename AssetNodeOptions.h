@@ -22,6 +22,7 @@ NODE_OPTION(connectGeoForAssetInputs, bool, false)
 NODE_OPTION(bakeOutputTextures, bool, true)
 NODE_OPTION(preserveScale, bool, false)
 NODE_OPTION(alwaysMergeInputGeometry, bool, false)
+NODE_OPTION(packBeforeMerge, bool, false)
 
 NODE_OPTION(useInstancerNode, bool, true)
 

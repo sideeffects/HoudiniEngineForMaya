@@ -928,9 +928,17 @@ global proc AEhoudiniAssetOptionsNew(string $attr)
                 "Interpret HDA Units as centimeters in Maya."
                 );
 
-        createAttrCheckBox("alwaysMergeInputGeometry", "Always Merge Input Geometry",
-                "Always create a merge node when providing geometry to an input.");
+        createAttrCheckBox(
+                "alwaysMergeInputGeometry",
+                "Always Merge Input Geometry",
+                "Always create a merge node when providing geometry to an input."
+                );
 
+        createAttrCheckBox(
+                "packBeforeMerge",
+                "Pack Geo Before Merge",
+                "Pack geometry before merging them together."
+                );
 
     setParent ..;
 
@@ -1030,6 +1038,9 @@ global proc AEhoudiniAssetOptionsReplace(string $attr)
     replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|alwaysMergeInputGeometry",
             $nodeName + ".alwaysMergeInputGeometry",
             "houdiniEngine_alwaysMergeInputGeometryChanged \"" + $nodeName + "\";");
+    replaceAttrCheckBox($optionsLayoutFull + "|outputLayout|packBeforeMerge",
+            $nodeName + ".packBeforeMerge",
+            "houdiniEngine_packBeforeMergeChanged \"" + $nodeName + "\";");
 }
 
 global proc AEhoudiniAssetConnectNew( string $attrName )
@@ -1158,6 +1169,7 @@ global proc AEhoudiniAssetTemplate(string $nodeName)
         editorTemplate -suppress "preserveScale";
         editorTemplate -suppress "connectGeoForAssetInputs";
         editorTemplate -suppress "alwaysMergeInputGeometry";
+        editorTemplate -suppress "packBeforeMerge";
 
         editorTemplate -suppress "useInstancerNode";
         editorTemplate -suppress "cachedSrcAttr";

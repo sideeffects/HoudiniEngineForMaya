@@ -70,7 +70,7 @@ InputTransformNode::InputTransformNode() : myGeometryNodeId(-1)
         Util::theHAPISession.get(), &myGeometryNodeId, NULL));
     if (!Util::statusCheckLoop())
     {
-        DISPLAY_ERROR(MString("Unexpected error when creating input asset."));
+        DISPLAY_ERROR(MString("Unexpected error when creating input transform node."));
     }
 }
 

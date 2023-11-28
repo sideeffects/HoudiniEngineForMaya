@@ -121,13 +121,14 @@ initializeSession(const OptionVars &optionVars)
 
     Util::theHAPISession.reset(new Util::HAPISession);
     HAPI_Result sessionResult = HoudiniApi::ClearConnectionError();
+    HAPI_SessionInfo sessionInfo = HoudiniApi::SessionInfo_Create();
 
     switch (actualSessionType)
     {
     case SessionType::ST_INPROCESS:
         MGlobal::displayInfo("Creating an in-process Houdini Engine session.");
 
-        sessionResult = HoudiniApi::CreateInProcessSession(Util::theHAPISession.get());
+        sessionResult = HoudiniApi::CreateInProcessSession(Util::theHAPISession.get(), &sessionInfo);
         break;
 
     case SessionType::ST_THRIFT_SOCKET:
@@ -143,7 +144,7 @@ initializeSession(const OptionVars &optionVars)
         msgHostPort = hostName + ":" + port;
 
         sessionResult = HoudiniApi::CreateThriftSocketSession(
-            Util::theHAPISession.get(), hostName.asChar(), port);
+            Util::theHAPISession.get(), hostName.asChar(), port, &sessionInfo);
 
         if (!HAPI_FAIL(sessionResult))
         {
@@ -303,7 +304,7 @@ initializeSession(const OptionVars &optionVars)
         }
 
         sessionResult = HoudiniApi::CreateThriftNamedPipeSession(
-            Util::theHAPISession.get(), pipeName.asChar());
+            Util::theHAPISession.get(), pipeName.asChar(), &sessionInfo);
 
         if (!HAPI_FAIL(sessionResult))
         {

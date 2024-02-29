@@ -4,6 +4,10 @@
 #include <maya/MGlobal.h>
 #include <maya/MSceneMessage.h>
 
+#ifdef _WIN32
+#include <maya/MStreamUtils.h>
+#endif
+
 #include <maya/MFnPlugin.h>
 
 #include "AssetCommand.h"
@@ -518,6 +522,13 @@ MStatus
 initializePlugin(MObject obj)
 {
     OptionVars optionVars;
+
+#ifdef _WIN32
+    // Redirect stdout and stderr to the output window on Windows. Works around:
+    // https://forums.autodesk.com/t5/maya-programming/c-api-not-printing-to-output-window/td-p/4260798
+    std::cout.set_rdbuf(MStreamUtils::stdOutStream().rdbuf());
+    std::cerr.set_rdbuf(MStreamUtils::stdErrorStream().rdbuf());
+#endif
 
     char engine_version[32];
     sprintf(engine_version, "%d.%d (API: %d)",

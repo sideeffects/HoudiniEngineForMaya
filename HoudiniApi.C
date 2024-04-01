@@ -1,5 +1,5 @@
 /*
- * Copyright (c) <2023> Side Effects Software Inc. *
+ * Copyright (c) <2024> Side Effects Software Inc. *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -145,6 +145,9 @@ HoudiniApi::CreateNode = &HoudiniApi::CreateNodeEmptyStub;
 
 HoudiniApi::CreateThriftNamedPipeSessionFuncPtr
 HoudiniApi::CreateThriftNamedPipeSession = &HoudiniApi::CreateThriftNamedPipeSessionEmptyStub;
+
+HoudiniApi::CreateThriftSharedMemorySessionFuncPtr
+HoudiniApi::CreateThriftSharedMemorySession = &HoudiniApi::CreateThriftSharedMemorySessionEmptyStub;
 
 HoudiniApi::CreateThriftSocketSessionFuncPtr
 HoudiniApi::CreateThriftSocketSession = &HoudiniApi::CreateThriftSocketSessionEmptyStub;
@@ -487,6 +490,12 @@ HoudiniApi::GetMessageNodeIds = &HoudiniApi::GetMessageNodeIdsEmptyStub;
 
 HoudiniApi::GetNextVolumeTileFuncPtr
 HoudiniApi::GetNextVolumeTile = &HoudiniApi::GetNextVolumeTileEmptyStub;
+
+HoudiniApi::GetNodeCookResultFuncPtr
+HoudiniApi::GetNodeCookResult = &HoudiniApi::GetNodeCookResultEmptyStub;
+
+HoudiniApi::GetNodeCookResultLengthFuncPtr
+HoudiniApi::GetNodeCookResultLength = &HoudiniApi::GetNodeCookResultLengthEmptyStub;
 
 HoudiniApi::GetNodeFromPathFuncPtr
 HoudiniApi::GetNodeFromPath = &HoudiniApi::GetNodeFromPathEmptyStub;
@@ -1181,6 +1190,9 @@ HoudiniApi::Shutdown = &HoudiniApi::ShutdownEmptyStub;
 HoudiniApi::StartThriftNamedPipeServerFuncPtr
 HoudiniApi::StartThriftNamedPipeServer = &HoudiniApi::StartThriftNamedPipeServerEmptyStub;
 
+HoudiniApi::StartThriftSharedMemoryServerFuncPtr
+HoudiniApi::StartThriftSharedMemoryServer = &HoudiniApi::StartThriftSharedMemoryServerEmptyStub;
+
 HoudiniApi::StartThriftSocketServerFuncPtr
 HoudiniApi::StartThriftSocketServer = &HoudiniApi::StartThriftSocketServerEmptyStub;
 
@@ -1268,6 +1280,7 @@ HoudiniApi::InitializeHAPI(void* LibraryHandle)
     HoudiniApi::CreateInputNode = (CreateInputNodeFuncPtr) fetchSymbol(LibraryHandle, "HAPI_CreateInputNode");
     HoudiniApi::CreateNode = (CreateNodeFuncPtr) fetchSymbol(LibraryHandle, "HAPI_CreateNode");
     HoudiniApi::CreateThriftNamedPipeSession = (CreateThriftNamedPipeSessionFuncPtr) fetchSymbol(LibraryHandle, "HAPI_CreateThriftNamedPipeSession");
+    HoudiniApi::CreateThriftSharedMemorySession = (CreateThriftSharedMemorySessionFuncPtr) fetchSymbol(LibraryHandle, "HAPI_CreateThriftSharedMemorySession");
     HoudiniApi::CreateThriftSocketSession = (CreateThriftSocketSessionFuncPtr) fetchSymbol(LibraryHandle, "HAPI_CreateThriftSocketSession");
     HoudiniApi::CreateWorkItem = (CreateWorkItemFuncPtr) fetchSymbol(LibraryHandle, "HAPI_CreateWorkItem");
     HoudiniApi::CreateWorkitem = (CreateWorkitemFuncPtr) fetchSymbol(LibraryHandle, "HAPI_CreateWorkitem");
@@ -1382,6 +1395,8 @@ HoudiniApi::InitializeHAPI(void* LibraryHandle)
     HoudiniApi::GetMessageNodeCount = (GetMessageNodeCountFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetMessageNodeCount");
     HoudiniApi::GetMessageNodeIds = (GetMessageNodeIdsFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetMessageNodeIds");
     HoudiniApi::GetNextVolumeTile = (GetNextVolumeTileFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetNextVolumeTile");
+    HoudiniApi::GetNodeCookResult = (GetNodeCookResultFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetNodeCookResult");
+    HoudiniApi::GetNodeCookResultLength = (GetNodeCookResultLengthFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetNodeCookResultLength");
     HoudiniApi::GetNodeFromPath = (GetNodeFromPathFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetNodeFromPath");
     HoudiniApi::GetNodeInfo = (GetNodeInfoFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetNodeInfo");
     HoudiniApi::GetNodeInputName = (GetNodeInputNameFuncPtr) fetchSymbol(LibraryHandle, "HAPI_GetNodeInputName");
@@ -1613,6 +1628,7 @@ HoudiniApi::InitializeHAPI(void* LibraryHandle)
     HoudiniApi::SetWorkitemStringData = (SetWorkitemStringDataFuncPtr) fetchSymbol(LibraryHandle, "HAPI_SetWorkitemStringData");
     HoudiniApi::Shutdown = (ShutdownFuncPtr) fetchSymbol(LibraryHandle, "HAPI_Shutdown");
     HoudiniApi::StartThriftNamedPipeServer = (StartThriftNamedPipeServerFuncPtr) fetchSymbol(LibraryHandle, "HAPI_StartThriftNamedPipeServer");
+    HoudiniApi::StartThriftSharedMemoryServer = (StartThriftSharedMemoryServerFuncPtr) fetchSymbol(LibraryHandle, "HAPI_StartThriftSharedMemoryServer");
     HoudiniApi::StartThriftSocketServer = (StartThriftSocketServerFuncPtr) fetchSymbol(LibraryHandle, "HAPI_StartThriftSocketServer");
     HoudiniApi::ThriftServerOptions_Create = (ThriftServerOptions_CreateFuncPtr) fetchSymbol(LibraryHandle, "HAPI_ThriftServerOptions_Create");
     HoudiniApi::ThriftServerOptions_Init = (ThriftServerOptions_InitFuncPtr) fetchSymbol(LibraryHandle, "HAPI_ThriftServerOptions_Init");
@@ -1672,6 +1688,7 @@ HoudiniApi::FinalizeHAPI()
     HoudiniApi::CreateInputNode = &HoudiniApi::CreateInputNodeEmptyStub;
     HoudiniApi::CreateNode = &HoudiniApi::CreateNodeEmptyStub;
     HoudiniApi::CreateThriftNamedPipeSession = &HoudiniApi::CreateThriftNamedPipeSessionEmptyStub;
+    HoudiniApi::CreateThriftSharedMemorySession = &HoudiniApi::CreateThriftSharedMemorySessionEmptyStub;
     HoudiniApi::CreateThriftSocketSession = &HoudiniApi::CreateThriftSocketSessionEmptyStub;
     HoudiniApi::CreateWorkItem = &HoudiniApi::CreateWorkItemEmptyStub;
     HoudiniApi::CreateWorkitem = &HoudiniApi::CreateWorkitemEmptyStub;
@@ -1786,6 +1803,8 @@ HoudiniApi::FinalizeHAPI()
     HoudiniApi::GetMessageNodeCount = &HoudiniApi::GetMessageNodeCountEmptyStub;
     HoudiniApi::GetMessageNodeIds = &HoudiniApi::GetMessageNodeIdsEmptyStub;
     HoudiniApi::GetNextVolumeTile = &HoudiniApi::GetNextVolumeTileEmptyStub;
+    HoudiniApi::GetNodeCookResult = &HoudiniApi::GetNodeCookResultEmptyStub;
+    HoudiniApi::GetNodeCookResultLength = &HoudiniApi::GetNodeCookResultLengthEmptyStub;
     HoudiniApi::GetNodeFromPath = &HoudiniApi::GetNodeFromPathEmptyStub;
     HoudiniApi::GetNodeInfo = &HoudiniApi::GetNodeInfoEmptyStub;
     HoudiniApi::GetNodeInputName = &HoudiniApi::GetNodeInputNameEmptyStub;
@@ -2017,6 +2036,7 @@ HoudiniApi::FinalizeHAPI()
     HoudiniApi::SetWorkitemStringData = &HoudiniApi::SetWorkitemStringDataEmptyStub;
     HoudiniApi::Shutdown = &HoudiniApi::ShutdownEmptyStub;
     HoudiniApi::StartThriftNamedPipeServer = &HoudiniApi::StartThriftNamedPipeServerEmptyStub;
+    HoudiniApi::StartThriftSharedMemoryServer = &HoudiniApi::StartThriftSharedMemoryServerEmptyStub;
     HoudiniApi::StartThriftSocketServer = &HoudiniApi::StartThriftSocketServerEmptyStub;
     HoudiniApi::ThriftServerOptions_Create = &HoudiniApi::ThriftServerOptions_CreateEmptyStub;
     HoudiniApi::ThriftServerOptions_Init = &HoudiniApi::ThriftServerOptions_InitEmptyStub;
@@ -2256,13 +2276,13 @@ HoudiniApi::CreateInProcessSessionEmptyStub(HAPI_Session * session, const HAPI_S
 }
 
 HAPI_Result
-HoudiniApi::CreateInputCurveNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId * node_id, const char * name)
+HoudiniApi::CreateInputCurveNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * node_id, const char * name)
 {
     return HAPI_RESULT_FAILURE;
 }
 
 HAPI_Result
-HoudiniApi::CreateInputNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId * node_id, const char * name)
+HoudiniApi::CreateInputNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * node_id, const char * name)
 {
     return HAPI_RESULT_FAILURE;
 }
@@ -2275,6 +2295,12 @@ HoudiniApi::CreateNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId parent
 
 HAPI_Result
 HoudiniApi::CreateThriftNamedPipeSessionEmptyStub(HAPI_Session * session, const char * pipe_name, const HAPI_SessionInfo * session_info)
+{
+    return HAPI_RESULT_FAILURE;
+}
+
+HAPI_Result
+HoudiniApi::CreateThriftSharedMemorySessionEmptyStub(HAPI_Session * session, const char * shared_mem_name, const HAPI_SessionInfo * session_info)
 {
     return HAPI_RESULT_FAILURE;
 }
@@ -2959,6 +2985,18 @@ HoudiniApi::GetMessageNodeIdsEmptyStub(const HAPI_Session * session, HAPI_NodeId
 
 HAPI_Result
 HoudiniApi::GetNextVolumeTileEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PartId part_id, HAPI_VolumeTileInfo * tile)
+{
+    return HAPI_RESULT_FAILURE;
+}
+
+HAPI_Result
+HoudiniApi::GetNodeCookResultEmptyStub(const HAPI_Session * session, char * string_value, int length)
+{
+    return HAPI_RESULT_FAILURE;
+}
+
+HAPI_Result
+HoudiniApi::GetNodeCookResultLengthEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_StatusVerbosity verbosity, int * buffer_length)
 {
     return HAPI_RESULT_FAILURE;
 }
@@ -4345,6 +4383,12 @@ HoudiniApi::ShutdownEmptyStub(const HAPI_Session * session)
 
 HAPI_Result
 HoudiniApi::StartThriftNamedPipeServerEmptyStub(const HAPI_ThriftServerOptions * options, const char * pipe_name, HAPI_ProcessId * process_id, const char * log_file)
+{
+    return HAPI_RESULT_FAILURE;
+}
+
+HAPI_Result
+HoudiniApi::StartThriftSharedMemoryServerEmptyStub(const HAPI_ThriftServerOptions * options, const char * shared_mem_name, HAPI_ProcessId * process_id, const char * log_file)
 {
     return HAPI_RESULT_FAILURE;
 }

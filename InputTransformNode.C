@@ -67,7 +67,7 @@ InputTransformNode::InputTransformNode() : myGeometryNodeId(-1)
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     CHECK_HAPI(HoudiniApi::CreateInputNode(
-        Util::theHAPISession.get(), &myGeometryNodeId, NULL));
+        Util::theHAPISession.get(), -1, &myGeometryNodeId, NULL));
     if (!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input transform node."));

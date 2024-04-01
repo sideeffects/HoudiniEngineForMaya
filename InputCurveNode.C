@@ -86,7 +86,7 @@ InputCurveNode::compute(const MPlug &plug, MDataBlock &data)
         Util::PythonInterpreterLock pythonInterpreterLock;
 
         CHECK_HAPI(
-            HoudiniApi::CreateInputNode(Util::theHAPISession.get(), &myNodeId, NULL));
+            HoudiniApi::CreateInputNode(Util::theHAPISession.get(), -1, &myNodeId, NULL));
 
         if (!Util::statusCheckLoop())
         {

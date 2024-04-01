@@ -1,5 +1,5 @@
 /*
- * Copyright (c) <2023> Side Effects Software Inc. *
+ * Copyright (c) <2024> Side Effects Software Inc. *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -71,10 +71,11 @@ public:
     typedef HAPI_Result (*CreateHeightFieldInputFuncPtr)(const HAPI_Session * session, HAPI_NodeId parent_node_id, const char * name, int xsize, int ysize, float voxelsize, HAPI_HeightFieldSampling sampling, HAPI_NodeId * heightfield_node_id, HAPI_NodeId * height_node_id, HAPI_NodeId * mask_node_id, HAPI_NodeId * merge_node_id);
     typedef HAPI_Result (*CreateHeightfieldInputVolumeNodeFuncPtr)(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * new_node_id, const char * name, int xsize, int ysize, float voxelsize);
     typedef HAPI_Result (*CreateInProcessSessionFuncPtr)(HAPI_Session * session, const HAPI_SessionInfo * session_info);
-    typedef HAPI_Result (*CreateInputCurveNodeFuncPtr)(const HAPI_Session * session, HAPI_NodeId * node_id, const char * name);
-    typedef HAPI_Result (*CreateInputNodeFuncPtr)(const HAPI_Session * session, HAPI_NodeId * node_id, const char * name);
+    typedef HAPI_Result (*CreateInputCurveNodeFuncPtr)(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * node_id, const char * name);
+    typedef HAPI_Result (*CreateInputNodeFuncPtr)(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * node_id, const char * name);
     typedef HAPI_Result (*CreateNodeFuncPtr)(const HAPI_Session * session, HAPI_NodeId parent_node_id, const char * operator_name, const char * node_label, HAPI_Bool cook_on_creation, HAPI_NodeId * new_node_id);
     typedef HAPI_Result (*CreateThriftNamedPipeSessionFuncPtr)(HAPI_Session * session, const char * pipe_name, const HAPI_SessionInfo * session_info);
+    typedef HAPI_Result (*CreateThriftSharedMemorySessionFuncPtr)(HAPI_Session * session, const char * shared_mem_name, const HAPI_SessionInfo * session_info);
     typedef HAPI_Result (*CreateThriftSocketSessionFuncPtr)(HAPI_Session * session, const char * host_name, int port, const HAPI_SessionInfo * session_info);
     typedef HAPI_Result (*CreateWorkItemFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PDG_WorkItemId * work_item_id, const char * name, int index);
     typedef HAPI_Result (*CreateWorkitemFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PDG_WorkItemId * workitem_id, const char * name, int index);
@@ -189,6 +190,8 @@ public:
     typedef HAPI_Result (*GetMessageNodeCountFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, int * count);
     typedef HAPI_Result (*GetMessageNodeIdsFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_NodeId * message_node_ids_array, int count);
     typedef HAPI_Result (*GetNextVolumeTileFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PartId part_id, HAPI_VolumeTileInfo * tile);
+    typedef HAPI_Result (*GetNodeCookResultFuncPtr)(const HAPI_Session * session, char * string_value, int length);
+    typedef HAPI_Result (*GetNodeCookResultLengthFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_StatusVerbosity verbosity, int * buffer_length);
     typedef HAPI_Result (*GetNodeFromPathFuncPtr)(const HAPI_Session * session, const HAPI_NodeId parent_node_id, const char * path, HAPI_NodeId * node_id);
     typedef HAPI_Result (*GetNodeInfoFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_NodeInfo * node_info);
     typedef HAPI_Result (*GetNodeInputNameFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, int input_idx, HAPI_StringHandle * name);
@@ -420,6 +423,7 @@ public:
     typedef HAPI_Result (*SetWorkitemStringDataFuncPtr)(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PDG_WorkItemId workitem_id, const char * data_name, int data_index, const char * value);
     typedef HAPI_Result (*ShutdownFuncPtr)(const HAPI_Session * session);
     typedef HAPI_Result (*StartThriftNamedPipeServerFuncPtr)(const HAPI_ThriftServerOptions * options, const char * pipe_name, HAPI_ProcessId * process_id, const char * log_file);
+    typedef HAPI_Result (*StartThriftSharedMemoryServerFuncPtr)(const HAPI_ThriftServerOptions * options, const char * shared_mem_name, HAPI_ProcessId * process_id, const char * log_file);
     typedef HAPI_Result (*StartThriftSocketServerFuncPtr)(const HAPI_ThriftServerOptions * options, int port, HAPI_ProcessId * process_id, const char * log_file);
     typedef HAPI_ThriftServerOptions (*ThriftServerOptions_CreateFuncPtr)();
     typedef void (*ThriftServerOptions_InitFuncPtr)(HAPI_ThriftServerOptions * in);
@@ -476,6 +480,7 @@ public:
     static CreateInputNodeFuncPtr CreateInputNode;
     static CreateNodeFuncPtr CreateNode;
     static CreateThriftNamedPipeSessionFuncPtr CreateThriftNamedPipeSession;
+    static CreateThriftSharedMemorySessionFuncPtr CreateThriftSharedMemorySession;
     static CreateThriftSocketSessionFuncPtr CreateThriftSocketSession;
     static CreateWorkItemFuncPtr CreateWorkItem;
     static CreateWorkitemFuncPtr CreateWorkitem;
@@ -590,6 +595,8 @@ public:
     static GetMessageNodeCountFuncPtr GetMessageNodeCount;
     static GetMessageNodeIdsFuncPtr GetMessageNodeIds;
     static GetNextVolumeTileFuncPtr GetNextVolumeTile;
+    static GetNodeCookResultFuncPtr GetNodeCookResult;
+    static GetNodeCookResultLengthFuncPtr GetNodeCookResultLength;
     static GetNodeFromPathFuncPtr GetNodeFromPath;
     static GetNodeInfoFuncPtr GetNodeInfo;
     static GetNodeInputNameFuncPtr GetNodeInputName;
@@ -821,6 +828,7 @@ public:
     static SetWorkitemStringDataFuncPtr SetWorkitemStringData;
     static ShutdownFuncPtr Shutdown;
     static StartThriftNamedPipeServerFuncPtr StartThriftNamedPipeServer;
+    static StartThriftSharedMemoryServerFuncPtr StartThriftSharedMemoryServer;
     static StartThriftSocketServerFuncPtr StartThriftSocketServer;
     static ThriftServerOptions_CreateFuncPtr ThriftServerOptions_Create;
     static ThriftServerOptions_InitFuncPtr ThriftServerOptions_Init;
@@ -873,10 +881,11 @@ public:
     static HAPI_Result CreateHeightFieldInputEmptyStub(const HAPI_Session * session, HAPI_NodeId parent_node_id, const char * name, int xsize, int ysize, float voxelsize, HAPI_HeightFieldSampling sampling, HAPI_NodeId * heightfield_node_id, HAPI_NodeId * height_node_id, HAPI_NodeId * mask_node_id, HAPI_NodeId * merge_node_id);
     static HAPI_Result CreateHeightfieldInputVolumeNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * new_node_id, const char * name, int xsize, int ysize, float voxelsize);
     static HAPI_Result CreateInProcessSessionEmptyStub(HAPI_Session * session, const HAPI_SessionInfo * session_info);
-    static HAPI_Result CreateInputCurveNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId * node_id, const char * name);
-    static HAPI_Result CreateInputNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId * node_id, const char * name);
+    static HAPI_Result CreateInputCurveNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * node_id, const char * name);
+    static HAPI_Result CreateInputNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId parent_node_id, HAPI_NodeId * node_id, const char * name);
     static HAPI_Result CreateNodeEmptyStub(const HAPI_Session * session, HAPI_NodeId parent_node_id, const char * operator_name, const char * node_label, HAPI_Bool cook_on_creation, HAPI_NodeId * new_node_id);
     static HAPI_Result CreateThriftNamedPipeSessionEmptyStub(HAPI_Session * session, const char * pipe_name, const HAPI_SessionInfo * session_info);
+    static HAPI_Result CreateThriftSharedMemorySessionEmptyStub(HAPI_Session * session, const char * shared_mem_name, const HAPI_SessionInfo * session_info);
     static HAPI_Result CreateThriftSocketSessionEmptyStub(HAPI_Session * session, const char * host_name, int port, const HAPI_SessionInfo * session_info);
     static HAPI_Result CreateWorkItemEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PDG_WorkItemId * work_item_id, const char * name, int index);
     static HAPI_Result CreateWorkitemEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PDG_WorkItemId * workitem_id, const char * name, int index);
@@ -991,6 +1000,8 @@ public:
     static HAPI_Result GetMessageNodeCountEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, int * count);
     static HAPI_Result GetMessageNodeIdsEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_NodeId * message_node_ids_array, int count);
     static HAPI_Result GetNextVolumeTileEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PartId part_id, HAPI_VolumeTileInfo * tile);
+    static HAPI_Result GetNodeCookResultEmptyStub(const HAPI_Session * session, char * string_value, int length);
+    static HAPI_Result GetNodeCookResultLengthEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_StatusVerbosity verbosity, int * buffer_length);
     static HAPI_Result GetNodeFromPathEmptyStub(const HAPI_Session * session, const HAPI_NodeId parent_node_id, const char * path, HAPI_NodeId * node_id);
     static HAPI_Result GetNodeInfoEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_NodeInfo * node_info);
     static HAPI_Result GetNodeInputNameEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, int input_idx, HAPI_StringHandle * name);
@@ -1222,6 +1233,7 @@ public:
     static HAPI_Result SetWorkitemStringDataEmptyStub(const HAPI_Session * session, HAPI_NodeId node_id, HAPI_PDG_WorkItemId workitem_id, const char * data_name, int data_index, const char * value);
     static HAPI_Result ShutdownEmptyStub(const HAPI_Session * session);
     static HAPI_Result StartThriftNamedPipeServerEmptyStub(const HAPI_ThriftServerOptions * options, const char * pipe_name, HAPI_ProcessId * process_id, const char * log_file);
+    static HAPI_Result StartThriftSharedMemoryServerEmptyStub(const HAPI_ThriftServerOptions * options, const char * shared_mem_name, HAPI_ProcessId * process_id, const char * log_file);
     static HAPI_Result StartThriftSocketServerEmptyStub(const HAPI_ThriftServerOptions * options, int port, HAPI_ProcessId * process_id, const char * log_file);
     static HAPI_ThriftServerOptions ThriftServerOptions_CreateEmptyStub();
     static void ThriftServerOptions_InitEmptyStub(HAPI_ThriftServerOptions * in);

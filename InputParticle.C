@@ -18,7 +18,7 @@ InputParticle::InputParticle() : Input()
     Util::PythonInterpreterLock pythonInterpreterLock;
 
     HAPI_NodeId nodeId;
-    CHECK_HAPI(HoudiniApi::CreateInputNode(Util::theHAPISession.get(), &nodeId, NULL));
+    CHECK_HAPI(HoudiniApi::CreateInputNode(Util::theHAPISession.get(), -1, &nodeId, NULL));
     if (!Util::statusCheckLoop())
     {
         DISPLAY_ERROR(MString("Unexpected error when creating input particle."));

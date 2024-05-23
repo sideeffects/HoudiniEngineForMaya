@@ -31,6 +31,7 @@ For support and reporting bugs:
 ## Supported Maya versions
 Currently, the supported Maya versions are:
 
+* 2025
 * 2024
 * 2023
 * 2022

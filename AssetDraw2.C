@@ -479,7 +479,7 @@ AssetDrawGeometryOverride::preDrawCallback(MDrawContext& ctx,
 	{
 	    LightNames &namei = names[i];
 #define INIT_NAME(X) \
-	    sprintf(buf, X ## F.asChar(), i); \
+	    snprintf(buf, 128, X ## F.asChar(), i); \
 	    namei.X.set(buf)
 	    INIT_NAME(kLightColor);
 	    INIT_NAME(kLightType);
@@ -1429,3 +1429,4 @@ AssetDraw::uninitializePlugin( MFnPlugin &plugin, MObject obj)
 AssetDrawTraits AssetDraw::theTraits;
 
 #endif
+

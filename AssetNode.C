@@ -1773,6 +1773,18 @@ AssetNode::isAssetFrozen() const
     return frozen;
 }
 
+void runMelCallbackOnAttribChanged(const MPlug &plug, const MString &melCallback)
+{
+    MStatus status;
+    MObject node = plug.node(&status);
+
+    if (status == MStatus::kSuccess)
+    {
+        MFnDependencyNode assetNodeFn(node);
+        MGlobal::executeCommand(melCallback + "(\"" + assetNodeFn.name() + "\");");
+    }
+}
+
 void userAttribChangedCallback(MNodeMessage::AttributeMessage msg, MPlug &plug, MPlug &otherPlug, void*)
 {
     using std::string;
@@ -1831,6 +1843,15 @@ void userAttribChangedCallback(MNodeMessage::AttributeMessage msg, MPlug &plug, 
             }
         }
     }
+
+    // These callbacks need to be called when the plug changes as they set
+    // attributes in upstream nodes.
+    if (plug.partialName() == "alwaysMergeInputGeometry")
+        runMelCallbackOnAttribChanged(plug, "houdiniEngine_alwaysMergeInputGeometryChanged");
+    else if (plug.partialName() == "packBeforeMerge")
+        runMelCallbackOnAttribChanged(plug, "houdiniEngine_packBeforeMergeChanged");
+    else if (plug.partialName() == "preserveScale")
+        runMelCallbackOnAttribChanged(plug, "houdiniEngine_preserveHoudiniScaleChanged");
 }
 
 void

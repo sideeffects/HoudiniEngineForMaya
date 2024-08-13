@@ -63,7 +63,6 @@ houdiniEnginePreferences_refresh()
         break;
 
     case 2:
-    case 3:
         radioCollection -edit -select sessionTypePipe
             sessionTypeList;
         break;

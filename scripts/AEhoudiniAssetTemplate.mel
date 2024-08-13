@@ -559,6 +559,28 @@ global proc houdiniAssetAdjustMulti(
     setUITemplate -popTemplate;
 }
 
+proc updateCookingStatusBar(int $status)
+{
+    if (`optionVar -q houdiniEngineDisableCooking` == 0)
+    {
+        text
+            -e
+            -label "Cooking Enabled"
+            -backgroundColor 0 1 0
+            -visible false
+            disabledLabel;
+    }
+    else
+    {
+        text
+            -e
+            -label "Cooking Disabled"
+            -backgroundColor 1 0 0
+            -visible true
+            disabledLabel;
+    }
+}
+
 global proc
 AEhoudiniAssetOperationNew(string $attr)
 {
@@ -569,10 +591,21 @@ AEhoudiniAssetOperationNew(string $attr)
 
         if(`houdiniEngine -license` == "Houdini-Indie"
                 || `houdiniEngine -license` == "Houdini-Engine-Indie")
+        {
             text
                 -label "Houdini Engine Indie - For Limited Commercial Use Only"
                 -font "boldLabelFont"
                 -backgroundColor 1 1 0;
+        }
+
+        text
+            -label "Cooking Status"
+            -font "boldLabelFont"
+            -visible false
+            disabledLabel;
+
+        updateCookingStatusBar(`optionVar -q houdiniEngineDisableCooking`);
+
         rowLayout
             -numberOfColumns 3
             -columnAttach 1 both 0
@@ -622,6 +655,8 @@ AEhoudiniAssetOperationReplace(string $attr)
     button -e
         -c ("houdiniEngine_bakeAsset " + $nodeName)
         bakeButton;
+
+    updateCookingStatusBar(`optionVar -q houdiniEngineDisableCooking`);
 }
 
 global proc AEhoudiniAssetSetInputToSelection(string $inputAttr)

@@ -975,6 +975,9 @@ Asset::compute(const MPlug &plug,
 
     MStatus stat(MS::kSuccess);
 
+    if (MGlobal::optionVarIntValue("houdiniEngineDisableCooking") == 1)
+        return stat;
+
     {
         Util::PythonInterpreterLock pythonInterpreterLock;
 

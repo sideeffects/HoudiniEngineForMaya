@@ -97,7 +97,8 @@ struct OptionVars
           unsetLLP("UnsetLLP", 1),
           unsetPP("UnsetPP", 0),
           viewProduct("ViewProduct", "Houdini Core"),
-          timeout("Timeout", 10 * 1000)
+          timeout("Timeout", 10 * 1000),
+          disableCooking("DisableCooking", 0)
     {
     }
 
@@ -113,6 +114,7 @@ struct OptionVars
     IntOptionVar unsetPP;
     StringOptionVar viewProduct;
     IntOptionVar timeout;
+    IntOptionVar disableCooking;
 
 private:
     OptionVars &operator=(const OptionVars &);

@@ -21,6 +21,10 @@ houdiniEnginePreferences_refresh()
         -value1 `optionVar -query "houdiniEngineDeleteAfterBake"`
         delAfterBakeCheck;
 
+    checkBoxGrp -e
+        -value1 `optionVar -query "houdiniEngineDisableCooking"`
+        disableCookingCheck;
+
     optionMenuGrp -e
         -value `optionVar -query "houdiniEngineViewProduct"`
         viewProductOpt;
@@ -160,6 +164,9 @@ houdiniEnginePreferences_save()
     optionVar
         -intValue "houdiniEngineDeleteAfterBake"
         `checkBoxGrp -q -value1 delAfterBakeCheck`;
+    optionVar
+        -intValue "houdiniEngineDisableCooking"
+        `checkBoxGrp -q -value1 disableCookingCheck`;
     optionVar
         -stringValue "houdiniEngineViewProduct"
         `optionMenuGrp -q -value viewProductOpt`;
@@ -404,6 +411,14 @@ houdiniEnginePreferences_toggleDelAfterBake(int $state)
 }
 
 global proc
+houdiniEnginePreferences_toggleDisableCooking(int $state)
+{
+    global int $houdiniEngineDisableCooking;
+
+    $houdiniEngineDisableCooking = $state;
+}
+
+global proc
 houdiniEnginePreferences_setViewProduct(string $state)
 {
     global string $houdiniEngineViewProduct;
@@ -548,6 +563,22 @@ houdiniEnginePreferences()
 
         text -label "";
         text -label "";
+
+        checkBoxGrp
+            -numberOfCheckBoxes 1
+            -label "Disable Cooking:"
+            -changeCommand "houdiniEnginePreferences_toggleDisableCooking #1"
+            disableCookingCheck;
+
+        text -label "";
+
+        button
+            -label "?"
+            -height 20
+            -command ("confirmDialog -title \"Houdini Engine Preferences\" " +
+                "-button \"OK\" -message \"When \\\"Disable Cooking\\\" is " + 
+                "active, the cooking of HoudiniAsset nodes is disabled.\"")
+            disableCookingHelp;
 
         optionMenuGrp
             -label "View Assets in:"

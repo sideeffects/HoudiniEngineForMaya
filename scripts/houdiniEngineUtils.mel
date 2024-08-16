@@ -59,7 +59,7 @@ houdiniEngine_run(string $cmds[])
     {
         $final_cmd += "start cmd /c \"";
 
-        // $final_cmd += "set PYTHONPATH= & ";
+        $final_cmd += "set PYTHONPATH= & ";
 
         // PATH should already be set on Windows.
 

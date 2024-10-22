@@ -532,6 +532,11 @@ global proc houdiniEngine_saveHipFile()
     {
         $hipExtension = "*.hiplc";
     }
+    else if($license == "Houdini-Education"
+        || $license == "Houdini-Engine-Education")
+    {
+        $hipExtension = "*.hipnc";
+    }
     else
     {
         $hipExtension = "*.hip";
@@ -908,3 +913,4 @@ houdiniEngineCreateUI()
             + " \"" + $recentAssetsMenu + "\"")
         $recentAssetsMenu;
 }
+

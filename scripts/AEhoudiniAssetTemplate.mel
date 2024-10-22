@@ -597,6 +597,14 @@ AEhoudiniAssetOperationNew(string $attr)
                 -font "boldLabelFont"
                 -backgroundColor 1 1 0;
         }
+        else if(`houdiniEngine -license` == "Houdini-Education"
+                || `houdiniEngine -license` == "Houdini-Engine-Education")
+        {
+            text
+                -label "Houdini Engine Education - For Non-Commercial Use Only"
+                -font "boldLabelFont"
+                -backgroundColor 1 1 0;
+        }
 
         text
             -label "Cooking Status"

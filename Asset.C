@@ -1008,6 +1008,21 @@ Asset::compute(const MPlug &plug,
             GET_HAPI_STATUS_COOK();
             DISPLAY_MSG(displayError, hapiStatus);
 
+            int errLen = 0;
+
+            HoudiniApi::ComposeNodeCookResult(Util::theHAPISession.get(),
+                myNodeInfo.id, HAPI_STATUSVERBOSITY_ALL, &errLen);
+
+            if (errLen > 0)
+            {
+                MString foo;
+                std::vector<char> errorBuffer(errLen);
+                HoudiniApi::GetComposedNodeCookResult(Util::theHAPISession.get(),
+                    &errorBuffer[0], errLen);
+
+                MGlobal::displayError(&errorBuffer[0]);
+            }
+
             return MStatus::kFailure;
         }
     }

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import json
 import os
 import re
@@ -316,3 +315,4 @@ def show_asset_store_window():
     refresh_asset_entries()
 
     cmds.showWindow(asset_store_window)
+

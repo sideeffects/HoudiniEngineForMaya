@@ -374,6 +374,20 @@ initializeHAPI(const OptionVars &optionVars)
 
     bool use_cooking_thread = optionVars.asyncMode.get() == 1;
 
+    char buffer[128] = { 0 };
+
+    if (otl_dir)
+    {
+        snprintf(buffer, 128, "otl_dir: %s", otl_dir);
+        Util::logVerboseSetupInfo(buffer);
+    }
+
+    if (dso_dir)
+    {
+        snprintf(buffer, 128, "dso_dir: %s", dso_dir);
+        Util::logVerboseSetupInfo(buffer);
+    }
+
     HAPI_Result hstat = HoudiniApi::Initialize(Util::theHAPISession.get(),
                                         &cook_options, use_cooking_thread, -1,
                                         NULL, otl_dir, dso_dir, NULL, NULL);
@@ -506,13 +520,20 @@ bool hapilLocationIsValid(MString &hapilLocation)
 {
     bool valid = false;
 
+    Util::logVerboseSetupInfo("Checking if " + hapilLocation + " is a valid path...");
+
     // check if the library exists
     FILE *fdHapil = fopen(hapilLocation.asChar(), "r");
 
     if (fdHapil)
     {
+        Util::logVerboseSetupInfo(hapilLocation + " is a valid path and could be opened!");
         valid = true;
         fclose(fdHapil);
+    }
+    else
+    {
+        Util::logVerboseSetupInfo(hapilLocation + " is not a valid path and could not be opened!", true);
     }
 
     return valid;
@@ -565,11 +586,17 @@ initializePlugin(MObject obj)
     MGlobal::executeCommand("source \"houdiniEngineUtils.mel\";");
     MString hfsPath = MGlobal::executeCommandStringResult("houdiniEngine_getHfsPath(false)");
 
+    Util::logVerboseSetupInfo("Checking if hfs path is specified in UI...");
+
     if (hfsPath.length() > 0)
     {
+        Util::logVerboseSetupInfo("Found HFS path: " + hfsPath);
+
         optionVars.hfsLocation.set(hfsPath);
 
         MString hapilPath = MGlobal::executeCommandStringResult("houdiniEngine_getHapilPath(false, houdiniEngine_getHfsPath(false))");
+
+        Util::logVerboseSetupInfo("HAPIL path from UI: " + hapilPath);
 
         if (hapilPath.length() > 0)
         {
@@ -577,14 +604,21 @@ initializePlugin(MObject obj)
 
             if (hapilValid)
             {
+                Util::logVerboseSetupInfo("HAPIL path is valid - set path in UI");
                 optionVars.hapilLocation.set(hapilPath);
                 hapilLocation = hapilPath;
             }
         }
     }
+    else
+    {
+        Util::logVerboseSetupInfo("No HFS path found in UI!");
+    }
 
     if (hapilValid)
     {
+        Util::logVerboseSetupInfo("Attempting to load HAPIL");
+
         void *hapilHandle = obtainHAPILHandle(hapilLocation.asChar());
         
         if (!hapilHandle)
@@ -593,12 +627,15 @@ initializePlugin(MObject obj)
             return MStatus::kSuccess;
         }
 
+        Util::logVerboseSetupInfo("Attempting to initialize HAPI");
         HoudiniApi::InitializeHAPI(hapilHandle);
 
         Util::isHapilLoaded = true;
     }
     else
     {
+        Util::logVerboseSetupInfo("HAPIL isn't valid. Showing dialog...");
+
         MGlobal::executeCommand(
             R"(confirmDialog -title "Houdini Engine"
                 -button "OK"
@@ -618,6 +655,8 @@ initializePlugin(MObject obj)
 
     if (!harsFound)
     {
+        Util::logVerboseSetupInfo("HARS wasn't found. Showing dialog...");
+
         MGlobal::executeCommand(
             R"(confirmDialog -title "Houdini Engine"
                 -button "OK"
@@ -649,10 +688,21 @@ initializePlugin(MObject obj)
         return MStatus::kSuccess;
     }
 
-    initializeSession(optionVars);
+    Util::logVerboseSetupInfo("Everything is good! Initializing the session!");
+
+    if (HAPI_FAIL(initializeSession(optionVars)))
+    {
+        MGlobal::displayError("Failed to initialize session");
+        return MStatus::kSuccess;
+    }
 
     if (HAPI_FAIL(initializeHAPI(optionVars)))
+    {
+        MGlobal::displayError("Failed to initialize HAPI");
         return MStatus::kSuccess;
+    }
+
+    Util::logVerboseSetupInfo("The session and HAPI were successfully initialized");
 
     status = plugin.registerTransform(
         AssetNode::typeName, AssetNode::typeId, AssetNode::creator,

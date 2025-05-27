@@ -29,7 +29,11 @@ obtainHAPILHandle(const char *filename)
         else
         {
             char buffer[256] = { 0 };
-            snprintf(buffer, 256, "libHAPIL failed to load! Error: %s", dlerror());
+            #if defined(PLATFORM_WINDOWS)
+                snprintf(buffer, 256, "libHAPIL failed to load!");
+            #else
+                snprintf(buffer, 256, "libHAPIL failed to load! Error: %s", dlerror());
+            #endif
             Util::logVerboseSetupInfo(buffer, true);
         }
     }

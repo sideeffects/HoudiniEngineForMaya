@@ -1,4 +1,5 @@
 #include <maya/MArrayDataBuilder.h>
+#include <maya/MCommonSystemUtils.h>
 #include <maya/MDGModifier.h>
 #include <maya/MDataHandle.h>
 #include <maya/MGlobal.h>
@@ -1179,6 +1180,24 @@ checkBuildEngineCompatibility()
     if (HoudiniApi::GetEnvInt(HAPI_ENVINT_VERSION_HOUDINI_BUILD, &engineBuild) == HAPI_RESULT_FAILURE) engineBuild = 0;
 
     return (buildMajor == engineMajor) && (buildMinor == engineMinor) && (buildBuild == engineBuild);
+}
+
+void logVerboseSetupInfo(const MString &msg, const bool warning)
+{
+    MStatus status;
+
+    MString result = MCommonSystemUtils::getEnv("HOUDINI_MAYA_VERBOSE_SETUP", &status);
+
+    if (status == MStatus::kSuccess)
+    {
+        if (result == "1")
+        {
+            if (warning)
+                MGlobal::displayWarning(msg);
+            else
+                MGlobal::displayInfo(msg);
+        }
+    }
 }
 
 }

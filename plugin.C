@@ -455,7 +455,7 @@ updateTimelineCallback(void *clientData)
 
     // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
     // So we need to offset the time by 1.
-    timelineOptions.fps = float(1.0 / oneUnitTime.as(MTime::kSeconds));
+    timelineOptions.fps = 1.0 / oneUnitTime.as(MTime::kSeconds);
     timelineOptions.startTime =
         (MAnimControl::animationStartTime() - oneUnitTime).as(MTime::kSeconds);
     timelineOptions.endTime =

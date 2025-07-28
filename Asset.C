@@ -922,7 +922,7 @@ Asset::setTime(const MTime &mayaTime)
     // Houdini's "frame 1" is "0 seconds", but Maya's "frame 0" is "0 seconds".
     // So we need to offset the time by 1.
     MTime hapiTime        = myTime - MTime(1, MTime::uiUnit());
-    float hapiTimeSeconds = (float)hapiTime.as(MTime::kSeconds);
+    double hapiTimeSeconds = hapiTime.as(MTime::kSeconds);
     HoudiniApi::SetTime(Util::theHAPISession.get(), hapiTimeSeconds);
 }
 

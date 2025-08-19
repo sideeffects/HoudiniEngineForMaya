@@ -32,45 +32,11 @@ houdiniEngine_getSelectedAssetNodes()
 global proc
 houdiniEngine_run(string $cmds[])
 {
-    int $isLinux = `about -linux`;
-    int $isWindows = `about -win`;
-    int $isMac = `about -mac`;
+    string $arg_list = "'";
+    $arg_list += stringArrayToString($cmds, "', '");
+    $arg_list += "'";
 
-    string $final_cmd;
-
-    if($isLinux || $isMac)
-    {
-        $final_cmd += "( ";
-
-        if($isLinux)
-        {
-            $final_cmd += "unset LD_LIBRARY_PATH; ";
-        }
-
-        $final_cmd += "unset PYTHONPATH; ";
-
-        $final_cmd += "PATH=\"$HFS/bin:$PATH\"; ";
-
-        $final_cmd += stringArrayToString($cmds, " ; ");
-
-        $final_cmd += " ) &";
-    }
-    else if($isWindows)
-    {
-        $final_cmd += "start cmd /c \"";
-
-        $final_cmd += "set PYTHONPATH= & ";
-
-        // PATH should already be set on Windows.
-
-        string $temp = stringArrayToString($cmds, " & ");
-
-        $final_cmd += $temp;
-
-        $final_cmd += "\"";
-    }
-
-    system($final_cmd);
+    python("from houdiniEngineUtils import sanitizeAndRun; sanitizeAndRun([" + $arg_list + "])");
 }
 
 global proc string

@@ -199,6 +199,7 @@ proc buildAttrTree(string $nodeName, string $attr, string $fullAttr)
         // get parm help string
         string $parmName = stringRemovePrefix($child, "houdiniAssetParm_");
         string $parmHelp = `houdiniAsset -parmHelp $parmName $nodeName`;
+        $parmHelp = `encodeString($parmHelp)`;
 
         int $isSimpleAttribute = `attrControlGrp -q -handlesAttribute ($fullAttrName + "." + $child)`
             && !$isMultiSize

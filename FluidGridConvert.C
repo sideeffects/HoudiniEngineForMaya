@@ -1,7 +1,5 @@
 #include "FluidGridConvert.h"
 
-#if MAYA_API_VERSION >= 201400
-
 #include "MayaTypeID.h"
 
 #include <maya/MFnCompoundAttribute.h>
@@ -297,5 +295,3 @@ FluidGridConvert::compute(const MPlug &plug, MDataBlock &data)
 
     return MPxNode::compute(plug, data);
 }
-
-#endif // MAYA_API_VERSION check

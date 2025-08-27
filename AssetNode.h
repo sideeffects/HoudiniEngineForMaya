@@ -50,21 +50,10 @@ public:
 
     virtual MStatus compute(const MPlug &plug, MDataBlock &data);
 
-#if MAYA_API_VERSION >= 201800
     virtual bool getInternalValue(const MPlug &plug, MDataHandle &dataHandle);
     virtual bool setInternalValue(const MPlug &plug,
                                   const MDataHandle &dataHandle);
     virtual int internalArrayCount(const MPlug &plug) const;
-#else
-    virtual bool getInternalValueInContext(const MPlug &plug,
-                                           MDataHandle &dataHandle,
-                                           MDGContext &ctx);
-    virtual bool setInternalValueInContext(const MPlug &plug,
-                                           const MDataHandle &dataHandle,
-                                           MDGContext &ctx);
-    virtual int internalArrayCount(const MPlug &plug,
-                                   const MDGContext &ctx) const;
-#endif
 
     virtual void copyInternalData(MPxNode *node);
 
@@ -75,10 +64,8 @@ public:
                                      bool asSrc);
     virtual MStatus shouldSave(const MPlug &plug, bool &isSaving);
 
-#if MAYA_API_VERSION >= 201600
     virtual MStatus preEvaluation(const MDGContext &context,
                                   const MEvaluationNode &evaluationNode);
-#endif
 
     Asset *getAsset() const;
 
@@ -164,10 +151,7 @@ public:
     static MObject outputObjectScaleX;
     static MObject outputObjectScaleY;
     static MObject outputObjectScaleZ;
-
-#if MAYA_API_VERSION >= 201400
     static MObject outputObjectFluidFromAsset;
-#endif
     static MObject outputObjectMetaData;
 
     static MObject outputGeos;
@@ -194,7 +178,6 @@ public:
     static MObject outputPartCurves;
     static MObject outputPartCurvesIsBezier;
 
-#if MAYA_API_VERSION >= 201400
     static MObject outputPartVolume;
     static MObject outputPartVolumeName;
     static MObject outputPartVolumeGrid;
@@ -212,7 +195,6 @@ public:
     static MObject outputPartVolumeScaleX;
     static MObject outputPartVolumeScaleY;
     static MObject outputPartVolumeScaleZ;
-#endif
 
     static MObject outputPartInstancer;
     static MObject outputPartInstancerArrayData;

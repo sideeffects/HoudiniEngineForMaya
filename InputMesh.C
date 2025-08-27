@@ -437,7 +437,7 @@ InputMesh::processUVs(const MFnMesh &meshFn,
                                           uvNumberAttributeName.asChar(),
                                           vertexUVNumbers));
     }
-#if MAYA_API_VERSION > 201600
+
     // now remove any TEXTURE type parms that no longer correspond
     // to uvsets on the input
     // This seems more complicated but less of a performance hit  than deleting
@@ -495,7 +495,6 @@ InputMesh::processUVs(const MFnMesh &meshFn,
             }
         }
     }
-#endif
 
     // update the attribute mappiing parms
 
@@ -593,7 +592,7 @@ InputMesh::processColorSets(const MFnMesh &meshFn,
                 geometryNodeId(), 0, 1, alphaAttributeName.asChar(), buffer));
         }
     }
-#if MAYA_API_VERSION > 201600
+
     // now remove any color and type parms that are no longer mapped
     // This seems more complicated but less of a performance hit  than deleting
     // and recreating all the attributes every time we pull on the inputs. need
@@ -657,7 +656,6 @@ InputMesh::processColorSets(const MFnMesh &meshFn,
             }
         }
     }
-#endif
 
     CHECK_HAPI(hapiSetDetailAttribute(
         geometryNodeId(), 0, "maya_colorset_current", currentColorSetName));

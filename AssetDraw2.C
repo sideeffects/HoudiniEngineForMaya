@@ -1,6 +1,4 @@
 #include <maya/MTypes.h>
-#if MAYA_API_VERSION >= 20180000
-
 #include <maya/MString.h>
 #include <maya/MFileObject.h>
 #include <maya/MTypeId.h>
@@ -1424,9 +1422,4 @@ AssetDraw::uninitializePlugin( MFnPlugin &plugin, MObject obj)
     return status;
 }
 
-
-
 AssetDrawTraits AssetDraw::theTraits;
-
-#endif
-

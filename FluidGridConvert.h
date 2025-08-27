@@ -6,8 +6,6 @@
 #include <maya/MString.h>
 #include <maya/MTypeId.h>
 
-#if MAYA_API_VERSION >= 201400
-
 class FluidGridConvert : public MPxNode
 {
 public:
@@ -33,6 +31,5 @@ public:
     static MObject outGrid;
 };
 
-#endif // MAYA_API_VERSION check
-
 #endif
+

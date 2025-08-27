@@ -730,11 +730,9 @@ initializePlugin(MObject obj)
         InputMergeNode::creator, InputMergeNode::initialize);
     CHECK_MSTATUS_AND_RETURN_IT(status);
 
-#if MAYA_API_VERSION >= 201400
     status = plugin.registerNode(
         FluidGridConvert::typeName, FluidGridConvert::typeId,
         FluidGridConvert::creator, FluidGridConvert::initialize);
-#endif
 
     printHAPIVersion();
 
@@ -780,13 +778,11 @@ uninitializePlugin(MObject obj)
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
 
-#if MAYA_API_VERSION >= 201400
     if (plugin.isNodeRegistered(FluidGridConvert::typeName))
     {
         status = plugin.deregisterNode(FluidGridConvert::typeId);
         CHECK_MSTATUS_AND_RETURN_IT(status);
     }
-#endif
 
     status = plugin.deregisterCommand(EngineCommand::commandName);
     CHECK_MSTATUS_AND_RETURN_IT(status);

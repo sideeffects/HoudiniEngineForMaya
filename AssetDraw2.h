@@ -2,7 +2,6 @@
 #define __AssetDraw_h__
 
 #include <maya/MTypes.h>
-#if MAYA_API_VERSION >= 20180000
 
 #include "Asset.h"
 #include "OutputDeform.h"
@@ -11,7 +10,6 @@
 #include <maya/MPxSurfaceShape.h>
 #include <maya/MPxGeometryOverride.h>
 #include <maya/MShaderManager.h>
-
 
 class MFnPlugin;
 
@@ -121,7 +119,5 @@ private:
     std::vector<MString> myTextureParms;
     size_t myLightCount;
 };
-#endif
-#endif
 
-
+#endif

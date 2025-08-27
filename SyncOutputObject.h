@@ -26,9 +26,7 @@ public:
     virtual bool isUndoable() const;
 
 protected:
-#if MAYA_API_VERSION >= 201400
     MStatus createFluidShape(const MObject &objectTransform);
-#endif
 
     const MPlug myOutputPlug;
     const MObject myAssetNodeObj;
@@ -42,3 +40,4 @@ protected:
 };
 
 #endif
+

@@ -7,15 +7,12 @@
 #include <maya/MDagPath.h>
 #include <maya/MFnDagNode.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MFnFloatArrayData.h>
 
 #include "AssetNode.h"
 #include "FluidGridConvert.h"
 #include "SyncOutputGeometryPart.h"
 #include "SyncOutputInstance.h"
-
-#if MAYA_API_VERSION >= 201400
-    #include <maya/MFnFloatArrayData.h>
-#endif
 
 SyncOutputObject::SyncOutputObject(const MPlug &outputPlug,
                                    const MObject &assetNodeObj,
@@ -162,10 +159,8 @@ SyncOutputObject::doIt()
         }
     }
 
-#if MAYA_API_VERSION >= 201400
     if (createFluidShape(objectTransform) == MS::kSuccess)
         numGeosOutput++;
-#endif
 
     if (numGeosOutput > 0)
         return MStatus::kSuccess;
@@ -173,7 +168,6 @@ SyncOutputObject::doIt()
         return MStatus::kFailure;
 }
 
-#if MAYA_API_VERSION >= 201400
 MStatus
 SyncOutputObject::createFluidShape(const MObject &objectTransform)
 {
@@ -621,7 +615,6 @@ SyncOutputObject::createFluidShape(const MObject &objectTransform)
     else
         return MStatus::kFailure;
 }
-#endif
 
 MStatus
 SyncOutputObject::undoIt()
@@ -653,3 +646,4 @@ SyncOutputObject::isUndoable() const
 {
     return true;
 }
+

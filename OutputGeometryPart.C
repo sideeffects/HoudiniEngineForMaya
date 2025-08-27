@@ -14,9 +14,7 @@
 #include <maya/MPointArray.h>
 #include <maya/MQuaternion.h>
 #include <maya/MTime.h>
-#if MAYA_API_VERSION >= 201400
-    #include <maya/MFnFloatArrayData.h>
-#endif
+#include <maya/MFnFloatArrayData.h>
 #include <maya/MFnVectorArrayData.h>
 
 #include <algorithm>
@@ -43,7 +41,6 @@ OutputGeometryPart::OutputGeometryPart(HAPI_NodeId nodeId, HAPI_PartId partId)
 
 OutputGeometryPart::~OutputGeometryPart() {}
 
-#if MAYA_API_VERSION >= 201400
 void
 OutputGeometryPart::computeVolumeTransform(const MTime &time,
                                            MDataHandle &volumeTransformHandle,
@@ -129,7 +126,6 @@ OutputGeometryPart::computeVolumeTransform(const MTime &time,
     rotateHandle.set3Double(final_rotate[0], final_rotate[1], final_rotate[2]);
     scaleHandle.set3Double(final_scale[0], final_scale[1], final_scale[2]);
 }
-#endif
 
 void
 OutputGeometryPart::update()
@@ -203,7 +199,6 @@ OutputGeometryPart::compute(const MTime &time,
                         partPlug.child(AssetNode::outputPartParticle), data,
                         hasParticlesHandle, particleHandle, options);
 
-#if MAYA_API_VERSION >= 201400
         // Volume
         MDataHandle volumeHandle =
             partHandle.child(AssetNode::outputPartVolume);
@@ -212,7 +207,6 @@ OutputGeometryPart::compute(const MTime &time,
             computeVolume(time, partPlug.child(AssetNode::outputPartVolume),
                           data, volumeHandle, options.preserveScale());
         }
-#endif
 
         // Curve
         MDataHandle curvesHandle =
@@ -943,7 +937,6 @@ OutputGeometryPart::computeParticle(
     }
 }
 
-#if MAYA_API_VERSION >= 201400
 void
 OutputGeometryPart::computeVolume(const MTime &time,
                                   const MPlug &volumePlug,
@@ -1037,7 +1030,6 @@ OutputGeometryPart::computeVolume(const MTime &time,
     // name
     nameHandle.set(Util::HAPIString(myVolumeInfo.nameSH));
 }
-#endif
 
 void
 OutputGeometryPart::computeMesh(const MTime &time,
@@ -1392,10 +1384,10 @@ OutputGeometryPart::computeMesh(const MTime &time,
             {
                 vertexLockedNormal = &lockedNormal;
             }
-#if MAYA_API_VERSION >= 201800
+
             MIntArray edgeIds;
             MIntArray edgeSmoothing;
-#endif
+
             size_t polygonVertexOffset = 0;
             for (MItMeshPolygon itMeshPolygon(meshDataObj);
                  !itMeshPolygon.isDone(); itMeshPolygon.next())
@@ -1424,23 +1416,18 @@ OutputGeometryPart::computeMesh(const MTime &time,
                          ((*vertexLockedNormal)[polygonVertexIndex1] ||
                           (*vertexLockedNormal)[polygonVertexIndex2])))
                     {
-#if MAYA_API_VERSION >= 201800
                         edgeIds.append(edges[i]);
                         edgeSmoothing.append(!intArray[polygonVertexIndex1]);
-#else
-                        CHECK_MSTATUS(meshFn.setEdgeSmoothing(
-                            edges[i], !intArray[polygonVertexIndex1]));
-#endif
                     }
                 }
                 polygonVertexOffset += numVertices;
             }
-#if MAYA_API_VERSION >= 201800
+
             if (edgeIds.length() > 0)
             {
                 CHECK_MSTATUS(meshFn.setEdgeSmoothings(edgeIds, edgeSmoothing));
             }
-#endif
+
             assert(polygonVertexOffset == intArray.size());
         }
     }
@@ -1707,10 +1694,8 @@ OutputGeometryPart::computeMesh(const MTime &time,
         bool useMappedAlpha =
             colorSetNames.length() &&
             (colorSetNames.length() == mappedAlphaAttributeNames.length());
-#if MAYA_API_VERSION >= 201600
         bool useColorRep = colorSetNames.length() &&
                            (colorSetNames.length() == colorReps.length());
-#endif
 
         int layerIndex = 0;
         for (;;)
@@ -1721,7 +1706,6 @@ OutputGeometryPart::computeMesh(const MTime &time,
                 "Alpha", layerIndex);
             // prior to 2016, you gould get the color representation, but you
             // couldn't set it
-#if MAYA_API_VERSION >= 201600
             MFnMesh::MColorRepresentation colorRep =
                 MFnMesh::MColorRepresentation::kRGBA;
             if (useColorRep)
@@ -1734,7 +1718,6 @@ OutputGeometryPart::computeMesh(const MTime &time,
                         colorRep = MFnMesh::MColorRepresentation::kAlpha;
                 }
             }
-#endif
 
             HAPI_AttributeOwner colorOwner;
             if (!HAPI_FAIL(hapiGetAnyAttribute(myNodeId, myPartId,
@@ -1904,11 +1887,8 @@ OutputGeometryPart::computeMesh(const MTime &time,
                     }
                 }
             }
-#if MAYA_API_VERSION >= 201600
+
             meshFn.createColorSetDataMesh(colorSetName, false, colorRep);
-#else
-            meshFn.createColorSetDataMesh(colorSetName);
-#endif
 
             // If currentColorSetName is set, then use it to determine the
             // current color set. Otherwise, use the first as the current color
@@ -1920,11 +1900,7 @@ OutputGeometryPart::computeMesh(const MTime &time,
                 meshCurrentColorSetHandle.setString(colorSetName);
             }
 
-#if MAYA_API_VERSION >= 201600
             meshFn.setColors(promotedColors, &colorSetName, colorRep);
-#else
-            meshFn.setColors(promotedColors, &colorSetName);
-#endif
             meshFn.assignColors(vertexList, &colorSetName);
 
             layerIndex++;

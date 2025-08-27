@@ -6,10 +6,8 @@
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnUnitAttribute.h>
-#if MAYA_API_VERSION >= 201600
-    #include <maya/MEvaluationNode.h>
-    #include <maya/MEvaluationNodeIterator.h>
-#endif
+#include <maya/MEvaluationNode.h>
+#include <maya/MEvaluationNodeIterator.h>
 #include <maya/MAnimControl.h>
 #include <maya/MFileIO.h>
 #include <maya/MFileObject.h>
@@ -77,11 +75,7 @@ MObject AssetNode::outputObjectScale;
 MObject AssetNode::outputObjectScaleX;
 MObject AssetNode::outputObjectScaleY;
 MObject AssetNode::outputObjectScaleZ;
-
-#if MAYA_API_VERSION >= 201400
-    MObject AssetNode::outputObjectFluidFromAsset;
-#endif
-
+MObject AssetNode::outputObjectFluidFromAsset;
 MObject AssetNode::outputObjectMetaData;
 
 MObject AssetNode::outputGeos;
@@ -108,25 +102,23 @@ MObject AssetNode::outputPartParticleArrayData;
 MObject AssetNode::outputPartCurves;
 MObject AssetNode::outputPartCurvesIsBezier;
 
-#if MAYA_API_VERSION >= 201400
-    MObject AssetNode::outputPartVolume;
-    MObject AssetNode::outputPartVolumeName;
-    MObject AssetNode::outputPartVolumeGrid;
-    MObject AssetNode::outputPartVolumeRes;
-    MObject AssetNode::outputPartVolumeTransform;
-    MObject AssetNode::outputPartVolumeTranslate;
-    MObject AssetNode::outputPartVolumeTranslateX;
-    MObject AssetNode::outputPartVolumeTranslateY;
-    MObject AssetNode::outputPartVolumeTranslateZ;
-    MObject AssetNode::outputPartVolumeRotate;
-    MObject AssetNode::outputPartVolumeRotateX;
-    MObject AssetNode::outputPartVolumeRotateY;
-    MObject AssetNode::outputPartVolumeRotateZ;
-    MObject AssetNode::outputPartVolumeScale;
-    MObject AssetNode::outputPartVolumeScaleX;
-    MObject AssetNode::outputPartVolumeScaleY;
-    MObject AssetNode::outputPartVolumeScaleZ;
-#endif
+MObject AssetNode::outputPartVolume;
+MObject AssetNode::outputPartVolumeName;
+MObject AssetNode::outputPartVolumeGrid;
+MObject AssetNode::outputPartVolumeRes;
+MObject AssetNode::outputPartVolumeTransform;
+MObject AssetNode::outputPartVolumeTranslate;
+MObject AssetNode::outputPartVolumeTranslateX;
+MObject AssetNode::outputPartVolumeTranslateY;
+MObject AssetNode::outputPartVolumeTranslateZ;
+MObject AssetNode::outputPartVolumeRotate;
+MObject AssetNode::outputPartVolumeRotateX;
+MObject AssetNode::outputPartVolumeRotateY;
+MObject AssetNode::outputPartVolumeRotateZ;
+MObject AssetNode::outputPartVolumeScale;
+MObject AssetNode::outputPartVolumeScaleX;
+MObject AssetNode::outputPartVolumeScaleY;
+MObject AssetNode::outputPartVolumeScaleZ;
 
 MObject AssetNode::outputPartInstancer;
 MObject AssetNode::outputPartInstancerArrayData;
@@ -551,14 +543,12 @@ AssetNode::initialize()
     cAttr.setWritable(false);
     cAttr.setStorable(false);
 
-#if MAYA_API_VERSION >= 201400
     // object fluid from asset
     AssetNode::outputObjectFluidFromAsset = nAttr.create(
         "outputObjectFluidFromAsset", "outputObjectFluidFromAsset",
         MFnNumericData::kBoolean, true);
     nAttr.setStorable(false);
     nAttr.setWritable(false);
-#endif
 
     // meta data
     AssetNode::outputObjectMetaData = nAttr.create(
@@ -651,7 +641,6 @@ AssetNode::initialize()
     nAttr.setWritable(false);
     nAttr.setStorable(false);
 
-#if MAYA_API_VERSION >= 201400
     // Volumes ---------
     AssetNode::outputPartVolumeName = tAttr.create(
         "outputPartVolumeName", "outputPartVolumeName", MFnData::kString);
@@ -756,7 +745,6 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartVolumeRes);
     cAttr.setWritable(false);
     cAttr.setStorable(false);
-#endif
 
     // instancer
     AssetNode::outputPartInstancerArrayData = tAttr.create(
@@ -963,10 +951,8 @@ AssetNode::initialize()
     cAttr.addChild(AssetNode::outputPartMaterialIds);
     cAttr.addChild(AssetNode::outputPartExtraAttributes);
     cAttr.addChild(AssetNode::outputPartGroups);
-
-#if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputPartVolume);
-#endif
+
     cAttr.setWritable(false);
     cAttr.setStorable(false);
     cAttr.setArray(true);
@@ -1021,9 +1007,7 @@ AssetNode::initialize()
 
     AssetNode::outputObjects = cAttr.create("outputObjects", "outputObjects");
     cAttr.addChild(AssetNode::outputObjectMetaData);
-#if MAYA_API_VERSION >= 201400
     cAttr.addChild(AssetNode::outputObjectFluidFromAsset);
-#endif
     cAttr.addChild(AssetNode::outputObjectTransform);
     cAttr.addChild(AssetNode::outputGeos);
     cAttr.addChild(AssetNode::outputObjectName);
@@ -1323,7 +1307,6 @@ AssetNode::setDependentsDirty(const MPlug &plugBeingDirtied,
     return MS::kSuccess;
 }
 
-#if MAYA_API_VERSION >= 201600
 MStatus
 AssetNode::preEvaluation(const MDGContext &context,
                          const MEvaluationNode &evaluationNode)
@@ -1361,7 +1344,6 @@ AssetNode::preEvaluation(const MDGContext &context,
 
     return MStatus::kSuccess;
 }
-#endif
 
 void
 AssetNode::rebuildAsset()
@@ -1474,15 +1456,8 @@ AssetNode::setExtraAutoSync(bool needs)
     myExtraAutoSync = needs;
 }
 
-#if MAYA_API_VERSION >= 201800
 bool
 AssetNode::getInternalValue(const MPlug &plug, MDataHandle &dataHandle)
-#else
-bool
-AssetNode::getInternalValueInContext(const MPlug &plug,
-                                     MDataHandle &dataHandle,
-                                     MDGContext &ctx)
-#endif
 {
     MStatus status;
 
@@ -1520,23 +1495,12 @@ AssetNode::getInternalValueInContext(const MPlug &plug,
         return false;
     }
 
-#if MAYA_API_VERSION >= 201800
     return MPxTransform::getInternalValue(plug, dataHandle);
-#else
-    return MPxTransform::getInternalValueInContext(plug, dataHandle, ctx);
-#endif
 }
 
-#if MAYA_API_VERSION >= 201800
 bool
 AssetNode::setInternalValue(const MPlug &plugBeingSet,
                             const MDataHandle &dataHandle)
-#else
-bool
-AssetNode::setInternalValueInContext(const MPlug &plugBeingSet,
-                                     const MDataHandle &dataHandle,
-                                     MDGContext &ctx)
-#endif
 {
     MStatus status;
     if (plugBeingSet == AssetNode::otlFilePath ||
@@ -1658,21 +1622,11 @@ AssetNode::setInternalValueInContext(const MPlug &plugBeingSet,
     if (plugBeingSet == preserveScalePlug)
         myNeedToRecomputeOutputData = true;
 
-#if MAYA_API_VERSION >= 201800
     return MPxTransform::setInternalValue(plugBeingSet, dataHandle);
-#else
-    return MPxTransform::setInternalValueInContext(
-        plugBeingSet, dataHandle, ctx);
-#endif
 }
 
-#if MAYA_API_VERSION >= 201800
 int
 AssetNode::internalArrayCount(const MPlug &plug) const
-#else
-int
-AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
-#endif
 {
     if (plug == AssetNode::input)
     {
@@ -1684,11 +1638,7 @@ AssetNode::internalArrayCount(const MPlug &plug, const MDGContext &ctx) const
         return getAsset()->getAssetInfo().geoInputCount;
     }
 
-#if MAYA_API_VERSION >= 201800
     return MPxTransform::internalArrayCount(plug);
-#else
-    return MPxTransform::internalArrayCount(plug, ctx);
-#endif
 }
 
 void

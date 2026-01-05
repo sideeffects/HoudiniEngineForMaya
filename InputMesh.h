@@ -3,7 +3,7 @@
 
 #include "Input.h"
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include <maya/MFnMesh.h>
 
@@ -41,3 +41,4 @@ protected:
 };
 
 #endif
+

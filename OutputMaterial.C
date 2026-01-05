@@ -51,7 +51,7 @@ OutputMaterial::compute(const MTime &time,
         materialHandle.child(AssetNode::outputMaterialTexturePath);
 
     HAPI_MaterialInfo materialInfo;
-    CHECK_HAPI(HAPI_GetMaterialInfo(
+    CHECK_HAPI(HoudiniApi::GetMaterialInfo(
         Util::theHAPISession.get(), myNodeId, &materialInfo));
 
     if (myNodeInfo.totalCookCount > myMaterialLastCookCount ||
@@ -59,7 +59,7 @@ OutputMaterial::compute(const MTime &time,
     {
         myBakeTexture = bakeTexture;
         std::vector<HAPI_ParmInfo> parms(myNodeInfo.parmCount);
-        HAPI_GetParameters(Util::theHAPISession.get(), myNodeId, &parms[0], 0,
+        HoudiniApi::GetParameters(Util::theHAPISession.get(), myNodeId, &parms[0], 0,
                            myNodeInfo.parmCount);
 
         int ambientParmIndex       = Util::findParm(parms, "ogl_amb");
@@ -73,7 +73,7 @@ OutputMaterial::compute(const MTime &time,
 
         if (ambientParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(
+            HoudiniApi::GetParmFloatValues(
                 Util::theHAPISession.get(), myNodeId, valueHolder,
                 parms[ambientParmIndex].floatValuesIndex, 3);
             ambientHandle.set3Float(
@@ -82,7 +82,7 @@ OutputMaterial::compute(const MTime &time,
 
         if (specularParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(
+            HoudiniApi::GetParmFloatValues(
                 Util::theHAPISession.get(), myNodeId, valueHolder,
                 parms[specularParmIndex].floatValuesIndex, 3);
             specularHandle.set3Float(
@@ -91,7 +91,7 @@ OutputMaterial::compute(const MTime &time,
 
         if (diffuseParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(
+            HoudiniApi::GetParmFloatValues(
                 Util::theHAPISession.get(), myNodeId, valueHolder,
                 parms[diffuseParmIndex].floatValuesIndex, 3);
             diffuseHandle.set3Float(
@@ -100,7 +100,7 @@ OutputMaterial::compute(const MTime &time,
 
         if (alphaParmIndex >= 0)
         {
-            HAPI_GetParmFloatValues(Util::theHAPISession.get(), myNodeId,
+            HoudiniApi::GetParmFloatValues(Util::theHAPISession.get(), myNodeId,
                                     valueHolder,
                                     parms[alphaParmIndex].floatValuesIndex, 1);
             float alpha = 1 - valueHolder[0];
@@ -110,11 +110,11 @@ OutputMaterial::compute(const MTime &time,
         if (texturePathSHParmIndex >= 0)
         {
             HAPI_ParmInfo texturePathParm;
-            HAPI_GetParameters(Util::theHAPISession.get(), myNodeId,
+            HoudiniApi::GetParameters(Util::theHAPISession.get(), myNodeId,
                                &texturePathParm, texturePathSHParmIndex, 1);
 
             int texturePathSH;
-            HAPI_GetParmStringValues(Util::theHAPISession.get(), myNodeId, true,
+            HoudiniApi::GetParmStringValues(Util::theHAPISession.get(), myNodeId, true,
                                      &texturePathSH,
                                      texturePathParm.stringValuesIndex, 1);
 
@@ -124,7 +124,7 @@ OutputMaterial::compute(const MTime &time,
             if (hasTextureSource && bakeTexture)
             {
                 // this could fail if texture parameter is empty
-                hapiResult = HAPI_RenderTextureToImage(
+                hapiResult = HoudiniApi::RenderTextureToImage(
                     Util::theHAPISession.get(), myNodeId,
                     texturePathSHParmIndex);
 
@@ -141,7 +141,7 @@ OutputMaterial::compute(const MTime &time,
             if (canRenderTexture && bakeTexture)
             {
                 // this could fail if the image planes don't exist
-                hapiResult = HAPI_ExtractImageToFile(
+                hapiResult = HoudiniApi::ExtractImageToFile(
                     Util::theHAPISession.get(), myNodeId, HAPI_PNG_FORMAT_NAME,
                     "C A", destinationFolderPath.asChar(), NULL,
                     &destinationFilePathSH);
@@ -158,7 +158,7 @@ OutputMaterial::compute(const MTime &time,
             {
                 // if baking is off but the expected texture file exists
                 // keep using it
-                hapiResult = HAPI_GetImageFilePath(
+                hapiResult = HoudiniApi::GetImageFilePath(
                     Util::theHAPISession.get(), myNodeId, HAPI_PNG_FORMAT_NAME,
                     "C A", destinationFolderPath.asChar(), NULL,
                     texturePathSHParmIndex, &destinationFilePathSH);
@@ -201,14 +201,14 @@ OutputMaterial::update(MDataHandle &materialHandle)
     {
         int count;
         CHECK_HAPI(
-            HAPI_ComposeChildNodeList(Util::theHAPISession.get(), myAssetId,
+            HoudiniApi::ComposeChildNodeList(Util::theHAPISession.get(), myAssetId,
                                       HAPI_NODETYPE_SHOP | HAPI_NODETYPE_VOP,
                                       HAPI_NODEFLAGS_ANY, true, &count));
 
         std::vector<HAPI_NodeId> nodeIds(count);
         if (count)
         {
-            CHECK_HAPI(HAPI_GetComposedChildNodeList(
+            CHECK_HAPI(HoudiniApi::GetComposedChildNodeList(
                 Util::theHAPISession.get(), myAssetId, &nodeIds[0], count));
         }
 
@@ -218,7 +218,7 @@ OutputMaterial::update(MDataHandle &materialHandle)
 
             HAPI_StringHandle testPath;
 
-            CHECK_HAPI(HAPI_GetNodePath(
+            CHECK_HAPI(HoudiniApi::GetNodePath(
                 Util::theHAPISession.get(), testNodeId, myAssetId, &testPath));
 
             if (Util::HAPIString(testPath) == path)
@@ -238,5 +238,6 @@ OutputMaterial::update(MDataHandle &materialHandle)
 
     // get material info
     CHECK_HAPI(
-        HAPI_GetNodeInfo(Util::theHAPISession.get(), myNodeId, &myNodeInfo));
+        HoudiniApi::GetNodeInfo(Util::theHAPISession.get(), myNodeId, &myNodeInfo));
 }
+

@@ -54,3 +54,4 @@ SubCommandAsset::getAsset() const
 
     return asset;
 }
+

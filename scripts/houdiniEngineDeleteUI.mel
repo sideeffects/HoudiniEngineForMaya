@@ -11,3 +11,4 @@ global proc houdiniEngineDeleteUI()
         $houdiniEngine_scriptJobId = -1;
     }
 }
+

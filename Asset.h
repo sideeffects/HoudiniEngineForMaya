@@ -7,7 +7,7 @@
 #include <maya/MString.h>
 #include <maya/MTime.h>
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include "AssetNodeOptions.h"
 #include "OutputObject.h"
@@ -109,3 +109,4 @@ private:
 };
 
 #endif
+

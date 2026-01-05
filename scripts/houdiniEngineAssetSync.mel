@@ -75,3 +75,4 @@ houdiniEngine_syncAsset(string $assetNode)
 {
     syncAsset($assetNode, 0, 0);
 }
+

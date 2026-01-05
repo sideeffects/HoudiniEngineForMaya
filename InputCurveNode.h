@@ -1,7 +1,7 @@
 #ifndef __InputCurveNode_h__
 #define __InputCurveNode_h__
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 #include <maya/MPxNode.h>
 #include <maya/MTypeId.h>
 
@@ -31,3 +31,4 @@ private:
 };
 
 #endif
+

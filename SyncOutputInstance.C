@@ -285,3 +285,4 @@ SyncOutputInstance::createOutput()
 
     return MStatus::kSuccess;
 }
+

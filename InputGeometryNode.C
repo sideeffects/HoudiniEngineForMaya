@@ -273,3 +273,4 @@ InputGeometryNode::checkInput(MDataBlock &dataBlock)
 
     return true;
 }
+

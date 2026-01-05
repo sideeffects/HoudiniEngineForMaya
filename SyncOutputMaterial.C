@@ -285,3 +285,4 @@ SyncOutputMaterial::findFileTexture(const MPlug &materialPlug)
 
     return MObject::kNullObj;
 }
+

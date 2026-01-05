@@ -18,3 +18,4 @@ global proc AEhoudiniInputCurveTemplate(string $nodeName)
     editorTemplate -endScrollLayout;
 }
 
+

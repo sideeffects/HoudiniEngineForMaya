@@ -88,7 +88,7 @@ public:
         HAPI_Result hapiResult;
 
         int libraryId = -1;
-        hapiResult = HAPI_LoadAssetLibraryFromFile(Util::theHAPISession.get(),
+        hapiResult = HoudiniApi::LoadAssetLibraryFromFile(Util::theHAPISession.get(),
                                                    myOTLFilePath.asChar(), true,
                                                    &libraryId);
         if (HAPI_FAIL(hapiResult))
@@ -100,12 +100,12 @@ public:
         }
 
         int assetCount = 0;
-        hapiResult     = HAPI_GetAvailableAssetCount(
+        hapiResult     = HoudiniApi::GetAvailableAssetCount(
             Util::theHAPISession.get(), libraryId, &assetCount);
         CHECK_HAPI_AND_RETURN(hapiResult, MStatus::kFailure);
 
         std::vector<HAPI_StringHandle> assetNamesSH(assetCount);
-        hapiResult = HAPI_GetAvailableAssets(Util::theHAPISession.get(),
+        hapiResult = HoudiniApi::GetAvailableAssets(Util::theHAPISession.get(),
                                              libraryId, &assetNamesSH.front(),
                                              assetNamesSH.size());
         CHECK_HAPI_AND_RETURN(hapiResult, MStatus::kFailure);
@@ -156,7 +156,7 @@ public:
 
         int nodeId = asset->getNodeInfo().id;
 
-        hapiResult = HAPI_GetParmInfoFromName(Util::theHAPISession.get(), nodeId,
+        hapiResult = HoudiniApi::GetParmInfoFromName(Util::theHAPISession.get(), nodeId,
                                               myParmName.asChar(), &parmInfo);
 
         if (!HAPI_FAIL(hapiResult))
@@ -510,3 +510,4 @@ AssetCommand::isUndoable() const
 
     return mySubCommand->isUndoable();
 }
+

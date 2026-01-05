@@ -24,16 +24,16 @@ OutputGeometry::update()
 {
     HAPI_Result hapiResult;
 
-    hapiResult = HAPI_GetNodeInfo(
+    hapiResult = HoudiniApi::GetNodeInfo(
         Util::theHAPISession.get(), myNodeId, &myNodeInfo);
     CHECK_HAPI(hapiResult);
 
-    hapiResult = HAPI_GetGeoInfo(
+    hapiResult = HoudiniApi::GetGeoInfo(
         Util::theHAPISession.get(), myNodeId, &myGeoInfo);
     if (HAPI_FAIL(hapiResult))
     {
         // Make sre myGeoInfo is properly initialized.
-        HAPI_GeoInfo_Init(&myGeoInfo);
+        HoudiniApi::GeoInfo_Init(&myGeoInfo);
 
         // Even when HAPI_GetGeoInfo() failed, there's always at least one
         // part. So we want the below code to initialize myParts.
@@ -154,3 +154,4 @@ OutputGeometry::compute(const MTime &time,
 
     return MS::kSuccess;
 }
+

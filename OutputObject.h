@@ -11,7 +11,7 @@
 #include <maya/MStringArray.h>
 #include <maya/MVectorArray.h>
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 class Asset;
 
@@ -46,3 +46,4 @@ protected:
 };
 
 #endif
+

@@ -15,7 +15,7 @@
 #include <maya/MPlugArray.h>
 #include <maya/MString.h>
 
-#include <HAPI/HAPI.h>
+#include "HoudiniApi.h"
 
 #include "AssetNode.h"
 #include "InputCurve.h"
@@ -56,7 +56,7 @@ Inputs::compute(MDataBlock &dataBlock)
         MDataHandle inputNameHandle = inputHandle.child(AssetNode::inputName);
 
         HAPI_StringHandle nameSH;
-        HAPI_GetNodeInputName(Util::theHAPISession.get(), myNodeId, i, &nameSH);
+        HoudiniApi::GetNodeInputName(Util::theHAPISession.get(), myNodeId, i, &nameSH);
 
         inputNameHandle.set(Util::HAPIString(nameSH));
     }
@@ -239,10 +239,10 @@ Input::setInputTransform(MDataHandle &dataHandle)
     }
 
     HAPI_TransformEuler transformEuler;
-    HAPI_ConvertMatrixToEuler(Util::theHAPISession.get(), matrix, HAPI_SRT,
+    HoudiniApi::ConvertMatrixToEuler(Util::theHAPISession.get(), matrix, HAPI_SRT,
                               HAPI_XYZ, &transformEuler);
 
-    CHECK_HAPI(HAPI_SetObjectTransform(
+    CHECK_HAPI(HoudiniApi::SetObjectTransform(
         Util::theHAPISession.get(), transformNodeId(), &transformEuler));
 }
 void
@@ -253,3 +253,4 @@ Input::setInputComponents(MDataBlock &dataBlock,
                           const MPlug &pointGroupPlug)
 {
 }
+

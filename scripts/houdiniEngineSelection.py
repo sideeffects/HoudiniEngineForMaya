@@ -60,3 +60,4 @@ def get_selected_components(component_type):
         components.append(extract_component(component).replace(':', '-'))
 
     return ' '.join(components)
+

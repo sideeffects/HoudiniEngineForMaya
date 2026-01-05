@@ -1,6 +1,6 @@
 # Output variables:
 #   Maya_FOUND
-#   Maya_INCLUDE_DIRS
+#   Maya_INCLUDE_${Maya_FIND_VERSION}DIRS
 #   Maya_LIBRARIES
 #
 # Hints for finding package:
@@ -11,7 +11,6 @@
 # All the Maya libraries link with Foundation.
 set(
     _maya_libraries
-    Foundation
     ${Maya_FIND_COMPONENTS}
     )
 
@@ -69,21 +68,21 @@ endif ()
 # Find
 ########################################
 find_path(
-    Maya_INCLUDE_DIRS
+    Maya${Maya_FIND_VERSION}_INCLUDE_DIRS
     maya/MFn.h
     HINTS ${_maya_include_search_dirs}
     )
-list( APPEND _maya_required_vars Maya_INCLUDE_DIRS )
+list( APPEND _maya_required_vars Maya${Maya_FIND_VERSION}_INCLUDE_DIRS )
 
 foreach ( lib ${_maya_libraries} )
     find_library(
-        Maya_${lib}
+        Maya${Maya_FIND_VERSION}_${lib}
         NAMES ${lib}
         HINTS ${_maya_library_search_dirs}
         NO_DEFAULT_PATH
         )
-    list( APPEND _maya_required_vars Maya_${lib} )
-    list( APPEND Maya_LIBRARIES ${Maya_${lib}} )
+    list( APPEND _maya_required_vars Maya${Maya_FIND_VERSION}_${lib} )
+    list( APPEND Maya_LIBRARIES ${Maya${Maya_FIND_VERSION}_${lib}} )
 endforeach ()
 
 ########################################
@@ -111,7 +110,7 @@ foreach ( lib ${_maya_libraries} )
         set_target_properties(
             ${lib}
             PROPERTIES
-                IMPORTED_LOCATION "${Maya_${lib}}"
+                IMPORTED_LOCATION "${Maya${Maya_FIND_VERSION}_${lib}}"
                 # Maya 2015 and older libraries do not have SONAME on Linux. This
                 # would cause cmake to pass in absolute paths to the linker, which
                 # we don't want.
@@ -122,7 +121,7 @@ foreach ( lib ${_maya_libraries} )
         set_target_properties(
             ${lib}
             PROPERTIES
-                IMPORTED_IMPLIB "${Maya_${lib}}"
+                IMPORTED_IMPLIB "${Maya${Maya_FIND_VERSION}_${lib}}"
             )
     endif ()
 
@@ -130,7 +129,7 @@ foreach ( lib ${_maya_libraries} )
         ${lib}
         PROPERTIES
             INTERFACE_COMPILE_DEFINITIONS "${_maya_compile_definitions}"
-            INTERFACE_INCLUDE_DIRECTORIES "${Maya_INCLUDE_DIRS}"
+            INTERFACE_INCLUDE_DIRECTORIES "${Maya${Maya_FIND_VERSION}_INCLUDE_DIRS}"
         )
 
     # All the Maya libraries link with Foundation.
@@ -138,7 +137,7 @@ foreach ( lib ${_maya_libraries} )
         set_target_properties(
             ${lib}
             PROPERTIES
-                INTERFACE_LINK_LIBRARIES "${Maya_Foundation}"
+                INTERFACE_LINK_LIBRARIES "${Maya${Maya_FIND_VERSION}_Foundation}"
             )
     endif ()
 endforeach ()
@@ -152,3 +151,4 @@ find_package_handle_standard_args(
     DEFAULT_MSG
     ${_maya_required_vars}
     )
+

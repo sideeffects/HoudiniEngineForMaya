@@ -26,7 +26,6 @@
 #pragma once
 
 #include <HAPI/HAPI.h>
-
 struct HoudiniApi
 {
 public:
@@ -1249,3 +1248,4 @@ public:
     static HAPI_VolumeTileInfo VolumeTileInfo_CreateEmptyStub();
     static void VolumeTileInfo_InitEmptyStub(HAPI_VolumeTileInfo * in);
 };
+

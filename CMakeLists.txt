@@ -1,4 +1,6 @@
-cmake_minimum_required( VERSION 3.1 )
+cmake_minimum_required( VERSION 3.5 )
+
+cmake_policy( SET CMP0074 NEW )
 
 project( Maya )
 
@@ -36,12 +38,6 @@ find_package( HoudiniEngine REQUIRED )
 ########################################
 # Relative paths
 ########################################
-file(
-    RELATIVE_PATH
-    install_plug_ins_dir_to_houdiniengine_lib_dir
-    "${CMAKE_INSTALL_PREFIX}/${install_plug_ins_dir}"
-    "${HoudiniEngine_LIBRARY_DIR}"
-    )
 
 file(
     RELATIVE_PATH
@@ -138,8 +134,7 @@ target_compile_options( plugin PRIVATE ${compile_options} )
 # Maya libraries
 target_link_libraries( plugin ${maya_libraries} )
 
-# Houdini Engine libraries
-target_link_libraries( plugin HoudiniEngine )
+include_directories( ${HoudiniEngine_INCLUDE_DIRS} )
 
 # Setup rpath
 if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
@@ -227,4 +222,3 @@ install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/${install_module_dir}/houdiniEngine-maya${MAYA_VERSION}"
     DESTINATION "${install_module_dir}"
     )
-

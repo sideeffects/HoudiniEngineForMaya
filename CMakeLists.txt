@@ -1,4 +1,6 @@
-cmake_minimum_required( VERSION 3.1 )
+cmake_minimum_required( VERSION 3.5 )
+
+cmake_policy( SET CMP0074 NEW )
 
 project( Maya )
 
@@ -131,6 +133,8 @@ target_compile_options( plugin PRIVATE ${compile_options} )
 
 # Maya libraries
 target_link_libraries( plugin ${maya_libraries} )
+
+include_directories( ${HoudiniEngine_INCLUDE_DIRS} )
 
 # Setup rpath
 if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )

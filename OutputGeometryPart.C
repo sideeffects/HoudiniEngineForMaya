@@ -487,9 +487,9 @@ OutputGeometryPart::computeExtraAttribute(const MPlug &extraAttributePlug,
         extraAttributeHandle.child(AssetNode::outputPartExtraAttributeData);
 
     HAPI_AttributeInfo attributeInfo;
-    HAPI_FAIL(HoudiniApi::GetAttributeInfo(Util::theHAPISession.get(), myNodeId,
+    HoudiniApi::GetAttributeInfo(Util::theHAPISession.get(), myNodeId,
                                     myPartId, attributeName, attributeOwner,
-                                    &attributeInfo));
+                                    &attributeInfo);
     if (!attributeInfo.exists)
     {
         // HAPI might not be able to handle certain attributes (e.g.

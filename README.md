@@ -31,11 +31,11 @@ For support and reporting bugs:
 ## Supported Maya versions
 Currently, the supported Maya versions are:
 
+* 2027
 * 2026
 * 2025
 * 2024
 * 2023
-* 2022
 
 The plug-in is supported on Linux, Windows, and Mac OS X.
 

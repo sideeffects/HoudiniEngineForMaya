@@ -1,6 +1,7 @@
 from maya import mel
 
 import os
+import shlex
 import subprocess
 import platform
 
@@ -35,28 +36,22 @@ def sanitizeAndRun(commands):
 
     env['PATH'] = os.path.join(hfs_path, 'bin') + os.pathsep + env['PATH']
 
-    command_sep = ' && '
-
-    if platform.system() == 'Windows':
-        command_sep = ' & '
-
-    command_str = command_sep.join(commands)
-
     DEBUG = False
 
-    if DEBUG:   # noqa
-        p = subprocess.Popen(command_str, env=env,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             shell=True)
-        stdout, stderr = p.communicate()
+    for command in commands:
+        cmd_args = shlex.split(command)
 
-        if p.returncode != 0:
-            print(stdout)
-            print(stderr)
-            return False
-    else:
-        subprocess.Popen(command_str, env=env,
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                         shell=True)
+        if DEBUG:   # noqa
+            p = subprocess.Popen(cmd_args, env=env,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = p.communicate()
+
+            if p.returncode != 0:
+                print(stdout)
+                print(stderr)
+                return False
+        else:
+            subprocess.Popen(cmd_args, env=env,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     return True

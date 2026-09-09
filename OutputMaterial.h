@@ -23,6 +23,7 @@ public:
 
 private:
     void update(MDataHandle &materialHandle);
+    HAPI_Result handleDiffuseTexture(const int texturePathSHParmIndex, MDataHandle &texturePathHandle);
 
 private:
     HAPI_NodeId myAssetId;

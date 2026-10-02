@@ -32,7 +32,7 @@ static int findMaterialParmIndex(std::vector<HAPI_ParmInfo> &parms,
 
 HAPI_Result OutputMaterial::handleDiffuseTexture(const int texturePathSHParmIndex, MDataHandle &texturePathHandle)
 {
-    HAPI_Result hapiResult;
+    HAPI_Result hapiResult = HAPI_RESULT_SUCCESS;
 
     HAPI_ParmInfo texturePathParm;
     HoudiniApi::GetParameters(Util::theHAPISession.get(), myNodeId,
